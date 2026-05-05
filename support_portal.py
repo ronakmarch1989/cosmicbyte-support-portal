@@ -13,6 +13,10 @@ PRODUCT_URLS = {
     "Ares Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
     "Ares Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
     "Nexus": "https://www.thecosmicbyte.com/product-category/gaming-controllers/",
+    "Artemis Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-cb-gk-40-artemis-wired-wireless-bluetooth-68-key-per-key-rgb-mechanical-gaming-keyboard/",
+    "Artemis": "https://www.thecosmicbyte.com/product/cosmic-byte-artemis-68-key-per-key-rgb-mechanical-gaming-keyboard/",
+    "Firefly TKL": "https://www.thecosmicbyte.com/product/cosmic-byte-firefly-tkl-per-key-rgb-mechanical-keyboard/",
+    "Trinity": "https://www.thecosmicbyte.com/product/cosmic-byte-trinity-optical-swappable-switch-keyboard/",
     "Phantom TKL": "https://www.thecosmicbyte.com/product/cosmic-byte-phantom-tkl-tri-mode-gasket-hot-swappable-mechanical-switch-keyboard/",
     "Phantom TKL Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-phantom-tkl-gasket-mechanical-wired-swappable-keyboard-with-prelubed-switches/",
     "Pandora": "https://www.thecosmicbyte.com/product/cosmic-byte-pandora-tkl-mechanical-keyboard/",
@@ -1532,6 +1536,265 @@ RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
 """,
 
+    "Artemis Wireless": """
+COSMIC BYTE ARTEMIS WIRELESS — TRI-MODE 68-KEY MECHANICAL KEYBOARD (CB-GK-40)
+
+TRI-MODE: 2.4GHz + Bluetooth (3 devices) + Wired USB-C. 68-key compact layout. Outemu Blue swappable switches. 2500mAh battery. Per-key RGB.
+
+SPECS: 68 keys, US layout. Outemu Blue switches, swappable, 50M keystrokes. 2500mAh battery, ~7 hours charge time. 17 backlight effects, per-key RGB. 1.7m detachable USB-C cable. 292x102x40mm, 620g. Software: Windows only. Keycaps: Premium Double shot ABS. NOTE: Battery switch is on the back of the keyboard — must be ON to use wireless modes.
+
+WHAT'S IN THE BOX: Keyboard, USB-C cable, 2.4G USB receiver, keycap puller, switch puller, user manual.
+
+SWITCHING CONNECTION MODES:
+- FN + Q: Switch to 2.4GHz mode
+- FN + W: Switch to Bluetooth channel 1 (BT1)
+- FN + E: Switch to Bluetooth channel 2 (BT2)
+- FN + R: Switch to Bluetooth channel 3 (BT3)
+- FN + T: Switch to wired USB mode
+- FN + TAB (short press): Check current mode — the corresponding key (Q/W/E/R/T) flashes red for 2 seconds
+
+2.4GHz SETUP:
+1. Turn on battery switch (back of keyboard). Press FN + Q to enter 2.4G mode.
+2. Plug USB receiver into PC — pre-paired at factory, connects automatically.
+3. If pairing lost: Hold FN + Q for 3 seconds until Q key LED blinks green. Receiver must be plugged in. Stops blinking when paired.
+4. Auto-connects next time — pairing is one-time only.
+
+BLUETOOTH SETUP (3 devices):
+1. Turn on battery switch. Press FN + W/E/R to switch to that BT channel.
+2. If previously paired: Connects within 15 seconds. Blue LED on W/E/R turns off when connected.
+3. If not connecting within 15s, keyboard sleeps (all LEDs off) — press any key to retry.
+4. Pair new device: Hold FN + W/E/R for 3 seconds until that key LED blinks blue rapidly. Select "Artemis" from your device Bluetooth menu. LED stops blinking when paired.
+5. Switch between 3 paired devices: Press FN + W, E, or R briefly.
+
+WIRED MODE: Press FN + T. Connect USB-C cable. Works while charging battery.
+
+BATTERY:
+- Check level: Press FN + Left CTRL. Left CTRL key lights up: RED = Low, YELLOW = Medium, GREEN = High. (Only works in battery/wireless mode)
+- Charge via USB-C cable. Red indicator while charging, turns off when full.
+
+SLEEP MODE (wireless only):
+- 180 seconds idle: Backlight turns off
+- 30 minutes idle: Deep sleep
+- Wake: Press any key
+
+FN KEY SHORTCUTS:
+- FN + 1 to 9: F1-F9 | FN + 0: F10 | FN + -: F11 | FN + =: F12
+- FN + [: Print Screen | FN + ]: Scroll Lock | FN + ;: Pause/Break | FN + ': Insert
+- FN + .: Home | FN + /: End
+- FN + Win: Lock/Unlock Windows key
+- FN + PgUp: Volume Up | FN + PgDn: Volume Down
+
+BACKLIGHT CONTROLS:
+- FN + DEL: Cycle lighting effects (17 total)
+- FN + ~: Change single colour lighting
+- FN + backslash key: User-defined lighting mode (ESC, WASD, arrow keys light up blue by default)
+- FN + Up arrow: Increase brightness (5 levels)
+- FN + Down arrow: Decrease brightness
+- FN + Right arrow: Increase animation speed (3 levels)
+- FN + Left arrow: Decrease animation speed
+- FN + Space: Toggle backlight On/Off
+- FN + ESC (hold 3-5s): Full factory reset
+
+CUSTOM BACKLIGHT RECORDING:
+1. Press FN + DEL to enter Backlight Recording Mode (ESC, WASD, arrows light blue)
+2. Press FN + backslash to enter custom recording
+3. Press each key to select its colour
+4. Press FN + backslash again to exit and save
+
+SWITCH SWAPPING:
+Step 1: Remove keycap with keycap puller. Step 2: Use switch puller on both sides, squeeze and pull straight up. Step 3: Insert new switch straight down until it clicks. Compatible: Outemu Blue, Red, Brown or any Outemu swappable switches.
+
+SOFTWARE: Download from thecosmicbyte.com. Windows only. Per-key RGB, macros, key remapping. Keyboard must be in wired mode for software to work.
+
+TROUBLESHOOTING:
+- Keyboard not powering on in wireless: Check battery switch on back is turned ON.
+- 2.4G not working: FN + Q, receiver plugged in. Hold FN + Q for 3s to re-pair.
+- Bluetooth not connecting: FN + W/E/R. Hold for 3s to re-pair. Enable BT on device.
+- Keyboard sleeps during use: Normal — press any key to wake.
+- Key not working: Remove and re-insert switch. Replace if still faulty.
+- Backlight not working: FN + Space to toggle. FN + Up for brightness. Factory reset: FN + ESC 3-5s.
+- Software not detecting: Switch to wired mode (FN + T, USB-C connected). Run as administrator.
+- LED issue (Laser/Ripple effects): Download latest software from thecosmicbyte.com — updated firmware fixes LED issues with latest production batches. Use only official software.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
+""",
+
+    "Artemis": """
+COSMIC BYTE ARTEMIS — WIRED 68-KEY MECHANICAL KEYBOARD
+
+WIRED ONLY. No wireless, no battery. 68-key compact layout. Outemu swappable switches. Per-key RGB with software customization.
+
+SPECS: 68 keys, US layout. Outemu swappable switches, 50M keystrokes. 1.7m PVC USB-C cable. 292x102x40mm, 560g. Software: Windows and Mac (basic use). Keycaps: Injection molded double-shot. All key anti-ghosting. Win-Key lock available.
+
+WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, user manual.
+
+FN KEY SHORTCUTS:
+- FN + 1 to 9: F1-F9 | FN + 0: F10 | FN + -: F11 | FN + =: F12
+- FN + [: Print Screen | FN + ]: Scroll Lock | FN + ;: Pause/Break | FN + ': Insert
+- FN + .: Home | FN + /: End
+- FN + Win: Lock/Unlock Windows key
+- FN + Ctrl (Right): Search | FN + Right Alt: Mute
+- FN + PgUp: Volume Up | FN + PgDn: Volume Down
+
+BACKLIGHT CONTROLS:
+- FN + DEL: Cycle lighting effects
+- FN + ~: Change single colour
+- FN + backslash key: User-defined lighting mode
+- FN + Up: Increase brightness | FN + Down: Decrease brightness
+- FN + Right: Increase speed | FN + Left: Decrease speed
+- FN + Space: Toggle backlight On/Off
+- FN + ESC (hold 3s): Full factory reset
+
+SWITCH SWAPPING:
+Step 1: Remove keycap with keycap puller. Step 2: Squeeze switch puller on both sides of switch, pull straight up. Step 3: Insert new switch straight down until it clicks. Compatible: Outemu Blue, Red, Brown or any Outemu swappable switches. Buy from thecosmicbyte.com.
+
+SOFTWARE: Download from thecosmicbyte.com. Windows only. Enables per-key RGB customization, macros, key remapping. IMPORTANT: Use only the official software from the Artemis product page. Older third-party software versions can cause LED firmware issues.
+
+TROUBLESHOOTING:
+- Keyboard not detected: Try different USB port. Connect directly to PC (not via USB hub or extension). Try different cable.
+- Key not working: Remove and re-insert switch. Replace if faulty.
+- Backlight not working: FN + Space to toggle. FN + Up for brightness. Factory reset: FN + ESC 3s.
+- Software not detecting keyboard: Run as administrator. Try different USB port. Reinstall software.
+- LED stopped working after software update: Contact support at cc@thecosmicbyte.com for correct firmware. Do not use older versions of Artemis software.
+- Windows key not working: FN + Win to unlock.
+- Mac use: Works plug-and-play for basic typing. RGB software is Windows only.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
+""",
+
+    "Firefly TKL": """
+COSMIC BYTE FIREFLY TKL — WIRED 87-KEY MECHANICAL KEYBOARD (CB-GK-16 / CB-GK-18)
+
+WIRED ONLY. 87-key TKL layout (no numpad). Outemu swappable switches. Per-key RGB. Adjustable height legs. Compact design.
+
+VARIANTS: CB-GK-16 (Outemu Blue switches — tactile, clicky) | CB-GK-18 (Outemu Red switches — linear, quiet)
+SPECS: 87 keys US layout. Outemu swappable switches, 50M keystrokes. 1000Hz polling rate. 1.6m braided cable, detachable USB-C port. 360x127x40mm, 800g. Full key anti-ghosting. 11 lighting animations, 18 preset RGB configurations. Adjustable height via fold-out legs. Software: Windows (download from thecosmicbyte.com).
+
+WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, user manual.
+
+ADJUSTABLE HEIGHT: Fold-out legs on the bottom allow 2 typing height options. Open legs for higher angle, closed for flat.
+
+SWITCH SWAPPING:
+Step 1: Use keycap puller to remove keycap. Step 2: Squeeze switch puller on both sides of switch, pull straight up. Step 3: Insert new switch straight down until it clicks firmly. Compatible: Outemu Blue, Red, Brown or any Outemu swappable switches. Buy from thecosmicbyte.com.
+
+BACKLIGHT:
+- 18 preset RGB configurations, 11 lighting animation modes
+- Software allows full per-key RGB customization
+- Hardware controls available via FN key combinations (see below)
+
+FN KEY SHORTCUTS (based on Firefly model):
+- FN + Win: Lock/Unlock Windows key
+- FN + Up/Down: Adjust backlight brightness
+- FN + Left/Right: Adjust backlight animation speed
+- FN + Space: Toggle backlight on/off
+- FN + ESC (hold 3s): Factory reset — restores all defaults
+- Multimedia controls available via FN + F-key row
+
+SOFTWARE: Download from thecosmicbyte.com (Windows only). Full per-key RGB customization, macro programming, key remapping. Check thecosmicbyte.com Firefly TKL product page for latest software version.
+
+TROUBLESHOOTING:
+- Keyboard not detected: Try different USB port (directly to PC, not via hub). Try different cable.
+- Key not working: Remove and re-insert switch using switch puller. Replace switch if still faulty.
+- Backlight not working: Use FN key + brightness shortcut to increase. Factory reset: FN + ESC 3s.
+- Software not detecting keyboard: Run as administrator. Try different USB port. Reinstall software.
+- Windows key not working: FN + Win to unlock.
+- Height uncomfortable: Use fold-out legs for elevated typing angle.
+- Mac use: Plug-and-play for basic typing. RGB software Windows only.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
+""",
+
+    "Trinity": """
+COSMIC BYTE TRINITY — TRI-MODE 87-KEY OPTICAL KEYBOARD (CB-GK-39)
+
+TRI-MODE: 2.4GHz + Bluetooth (3 devices) + Wired USB-C. 87-key TKL layout. OPTICAL switches (not mechanical) — 100 million switch life. 3000mAh battery.
+
+IMPORTANT — OPTICAL SWITCHES: Trinity uses optical swappable switches, NOT mechanical Outemu switches. Only replace with optical swappable switches. Mechanical switches ARE NOT compatible.
+
+SPECS: 87 keys, TKL US layout. Optical Blue switches, swappable, 100M keystrokes. 3000mAh battery, ~7 hours charge time. 19 backlight effects, per-key RGB, 16.8 million Spectra RGB. 1.7m detachable USB-C cable. 362.1x138.3x39.1mm, 940g. Software: Windows only, wired mode only. Keycaps: Premium Double shot ABS. All key anti-ghosting.
+
+WHAT'S IN THE BOX: Keyboard, USB-C cable, 2.4G USB receiver, keycap puller, switch puller, user manual.
+
+BATTERY SWITCH: Turn on/off switch on the back — must be ON for wireless modes.
+
+CHECKING CURRENT CONNECTION MODE:
+- Press FN + TAB (short press): TAB key flashes to indicate mode
+  - Flashes white 5 seconds: Wired mode
+  - Flashes green 5 seconds: 2.4GHz mode
+  - Flashes blue 5 seconds: Bluetooth mode
+
+2.4GHz SETUP:
+1. Turn on battery switch. Press FN + Q to enter 2.4G mode.
+2. Hold FN + P for 3 seconds to enter forced pairing — P key LED blinks. Release when connected.
+3. Plug USB receiver into PC. Stops blinking when paired.
+4. Auto-connects next time — one-time pairing only.
+
+BLUETOOTH SETUP (3 devices):
+1. Turn on battery switch. Press FN + W/E/R to switch to that Bluetooth channel (W=BT1, E=BT2, R=BT3).
+2. Blue LED blinks at 2/second — connects to previously paired device within 15 seconds.
+3. If connection fails within 15s, keyboard sleeps (all LEDs off) — press any key to retry.
+4. Pair new device: Hold FN + P for 3 seconds. P key blinks blue. Select Trinity from your device Bluetooth menu. Stops blinking when paired.
+5. Switch between devices: Press FN + W, E, or R briefly.
+
+WIRED MODE: Press FN + T. Connect USB-C cable to PC.
+
+BATTERY INDICATOR: Press FN + Left CTRL — Left CTRL key lights up:
+- RED = Low battery | YELLOW = Medium | GREEN = High
+- Battery indicator on top-right flashes when very low.
+- Stays lit while charging. Turns off when fully charged.
+
+SLEEP MODE (wireless only):
+- Idle 3 minutes: Backlight off. Idle longer: Deep sleep.
+- Wake: Press any key.
+
+FN KEY SHORTCUTS:
+- FN + F1: My Computer | F2: Home | F3: Calculator | F4: Music Player
+- FN + F5: Previous | F6: Play/Pause | F7: Next | F8: Stop
+- FN + F9: Mute | F10: Mail | F11: Search | F12: Keyboard Lock
+- FN + Win: Lock/Unlock Windows key
+- FN + PgUp: Volume Up | FN + PgDn: Volume Down
+- FN + ESC (hold 3s): Full factory reset
+
+BACKLIGHT CONTROLS:
+- FN + INS: Cycle backlight effects
+- FN + DEL: Colour selection (red, yellow, green, blue, indigo, violet, white)
+- FN + Up arrow: Increase brightness | FN + Down arrow: Decrease brightness
+- FN + Right arrow: Increase speed | FN + Left arrow: Decrease speed
+- FN + End: Toggle backlight On/Off
+
+CUSTOM BACKLIGHT RECORDING (5 custom groups):
+1. Press FN + PrtSc to enter customization mode — keys 1-5 flash
+2. Press 1, 2, 3, 4, or 5 to select a custom group
+3. Press each key to cycle its colour
+4. Press FN + PrtSc again to save
+
+SWITCH SWAPPING (OPTICAL — must use optical switches only):
+Step 1: Remove keycap with keycap puller. Step 2: Squeeze switch puller, pull straight up. Step 3: Insert optical switch straight down until it clicks. WARNING: Only use optical swappable switches — mechanical switches will damage the keyboard.
+
+SOFTWARE: Download from thecosmicbyte.com. Windows only. IMPORTANT: Software only works when keyboard is connected via USB-C wired mode. Wireless modes do not support software.
+
+TROUBLESHOOTING:
+- Not powering on wireless: Turn on battery switch on back of keyboard.
+- 2.4G not connecting: FN + Q, receiver plugged in. Hold FN + P for 3s to force re-pair.
+- Bluetooth not connecting: FN + W/E/R, hold FN + P for 3s to re-pair. Enable BT on device.
+- Check current mode: FN + TAB — watch TAB key flash colour (white=wired, green=2.4G, blue=BT).
+- Keyboard sleeps: Normal — press any key to wake.
+- Switch not working: Use switch puller to remove and re-insert. Replace if faulty. Use optical switches ONLY.
+- Software not working: Must be in wired mode (FN + T, USB-C cable connected). Run as administrator.
+- Backlight not working: FN + End to toggle. FN + INS to cycle. Factory reset: FN + ESC 3s.
+- Battery draining fast: Reduce backlight or turn it off (FN + End). Use wired mode for extended sessions.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage, battery wear NOT covered.
+RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
+""",
+
     "Ares": """
 COSMIC BYTE ARES - WIRED GAMEPAD - FULL MANUAL
 
@@ -1584,7 +1847,7 @@ KNOWLEDGE_BASE["All Products"] = "\n\n".join([
     f"=== {k} ===\n{v}" for k, v in KNOWLEDGE_BASE.items() if k != "All Products"
 ])
 
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity"]
 
 QUICK_QUESTIONS = {
     "All Products": [
@@ -1769,6 +2032,34 @@ QUICK_QUESTIONS = {
         "Game mode shortcuts",
         "Custom backlight recording",
     ],
+    "Artemis Wireless": [
+        "How to connect via Bluetooth?",
+        "How to pair 2.4G dongle?",
+        "How to check battery level?",
+        "Keyboard not detected in wireless mode",
+        "LED not working — software fix",
+    ],
+    "Artemis": [
+        "How to swap switches?",
+        "Backlight not working",
+        "Software not detecting keyboard",
+        "Windows key locked — how to unlock?",
+        "LED stopped working after software update",
+    ],
+    "Firefly TKL": [
+        "How to swap switches?",
+        "How to adjust keyboard height?",
+        "Backlight not working",
+        "Software setup",
+        "Windows key locked — how to unlock?",
+    ],
+    "Trinity": [
+        "How to connect via Bluetooth?",
+        "How to pair 2.4G dongle?",
+        "Software not working in wireless mode",
+        "Can I use Outemu switches to replace?",
+        "How to check battery level?",
+    ],
 }
 
 
@@ -1889,7 +2180,15 @@ def match_product_from_title(title: str) -> str:
         ("velox",                 "Velox"),
         ("pandora",               "Pandora"),
         ("vanth",                 "Vanth"),
+        ("artemis wireless",       "Artemis Wireless"),
+        ("cb-gk-40",              "Artemis Wireless"),
         ("artemis",               "Artemis"),
+        ("firefly tkl",           "Firefly TKL"),
+        ("cb-gk-16",              "Firefly TKL"),
+        ("cb-gk-18",              "Firefly TKL"),
+        ("firefly",               "Firefly TKL"),
+        ("trinity",               "Trinity"),
+        ("cb-gk-39",              "Trinity"),
         ("neon",                  "Neon"),
         ("astra",                 "Astra"),
     ]
