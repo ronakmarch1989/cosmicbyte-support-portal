@@ -96,7 +96,96 @@ hr{border-color:var(--border2)!important;}
 .feedback-label{font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;}
 #MainMenu,footer,header{visibility:hidden;}
 .stDeployButton{display:none;}
+
+/* ── GAMING BACKGROUND ─────────────────────────────────────────── */
+html,body{
+    background:
+        repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
+        repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
+        #060606 !important;
+}
+.stApp{
+    background:
+        repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
+        repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
+        #060606 !important;
+}
+/* Corner energy glows */
+.stApp::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background:
+        radial-gradient(ellipse 55% 45% at -5% 105%,rgba(255,140,0,0.14) 0%,transparent 65%),
+        radial-gradient(ellipse 40% 35% at 105% -5%,rgba(255,140,0,0.10) 0%,transparent 60%),
+        radial-gradient(ellipse 30% 25% at 50% 50%,rgba(255,140,0,0.03) 0%,transparent 70%);
+    animation:glowPulse 6s ease-in-out infinite;
+}
+@keyframes glowPulse{
+    0%,100%{opacity:1;}
+    50%{opacity:0.6;}
+}
+/* Scanlines overlay */
+.stApp::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);
+}
+/* Keep content above background layers */
+.main .block-container{position:relative;z-index:1;}
 </style>
+""", unsafe_allow_html=True)
+
+# GOD MODE watermark — fixed behind content
+st.markdown("""
+<div style="
+    position:fixed;
+    bottom:0;left:0;right:0;top:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    z-index:0;
+    overflow:hidden;
+    user-select:none;
+">
+    <!-- CB monogram -->
+    <div style="
+        font-family:'Rajdhani',sans-serif;
+        font-size:clamp(120px,22vw,280px);
+        font-weight:700;
+        letter-spacing:-0.04em;
+        line-height:1;
+        color:transparent;
+        -webkit-text-stroke:1px rgba(255,176,32,0.055);
+        text-stroke:1px rgba(255,176,32,0.055);
+        margin-bottom:-10px;
+        white-space:nowrap;
+    ">CB</div>
+    <!-- switch to GOD MODE -->
+    <div style="
+        font-family:'Rajdhani',sans-serif;
+        font-size:clamp(9px,1.4vw,16px);
+        font-weight:700;
+        letter-spacing:0.35em;
+        text-transform:uppercase;
+        color:rgba(255,176,32,0.07);
+        white-space:nowrap;
+    ">SWITCH TO GOD MODE</div>
+    <!-- accent line -->
+    <div style="
+        width:clamp(60px,8vw,100px);
+        height:1px;
+        background:linear-gradient(to right,transparent,rgba(255,176,32,0.12),transparent);
+        margin-top:14px;
+    "></div>
+</div>
 """, unsafe_allow_html=True)
 
 
