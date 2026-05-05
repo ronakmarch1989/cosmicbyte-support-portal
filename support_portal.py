@@ -1973,9 +1973,11 @@ WARRANTY:
 
 
 
-KNOWLEDGE_BASE["All Products"] = "\n\n".join([
-    f"=== {k} ===\n{v}" for k, v in KNOWLEDGE_BASE.items() if k != "All Products"
-])
+# "All Products" is intentionally lean — only the matched product KB is injected
+# at query time via detect_product_from_message(). Sending 27K tokens every call
+# was 8x more expensive and unnecessary since the system prompt already instructs
+# the bot to ask which product the customer has.
+KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 
 PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra"]
 
@@ -2335,6 +2337,64 @@ def match_product_from_title(title: str) -> str:
             return product if product in PRODUCTS else "All Products"
     return "All Products"
 
+def detect_product_from_message(messages: list) -> str:
+    """
+    Scan the full conversation so far for the first product keyword mention.
+    Used when 'All Products' is selected to avoid sending the full 27K KB.
+    Returns the matched product name or empty string if none found.
+    """
+    # Combine all user messages into one searchable string
+    combined = " ".join(
+        m["content"].lower() for m in messages if m["role"] == "user"
+    )
+    checks = [
+        ("phantom tkl wired",    "Phantom TKL Wired"),
+        ("cb-gk-42",             "Phantom TKL Wired"),
+        ("phantom tkl",          "Phantom TKL"),
+        ("phantom",              "Phantom TKL"),
+        ("ares pro",             "Ares Pro"),
+        ("ares wireless",        "Ares Wireless"),
+        ("ares wired",           "Ares Wired"),
+        ("ares",                 "Ares"),
+        ("blitz tri",            "Blitz Tri-Mode"),
+        ("blitz wireless",       "Blitz Wireless"),
+        ("blitz",                "Blitz Tri-Mode"),
+        ("stratos xenon",        "Stratos Xenon"),
+        ("stratos",              "Stratos Xenon"),
+        ("helios",               "Helios Mouse"),
+        ("atlas",                "Atlas Mouse"),
+        ("aether",               "Aether Mouse"),
+        ("umbra",                "Umbra Mouse"),
+        ("firestorm",            "Firestorm Mouse"),
+        ("ignis",                "Ignis Mouse"),
+        ("raptor",               "Raptor Mouse"),
+        ("lumora",               "Lumora"),
+        ("stellaris",            "Stellaris"),
+        ("drakon",               "Drakon"),
+        ("nexus",                "Nexus"),
+        ("eclipse",              "Eclipse"),
+        ("starforge",            "Starforge"),
+        ("quantum",              "Quantum"),
+        ("velox",                "Velox"),
+        ("pandora",              "Pandora"),
+        ("vanth",                "Vanth"),
+        ("artemis wireless",     "Artemis Wireless"),
+        ("cb-gk-40",             "Artemis Wireless"),
+        ("artemis",              "Artemis"),
+        ("firefly tkl",          "Firefly TKL"),
+        ("cb-gk-16",             "Firefly TKL"),
+        ("cb-gk-18",             "Firefly TKL"),
+        ("firefly",              "Firefly TKL"),
+        ("trinity",              "Trinity"),
+        ("cb-gk-39",             "Trinity"),
+        ("astra",                "Astra"),
+        ("cb-gk-33",             "Astra"),
+    ]
+    for keyword, product in checks:
+        if keyword in combined:
+            return product if product in PRODUCTS else ""
+    return ""
+
 if "selected_product" not in st.session_state:
     _params = st.query_params
     # Support both ?page_title=... (new plugin — raw WooCommerce title)
@@ -2621,7 +2681,13 @@ for idx, msg in enumerate(st.session_state.messages):
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     user_question = st.session_state.messages[-1]["content"]
     product = st.session_state.selected_product
-    knowledge = KNOWLEDGE_BASE.get(product, KNOWLEDGE_BASE["All Products"])
+    # For "All Products" mode: detect product from message to avoid sending 27K KB.
+    # Falls back to empty string — bot will ask which product the customer has.
+    if product == "All Products":
+        detected = detect_product_from_message(st.session_state.messages)
+        knowledge = KNOWLEDGE_BASE.get(detected, "") if detected else ""
+    else:
+        knowledge = KNOWLEDGE_BASE.get(product, "")
 
     with st.spinner(""):
         try:
