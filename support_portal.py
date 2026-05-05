@@ -27,8 +27,8 @@ html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);
 .cb-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border2);margin-bottom:1.75rem;position:relative;}
 .cb-header::after{content:'';position:absolute;bottom:-1px;left:0;width:100px;height:2px;background:var(--orange);}
 .cb-brand{display:flex;align-items:center;gap:14px;}
-.cb-logo-text{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#000000;letter-spacing:0.08em;text-transform:uppercase;line-height:1;text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;}
-.cb-logo-text span{color:#FF8C00;text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;}
+.cb-logo-text{display:none;}
+.cb-tagline{display:none;}
 .cb-tagline{font-size:9px;color:var(--muted);letter-spacing:0.22em;text-transform:uppercase;margin-top:5px;}
 .cb-live-badge{background:var(--orange);color:#000;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 16px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
 .status-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;display:inline-block;margin-right:6px;box-shadow:0 0 8px #22C55E;animation:blink 2s infinite;}
@@ -796,11 +796,7 @@ if st.session_state.show_admin:
 st.markdown(f"""
 <div class="cb-header">
     <div class="cb-brand">
-        <img src="{CB_LOGO}" style="width:52px;height:52px;object-fit:contain"/>
-        <div>
-            <div class="cb-logo-text">Cosmic<span>Byte</span></div>
-            <div class="cb-tagline">switch to god mode</div>
-        </div>
+        <img src="{CB_LOGO}" style="width:52px;height:52px;object-fit:contain;background:var(--bg);border-radius:6px;"/>
     </div>
     <div class="cb-live-badge"><span class="status-dot"></span>Support Live</div>
 </div>
