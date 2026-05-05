@@ -31,6 +31,7 @@ PRODUCT_URLS = {
 import uuid
 import json
 import csv
+import base64
 import io
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -1558,64 +1559,84 @@ auto_daily_digest()
 ADMIN_PASSWORD = get_secret("ADMIN_PASSWORD", "cosmicbyte_admin")
 
 def render_admin():
-    st.markdown("## 🎮 Cosmic Byte - Admin Dashboard")
+    st.markdown("## 🎮 Cosmic Byte — Admin Dashboard")
     st.divider()
 
-    log = get_log()
+    # Snapshot the shared log to avoid race conditions during iteration
+    log = list(get_log())
+
     if not log:
-        st.info("No conversations logged yet in this session.")
-        if st.button("<- Back to Support"):
+        st.info("No conversations logged yet.")
+        if st.button("<- Back to Support", key="admin_back_empty"):
             st.session_state.show_admin = False
             st.rerun()
         return
 
     # ── Filters ──
+    try:
+        all_dates = ["All dates"] + sorted(set(r.get("Date", "") for r in log if r.get("Date")), reverse=True)
+        all_products = ["All Products"] + sorted(set(r.get("Product", "") for r in log if r.get("Product")))
+    except Exception:
+        all_dates = ["All dates"]
+        all_products = ["All Products"]
+
     col_f1, col_f2, col_f3 = st.columns(3)
     with col_f1:
-        all_dates = sorted(set(r["Date"] for r in log), reverse=True)
-        date_options = ["All dates"] + all_dates
-        selected_date = st.selectbox("Date", date_options)
+        selected_date = st.selectbox("Date", all_dates, key="admin_date_filter")
     with col_f2:
-        product_options = ["All Products"] + sorted(set(r["Product"] for r in log))
-        selected_product = st.selectbox("Product", product_options)
+        selected_product = st.selectbox("Product", all_products, key="admin_product_filter")
     with col_f3:
-        fb_filter = st.selectbox("Feedback", ["All", "👍 Helpful", "👎 Unhelpful", "No feedback"])
+        fb_filter = st.selectbox("Feedback", ["All", "👍 Helpful", "👎 Unhelpful", "No feedback"], key="admin_fb_filter")
 
-    # ── Filter rows ──
-    filtered = log
-    if selected_date != "All dates":
-        filtered = [r for r in filtered if r["Date"] == selected_date]
-    if selected_product != "All Products":
-        filtered = [r for r in filtered if r["Product"] == selected_product]
-    if fb_filter == "No feedback":
-        filtered = [r for r in filtered if r["Feedback"] == ""]
-    elif fb_filter != "All":
-        filtered = [r for r in filtered if r["Feedback"] == fb_filter]
+    # ── Apply filters ──
+    try:
+        filtered = list(log)
+        if selected_date != "All dates":
+            filtered = [r for r in filtered if r.get("Date") == selected_date]
+        if selected_product != "All Products":
+            filtered = [r for r in filtered if r.get("Product") == selected_product]
+        if fb_filter == "No feedback":
+            filtered = [r for r in filtered if not r.get("Feedback")]
+        elif fb_filter != "All":
+            filtered = [r for r in filtered if r.get("Feedback") == fb_filter]
+    except Exception:
+        filtered = list(log)
 
     # ── Metrics ──
-    total = len(filtered)
-    helpful = sum(1 for r in filtered if r["Feedback"] == "👍 Helpful")
-    unhelpful = sum(1 for r in filtered if r["Feedback"] == "👎 Unhelpful")
-    sat = f"{round(helpful / (helpful + unhelpful) * 100)}%" if (helpful + unhelpful) > 0 else "-"
+    total     = len(filtered)
+    helpful   = sum(1 for r in filtered if r.get("Feedback") == "👍 Helpful")
+    unhelpful = sum(1 for r in filtered if r.get("Feedback") == "👎 Unhelpful")
+    sat       = f"{round(helpful / (helpful + unhelpful) * 100)}%" if (helpful + unhelpful) > 0 else "—"
 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total", total)
     m2.metric("👍 Helpful", helpful)
     m3.metric("👎 Unhelpful", unhelpful)
     m4.metric("Satisfaction", sat)
-
     st.divider()
 
-    # ── Table ──
-    st.markdown(f"**{total} conversations**")
+    # ── Conversation list ──
+    st.markdown(f"**{total} conversation{'s' if total != 1 else ''}**")
     for i, r in enumerate(filtered):
-        with st.expander(f"{r['Date']} {r['Time']} · {r['Product']} · {r['Customer Message'][:60]}..."):
-            st.markdown(f"**Session:** {r['Session ID']}")
-            st.markdown(f"**Customer:** {r['Customer Message']}")
-            st.markdown(f"**AI Response:** {r['AI Response']}")
-            fb_display = r["Feedback"] if r["Feedback"] else "No feedback"
-            note_display = f" - {r['Feedback Note']}" if r["Feedback Note"] else ""
-            st.markdown(f"**Feedback:** {fb_display}{note_display}")
+        try:
+            customer_msg = r.get("Customer Message", "")
+            ai_resp      = r.get("AI Response", "")
+            label = (
+                f"{r.get('Date','?')} {r.get('Time','?')} "
+                f"· {r.get('Product','?')} "
+                f"· {customer_msg[:55]}{'…' if len(customer_msg) > 55 else ''}"
+            )
+            with st.expander(label):
+                st.caption(f"Session: {r.get('Session ID','?')}")
+                st.markdown("**Customer message**")
+                st.text(customer_msg)
+                st.markdown("**AI response**")
+                st.text(ai_resp)
+                fb  = r.get("Feedback") or "No feedback"
+                note = r.get("Feedback Note", "")
+                st.markdown(f"**Feedback:** {fb}" + (f" — {note}" if note else ""))
+        except Exception as e:
+            st.warning(f"Could not display row {i}: {e}")
 
     st.divider()
 
@@ -1624,27 +1645,38 @@ def render_admin():
     ec1, ec2 = st.columns(2)
     with ec1:
         period_label = selected_date if selected_date != "All dates" else "All data"
-        subject = f"Cosmic Byte Support Log - {period_label}"
-        if st.button("📧 Send CSV to thecosmicbyte2017@gmail.com"):
+        subject = f"Cosmic Byte Support Log — {period_label}"
+        if st.button("📧 Send CSV to thecosmicbyte2017@gmail.com", key="admin_send_email"):
             if filtered:
-                csv_bytes = build_csv_bytes(filtered)
-                ok = send_email_with_csv(csv_bytes, subject)
-                if ok:
-                    st.success(f"✅ Sent {len(filtered)} rows to thecosmicbyte2017@gmail.com")
+                try:
+                    csv_bytes = build_csv_bytes(filtered)
+                    ok = send_email_with_csv(csv_bytes, subject)
+                    if ok:
+                        st.success(f"✅ Sent {len(filtered)} rows to thecosmicbyte2017@gmail.com")
+                    else:
+                        st.error("Email failed — check Gmail credentials in Render env vars.")
+                except Exception as e:
+                    st.error(f"Error: {e}")
             else:
                 st.warning("No rows to send for current filters.")
     with ec2:
         if filtered:
-            csv_bytes = build_csv_bytes(filtered)
-            st.download_button(
-                "⬇️ Download CSV",
-                data=csv_bytes,
-                file_name=f"cosmic_byte_log_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                mime="text/csv"
-            )
+            try:
+                csv_bytes = build_csv_bytes(filtered)
+                b64 = base64.b64encode(csv_bytes).decode()
+                filename = f"cb_support_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+                st.markdown(
+                    f'''<a href="data:text/csv;base64,{b64}" download="{filename}"
+                    style="display:inline-block;background:#FF8C00;color:#000;font-weight:600;
+                    padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;margin-top:4px">
+                    ⬇️ Download CSV</a>''',
+                    unsafe_allow_html=True
+                )
+            except Exception as e:
+                st.error(f"CSV error: {e}")
 
     st.divider()
-    if st.button("<- Back to Support"):
+    if st.button("<- Back to Support", key="admin_back"):
         st.session_state.show_admin = False
         st.rerun()
 
@@ -1762,11 +1794,13 @@ for idx, msg in enumerate(st.session_state.messages):
                 if st.button("👎", key=f"dn_{ai_response_index}"):
                     st.session_state.feedback_given[fb_key] = "👎_pending"
         elif st.session_state.feedback_given.get(fb_key) == "👎_pending":
-            note = st.text_input("What was wrong with this answer?", key=f"note_{ai_response_index}", placeholder="e.g. Wrong steps, missing info...")
-            if st.button("Submit feedback", key=f"submit_fb_{ai_response_index}"):
-                row = msg.get("log_idx")
-                update_feedback(row, "👎 Unhelpful", note)
-                st.session_state.feedback_given[fb_key] = f"👎 - {note}"
+            with st.form(key=f"fb_form_{ai_response_index}", clear_on_submit=True):
+                note = st.text_input("What was wrong with this answer?", placeholder="e.g. Wrong steps, missing info...")
+                submitted = st.form_submit_button("Submit feedback")
+                if submitted:
+                    row = msg.get("log_idx")
+                    update_feedback(row, "👎 Unhelpful", note)
+                    st.session_state.feedback_given[fb_key] = f"👎 - {note}"
         else:
             st.markdown(f"<p style='font-size:11px;color:#555;margin:2px 0 10px'>Thanks for your feedback: {st.session_state.feedback_given.get(fb_key, '')}</p>", unsafe_allow_html=True)
 
