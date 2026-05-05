@@ -27,8 +27,8 @@ html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);
 .cb-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border2);margin-bottom:1.75rem;position:relative;}
 .cb-header::after{content:'';position:absolute;bottom:-1px;left:0;width:100px;height:2px;background:var(--orange);}
 .cb-brand{display:flex;align-items:center;gap:14px;}
-.cb-logo-text{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#FFF;letter-spacing:0.08em;text-transform:uppercase;line-height:1;}
-.cb-logo-text span{color:var(--orange);}
+.cb-logo-text{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#000000;letter-spacing:0.08em;text-transform:uppercase;line-height:1;text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;}
+.cb-logo-text span{color:#FF8C00;text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;}
 .cb-tagline{font-size:9px;color:var(--muted);letter-spacing:0.22em;text-transform:uppercase;margin-top:5px;}
 .cb-live-badge{background:var(--orange);color:#000;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 16px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
 .status-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;display:inline-block;margin-right:6px;box-shadow:0 0 8px #22C55E;animation:blink 2s infinite;}
