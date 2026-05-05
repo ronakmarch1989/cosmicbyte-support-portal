@@ -2267,8 +2267,30 @@ if st.session_state.messages:
             st.session_state.input_key += 1
             st.rerun()
 
+# ── DISCLAIMER ──
+st.markdown("""
+<div style="
+    margin-top: 1.5rem;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-left: 3px solid #FF8C00;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #666;
+    line-height: 1.6;
+    font-family: 'Inter', sans-serif;
+">
+    <span style="color:#FF8C00;font-weight:600;">⚠ AI Disclaimer:</span>
+    This support chat is powered by AI and is intended to provide general guidance based on Cosmic Byte product manuals.
+    Responses may not always be accurate, complete, or up to date.
+    For warranty claims, order issues, returns, or any official matter, please contact our support team directly.
+    Cosmic Byte is not liable for any decisions made solely based on AI-generated responses.
+</div>
+""", unsafe_allow_html=True)
+
 # ── FOOTER ──
-st.markdown("<div style='margin-top:2rem'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top:1rem'></div>", unsafe_allow_html=True)
 st.divider()
 st.markdown("""
 <div class="cb-footer">
