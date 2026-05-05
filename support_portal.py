@@ -1683,22 +1683,27 @@ st.markdown(f"""
 # ── PRODUCT SELECTOR ──
 st.markdown('<div class="cb-label">Select your product</div>', unsafe_allow_html=True)
 
-selected = st.selectbox(
-    "Product",
-    PRODUCTS,
-    index=PRODUCTS.index(st.session_state.selected_product),
-    label_visibility="collapsed",
-    key="product_dropdown"
-)
+# Product change handler — only fires when user ACTUALLY changes the dropdown
+def _on_product_change():
+    new_product = st.session_state.get("product_dropdown", "All Products")
+    if new_product != st.session_state.selected_product:
+        st.session_state.selected_product = new_product
+        st.session_state.messages = []
+        st.session_state.row_nums = []
+        st.session_state.feedback_given = {}
+        st.session_state.input_key += 1
+        st.session_state.session_id = str(uuid.uuid4())[:8]
 
-if selected != st.session_state.selected_product:
-    st.session_state.selected_product = selected
-    st.session_state.messages = []
-    st.session_state.row_nums = []
-    st.session_state.feedback_given = {}
-    st.session_state.input_key += 1
-    st.session_state.session_id = str(uuid.uuid4())[:8]
-    st.rerun()
+# In embed mode (iframe on product page), product is locked to URL param — no dropdown
+if not st.session_state.get("embed_mode"):
+    st.selectbox(
+        "Product",
+        PRODUCTS,
+        index=PRODUCTS.index(st.session_state.selected_product),
+        label_visibility="collapsed",
+        key="product_dropdown",
+        on_change=_on_product_change
+    )
 
 st.divider()
 
@@ -1753,18 +1758,15 @@ for idx, msg in enumerate(st.session_state.messages):
                     row = st.session_state.row_nums[ai_response_index] if ai_response_index < len(st.session_state.row_nums) else None
                     update_feedback(row, "👍 Helpful")
                     st.session_state.feedback_given[fb_key] = "👍"
-                    st.rerun()
             with col2:
                 if st.button("👎", key=f"dn_{ai_response_index}"):
                     st.session_state.feedback_given[fb_key] = "👎_pending"
-                    st.rerun()
         elif st.session_state.feedback_given.get(fb_key) == "👎_pending":
             note = st.text_input("What was wrong with this answer?", key=f"note_{ai_response_index}", placeholder="e.g. Wrong steps, missing info...")
             if st.button("Submit feedback", key=f"submit_fb_{ai_response_index}"):
                 row = st.session_state.row_nums[ai_response_index] if ai_response_index < len(st.session_state.row_nums) else None
                 update_feedback(row, "👎 Unhelpful", note)
                 st.session_state.feedback_given[fb_key] = f"👎 - {note}"
-                st.rerun()
         else:
             st.markdown(f"<p style='font-size:11px;color:#555;margin:2px 0 10px'>Thanks for your feedback: {st.session_state.feedback_given.get(fb_key, '')}</p>", unsafe_allow_html=True)
 
