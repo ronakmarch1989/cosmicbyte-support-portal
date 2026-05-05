@@ -106,11 +106,18 @@ client = anthropic.Anthropic(api_key=get_secret("ANTHROPIC_API_KEY"))
 CSV_COLUMNS = ["Date", "Time", "Session ID", "Product", "Customer Message", "AI Response", "Feedback", "Feedback Note"]
 DIGEST_EMAIL = "thecosmicbyte2017@gmail.com"
 
-# ── IN-MEMORY LOG ──
-if "conversation_log" not in st.session_state:
-    st.session_state.conversation_log = []
-if "last_digest_date" not in st.session_state:
-    st.session_state.last_digest_date = datetime.now().date()
+# ── SHARED LOG (cache_resource = shared across ALL sessions/iframes) ──
+
+@st.cache_resource
+def get_shared_store():
+    """Single shared store — survives across all sessions on the same Render instance."""
+    return {
+        "log": [],
+        "last_digest_date": datetime.now().date(),
+    }
+
+def get_log():
+    return get_shared_store()["log"]
 
 def log_conversation(session_id, product, user_msg, ai_response):
     now = datetime.now()
@@ -124,11 +131,11 @@ def log_conversation(session_id, product, user_msg, ai_response):
         "Feedback": "",
         "Feedback Note": "",
     }
-    st.session_state.conversation_log.append(row)
-    return len(st.session_state.conversation_log) - 1
+    get_log().append(row)
+    return len(get_log()) - 1
 
 def update_feedback(row_idx, feedback, note=""):
-    log = st.session_state.conversation_log
+    log = get_log()
     if row_idx is not None and 0 <= row_idx < len(log):
         log[row_idx]["Feedback"] = feedback
         log[row_idx]["Feedback Note"] = note
@@ -166,13 +173,13 @@ def send_email_with_csv(csv_bytes, subject, recipient=DIGEST_EMAIL):
 
 def auto_daily_digest():
     today = datetime.now().date()
-    if today > st.session_state.last_digest_date and st.session_state.conversation_log:
-        yesterday = st.session_state.last_digest_date.strftime("%d %b %Y")
-        rows = [r for r in st.session_state.conversation_log if r["Date"] == yesterday]
+    if today > get_shared_store()["last_digest_date"] and get_log():
+        yesterday = get_shared_store()["last_digest_date"].strftime("%d %b %Y")
+        rows = [r for r in get_log() if r["Date"] == yesterday]
         if rows:
             csv_bytes = build_csv_bytes(rows)
             send_email_with_csv(csv_bytes, f"Cosmic Byte Support Log - {yesterday}")
-        st.session_state.last_digest_date = today
+        get_shared_store()["last_digest_date"] = today
 
 KNOWLEDGE_BASE = {
 
@@ -1554,7 +1561,7 @@ def render_admin():
     st.markdown("## 🎮 Cosmic Byte - Admin Dashboard")
     st.divider()
 
-    log = st.session_state.conversation_log
+    log = get_log()
     if not log:
         st.info("No conversations logged yet in this session.")
         if st.button("<- Back to Support"):
