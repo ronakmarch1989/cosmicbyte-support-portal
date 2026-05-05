@@ -1755,7 +1755,7 @@ for idx, msg in enumerate(st.session_state.messages):
             col1, col2, col3 = st.columns([1, 1, 6])
             with col1:
                 if st.button("👍", key=f"up_{ai_response_index}"):
-                    row = st.session_state.row_nums[ai_response_index] if ai_response_index < len(st.session_state.row_nums) else None
+                    row = msg.get("log_idx")
                     update_feedback(row, "👍 Helpful")
                     st.session_state.feedback_given[fb_key] = "👍"
             with col2:
@@ -1764,7 +1764,7 @@ for idx, msg in enumerate(st.session_state.messages):
         elif st.session_state.feedback_given.get(fb_key) == "👎_pending":
             note = st.text_input("What was wrong with this answer?", key=f"note_{ai_response_index}", placeholder="e.g. Wrong steps, missing info...")
             if st.button("Submit feedback", key=f"submit_fb_{ai_response_index}"):
-                row = st.session_state.row_nums[ai_response_index] if ai_response_index < len(st.session_state.row_nums) else None
+                row = msg.get("log_idx")
                 update_feedback(row, "👎 Unhelpful", note)
                 st.session_state.feedback_given[fb_key] = f"👎 - {note}"
         else:
@@ -1817,16 +1817,18 @@ CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
                     answer += block.text
             if not answer:
                 answer = "I was unable to get a response. Please try again or contact us at cc@thecosmicbyte.com."
-            st.session_state.messages.append({"role": "assistant", "content": answer})
-
-            # Log to Google Sheet
+            # Log conversation and store index directly in message
             row_num = log_conversation(
                 st.session_state.session_id,
                 product,
                 user_question,
                 answer
             )
-            st.session_state.row_nums.append(row_num)
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": answer,
+                "log_idx": row_num
+            })
             st.rerun()
 
         except Exception as e:
@@ -1852,7 +1854,6 @@ if st.session_state.messages:
     with col2:
         if st.button("Clear chat", key="clear"):
             st.session_state.messages = []
-            st.session_state.row_nums = []
             st.session_state.feedback_given = {}
             st.session_state.session_id = str(uuid.uuid4())[:8]
             st.session_state.input_key += 1
