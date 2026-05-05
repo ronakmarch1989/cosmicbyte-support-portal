@@ -98,93 +98,83 @@ hr{border-color:var(--border2)!important;}
 .stDeployButton{display:none;}
 
 /* ── GAMING BACKGROUND ─────────────────────────────────────────── */
-html,body{
+html,body,[data-testid="stAppViewContainer"],[data-testid="stApp"],.stApp{
     background:
-        repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
-        repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
+        repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,176,32,0.022) 40px),
+        repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,176,32,0.022) 40px),
         #060606 !important;
 }
-.stApp{
-    background:
-        repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
-        repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,176,32,0.018) 40px),
-        #060606 !important;
+[data-testid="stHeader"]{background:transparent!important;}
+[data-testid="stSidebar"]{background:#060606!important;}
+/* Scanlines on the main container */
+[data-testid="stAppViewContainer"]::after{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
 }
-/* Corner energy glows */
-.stApp::before{
-    content:'';
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:0;
-    background:
-        radial-gradient(ellipse 55% 45% at -5% 105%,rgba(255,140,0,0.14) 0%,transparent 65%),
-        radial-gradient(ellipse 40% 35% at 105% -5%,rgba(255,140,0,0.10) 0%,transparent 60%),
-        radial-gradient(ellipse 30% 25% at 50% 50%,rgba(255,140,0,0.03) 0%,transparent 70%);
-    animation:glowPulse 6s ease-in-out infinite;
-}
-@keyframes glowPulse{
-    0%,100%{opacity:1;}
-    50%{opacity:0.6;}
-}
-/* Scanlines overlay */
-.stApp::after{
-    content:'';
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:0;
-    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);
-}
-/* Keep content above background layers */
 .main .block-container{position:relative;z-index:1;}
+@keyframes glowPulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
+@keyframes wmarkPulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
 </style>
 """, unsafe_allow_html=True)
 
-# GOD MODE watermark — fixed behind content
+# GOD MODE background layers — glows + watermark
 st.markdown("""
-<div style="
-    position:fixed;
-    bottom:0;left:0;right:0;top:0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    pointer-events:none;
-    z-index:0;
-    overflow:hidden;
-    user-select:none;
-">
-    <!-- CB monogram -->
-    <div style="
-        font-family:'Rajdhani',sans-serif;
-        font-size:clamp(120px,22vw,280px);
-        font-weight:700;
-        letter-spacing:-0.04em;
-        line-height:1;
-        color:transparent;
-        -webkit-text-stroke:1px rgba(255,176,32,0.055);
-        text-stroke:1px rgba(255,176,32,0.055);
-        margin-bottom:-10px;
-        white-space:nowrap;
-    ">CB</div>
-    <!-- switch to GOD MODE -->
-    <div style="
-        font-family:'Rajdhani',sans-serif;
-        font-size:clamp(9px,1.4vw,16px);
-        font-weight:700;
-        letter-spacing:0.35em;
-        text-transform:uppercase;
-        color:rgba(255,176,32,0.07);
-        white-space:nowrap;
-    ">SWITCH TO GOD MODE</div>
-    <!-- accent line -->
-    <div style="
-        width:clamp(60px,8vw,100px);
-        height:1px;
-        background:linear-gradient(to right,transparent,rgba(255,176,32,0.12),transparent);
-        margin-top:14px;
-    "></div>
+<style>
+/* Bottom-left orange glow */
+#cb-glow-bl{
+    position:fixed;bottom:-120px;left:-120px;
+    width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,140,0,0.13) 0%,transparent 70%);
+    pointer-events:none;z-index:0;
+    animation:glowPulse 6s ease-in-out infinite;
+}
+/* Top-right orange glow */
+#cb-glow-tr{
+    position:fixed;top:-100px;right:-100px;
+    width:420px;height:420px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,140,0,0.09) 0%,transparent 70%);
+    pointer-events:none;z-index:0;
+    animation:glowPulse 6s ease-in-out infinite;
+    animation-delay:3s;
+}
+/* Center subtle glow */
+#cb-glow-c{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:600px;height:400px;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(255,140,0,0.03) 0%,transparent 70%);
+    pointer-events:none;z-index:0;
+}
+/* CB watermark */
+#cb-watermark{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    pointer-events:none;z-index:0;user-select:none;
+    display:flex;flex-direction:column;align-items:center;
+    animation:wmarkPulse 8s ease-in-out infinite;
+}
+#cb-wm-letters{
+    font-family:'Rajdhani',sans-serif;font-size:min(26vw,280px);font-weight:700;
+    letter-spacing:-0.03em;line-height:0.9;
+    color:transparent;
+    -webkit-text-stroke:1px rgba(255,176,32,0.06);
+    white-space:nowrap;
+}
+#cb-wm-tag{
+    font-family:'Rajdhani',sans-serif;font-size:min(1.5vw,13px);font-weight:700;
+    letter-spacing:0.38em;text-transform:uppercase;
+    color:rgba(255,176,32,0.07);white-space:nowrap;margin-top:2px;
+}
+#cb-wm-line{
+    width:min(8vw,80px);height:1px;margin-top:10px;
+    background:linear-gradient(to right,transparent,rgba(255,176,32,0.14),transparent);
+}
+</style>
+<div id="cb-glow-bl"></div>
+<div id="cb-glow-tr"></div>
+<div id="cb-glow-c"></div>
+<div id="cb-watermark">
+    <div id="cb-wm-letters">CB</div>
+    <div id="cb-wm-tag">Switch to GOD MODE</div>
+    <div id="cb-wm-line"></div>
 </div>
 """, unsafe_allow_html=True)
 
