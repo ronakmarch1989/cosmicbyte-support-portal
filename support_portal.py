@@ -46,6 +46,8 @@ html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);
 .stTextInput input::placeholder{color:#383838!important;}
 .stButton button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.1em!important;text-transform:uppercase!important;font-family:'Rajdhani',sans-serif!important;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)!important;transition:all 0.15s!important;}
 .stButton button:hover{background:#FFC040!important;}
+button[kind="secondary"],div[data-testid="stHorizontalBlock"] button{background:transparent!important;color:var(--orange)!important;border:1px solid var(--orange-border)!important;clip-path:none!important;border-radius:6px!important;font-size:16px!important;padding:4px 10px!important;letter-spacing:0!important;text-transform:none!important;}
+div[data-testid="stHorizontalBlock"] button:hover{background:var(--orange-dim)!important;border-color:var(--orange)!important;}
 hr{border-color:var(--border2)!important;}
 .cb-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted);font-family:'Inter',sans-serif;padding-top:0.25rem;}
 .cb-footer a{color:var(--orange);text-decoration:none;}
@@ -105,7 +107,7 @@ def send_email_with_csv(csv_bytes, subject, recipient=DIGEST_EMAIL):
         msg["From"] = gmail_user
         msg["To"] = recipient
         msg["Subject"] = subject
-        body = f"Hi,\n\nPlease find the Cosmic Byte support log attached.\n\nGenerated: {datetime.now().strftime('%d %b %Y %H:%M')}\nRows: {len(csv_bytes.splitlines()) - 1}\n\n— Cosmic Byte Support Bot"
+        body = f"Hi,\n\nPlease find the Cosmic Byte support log attached.\n\nGenerated: {datetime.now().strftime('%d %b %Y %H:%M')}\nRows: {len(csv_bytes.splitlines()) - 1}\n\n- Cosmic Byte Support Bot"
         msg.attach(MIMEText(body, "plain"))
         part = MIMEBase("application", "octet-stream")
         part.set_payload(csv_bytes)
@@ -127,19 +129,19 @@ def auto_daily_digest():
         rows = [r for r in st.session_state.conversation_log if r["Date"] == yesterday]
         if rows:
             csv_bytes = build_csv_bytes(rows)
-            send_email_with_csv(csv_bytes, f"Cosmic Byte Support Log — {yesterday}")
+            send_email_with_csv(csv_bytes, f"Cosmic Byte Support Log - {yesterday}")
         st.session_state.last_digest_date = today
 
 KNOWLEDGE_BASE = {
 
     "Lumora": """
-COSMIC BYTE LUMORA — TRI-MODE CONTROLLER — FULL MANUAL
+COSMIC BYTE LUMORA - TRI-MODE CONTROLLER - FULL MANUAL
 
 CONNECTIVITY:
-- 2.4GHz Wireless: Insert USB dongle into PC. Press and hold PAIRING (P) button for 3 seconds until LED flashes purple. Controller auto-connects to dongle. Best for PC — lowest latency, 1000Hz polling rate.
+- 2.4GHz Wireless: Insert USB dongle into PC. Press and hold PAIRING (P) button for 3 seconds until LED flashes purple. Controller auto-connects to dongle. Best for PC - lowest latency, 1000Hz polling rate.
 - Bluetooth Android: Hold PAIRING (P) + A for 3 seconds until green LED flashes rapidly. Find "Cosmic Byte Lumora" in Bluetooth settings.
 - Bluetooth iOS: Hold PAIRING (P) + B for 3 seconds until blue LED flashes rapidly.
-- Bluetooth PC (Gyro mode): Hold Y + P for 3 seconds. Device appears as "Pro Controller" in Windows Bluetooth — NOT as "Cosmic Byte Lumora".
+- Bluetooth PC (Gyro mode): Hold Y + P for 3 seconds. Device appears as "Pro Controller" in Windows Bluetooth - NOT as "Cosmic Byte Lumora".
 - Wired USB-C: Plug cable into controller and PC. Auto-detects. Default is X-Input mode. Yellow LED = X-Input. Red LED = D-Input. Toggle with Back + Start held 3 seconds.
 - Software (Cosmic Byte PC app): Only works in Wired or 2.4GHz mode. Does NOT work via Bluetooth.
 - Auto sleep: 5 minutes of inactivity. Press HOME to wake.
@@ -174,12 +176,12 @@ GYRO:
 
 JOYSTICK:
 - Calibration: Turn off. Hold Back + X + Home for 1 second. Rotate both joysticks clockwise 3 times. Press both triggers 3 times. Press Start to complete.
-- Range modes: Press L3/R3 + Macro to toggle — Full Circle (default), Small Circle (precision), Square Mode (tight angles).
+- Range modes: Press L3/R3 + Macro to toggle - Full Circle (default), Small Circle (precision), Square Mode (tight angles).
 
 TRIGGERS (Hall Effect):
 - Analog mode: Smooth gradual input.
 - Digital mode: Instant button-like actuation.
-- Press PAIRING key to cycle: 30% range → 60% range → 100% range. Controller vibrates once each change.
+- Press PAIRING key to cycle: 30% range -> 60% range -> 100% range. Controller vibrates once each change.
 
 D-PAD / JOYSTICK SWAP:
 - If D-pad and joystick roles appear swapped, this is caused by the swap setting in the Cosmic Byte software. Open software, find swap setting, toggle back to default.
@@ -187,10 +189,10 @@ D-PAD / JOYSTICK SWAP:
 VIBRATION:
 - Increase: R3 + Left Stick Up for 3 seconds.
 - Decrease: R3 + Left Stick Down for 3 seconds.
-- Levels: 100% → 70% → 30% → Off.
+- Levels: 100% -> 70% -> 30% -> Off.
 
 RGB LIGHTING:
-- Toggle: Cycles through Pattern RGB → Joystick RGB → Off → All Lighting.
+- Toggle: Cycles through Pattern RGB -> Joystick RGB -> Off -> All Lighting.
 - Cycle effects: Turbo + R3.
 - Change color: Turbo + L3.
 - Toggle on/off: Hold Turbo + R3 for 3 seconds.
@@ -199,7 +201,7 @@ FIRMWARE UPDATE:
 - Step 1: Uninstall existing Cosmic Byte software completely.
 - Step 2: Download latest software from thecosmicbyte.com.
 - Step 3: Connect controller via USB-C wired mode.
-- Step 4: Install software — firmware flashes automatically during installation.
+- Step 4: Install software - firmware flashes automatically during installation.
 - Wired mode is required for firmware update.
 
 RESET:
@@ -215,7 +217,7 @@ WARRANTY:
 """,
 
     "Stellaris": """
-COSMIC BYTE STELLARIS — TRI-MODE WIRELESS CONTROLLER — FULL MANUAL
+COSMIC BYTE STELLARIS - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
 
 CONNECTIVITY:
 - Wired USB-C (PC XInput): Plug in and press HOME. LED2 stays on.
@@ -272,7 +274,7 @@ D-PAD AND LEFT STICK SWAP (PC MODE):
 - Hold START + L3 for 3 seconds. Motor vibration confirms swap.
 
 JOYSTICK ANGLE MODE:
-- Hold L3 + TURBO for 3 seconds. Toggles between Circle mode and Square (45°) mode for better diagonal accuracy.
+- Hold L3 + TURBO for 3 seconds. Toggles between Circle mode and Square (45 degrees) mode for better diagonal accuracy.
 
 D-PAD 4-WAY / 8-WAY:
 - Hold SELECT + RIGHT (D-pad) for 3 seconds. Single vibration = 4-Way. Continuous = 8-Way (default).
@@ -284,7 +286,7 @@ STEAM MODE (Wired only):
 VIBRATION:
 - Increase: TURBO + Right Stick UP.
 - Decrease: TURBO + Right Stick DOWN.
-- Levels: 100% → 70% → 40% → OFF. Default: 70%.
+- Levels: 100% -> 70% -> 40% -> OFF. Default: 70%.
 
 RGB LIGHTING:
 - Toggle all ON/OFF: Hold LB + RB simultaneously for 5 seconds.
@@ -321,7 +323,7 @@ FIRMWARE UPDATE:
 - Step 1: Uninstall existing Cosmic Byte software completely.
 - Step 2: Download latest from thecosmicbyte.com.
 - Step 3: Connect via USB-C wired mode.
-- Step 4: Install — firmware updates automatically.
+- Step 4: Install - firmware updates automatically.
 
 WARRANTY:
 - 1 year against manufacturing defects only.
@@ -330,7 +332,7 @@ WARRANTY:
 """,
 
     "Drakon": """
-COSMIC BYTE DRAKON — WIRELESS CONTROLLER — FULL MANUAL
+COSMIC BYTE DRAKON - WIRELESS CONTROLLER - FULL MANUAL
 
 KEY FEATURES:
 - TMR joysticks (drift resistant)
@@ -464,15 +466,15 @@ WARRANTY:
 """,
 
     "Ares Pro": """
-COSMIC BYTE ARES PRO — TRI-MODE CONTROLLER — FULL MANUAL
+COSMIC BYTE ARES PRO - TRI-MODE CONTROLLER - FULL MANUAL
 
-IMPORTANT — SOFTWARE SUPPORT MODEL CHECK:
+IMPORTANT - SOFTWARE SUPPORT MODEL CHECK:
 - Software support is ONLY available on newer Ares Pro models.
-- Check the back label of the controller — if it says "App Support" in the top left corner, the model supports software.
+- Check the back label of the controller - if it says "App Support" in the top left corner, the model supports software.
 - If "App Support" text is NOT present on back label, the model does NOT support the software.
 - Older models work fine as controllers but cannot use software customization features.
 
-FIRMWARE UPDATE — CRITICAL WARNING:
+FIRMWARE UPDATE - CRITICAL WARNING:
 - TWO different firmware versions exist.
 - Models WITH "App Support" label: update firmware ONLY through the Cosmic Byte software (connect wired, press firmware update in software). NEVER use the standalone firmware file.
 - Models WITHOUT "App Support" label: use the separate standalone firmware file from thecosmicbyte.com.
@@ -492,7 +494,7 @@ CONNECTIVITY:
 - Bluetooth Android: Hold A + Home for 3 seconds. Green LED.
 - Bluetooth iOS: Hold B + Home for 3 seconds. Blue LED.
 - Switch X-Input/DInput in wireless or wired: Hold Back + Start for 3 seconds. Orange=XInput, Red=DInput.
-- No need to switch modes for Android — connection is automatic.
+- No need to switch modes for Android - connection is automatic.
 - Windows defaults to X-Input mode.
 - Android requires OTG support. Android compatibility not covered under warranty.
 - Turn off controller: Hold Back + B for 3 seconds.
@@ -520,7 +522,7 @@ LED CONTROLS:
 - ABXY LED toggle: Press X + Back.
 - V LED (V-shape light) toggle: Press A + Back.
 - Two independent LED groups.
-- If LEDs won't toggle, check if battery is low — charge first.
+- If LEDs won't toggle, check if battery is low - charge first.
 
 JOYSTICK AND D-PAD TOGGLE:
 - Press L3 + Back to switch between left joystick and D-pad functions.
@@ -544,7 +546,7 @@ JOYSTICK CALIBRATION:
 - Press Start to finish. Green LED lights up, vibrates once to confirm.
 
 VIBRATION CONTROL (v1.2.11 update):
-- Increase: HOLD R3 + Left Joystick Up for 3 seconds (must hold — not just tap).
+- Increase: HOLD R3 + Left Joystick Up for 3 seconds (must hold - not just tap).
 - Decrease: HOLD R3 + Left Joystick Down for 3 seconds.
 - Updated to prevent accidental changes during gameplay.
 - Auto shutdown time can be adjusted via software on supported models.
@@ -569,8 +571,680 @@ WARRANTY:
 - Console use NOT covered.
 """,
 
+    "Nexus": """
+COSMIC BYTE NEXUS - 2.4GHz WIRELESS CONTROLLER - FULL MANUAL
+
+CONNECTIVITY:
+- 2.4GHz Wireless only. Powered by 2x AAA batteries (not rechargeable).
+- Insert 2x AAA batteries with correct polarity. Slide power switch to ON - Green and Red LEDs flash.
+- Plug the wireless dongle into a USB port on the PC. Once connected, LEDs go solid.
+- Windows 10 is Plug and Play - no drivers needed. Try a different USB port if not detected.
+- Android: requires OTG support. Use a compatible OTG cable with the dongle. Android use not covered under warranty.
+- NOT compatible with PlayStation, Xbox, Nintendo Switch or any console.
+- Wireless range: up to 8 metres in open conditions.
+
+LED INDICATORS:
+- Green LED only = XInput mode (PC default).
+- Red LED only = DirectInput mode.
+- Green + Red both on = PC Analog mode.
+- LEDs flashing = connecting / pairing in progress.
+- LEDs solid = successfully connected.
+- LEDs flashing slowly = low battery.
+- No LEDs = controller off or battery dead.
+
+SWITCHING INPUT MODES (XInput ↔ DirectInput):
+- Hold the Mode button for more than 5 seconds to toggle between XInput and DirectInput.
+- Old games (pre-2005) typically need DirectInput (Red LED).
+- Always relaunch the game after switching modes.
+
+VIBRATION:
+- Dual vibration motors. Vibration automatically disabled when battery is low.
+- If vibration stops, replace batteries first before assuming hardware fault.
+
+BATTERY MANAGEMENT:
+- Low battery: LEDs flash instead of staying solid. Vibration also disables.
+- Replace both AAA batteries with fresh ones immediately.
+- Storage: slide power switch to OFF. Remove batteries from compartment - do not leave batteries in during long non-use as they can leak and damage the controller.
+- Store in dry place at -10 degreesC to +60 degreesC, 20-80% humidity.
+
+TROUBLESHOOTING:
+- Not detected on PC: try a different USB port, remove USB hubs, reinsert dongle, restart PC.
+- Buttons sluggish or unresponsive: check input mode (hold Mode 5s to switch), replace batteries, try different USB port, reinsert dongle.
+- Frequent disconnections: move dongle to front USB port, ensure clear line of sight, move away from Wi-Fi routers and USB 3.0 devices, replace batteries.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Console use NOT covered.
+""",
+
+    "Ares Wired": """
+COSMIC BYTE ARES WIRED - USB WIRED CONTROLLER - FULL MANUAL
+
+CONNECTIVITY:
+- USB wired only. No wireless or Bluetooth support.
+- Plug into PC USB port - recommend rear USB port on desktop for stable power.
+- Plug and Play on Windows 8, 10, and 11. Windows 7 may need manual setup.
+- Auto-detects in XInput mode (Blue LED) by default.
+- Android: connect via OTG. LED turns Green for Android mode. Android use not covered under warranty.
+- NOT compatible with any gaming console.
+
+LED INDICATORS:
+- Blue LED = XInput mode (default, PC).
+- Red LED = DirectInput mode.
+- Yellow LED = PC Analog mode.
+- Green LED = Android mode.
+
+SWITCHING INPUT MODES:
+- Hold the HOME button for 5 seconds to toggle between XInput and DirectInput.
+- Old games need DirectInput (Red LED). Modern games use XInput (Blue LED).
+- Always relaunch game after switching.
+
+TURBO & AUTO TURBO:
+- Turbo (fires fast while button held): press desired button + Turbo button.
+- Auto Turbo (fires continuously without holding): press desired button + AUTO button.
+- Cancel Turbo: repeat same button + Turbo combo.
+- Supported buttons: A, B, X, Y, L1, L2, R1, R2.
+- Auto-firing button fix: press that button + Turbo to cancel.
+
+LED CONTROLS:
+- ABXY LED toggle: press X + Back.
+- V LED (centre V-shaped strip) toggle: press A + Back.
+- Both groups are independent toggles.
+
+JOYSTICK & D-PAD SWAP:
+- Press L3 + Back to swap left joystick and D-pad functions. Toggle to restore.
+
+HALL EFFECT JOYSTICKS (2026 BATCH):
+- 2026 manufacturing batch has Hall Effect joysticks AND Hall Effect analog triggers.
+- Hall Effect = magnetic sensors, drift-resistant, no physical wear.
+- Older models have standard joysticks - drift from wear is NOT covered under warranty.
+- No upgrade path available.
+
+TROUBLESHOOTING:
+- Not detected: try different USB port, avoid USB hubs, restart PC.
+- Buttons unresponsive: switch input mode (HOME 5s), test in joy.cpl, reconnect, restart PC.
+- Joystick drift: recalibrate via Windows Control Panel -> Game Controllers. 2026 batch drift = possible manufacturing defect. Older batch drift = wear and tear, not covered.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Regular wear and tear (including joystick drift on older models) NOT covered.
+- Console use NOT covered.
+""",
+
+    "Ares Wireless": """
+COSMIC BYTE ARES WIRELESS - 2.4GHz WIRELESS CONTROLLER - FULL MANUAL
+
+CONNECTIVITY:
+- 2.4GHz wireless via USB dongle. PC only. No Bluetooth.
+- Insert USB receiver into PC. Press HOME button to power on - auto-connects in XInput mode (Blue LED solid).
+- Plug and Play - no drivers needed.
+- Re-pairing (if both controller and dongle LEDs blink): plug receiver into PC, press HOME, then press HOME twice quickly (double-press) - LEDs stop blinking = paired.
+- Android: connect dongle via OTG adapter. Not covered under warranty.
+- NOT compatible with any gaming console.
+- Range: up to 8 metres. Clear line of sight recommended.
+
+LED INDICATORS:
+- Blue LED = XInput mode (default, PC).
+- Red LED = DirectInput mode.
+- Yellow LED = PC Analog mode.
+- Green LED = Android mode.
+- LEDs blinking = connecting / needs pairing.
+- LED solid = connected.
+- LED flashes + vibration disabled = low battery.
+- LED blinks slowly = charging.
+- LED turns OFF = fully charged.
+
+SWITCHING INPUT MODES:
+- Hold HOME button for 5 seconds to toggle XInput ↔ DirectInput.
+- Old games need DirectInput (Red LED). Always relaunch game after switching.
+
+POWERING OFF:
+- Hold B + Back button for 5 seconds to power off. Press HOME to power on.
+- Always power off when not in use to conserve battery.
+
+CHARGING:
+- Use 5V/1A charger or standard PC USB port ONLY.
+- Fast chargers (e.g. 65W) are NOT supported - damages battery and voids warranty.
+- Charging: LED blinks slowly. Fully charged: LED turns off.
+
+TURBO & AUTO TURBO:
+- Turbo (fires fast while button held): press desired button + Turbo.
+- Auto Turbo (fires continuously): press desired button + AUTO.
+- Cancel: repeat same combo.
+- Supported: A, B, X, Y, L1, L2, R1, R2.
+
+LED CONTROLS:
+- ABXY LED toggle: press X + Back.
+- V LED toggle: press A + Back. Both are independent.
+
+HALL EFFECT (2026 BATCH):
+- 2026 batch has Hall Effect joysticks AND Hall Effect analog triggers.
+- Drift-resistant by design. No upgrade path for older models.
+- Drift on older models from wear is NOT covered under warranty.
+
+DISCONNECTIONS:
+- Move dongle to front USB port or use USB extension for better line of sight.
+- Keep away from Wi-Fi routers and USB 3.0 devices (2.4GHz interference).
+- Replace/charge battery even if LEDs appear lit.
+- Double-press HOME to re-pair if both LEDs blink continuously.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Fast charger battery damage NOT covered.
+- Battery wear and tear NOT covered.
+- Console use NOT covered.
+""",
+
+    "Blitz Tri-Mode": """
+COSMIC BYTE BLITZ TRI-MODE - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
+
+CONNECTIVITY:
+- Wired USB-C: plug cable, press HOME. LED2 on = XInput. Long-press HOME = DInput (LED3).
+- 2.4GHz PC XInput: press X + HOME for 3 seconds. LED2 on.
+- 2.4GHz PC DInput: long-press SELECT + HOME. LED3 on.
+- Bluetooth PC XInput: press B + HOME. LED2 on.
+- Bluetooth PC DInput: press A + HOME. LED3 on.
+- Bluetooth Gyro: press Y + HOME. LED4 on.
+- Bluetooth Android XInput: press B + HOME. LED2.
+- Bluetooth Android DInput: press A + HOME. LED3.
+- Bluetooth iOS XInput: press B + HOME. LED2.
+- Bluetooth iOS Dualshock: press TURBO + HOME. LED1.
+- Bluetooth iOS Gyro: press Y + HOME. LED4.
+- Mouse Mode (wired or 2.4GHz): hold CAPTURE + R3 for 5 seconds. LED3+LED4 on. A=left click, B=right click, right stick=cursor. Repeat to exit.
+- NOT compatible with any gaming console.
+- Battery: 600mAh, 7-15 hours.
+
+GYRO:
+- Native Gyro Mode available in Bluetooth ONLY (Y+HOME). NOT available in 2.4GHz or wired.
+- Via Cosmic Byte software (wired/2.4GHz): assign gyro to a button, works in any game.
+
+STEAM MODE (wired only):
+- Power OFF controller. Hold R3, then plug USB-C cable into PC while holding R3. Boots into Steam mode. Restart Steam if already open.
+
+TURBO & AUTO FIRE:
+- Enable Turbo: hold TURBO + desired button.
+- Toggle to Auto Fire: press TURBO + same button again.
+- Cancel individual: hold CLEAR + that button.
+- Clear ALL turbo: hold TURBO for 5 seconds.
+- Three speeds: Level 1=5/sec, Level 2=12/sec (default), Level 3=20/sec.
+- Speed adjust: hold TURBO + right stick Right (increase) or Left (decrease).
+- Supported: A, B, X, Y, LB, RB, LT, RT.
+
+MACRO:
+- Record: hold TURBO for 3 seconds -> perform sequence (up to 22 inputs) -> press TURBO to save.
+- Execute: double-press TURBO during gameplay.
+- Clear: enter macro mode (hold TURBO 3s), press TURBO immediately without recording.
+
+VIBRATION & BATTERY CHECK:
+- Adjust vibration: hold TURBO + right stick Up (increase) or Down (decrease). Four levels: 100%, 70% (default), 40%, 0%.
+- Battery check: press TURBO + START. LED1=1-25%, LED1+2=26-50%, LED1+2+3=51-75%, all 4=76-100%.
+- Charging: 5V/1A or PC USB port ONLY. Fast chargers damage battery and void warranty.
+
+STICK CALIBRATION:
+- Power off. Hold CAPTURE + HOME. Press A (LED2 on). Rotate both joysticks in full circles 3 times. Press each trigger fully 3 times. Press A to save.
+
+D-PAD MODES:
+- Toggle 4-way/8-way: press SELECT + D-pad Right for 3 seconds. Short vibration=4-way, Long vibration=8-way.
+
+BUTTON CUSTOMISATION:
+- ABXY swap: hold TURBO + R3 for 3 seconds. A/B swap, X/Y swap. Toggle.
+- D-pad/Left Stick swap: hold START + L3 for 3 seconds. Toggle.
+- Stick shape (Circle/Square): L3 + TURBO to toggle.
+
+POWER & LOCK:
+- Power on: press HOME 0.5-1 second. Power off: hold HOME 5 seconds.
+- Auto sleep: 5 minutes inactivity.
+- Reset (frozen): hold HOME 8 seconds.
+- Factory reset (clears all): hold SELECT + L3 + R3 for 5 seconds.
+- Controller lock (bag mode): hold SELECT + R3 for 5 seconds until all 4 LEDs light up. Unlock: plug in USB charger.
+
+CHARGING DOCK:
+- Supports charging dock (sold separately). Place controller on dock contacts. Use 5V/1A USB power source.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Fast charger damage NOT covered.
+""",
+
+    "Blitz Wireless": """
+COSMIC BYTE BLITZ WIRELESS - 2.4GHz + WIRED CONTROLLER - FULL MANUAL
+
+IMPORTANT: This model is DISCONTINUED and no longer sold new. Current active model is the Blitz Tri-Mode.
+No Bluetooth. No gyro. No macro. No charging dock. Simpler feature set.
+
+CONNECTIVITY:
+- 2.4GHz wireless via dongle OR USB wired (no Bluetooth).
+- First-time pairing: press HOME for 3-5 seconds -> LED flashes -> controller pairs with dongle. LED1+LED2 solid = XInput connected.
+- Wired mode: connect USB-C cable, then press HOME to activate as controller (without pressing HOME it only charges, does not function).
+- Simultaneous cable + dongle: dongle used for input, cable charges.
+- Auto power off: if no dongle found within 1 minute, controller turns off. Idle auto-off: 5 minutes.
+- Android: use OTG converter with dongle. LED flashes then LED3 solid = connected to Android.
+
+LED INDICATORS:
+- LED1+LED2 solid = XInput mode (wireless or wired, PC).
+- LED3+LED4 solid = DInput mode.
+- LED1 flashing = pairing/searching in 2.4GHz.
+- LED blinking slowly = charging (connected or disconnected).
+- All 4 LEDs steady (disconnected) = fully charged.
+
+SWITCHING INPUT MODES:
+- Press HOME for 2 seconds to toggle XInput (LED1+LED2) ↔ DInput (LED3+LED4).
+- Old games need DInput. Always relaunch game after switching.
+
+MOUSE MODE (wired or 2.4GHz only):
+- Press CAPTURE + R3. LED3+LED4 on. Right stick=cursor, A=left click, B=right click. Press CAPTURE+R3 again to exit.
+
+TURBO & AUTO TURBO:
+- Enable Turbo (hold to fire fast): hold TURBO + desired button.
+- Upgrade to Auto Turbo (fires without holding): hold TURBO + same button again.
+- Cancel: hold TURBO + that button again to toggle off.
+- Clear ALL turbo: hold TURBO + SELECT for 5 seconds. Vibrates to confirm.
+- Speeds: Slow=5/sec (slow flash), Medium=12/sec (default), Fast=20/sec (fast flash).
+- Adjust speed: TURBO + right stick Right (increase), TURBO + right stick Left (decrease).
+
+VIBRATION ADJUSTMENT:
+- None/Weak/Medium/Strong levels.
+- Increase: TURBO + right stick Up. Decrease: TURBO + right stick Down.
+
+D-PAD MODES:
+- Toggle 4-way/8-way: press SELECT + D-pad Right for 3 seconds. Short vibration=4-way, Long vibration=8-way.
+
+BATTERY CHECK:
+- Press TURBO + START. LED1=1-25%, LED1+2=26-50%, LED1+2+3=51-75%, all 4=76-100%.
+
+JOYSTICK CALIBRATION:
+- Power off. Press D-pad Up then HOME. LED1 on. Press A (LED2 on). Rotate each joystick in full circles 3 times. Press each trigger 3 times. Press A to confirm.
+- Hall Effect joysticks - drift-resistant by design. Persistent drift after calibration -> contact support.
+
+POWER & LOCK:
+- Power off: hold HOME 5 seconds. Reset (frozen): hold HOME 8 seconds.
+- Controller lock (bag mode): hold SELECT + R3 for 5 seconds until all 4 LEDs light. Unlock: plug in USB charger.
+
+CHARGING:
+- Use PC USB port or standard 5V/1A charger ONLY. Fast chargers damage battery and void warranty.
+- Battery: 600mAh, 7-15 hours. Charge time: 2-3 hours.
+
+KEY DIFFERENCES vs BLITZ TRI-MODE:
+- Blitz Wireless: 2.4GHz + wired ONLY. No Bluetooth, no gyro, no macro, no dock, no Steam mode, no iOS Dualshock mode. DISCONTINUED.
+- Blitz Tri-Mode: 2.4GHz + Bluetooth + wired. Full features. Current active model.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage NOT covered. Fast charger damage NOT covered.
+""",
+
+    "Eclipse": """
+COSMIC BYTE ECLIPSE - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
+
+CONNECTIVITY:
+- Physical mode switch: Left=Bluetooth, Middle=2.4G, Right=NS (Gyro Bluetooth mode).
+- 2.4GHz: set switch to Middle, plug USB receiver, hold Pairing button 3 seconds - solid logo + vibration = connected.
+- Bluetooth: set switch to Left (or NS for gyro), hold Pairing button 3 seconds, select 'Xbox Wireless Controller' on device.
+- Wired: connect USB-C cable - activates automatically.
+- Reconnect to last device: short-press Home.
+- Compatible with PC, Android, iOS 13+.
+- NOT compatible with PS4, Xbox, Nintendo Switch, or any console.
+- Range: ~10 metres.
+
+LOGO LIGHT COLOURS:
+- Blue = iOS or Android (Bluetooth).
+- Orange = 2.4G mode.
+- Green breathing = charging.
+- Red flash once every 10 minutes = low battery.
+- Logo off = fully charged.
+
+ABXY LAYOUT SWITCH:
+- Physical switch on front toggles between Xbox-style and Alternate-style layout.
+- NOTE: gyro calibration MUST be performed in Xbox (ABXY) layout mode.
+
+JOYSTICK RESISTANCE ROLLER:
+- Physical roller at base of each analog stick. Clockwise = stiffer, counter-clockwise = looser.
+- Stiffer = better for FPS precision. Looser = better for quick flicks.
+
+DEAD ZONE TOGGLE:
+- Hold LS + RS simultaneously for 5 seconds. Toggles between 5% deadzone (default) and 0% (max precision).
+- Active zone shape: hold M + LS or RS for 5 seconds = toggle between 10% square and 0% circle zone.
+
+TURBO & AUTO TURBO:
+- Each press of M + button cycles: Manual Turbo -> Auto Turbo -> Cancel.
+- Auto-firing button: press M + that button one more time to cancel.
+- Supported: A, B, X, Y, LB, LT, RT, D-pad. (RB NOT supported.)
+- Speed: hold M + Right Stick Up (increase), hold M + Right Stick Down (decrease).
+- Clear ALL turbo: press M twice, then hold M for 5 seconds. Vibrates to confirm.
+
+M1/M2 MACRO BUTTONS:
+- Record: hold M + M1 (or M2) for 3 seconds -> press desired button -> press M1/M2 to save.
+- Up to 21 programmable buttons.
+- Clear: hold M + M1 for 3 seconds -> exit without pressing anything.
+
+STICK & TRIGGER CALIBRATION:
+- Hold View + M + Menu for 3 seconds -> LED1 and LED3 flash.
+- Rotate both joysticks clockwise 3 full turns. Press both triggers 3 times.
+- Switch triggers to SHORT travel mode, press fully 3 more times. Press View to exit.
+- Must calibrate BOTH long and short trigger travel modes.
+
+GYRO CALIBRATION:
+- Power off. Place flat on stable surface. Hold View + A + B + Home -> LED1+LED2 flash.
+- After 1 second, press Menu to complete. MUST be in Xbox layout mode.
+
+TRIGGER TRAVEL SWITCH:
+- Physical switch on back for LT and RT (independent).
+- Long travel = full analog range (racing/simulation). Short travel = instant response (FPS).
+
+ABXY LED BRIGHTNESS:
+- Adjust: M + Right Stick Left/Right. Four levels: 0%, 30%, 70%, 100%.
+
+BATTERY & CHARGING:
+- 1200mAh, 11-13 hours. Charge time: 3-4 hours. Use 5V 500mA charger or PC USB port.
+- Wireless charging contacts on back for compatible charging dock.
+- KeyLinker app available (Google Play/Apple App Store) for advanced customisation.
+
+RESET & POWER:
+- Power off: hold Home 5 seconds. Auto-off: 10 minutes.
+- Factory reset: press Reset hole on back with pin - clears all settings and pairing data.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Replaceable D-pad included in box.
+""",
+
+    "Starforge": """
+COSMIC BYTE STARFORGE - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
+
+CONNECTIVITY:
+- Physical mode switch (bottom): Mobile Mode=Android/iOS, NS Mode=Gyro Bluetooth, PC Mode=PC Bluetooth, 2.4GHz Mode=PC wireless XInput.
+- 2.4GHz: set switch to 2.4G, insert USB receiver, hold Pairing button 3 seconds - solid LED + vibration = connected.
+- Bluetooth: set switch to PC Mode or Mobile Mode, hold Pairing button 3 seconds, select 'Xbox Wireless Controller'.
+- Wired: connect USB-C cable, hold Back + Start for 3 seconds to toggle XInput/DInput.
+- Reconnect: short-press Home. Range: ~10 metres.
+- Compatible with PC (XInput/DInput), Android 8.0+, iOS 13+, Smart TVs, Tesla vehicles (2.4GHz).
+- NOT compatible with PlayStation, Xbox console, or Nintendo Switch.
+
+LED INDICATORS:
+- Solid red = low battery.
+- Red slow breathing 0-30% = charging. Ice blue slow breathing 30-100% = charging.
+- Solid ice blue = fully charged. Blinking blue = pairing/searching.
+
+XInput/DInput SWITCHING:
+- Wired mode: hold Back + Start for 3 seconds to toggle.
+- For DInput in 2.4GHz: use wired mode with Back+Start.
+- Always relaunch game after switching. Verify mode switch is on correct position.
+
+MODULAR JOYSTICK REPLACEMENT:
+- Power off. Remove magnetic top cover (magnets, no tools). Use puller tool to remove joystick module.
+- Align new module (flat edge inward), press firmly until clicks. Reattach cover.
+- MANDATORY after replacement: perform full stick+trigger calibration.
+- Resistance options: 60gf, 70gf, 120gf, 150gf. Box includes 3 extra joystick sets + puller tool.
+
+STICK & TRIGGER CALIBRATION:
+- Power OFF. Hold Back + X + Home for 1 second - light strips flash.
+- Rotate BOTH joysticks clockwise 5 full rotations. Press BOTH triggers 5 times (FULL long travel only).
+- Press Start - strips turn off = calibration complete.
+- Must be in Xbox ABXY layout mode. Required after: module swap, drift, incorrect range.
+
+GYRO CALIBRATION:
+- Power off, place flat on stable surface. Hold Back + A + Home for 3 seconds -> lights flash.
+- Press Start -> strips off = done. Must be in Xbox layout mode.
+- NS mode on switch = Gyro Bluetooth mode (not Nintendo Switch).
+
+M1/M2/M3/M4 MACRO BUTTONS (4 back buttons):
+- Record: hold Fn + M1/M2/M3/M4 for 3 seconds -> light flashes -> press button to assign -> press M button to save.
+- Up to 32 programmable buttons supported.
+- Clear: press Fn + M1/M2/M3/M4 again to cancel/clear that button.
+- Each M button programmed and cleared independently.
+
+TURBO & AUTO TURBO:
+- Turbo + button: Press 1=Manual Turbo, Press 2=Auto Turbo, Press 3=Cancel.
+- Auto-firing button: press Turbo + that button one more time to cancel.
+- Supported: A, B, X, Y, LB, RB, LT, RT.
+- Speed: Turbo + Right Stick Right (increase), Left (decrease). 3 levels: 5/12/20 per sec.
+- Clear ALL: hold Turbo 5 seconds. Vibration confirms.
+
+RGB & ABXY LED:
+- RGB strip brightness: Fn + Left D-pad. RGB effects: Fn + Right D-pad.
+- ABXY LED toggle: hold Fn + D-pad Left for 5 seconds.
+- Vibration: hold Fn + Up D-pad (increase), Fn + Down D-pad (decrease). Five levels: 0-100%.
+
+TRIGGER MOTOR VIBRATION:
+- Press BOTH triggers + Fn for 1 second to cycle 4 modes.
+- Mode 1=Linear, Mode 2=Game-native (default), Mode 3=Sync with main motor, Mode 4=Off.
+
+ABXY LAYOUT SCREW SWITCH:
+- Use included screwdriver to rotate centre screw -> switches between Xbox and Alternate layout. Restart after changing.
+
+CONTROLLER RESET:
+- Power OFF. Hold LS + RS + Home for 1 second - red light on 1 second -> controller powers off. Re-pair and recalibrate after reset.
+
+BATTERY:
+- 1200mAh, 10-12 hours. Charge: 3-4 hours. KeyLinker app available for advanced customisation.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Package includes: controller, magnetic cover, 2.4G receiver, USB-C cable, manual, 3 extra joystick sets, puller, screwdriver.
+""",
+
+    "Quantum": """
+COSMIC BYTE QUANTUM - PS4-STYLE WIRELESS CONTROLLER - FULL MANUAL
+
+PLATFORM COMPATIBILITY:
+- PS4: full compatibility (primary platform).
+- PS5: LIMITED - works only for PS4 games on PS5. PS5 native games NOT supported. Use official DualSense to boot PS5 first.
+- Nintendo Switch: wired and Bluetooth connection supported.
+- PC: PS4 Controller mode (wired/Bluetooth) or XInput mode (wired only).
+- iOS 13+: Bluetooth. LED turns PINK when connected to iOS.
+- Android: Bluetooth. LED turns WHITE when connected.
+- NOT usable as a primary PS5 controller.
+
+CONNECTIVITY:
+- PS4 (first-time): connect USB cable, press Home/PS button - LED solid. Disconnect cable = wireless via Bluetooth. Range: up to 10 metres.
+- PS4 (reconnect): short-press Home/PS button.
+- PC wired (PS4 mode, default): connect USB - detected as 'Wireless Controller' (blue LED). Works with Steam.
+- PC wired (XInput mode): long-press Share + Options for 3 seconds in wired mode.
+- PC Bluetooth: press Share + Home when OFF until LED blinks -> find 'Dualshock 4 controller'. Bluetooth PC = PS4 mode only (no XInput via Bluetooth).
+- Nintendo Switch wired: USB-C to Switch, press Home/PS.
+- Nintendo Switch wireless: complete wired first, then disconnect. OR: Switch Controllers menu > Change Grip/Order, hold Options+PS until 4 LEDs flash.
+- iOS: hold Share + PS until LED flashes white -> find 'DUALSHOCK 4 Wireless Controller'. LED = PINK when connected.
+- Android: hold Share + PS until LED flashes white -> find 'Wireless controller'. LED = WHITE when connected.
+
+LED COLOURS:
+- Blue = PS4/PC mode. Pink = iOS. White = Android or pairing mode.
+
+UNIQUE HARDWARE FEATURES:
+- Functioning touchpad (PS4 games). 6-axis gyro (motion control in compatible games).
+- Built-in speakers. 3.5mm audio jack (works in PS4 mode and PC PS4/Steam mode).
+- Magnetic drift-free joysticks. Magnetic pressure-sensitive triggers.
+- Travel Switch buttons on back (LT and RT independently): Long travel=analog/racing, Short travel=instant FPS response.
+
+TURBO & AUTO TURBO:
+- M + button cycles: Press 1=Manual Turbo, Press 2=Auto Turbo, Press 3=Disabled.
+- Auto-firing button fix: press Turbo + that button one more time.
+- Supported: Triangle, Square, Circle, Cross, L1, L2, R1, R2, L3, R3.
+- Speed: 5/sec (slow), 15/sec (medium), 25/sec (fast). Adjust: hold Turbo + right stick Up/Down.
+- Clear ALL turbo: press Share + Turbo for 1 second until vibrates.
+
+ML/MR MACRO BUTTONS:
+- Record: hold Turbo for 3 seconds -> LED flashes slowly -> press button sequence (up to 12 buttons, timing recorded) -> press ML or MR to save.
+- Execute: press ML or MR. Macro remembers timing between presses.
+- Clear: enter macro mode (hold Turbo 3s) -> press ML or MR immediately.
+
+RGB LED:
+- Brightness: hold Options + D-pad Up (increase) or Down (decrease). 6 levels: 0-100%.
+- RGB effects: hold Options + D-pad Left or Right to cycle.
+
+BATTERY & CHARGING:
+- 1000mAh. Charge with USB-A to USB-C cable - PC USB port or standard USB source ONLY.
+- Do NOT use wall adapters/chargers - can damage battery.
+- Charging (off): LED breathes orange. Fully charged: LED off.
+- Low battery (connected): LED flashes 3 times rapidly below 3.5V.
+- Auto power off below 3.4V - charge immediately.
+- Power off: hold PS/Home 8-10 seconds. Auto sleep: 10 minutes inactivity.
+
+RESET:
+- Press reset button on FRONT of controller to factory reset. Re-pair after reset.
+- Random button presses: clear turbo (Share+Turbo 1s) and check ML/MR macros first.
+
+WARRANTY:
+- 1 year manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Battery wear and tear NOT covered.
+- Support: 07969273222 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com, support.thecosmicbyte.com.
+""",
+
+    "Stratos Xenon": """
+COSMIC BYTE STRATOS XENON - PS4-STYLE WIRELESS CONTROLLER - FULL MANUAL
+
+PLATFORM COMPATIBILITY:
+- PS4: primary platform, full wireless Bluetooth support.
+- PS5: LIMITED - connect via USB, hold Home 2+ seconds -> LED flashes white -> wait 5+ seconds = connected. PS5 native games NOT supported. PS4 games on PS5 work.
+- PC: wired (USB) as PS4-style controller. For all Windows games use Steam (PS4 type) or DS4Windows. Wireless on PC requires separate Stratos Xenon Wireless Dongle (sold separately, not in box).
+- iOS 13+: Bluetooth.
+- Android: Bluetooth.
+- NOT designed as a primary PS5 controller.
+
+CONNECTIVITY:
+- PS4 (first-time): connect USB cable -> controller registers with PS4 -> disconnect for wireless.
+- PS4 (reconnect): short-press Home button. Range: up to 8 metres.
+- PS5: USB cable -> hold Home 2+ seconds -> wait for LED colour change = connected.
+- Android/iOS Bluetooth: hold PS + Share until LED flashes -> select 'Wireless Controller' in Bluetooth settings -> tap OK.
+- PC wireless: requires separate wireless dongle (sold separately).
+
+UNIQUE HARDWARE FEATURES:
+- Upgraded Hall Effect joysticks - magnetic, drift-resistant.
+- Functioning touchpad.
+- 3.5mm audio jack: works on PS4 for audio out and mic in. PC audio may work in PS4 mode. Mic is PS4 only.
+- Mic on/off physical switch on back: slide Left=mic ON, slide Right=mic OFF. Mic ONLY works on PS4.
+- Programmable back buttons (PS4 ONLY - does NOT work on PC, PS5, Android, iOS).
+
+PROGRAMMABLE BACK BUTTONS (PS4 only):
+- Program: long-press Turbo for 5 seconds (LED turns green) -> press back button -> press desired action button (LED off = saved).
+- Cancel: long-press Turbo 5 seconds (LED green) -> press target action button TWICE (LED off = cancelled).
+
+TURBO:
+- Enable: long-press Turbo + desired button for 2 seconds, release Turbo.
+- Cancel: repeat same long-press Turbo + button for 2 seconds.
+- Requires 2-second hold to toggle (different from single-press turbo systems).
+- Supported: A, B, X, Y, L1, L2, R1, R2.
+
+JOYSTICK DRIFT:
+- Hall Effect joysticks are drift-resistant but calibration offset can occur after impact.
+- Fix: ensure controller is on flat surface when powered on (startup position = centre reference).
+- Adjust in-game deadzone settings.
+- No formal calibration procedure in manual - persistent drift -> contact support.
+
+BATTERY & CHARGING:
+- 1300mAh, 2.5-3.5 hours charge time.
+- Low battery: LED flashes. Critical: auto power off.
+- Charge voltage: 4.5-5.5V, current under 260mA. Charge at 10 degreesC-30 degreesC for best results.
+- Power off: hold Home button for several seconds until light turns off.
+- No controller lock mode - power off completely before placing in bag.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered products NOT covered.
+- Battery wear and tear NOT covered.
+- Support: 07969273222 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
+""",
+
+    "Velox": """
+COSMIC BYTE VELOX - TRI-MODE GAMING MOUSE - FULL MANUAL
+
+CONNECTIVITY:
+- Physical mode switch on bottom: Up=2.4GHz, Middle=OFF/Wired, Down=Bluetooth.
+- Wired: switch to Middle, connect USB-C cable. Green LED stays ON = wired mode.
+- 2.4GHz: switch to Up, plug USB receiver - auto-connects. Manual pair: hold Left Click + Right Click + Scroll Wheel for 3 seconds -> Red LED flashes -> insert receiver -> Green LED solid briefly = connected.
+- Bluetooth: switch to Down, hold Left+Right+Scroll for 3 seconds -> Blue LED flashes. Find 'CB Velox' OR 'blemouse5.3' in Bluetooth settings (both are the same mouse).
+- Range: 10+ metres wireless. Compatible: Windows and macOS.
+
+DPI LEVELS (press DPI button to cycle):
+- 800 DPI = Blue. 1600 DPI = Green. 2400 DPI = Pink (DEFAULT). 3200 DPI = Yellow. 5800 DPI = Cyan. 7200 DPI = White.
+- LED shows colour for 3 seconds after DPI press. Max DPI: 26000 (via software).
+- Sensor: PixArt PAW3395, 650 IPS, 50G acceleration.
+
+LED STATUS INDICATORS:
+- Wired: Green LED always on. 2.4GHz: Red slow flash=reconnecting, Red fast flash=pairing mode.
+- Bluetooth: Blue slow flash=reconnecting, Blue fast flash=pairing mode.
+- Red fast flash=low battery (below 3.2V). Green flash=charging. Green steady=fully charged.
+- Mouse auto-shuts down below 3.1V to protect battery.
+
+SLEEP MODES:
+- Light sleep: after 1 minute - wakes instantly.
+- Deep sleep: after 20 minutes - slight delay on wake. Move mouse or press button to wake. Normal behaviour.
+
+CHARGING:
+- 230mAh battery. Use standard 5V USB source or PC USB port.
+- Over-voltage protection at 6V. Surge protection at 24V.
+- Fast chargers may exceed safe charging parameters - use standard charger.
+
+TROUBLESHOOTING:
+- 2.4GHz not connecting: check switch position (Up), try different USB port, move receiver away from USB 3.0 devices and Wi-Fi routers, re-pair (Left+Right+Scroll 3s).
+- Bluetooth not connecting: switch to Down, hold Left+Right+Scroll 3s, look for 'CB Velox' OR 'blemouse5.3', remove old pairing first.
+- Cursor lagging/skipping: use mouse pad (not glass), lower DPI, switch to wired mode to isolate, move receiver to USB 2.0 port, re-pair.
+- Buttons unresponsive: test in wired mode first. If wired OK = wireless issue. If wired also fails = contact support.
+
+SOFTWARE:
+- Cosmic Byte Velox software available on thecosmicbyte.com.
+- Allows custom DPI up to 26000, button remapping, polling rate adjustment.
+- macOS: basic plug-and-play on all 3 modes. Software may be Windows-primary - check website.
+
+BUTTONS: Left Click (Huano, 100M clicks), Right Click, Scroll Click, Side Button 1 (Forward), Side Button 2 (Backward).
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage NOT covered. Fast charger damage NOT covered.
+- Support: +91 7351615161 (Mon-Sat 10am-6pm), WhatsApp: +91 7351615161, cc@thecosmicbyte.com.
+""",
+
+    "Ares": """
+COSMIC BYTE ARES - WIRED GAMEPAD - FULL MANUAL
+
+CONNECTIVITY:
+- Wired USB only. Plug the USB cable into PC or Android device.
+- No wireless or Bluetooth support - this is a wired-only controller.
+- PC: Auto-detects as X-Input (compatible with most games). No drivers needed.
+- Android: Requires OTG support. Use a USB OTG adapter if needed. Android use not covered under warranty.
+- Not compatible with PlayStation, Xbox, or Nintendo Switch.
+
+PLATFORM COMPATIBILITY:
+- Designed for Windows PC and Android (OTG).
+- NOT compatible with any gaming console. No warranty or support for console use.
+
+LED INDICATORS:
+- LED lights indicate player slot assigned (1-4) on PC.
+
+TURBO:
+- Enable: hold Turbo button + desired face button simultaneously.
+- Disable: press Turbo + same button again.
+- Supported buttons: A, B, X, Y, LB, RB, LT, RT (varies by model).
+
+VIBRATION:
+- Dual rumble motors. Works in PC X-Input mode with compatible games.
+- Vibration may not work in all Android games or games without rumble support.
+
+TROUBLESHOOTING:
+- Not detected on PC: Try a different USB port. Avoid USB hubs. Unplug and replug.
+- Not detected in game: Check if game supports X-Input. Use X360ce for D-Input games.
+- Buttons not working correctly: Check in-game controller settings and remap if needed.
+- Vibration not working: Check game settings - vibration must be enabled in game.
+- Android not detecting: Confirm device supports OTG. Try a different OTG adapter.
+- Joystick drift: Calibrate via Windows Settings -> Devices -> Game Controllers -> Properties -> Calibrate.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered or modified products NOT covered.
+- Damage from improper use, drops, or liquid exposure NOT covered.
+- Console use NOT covered under warranty.
+- To claim warranty: Visit thecosmicbyte.com/raise-a-ticket/ or email cc@thecosmicbyte.com with proof of purchase and description of the issue.
+""",
+
     "All Products": ""  # Filled dynamically
 }
+
 
 
 
@@ -578,7 +1252,7 @@ KNOWLEDGE_BASE["All Products"] = "\n\n".join([
     f"=== {k} ===\n{v}" for k, v in KNOWLEDGE_BASE.items() if k != "All Products"
 ])
 
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox"]
 
 QUICK_QUESTIONS = {
     "All Products": [
@@ -616,41 +1290,160 @@ QUICK_QUESTIONS = {
         "LED colors meaning",
         "Vibration not working",
     ],
+    "Ares": [
+        "How do I connect to PC?",
+        "Controller not detected in game",
+        "How do I claim warranty?",
+        "Joystick drift fix",
+        "Vibration not working",
+    ],
+    "Nexus": [
+        "How do I connect to PC?",
+        "Controller not detected in game",
+        "LED colors meaning",
+        "Vibration not working",
+        "Battery and storage tips",
+    ],
+    "Ares Wired": [
+        "How do I connect to PC?",
+        "Old game not detecting controller",
+        "Does my model have Hall Effect?",
+        "ABXY LED turned off",
+        "Joystick drift fix",
+    ],
+    "Ares Wireless": [
+        "How do I connect to PC?",
+        "Controller not re-pairing with dongle",
+        "Charging issue - fast charger",
+        "Hall Effect - which batch?",
+        "Controller keeps disconnecting",
+    ],
+    "Blitz Tri-Mode": [
+        "How do I connect via Bluetooth?",
+        "How to activate Steam mode?",
+        "Gyro not working in 2.4GHz",
+        "Macro setup",
+        "Battery level check",
+    ],
+    "Blitz Wireless": [
+        "How do I connect to PC?",
+        "Old game not detecting controller",
+        "How do I re-pair the dongle?",
+        "Turbo setup and auto-turbo",
+        "Is the Blitz Wireless discontinued?",
+    ],
+    "Eclipse": [
+        "How do I connect to PC?",
+        "Joystick resistance adjustment",
+        "Gyro calibration",
+        "Turbo setup",
+        "Trigger travel switch",
+    ],
+    "Starforge": [
+        "How do I connect to PC?",
+        "How to replace joystick modules?",
+        "Stick calibration after module swap",
+        "What is NS mode?",
+        "Gyro calibration",
+    ],
+    "Quantum": [
+        "How to connect to PS4?",
+        "Does it work on PS5?",
+        "How to connect to PC?",
+        "ML/MR macro setup",
+        "Charging - what adapter to use?",
+    ],
+    "Stratos Xenon": [
+        "How to connect to PS4?",
+        "Does it work on PS5?",
+        "Back button not working on PC",
+        "How to connect wirelessly to PC?",
+        "Mic not working",
+    ],
+    "Velox": [
+        "How do I connect via 2.4GHz?",
+        "DPI colors meaning",
+        "Mouse cursor lagging",
+        "Bluetooth device name to look for",
+        "Battery draining fast",
+    ],
+    "Atlas Mouse": [
+        "How do I connect via 2.4GHz?",
+        "Bluetooth polling rate vs wired",
+        "Software download",
+        "DPI adjustment",
+        "Mouse not detected",
+    ],
+    "Aether Mouse": [
+        "How do I swap the battery?",
+        "How do I connect via 2.4GHz?",
+        "Does it support fast charging?",
+        "DPI adjustment",
+        "Mouse not detected",
+    ],
+    "Umbra Mouse": [
+        "How do I connect via 2.4GHz?",
+        "Bluetooth polling rate limitation",
+        "DPI adjustment",
+        "Mouse not detected",
+        "Software download",
+    ],
+    "Firestorm Mouse": [
+        "Is the Firestorm wireless?",
+        "How do I change DPI?",
+        "RGB not working",
+        "Software download",
+        "Buttons not responding",
+    ],
+    "Ignis Mouse": [
+        "Does Ignis have RGB?",
+        "How do I connect via 2.4GHz?",
+        "Battery life - how long?",
+        "DPI above 12000 - how?",
+        "Mode switch not working",
+    ],
+    "Raptor Mouse": [
+        "Does Raptor have Bluetooth?",
+        "How do I connect via 2.4GHz?",
+        "How do I change DPI?",
+        "RGB setup",
+        "Mouse cursor lagging",
+    ],
 }
 
 
 
 SYSTEM_PROMPT = """You are the official Cosmic Byte customer support assistant. You ONLY help with Cosmic Byte products.
 
-CONVERSATION FLOW — follow this order strictly:
+CONVERSATION FLOW - follow this order strictly:
 
-STEP 1 — IDENTIFY MODEL AND ISSUE FIRST:
+STEP 1 - IDENTIFY MODEL AND ISSUE FIRST:
 - If the customer mentions a product category but not the exact model (e.g. says "Ares gamepad" or "my controller"), ALWAYS ask which exact model they have before answering.
-- Cosmic Byte has multiple similar products — for example: Ares (basic wired), Ares Tri-Mode (wireless), Ares Pro (tri-mode with software support). You MUST know the exact model to give accurate help.
+- Cosmic Byte has multiple similar products - for example: Ares (basic wired), Ares Tri-Mode (wireless), Ares Pro (tri-mode with software support). You MUST know the exact model to give accurate help.
 - Also ask what specific issue they are facing if it is not clear.
-- Keep this question short and friendly — one question, not multiple.
+- Keep this question short and friendly - one question, not multiple.
 
-STEP 2 — TROUBLESHOOT FIRST:
+STEP 2 - TROUBLESHOOT FIRST:
 - Always attempt to resolve the issue through troubleshooting before suggesting warranty or escalation.
 - Walk the customer through step-by-step fixes based on the manual content.
 - Only after troubleshooting steps have been exhausted, or if the issue is clearly a hardware defect, suggest warranty or escalation.
 
-STEP 3 — WARRANTY ESCALATION (only after troubleshooting fails):
+STEP 3 - WARRANTY ESCALATION (only after troubleshooting fails):
 - If the issue appears to be a genuine manufacturing defect after troubleshooting, explain the warranty coverage clearly:
   * 1 year warranty against manufacturing defects only.
-  * Physical damage, water damage, tampered products — NOT covered.
-  * Battery wear and tear — NOT covered (Ares Pro specific).
-  * Console use — NOT covered.
-- Then direct them with this exact message: "For warranty claims and faster resolution, please raise a support ticket at https://www.thecosmicbyte.com/raise-a-ticket/ or email us at cc@thecosmicbyte.com. Our team operates Mon–Sat, 10am–6pm. You can also call +91 7351615161."
-- Do NOT ask customers to collect or upload images, videos or documents — just direct them to raise a ticket or email.
+  * Physical damage, water damage, tampered products - NOT covered.
+  * Battery wear and tear - NOT covered (Ares Pro specific).
+  * Console use - NOT covered.
+- Then direct them with this exact message: "For warranty claims and faster resolution, please raise a support ticket at https://www.thecosmicbyte.com/raise-a-ticket/ or email us at cc@thecosmicbyte.com. Our team operates Mon-Sat, 10am-6pm. You can also call +91 7351615161."
+- Do NOT ask customers to collect or upload images, videos or documents - just direct them to raise a ticket or email.
 
-STRICT RULES — always follow:
+STRICT RULES - always follow:
 1. NEVER mention, compare or reference competitor brands (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state Cosmic Byte controllers are NOT compatible with those consoles.
 2. ONLY answer using the provided product manual content. Never make up features or specs.
 3. If a question is unrelated to Cosmic Byte products: "I can only assist with Cosmic Byte product queries. Please visit thecosmicbyte.com for other information."
-4. Be friendly, clear and concise. Use simple language — customers may not be technical.
+4. Be friendly, clear and concise. Use simple language - customers may not be technical.
 5. Use numbered steps for procedures. Keep answers focused and scannable.
-6. If you genuinely cannot find the answer in the manual: "I don't have specific information on that. Please contact us at cc@thecosmicbyte.com or call +91 7351615161 (Mon–Sat 10am–6pm)."
+6. If you genuinely cannot find the answer in the manual: "I don't have specific information on that. Please contact us at cc@thecosmicbyte.com or call +91 7351615161 (Mon-Sat 10am-6pm)."
 7. Always recommend thecosmicbyte.com for software, firmware downloads and support."""
 
 
@@ -680,13 +1473,13 @@ auto_daily_digest()
 ADMIN_PASSWORD = st.secrets.get("ADMIN_PASSWORD", "cosmicbyte_admin")
 
 def render_admin():
-    st.markdown("## 🎮 Cosmic Byte — Admin Dashboard")
+    st.markdown("## 🎮 Cosmic Byte - Admin Dashboard")
     st.divider()
 
     log = st.session_state.conversation_log
     if not log:
         st.info("No conversations logged yet in this session.")
-        if st.button("← Back to Support"):
+        if st.button("<- Back to Support"):
             st.session_state.show_admin = False
             st.rerun()
         return
@@ -718,7 +1511,7 @@ def render_admin():
     total = len(filtered)
     helpful = sum(1 for r in filtered if r["Feedback"] == "👍 Helpful")
     unhelpful = sum(1 for r in filtered if r["Feedback"] == "👎 Unhelpful")
-    sat = f"{round(helpful / (helpful + unhelpful) * 100)}%" if (helpful + unhelpful) > 0 else "—"
+    sat = f"{round(helpful / (helpful + unhelpful) * 100)}%" if (helpful + unhelpful) > 0 else "-"
 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total", total)
@@ -731,12 +1524,12 @@ def render_admin():
     # ── Table ──
     st.markdown(f"**{total} conversations**")
     for i, r in enumerate(filtered):
-        with st.expander(f"{r['Date']} {r['Time']} · {r['Product']} · {r['Customer Message'][:60]}…"):
+        with st.expander(f"{r['Date']} {r['Time']} · {r['Product']} · {r['Customer Message'][:60]}..."):
             st.markdown(f"**Session:** {r['Session ID']}")
             st.markdown(f"**Customer:** {r['Customer Message']}")
             st.markdown(f"**AI Response:** {r['AI Response']}")
             fb_display = r["Feedback"] if r["Feedback"] else "No feedback"
-            note_display = f" — {r['Feedback Note']}" if r["Feedback Note"] else ""
+            note_display = f" - {r['Feedback Note']}" if r["Feedback Note"] else ""
             st.markdown(f"**Feedback:** {fb_display}{note_display}")
 
     st.divider()
@@ -746,7 +1539,7 @@ def render_admin():
     ec1, ec2 = st.columns(2)
     with ec1:
         period_label = selected_date if selected_date != "All dates" else "All data"
-        subject = f"Cosmic Byte Support Log — {period_label}"
+        subject = f"Cosmic Byte Support Log - {period_label}"
         if st.button("📧 Send CSV to thecosmicbyte2017@gmail.com"):
             if filtered:
                 csv_bytes = build_csv_bytes(filtered)
@@ -766,7 +1559,7 @@ def render_admin():
             )
 
     st.divider()
-    if st.button("← Back to Support"):
+    if st.button("<- Back to Support"):
         st.session_state.show_admin = False
         st.rerun()
 
@@ -880,7 +1673,7 @@ for idx, msg in enumerate(st.session_state.messages):
             if st.button("Submit feedback", key=f"submit_fb_{ai_response_index}"):
                 row = st.session_state.row_nums[ai_response_index] if ai_response_index < len(st.session_state.row_nums) else None
                 update_feedback(row, "👎 Unhelpful", note)
-                st.session_state.feedback_given[fb_key] = f"👎 — {note}"
+                st.session_state.feedback_given[fb_key] = f"👎 - {note}"
                 st.rerun()
         else:
             st.markdown(f"<p style='font-size:11px;color:#555;margin:2px 0 10px'>Thanks for your feedback: {st.session_state.feedback_given.get(fb_key, '')}</p>", unsafe_allow_html=True)
@@ -938,7 +1731,7 @@ with col_input:
     user_input = st.text_input("Ask", placeholder=f"Describe your issue with your {st.session_state.selected_product}...",
                                 label_visibility="collapsed", key=f"input_{st.session_state.input_key}")
 with col_btn:
-    if st.button("Send →", use_container_width=True):
+    if st.button("Send ->", use_container_width=True):
         if user_input.strip():
             st.session_state.messages.append({"role": "user", "content": user_input.strip()})
             st.session_state.input_key += 1
@@ -970,7 +1763,7 @@ st.markdown("""
         <a href="mailto:cc@thecosmicbyte.com">cc@thecosmicbyte.com</a>
         &nbsp;·&nbsp;
         <a href="tel:+917351615161">+91 7351615161</a>
-        <span style="color:#333">&nbsp;(Mon–Sat 10am–6pm)</span>
+        <span style="color:#333">&nbsp;(Mon-Sat 10am-6pm)</span>
     </div>
     <a href="https://www.thecosmicbyte.com" target="_blank" style="color:#444;font-size:11px">thecosmicbyte.com</a>
 </div>
