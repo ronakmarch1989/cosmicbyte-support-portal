@@ -14,10 +14,10 @@ PRODUCT_URLS = {
     "Ares Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
     "Nexus": "https://www.thecosmicbyte.com/product-category/gaming-controllers/",
     "Blitz Tri-Mode": "https://www.thecosmicbyte.com/product/cosmic-byte-blitz-wireless-wired-controller-for-pc-hall-effect-joystick-triggers-1000hz-polling-rate-black/",
-    "Blitz Wireless": "https://www.thecosmicbyte.com/product-category/gaming-controllers/",
+    "Blitz Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-blitz-wireless-wired-controller-for-pc-hall-effect-joystick-triggers-1000hz-polling-rate-black/",
     "Eclipse": "https://www.thecosmicbyte.com/product/cosmic-byte-eclipse-tri-mode-controller-adjustable-force-tmr-joysticks/",
     "Starforge": "https://www.thecosmicbyte.com/product/cosmic-byte-starforge-tri-mode-controller-replaceable-tmr-joysticks/",
-    "Quantum": "https://www.thecosmicbyte.com/product-category/gaming-controllers/",
+    "Quantum": "https://www.thecosmicbyte.com/product/cosmic-byte-quantum-controller/",
     "Stratos Xenon": "https://www.thecosmicbyte.com/product/cosmic-byte-stratos-xenon-gamepad-for-ps4-ios-and-android/",
     "Velox": "https://www.thecosmicbyte.com/product/cosmic-byte-velox-tri-mode-mouse-pixart-3395-sensor-39-grams/",
     "Helios Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-helios-tri-mode-mouse-with-software-support-1000hz-polling-rate/",
@@ -1521,7 +1521,7 @@ STRICT RULES - always follow:
 5. Use numbered steps for procedures. Keep answers focused and scannable.
 6. If you genuinely cannot find the answer in the manual: "I don't have specific information on that. Please contact us at cc@thecosmicbyte.com or call +91 7351615161 (Mon-Sat 10am-6pm)."
 7. Always recommend thecosmicbyte.com for software, firmware downloads and support.
-8. BUYING INTENT: If a customer says they want to buy, is comparing, or asks about price - proactively share the product page link and mention the ONLINEPAY coupon (10% off online payments). Make it easy for them to purchase.
+8. BUYING INTENT & LINKS — CRITICAL RULE: When a customer asks about price, buying, or where to purchase — you MUST use ONLY the exact URL provided above under "OFFICIAL BUY LINK". NEVER generate, guess, or search for a different URL. Copy the link exactly as given. Also always mention the ONLINEPAY coupon (10% off). If no buy link is provided, direct to thecosmicbyte.com.
 9. DYNAMIC PRODUCT INFO: If asked for live price or current offers, direct to the product page link and mention checking thecosmicbyte.com for current deals.
 10. SUPPORT DETAILS - ALWAYS USE THESE, NO EXCEPTIONS: Email: cc@thecosmicbyte.com | Phone: +91 7351615161 | Hours: Mon-Sat 10am-6pm. Ignore any different contact details that may appear in product manuals - these are the only correct details."""
 
@@ -1787,7 +1787,11 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             # Inject knowledge into first user message
             # Inject product buy link if available
             buy_link = PRODUCT_URLS.get(product, "https://www.thecosmicbyte.com/product-category/gaming-controllers/")
-            buy_info = f"\nPRODUCT BUY LINK: {buy_link}\nCOUPON: ONLINEPAY (10% off online payments)" if product != "All Products" else ""
+            buy_info = f"""
+⚠️ OFFICIAL BUY LINK (use this EXACT URL — do NOT modify, do NOT search for a different one):
+{buy_link}
+COUPON: ONLINEPAY (10% off online payments — always mention this)
+""" if product != "All Products" else ""
 
             api_messages[0]["content"] = f"""PRODUCT SELECTED: {product}
 
