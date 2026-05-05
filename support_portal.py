@@ -2625,14 +2625,21 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
     with st.spinner(""):
         try:
-            # Build full conversation history for context
+            # Trim history to last 8 messages (4 turns) to control token costs.
+            # KB stays in first message; middle history is pruned on long chats.
+            MAX_HISTORY = 8
+            all_msgs = st.session_state.messages
+            if len(all_msgs) > MAX_HISTORY:
+                trimmed = all_msgs[:1] + all_msgs[-(MAX_HISTORY - 1):]
+            else:
+                trimmed = all_msgs
+
             api_messages = []
-            for m in st.session_state.messages:
+            for m in trimmed:
                 role = "user" if m["role"] == "user" else "assistant"
                 api_messages.append({"role": role, "content": m["content"]})
 
-            # Inject knowledge into first user message
-            # Inject product buy link if available
+            # Inject KB + buy link into first user message only
             buy_link = PRODUCT_URLS.get(product, "https://www.thecosmicbyte.com/product-category/gaming-controllers/")
             buy_info = f"""
 ⚠️ OFFICIAL BUY LINK (use this EXACT URL — do NOT modify, do NOT search for a different one):
@@ -2650,9 +2657,8 @@ CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
 
             response = client.messages.create(
                 model="claude-haiku-4-5-20251001",
-                max_tokens=800,
+                max_tokens=600,
                 system=SYSTEM_PROMPT,
-                tools=[{"type": "web_search_20250305", "name": "web_search"}],
                 messages=api_messages
             )
             # Extract text from response (may contain tool use blocks)
