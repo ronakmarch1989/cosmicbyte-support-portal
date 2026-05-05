@@ -1512,7 +1512,13 @@ STRICT RULES - always follow:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "selected_product" not in st.session_state:
-    st.session_state.selected_product = "All Products"
+    # Read ?product= URL param — used when embedded as iframe on product pages
+    _params = st.query_params
+    _url_product = _params.get("product", "All Products")
+    st.session_state.selected_product = _url_product if _url_product in PRODUCTS else "All Products"
+if "embed_mode" not in st.session_state:
+    _params = st.query_params
+    st.session_state.embed_mode = _params.get("embed", "false").lower() == "true"
 if "input_key" not in st.session_state:
     st.session_state.input_key = 0
 if "session_id" not in st.session_state:
