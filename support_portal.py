@@ -1203,6 +1203,230 @@ WARRANTY:
 - Support: +91 7351615161 (Mon-Sat 10am-6pm), WhatsApp: +91 7351615161, cc@thecosmicbyte.com.
 """,
 
+    "Atlas Mouse": """
+COSMIC BYTE ATLAS MOUSE - TRI-MODE GAMING MOUSE - FULL MANUAL
+
+CONNECTIVITY:
+- Three modes: Type-C Wired, 2.4GHz wireless, Bluetooth.
+- Wired: connect USB-C cable - automatically takes priority over all other modes. Works while charging.
+- 2.4GHz: plug USB receiver into PC. Press M button briefly to switch to 2.4G mode (L2 = Green).
+- Bluetooth: press M button briefly to switch to Bluetooth mode (L2 = Blue). Hold M for 2 seconds to enter pairing mode - L2 flashes blue rapidly.
+- Mode switch priority: wired > 2.4G > Bluetooth.
+- Compatible with: Windows XP+, Android 9.0+, Linux, macOS (basic use). Software is Windows ONLY.
+
+LED INDICATORS:
+- L1 flashing Red = Low battery - charge immediately.
+- L1 steady Blue = Charging in progress.
+- L1 steady Green = Fully charged.
+- L2 Green = 2.4GHz mode. L2 Blue = Bluetooth mode.
+
+DPI LEVELS (press D button to cycle):
+- 800 DPI = Red. 1600 DPI = Green (default). 2400 DPI = Blue. 5000 DPI = Purple. 12000 DPI = Yellow.
+
+POLLING RATE:
+- 1000Hz in 2.4GHz and wired modes. Bluetooth = 133Hz only (hardware limitation, not a defect).
+- For gaming, always use 2.4GHz or wired for full 1000Hz.
+
+BATTERY: 500mAh built-in. ON/OFF switch controls wireless power.
+
+SOFTWARE: 5 buttons fully programmable via Cosmic Byte software (Windows only). Download from thecosmicbyte.com.
+
+TROUBLESHOOTING:
+- Not responding: check ON/OFF switch is ON. Check L1 for battery. Try different USB port for receiver. Re-pair: switch between modes using M button.
+- Bluetooth not connecting: hold M 2 seconds for pairing mode, remove old pairing from device first.
+- Cursor erratic: use proper mousepad (not glass), lower DPI, check for 2.4GHz interference.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage, tampered products NOT covered.
+Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
+""",
+
+    "Aether Mouse": """
+COSMIC BYTE AETHER MOUSE - TRI-MODE GAMING MOUSE - FULL MANUAL
+
+CONNECTIVITY:
+- Three modes: Wired USB, 2.4GHz, Bluetooth BLE.
+- Wired: connect 1.8m paracord USB cable - plug and play, no drivers. Auto switches to wired.
+- 2.4GHz: slide mode switch to 2.4G. Plug USB receiver. First-time pair: hold Left + Middle + Right for 3 seconds - green LED flashes, insert receiver.
+- Bluetooth: slide mode switch to BT. Blue LED flashes slowly = standby. First-time pair: hold Left + Middle + Right for 3 seconds - blue flashes rapidly. Select 'CB Aether' on device.
+- NOTE: Bluetooth requires BLE (Bluetooth Low Energy) support. Devices without BLE cannot pair - use wired or 2.4GHz instead.
+- USB dongle is stored inside the battery compartment - remove battery cover to access it.
+
+DPI LEVELS (press DPI button to cycle):
+- 800=Red, 1600=Blue, 2400=Purple, 4800=Green, 6400=Yellow, 12000=Cyan.
+- Configurable via software (thecosmicbyte.com).
+
+REPLACEABLE BATTERY:
+- 400mAh Li-Ion battery. TWO batteries included in box.
+- To replace: open battery compartment (also houses USB dongle), swap battery.
+- Supports PD Fast Charging via USB cable - unique in this range.
+- Weight: 44g without battery, 55g with battery.
+
+CHARGING: Red LED blinks slowly = low battery. Charge via USB cable.
+
+SWITCHES: TTC Optical Switches (100M clicks). Use light beam - no physical wear, no double-click issues.
+
+SLEEP: Auto-sleep after inactivity. Wake by moving or clicking. Slight delay on wake = normal.
+
+TROUBLESHOOTING:
+- 2.4G not connecting: re-pair (hold L+M+R 3s), try USB 2.0 port, check battery.
+- Bluetooth not pairing: device must support BLE. Remove old pairing first. Hold L+M+R 3s for pairing mode.
+- Cursor erratic: use mousepad, lower DPI, check for interference.
+
+SOFTWARE: All 6 buttons programmable. Windows-primary (check website for macOS). Download from thecosmicbyte.com.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
+""",
+
+    "Umbra Mouse": """
+COSMIC BYTE UMBRA MOUSE - TRI-MODE GAMING MOUSE - FULL MANUAL
+
+CONNECTIVITY:
+- Three modes: USB-C Wired, 2.4GHz, Bluetooth 5.0.
+- Wired: plug 1.8m paracord cable (has magnetic ring) - wired activates automatically. Power switch position does NOT matter for wired mode.
+- 2.4GHz: unplug cable, slide power switch to top (2.4G symbol). First-time pair: hold Left + Right + Scroll for 3 seconds - green blinks rapidly, insert dongle. Once paired light turns off.
+- Bluetooth: slide power switch to bottom (BT symbol). Search for 'CB Umbra' on device. Pair: hold Left + Right + Scroll for 3 seconds - blue blinks rapidly. Once paired light turns off.
+- Light turning off after connecting = connection confirmed, not a problem.
+- Honeycomb body, 53g, PTFE feet, 1.8m paracord cable with magnetic ring.
+
+DPI LEVELS (press DPI Switch button to cycle):
+- 400 / 800 / 1200 / 1600 / 2400 / 4000 DPI. Sensor: PixArt A3104, 45 IPS, 15G.
+
+POLLING RATE:
+- Wired and 2.4GHz: 125/250/500/1000Hz (adjustable via software).
+- Bluetooth: 125Hz ONLY (fixed, cannot increase - not a defect).
+
+LED INDICATORS:
+- Red slow flash = low battery. Solid Blue = charging. Blue turns off = fully charged.
+- Green fast blink = 2.4G pairing mode. Blue fast blink = Bluetooth pairing mode.
+- No light after pairing = connected (normal).
+
+BATTERY: 300mAh rechargeable Li-Ion.
+
+TROUBLESHOOTING:
+- Wired not working: power switch position irrelevant for wired. Check cable, try different USB port.
+- Not waking from sleep: check battery (red = low), disconnect/reconnect cable.
+- Bluetooth not connecting: Bluetooth 5.0 required. Remove old pairing. Hold L+R+Scroll 3s.
+- Cursor erratic: use mousepad (not glass), lower DPI, check interference for 2.4G.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
+""",
+
+    "Firestorm Mouse": """
+COSMIC BYTE FIRESTORM MOUSE - WIRED RGB GAMING MOUSE - FULL MANUAL
+
+IMPORTANT: WIRED ONLY. No wireless or Bluetooth.
+
+CONNECTIVITY:
+- USB wired only. Connect to PC via USB cable (1.5m paracord with cable management loop).
+- Windows detects automatically within 5-30 seconds. Plug and play.
+- Setup: connect mouse, download software from thecosmicbyte.com.
+- IMPORTANT when installing software: temporarily disable antivirus - antivirus may block installation.
+- After install: restart PC. Then configure via software.
+
+SENSOR: Model 3327. DPI range: 200-12400. Polling rate: 1000Hz. 220 IPS, 30G acceleration.
+SWITCHES: Huano (10M clicks).
+WEIGHT: 67g without cable.
+
+DPI: Press DPI button to cycle through presets. LED colour changes with each DPI level.
+Custom DPI (200-12400) configurable via software.
+
+RGB LIGHTING: 11 RGB effects. Honeycomb body lets RGB shine through.
+- Customise via Cosmic Byte Firestorm software (Windows ONLY).
+- RGB not working: cycle effects with mode button, check software settings, ensure not set to Off.
+- Software not detecting mouse: run as Administrator, try different USB port, reinstall.
+
+REPLACEABLE TOP COVER: Honeycomb cover (default, RGB shows through) + plain solid cover included.
+Swap covers to change between open and clean aesthetics.
+
+SOFTWARE: 7 programmable buttons. Windows ONLY - macOS users cannot access software features.
+
+TROUBLESHOOTING:
+- Software not detecting: run as Administrator, reinstall, disable antivirus, try different USB port.
+- Cursor not moving: use mousepad (not glass), clean sensor, try different USB port, restart PC.
+- Buttons remapped unexpectedly: open software, restore defaults, reassign as needed.
+- Input lag: set polling rate to 1000Hz in software, try direct USB port (not hub), check cable.
+
+WARRANTY: 1 year manufacturing defects only. Water, physical damage NOT covered.
+Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
+""",
+
+    "Ignis Mouse": """
+COSMIC BYTE IGNIS MOUSE - TRI-MODE GAMING MOUSE - FULL MANUAL
+
+DESIGN: Stealth/zero RGB design - NO LED lighting on top during use. This is intentional, not a defect.
+Only LEDs are charging indicators (Red = charging, Green = fully charged). Clean professional look by design.
+
+CONNECTIVITY - BOTTOM SWITCH:
+- Left = 2.4GHz wireless. Centre = Power OFF. Right = Bluetooth.
+- Wired: connect USB-C paracord cable - activates automatically regardless of switch position. Charges simultaneously.
+- 2.4GHz: slide switch LEFT, plug USB receiver. Re-sync if not connecting: hold Left + Right + Scroll for 3 seconds.
+- Bluetooth: slide switch RIGHT. Pair: hold Left + Right + Scroll for 3 seconds - indicator blinks. Select 'CB Ignis' on device.
+- Always turn OFF (centre) when not in use to preserve battery.
+
+DPI BUTTON LOCATION: On the BOTTOM of the mouse (not on top). Press to cycle 6 levels:
+400 / 800 / 1600 / 3200 / 6400 / 12000 DPI. Via software: up to 24000 DPI.
+
+BATTERY:
+- 400mAh built-in. ~52 hours battery life (one of the longest in the range).
+- Charge time: 2-3 hours. Red steady = charging. Green steady = fully charged.
+- Connect USB-C to use in wired mode while charging simultaneously.
+
+SENSOR: PixArt 3311, 1000Hz polling, Huano switches (20M clicks).
+
+SLEEP: Auto-sleep after inactivity. Press any button to wake. Centre switch = OFF when storing.
+
+SOFTWARE: DPI up to 24000, macros, button customisation. Windows XP/Vista/7/8/10/11.
+Download from thecosmicbyte.com. macOS not officially supported for software.
+
+TROUBLESHOOTING:
+- No RGB is normal - by design.
+- DPI button not found: it is on the BOTTOM of the mouse.
+- 2.4G not working: check switch is LEFT, re-sync (hold L+R+Scroll 3s), try USB 2.0 port.
+- Bluetooth not pairing: switch RIGHT, hold L+R+Scroll 3s, remove old pairing first.
+- Battery draining fast: always switch to centre (OFF) when not in use. Avoid leaving in pairing mode.
+
+WARRANTY: 1 year manufacturing defects only. Water, physical damage NOT covered.
+Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
+""",
+
+    "Raptor Mouse": """
+COSMIC BYTE RAPTOR MOUSE - DUAL-MODE GAMING MOUSE - FULL MANUAL
+
+IMPORTANT: DUAL MODE ONLY - 2.4GHz wireless + USB wired. NO Bluetooth.
+
+CONNECTIVITY:
+- Wired: connect 1.6m braided USB cable - Windows detects within 5-30 seconds.
+- 2.4GHz wireless: plug USB dongle into PC, slide bottom switch to '2.4G'. Power switch must be ON.
+- NOT tri-mode. Customers expecting Bluetooth should be informed this model does not have it.
+
+SENSOR: PixArt 3212. DPI: 800-4800. Polling rate: 500Hz (NOT 1000Hz - hardware limit, not upgradable).
+Tracking: 30 IPS. Switches: Huano (10M clicks). Weight: 96g without cable.
+
+DPI: Press DPI button near scroll wheel to cycle through levels (800-4800).
+
+RGB: 11 RGB effects on body and logo. Check thecosmicbyte.com for available Raptor software.
+
+BATTERY: Internal (not user-replaceable). Red LED may indicate charging. Charge via USB cable.
+
+TROUBLESHOOTING:
+- Not connecting in 2.4G: check bottom switch is on '2.4G', power switch is ON, dongle in direct USB port (not hub). Try different USB port. Charge for 30 minutes if battery low.
+- Not powering on: charge for 30 minutes, check power switch is ON.
+- Cursor not moving/lagging: use mousepad (not glass), clean sensor, increase DPI, move dongle away from USB 3.0 and Wi-Fi, try USB 2.0 port for dongle.
+- Disconnecting randomly: charge fully, move dongle to front USB port, away from USB 3.0 devices and routers, use direct motherboard USB port (not hub).
+- Buttons not working: reconnect, restart PC, test on another computer.
+
+KEY SPECS vs OTHER MICE:
+- Only 500Hz polling (others have 1000Hz).
+- No Bluetooth (others have tri-mode).
+- 96g (heavier than tri-mode models).
+- Entry-level wireless gaming mouse.
+
+WARRANTY: 1 year manufacturing defects only. Water, physical damage NOT covered.
+Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
+""",
+
     "Ares": """
 COSMIC BYTE ARES - WIRED GAMEPAD - FULL MANUAL
 
@@ -1255,7 +1479,7 @@ KNOWLEDGE_BASE["All Products"] = "\n\n".join([
     f"=== {k} ===\n{v}" for k, v in KNOWLEDGE_BASE.items() if k != "All Products"
 ])
 
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse"]
 
 QUICK_QUESTIONS = {
     "All Products": [
