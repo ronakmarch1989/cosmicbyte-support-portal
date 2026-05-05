@@ -198,6 +198,17 @@ JOYSTICK CALIBRATION: Power off. Hold Back + X + Home for 1 second. Rotate both 
 JOYSTICK RANGE MODES: L3/R3 + Macro to toggle: Full Circle (default) -> Small Circle (precision) -> Square Mode.
 
 RESET: Pin into RESET hole on back for 2 seconds. Does NOT delete macros. Clears pairing data.
+GYRO (6-axis built-in):
+ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Assign gyro to any button of your choice.
+- Three activation modes:
+  * Always On - Gyro is always active (good for racing/flight games).
+  * Toggle - Press the assigned button once to enable, press again to disable.
+  * Press and Hold - Gyro only active while the button is held down (best for aiming in FPS).
+- Gyro output mimics left or right joystick movement, so it works in ANY game that supports a joystick - even games with no native gyro support.
+- Note: Native Bluetooth Gyro Mode is also available (press Y + HOME for 3 seconds) but software method works over wired/2.4GHz and gives full activation control.
+
 AUDIO: 3.5mm jack works in 2.4GHz and wired only. NOT functional in Bluetooth mode.
 
 TROUBLESHOOTING:
@@ -231,7 +242,17 @@ Bluetooth Gyro | PC/Android/iOS | Press Y + HOME | LED4 on
 Bluetooth DualShock | iOS | Press Turbo + HOME | LED1 on
 Polling: Wired/2.4GHz up to 1000Hz. Bluetooth = 125Hz.
 
-GYRO: Bluetooth mode ONLY natively. Via software (wired/2.4GHz): assign gyro to button for any game.
+GYRO: Bluetooth mode ONLY natively (press Y + HOME for 3 sec, LED4 on).
+Via Cosmic Byte software (wired/2.4GHz):
+ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Assign gyro to any button of your choice.
+- Three activation modes:
+  * Always On - Gyro is always active (good for racing/flight games).
+  * Toggle - Press the assigned button once to enable, press again to disable.
+  * Press and Hold - Gyro only active while the button is held down (best for aiming in FPS).
+- Gyro output mimics left or right joystick movement, so it works in ANY game that supports a joystick - even games with no native gyro support.
+- Note: Native Bluetooth Gyro Mode is also available (press Y + HOME for 3 seconds) but software method works over wired/2.4GHz and gives full activation control.
 STEAM MODE (wired only): Power OFF. Hold R3. While holding R3, plug USB-C cable. Boots into Steam mode. Restart Steam.
 AUDIO: 3.5mm jack works in 2.4GHz and wired only. NOT functional in Bluetooth mode.
 
@@ -280,7 +301,17 @@ CONNECTIVITY:
 - Bluetooth iOS XInput: Press B + HOME (3 sec). LED2.
 - Bluetooth Gyro (all): Press Y + HOME (3 sec). LED4.
 
-GYRO: Bluetooth mode ONLY natively. Via software (wired/2.4GHz): assign gyro to button.
+GYRO: Bluetooth mode ONLY natively (press Y + HOME for 3 sec, LED4 on).
+Via Cosmic Byte software (wired/2.4GHz):
+ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Assign gyro to any button of your choice.
+- Three activation modes:
+  * Always On - Gyro is always active (good for racing/flight games).
+  * Toggle - Press the assigned button once to enable, press again to disable.
+  * Press and Hold - Gyro only active while the button is held down (best for aiming in FPS).
+- Gyro output mimics left or right joystick movement, so it works in ANY game that supports a joystick - even games with no native gyro support.
+- Note: Native Bluetooth Gyro Mode is also available (press Y + HOME for 3 seconds) but software method works over wired/2.4GHz and gives full activation control.
 
 HOME BUTTON ACTIONS:
 - Wake: Press HOME.
@@ -628,7 +659,17 @@ Gyro (any BT) | Press Y + HOME (3 sec) | LED4
 iOS NOT supported in wired or 2.4GHz modes.
 
 STEAM MODE (wired only): Power OFF. Hold R3. While holding, plug USB-C cable -> boots into Steam mode. Restart Steam.
-GYRO: Bluetooth ONLY natively. Via software (wired/2.4GHz): assign gyro to button for any game.
+GYRO: Bluetooth ONLY natively (press Y + HOME for 3 sec, LED4 on).
+Via Cosmic Byte software (wired/2.4GHz):
+ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Assign gyro to any button of your choice.
+- Three activation modes:
+  * Always On - Gyro is always active (good for racing/flight games).
+  * Toggle - Press the assigned button once to enable, press again to disable.
+  * Press and Hold - Gyro only active while the button is held down (best for aiming in FPS).
+- Gyro output mimics left or right joystick movement, so it works in ANY game that supports a joystick - even games with no native gyro support.
+- Note: Native Bluetooth Gyro Mode is also available (press Y + HOME for 3 seconds) but software method works over wired/2.4GHz and gives full activation control.
 POLLING RATE: Up to 1000Hz (PC Wired & 2.4GHz). Note: more stable in wired mode.
 
 TURBO & AUTO FIRE:
