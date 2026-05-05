@@ -44,6 +44,9 @@ html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);
 .stTextInput input{background:var(--s1)!important;border:1px solid var(--border2)!important;border-radius:5px!important;color:var(--text)!important;font-size:14px!important;padding:12px 16px!important;font-family:'Inter',sans-serif!important;}
 .stTextInput input:focus{border-color:var(--orange)!important;box-shadow:0 0 0 2px var(--orange-dim)!important;}
 .stTextInput input::placeholder{color:#383838!important;}
+.stSelectbox > div > div{background:var(--s1)!important;border:1px solid var(--border2)!important;border-radius:5px!important;color:var(--text)!important;}
+.stSelectbox > div > div:focus-within{border-color:var(--orange)!important;box-shadow:0 0 0 2px var(--orange-dim)!important;}
+.stSelectbox svg{fill:var(--orange)!important;}
 .stButton button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.1em!important;text-transform:uppercase!important;font-family:'Rajdhani',sans-serif!important;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)!important;transition:all 0.15s!important;}
 .stButton button:hover{background:#FFC040!important;}
 button[kind="secondary"],div[data-testid="stHorizontalBlock"] button{background:transparent!important;color:var(--orange)!important;border:1px solid var(--orange-border)!important;clip-path:none!important;border-radius:6px!important;font-size:16px!important;padding:4px 10px!important;letter-spacing:0!important;text-transform:none!important;}
@@ -1597,18 +1600,23 @@ st.markdown(f"""
 
 # ── PRODUCT SELECTOR ──
 st.markdown('<div class="cb-label">Select your product</div>', unsafe_allow_html=True)
-cols = st.columns(len(PRODUCTS))
-for i, product in enumerate(PRODUCTS):
-    with cols[i]:
-        if st.button(product, key=f"prod_{product}",
-                     type="primary" if st.session_state.selected_product == product else "secondary"):
-            st.session_state.selected_product = product
-            st.session_state.messages = []
-            st.session_state.row_nums = []
-            st.session_state.feedback_given = {}
-            st.session_state.input_key += 1
-            st.session_state.session_id = str(uuid.uuid4())[:8]
-            st.rerun()
+
+selected = st.selectbox(
+    "Product",
+    PRODUCTS,
+    index=PRODUCTS.index(st.session_state.selected_product),
+    label_visibility="collapsed",
+    key="product_dropdown"
+)
+
+if selected != st.session_state.selected_product:
+    st.session_state.selected_product = selected
+    st.session_state.messages = []
+    st.session_state.row_nums = []
+    st.session_state.feedback_given = {}
+    st.session_state.input_key += 1
+    st.session_state.session_id = str(uuid.uuid4())[:8]
+    st.rerun()
 
 st.divider()
 
