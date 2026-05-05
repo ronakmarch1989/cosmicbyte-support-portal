@@ -1,5 +1,6 @@
 import streamlit as st
 import anthropic
+import os
 from datetime import datetime, timedelta
 
 # ── PRODUCT BUY LINKS ──
@@ -88,7 +89,18 @@ hr{border-color:var(--border2)!important;}
 </style>
 """, unsafe_allow_html=True)
 
-client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+
+def get_secret(key, default=""):
+    """Read from env vars (Render) or st.secrets (Streamlit Cloud)."""
+    val = os.environ.get(key)
+    if val:
+        return val
+    try:
+        return st.secrets[key]
+    except Exception:
+        return default
+
+client = anthropic.Anthropic(api_key=get_secret("ANTHROPIC_API_KEY"))
 
 # ── CONSTANTS ──
 CSV_COLUMNS = ["Date", "Time", "Session ID", "Product", "Customer Message", "AI Response", "Feedback", "Feedback Note"]
@@ -131,8 +143,8 @@ def build_csv_bytes(rows):
 
 def send_email_with_csv(csv_bytes, subject, recipient=DIGEST_EMAIL):
     try:
-        gmail_user = st.secrets["GMAIL_SENDER"]
-        gmail_app_pw = st.secrets["GMAIL_APP_PASSWORD"]
+        gmail_user = get_secret("GMAIL_SENDER")
+        gmail_app_pw = get_secret("GMAIL_APP_PASSWORD")
         msg = MIMEMultipart()
         msg["From"] = gmail_user
         msg["To"] = recipient
@@ -1536,7 +1548,7 @@ if "show_admin" not in st.session_state:
 auto_daily_digest()
 
 # ── ADMIN PAGE ──
-ADMIN_PASSWORD = st.secrets.get("ADMIN_PASSWORD", "cosmicbyte_admin")
+ADMIN_PASSWORD = get_secret("ADMIN_PASSWORD", "cosmicbyte_admin")
 
 def render_admin():
     st.markdown("## 🎮 Cosmic Byte - Admin Dashboard")
