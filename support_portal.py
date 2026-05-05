@@ -13,6 +13,10 @@ PRODUCT_URLS = {
     "Ares Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
     "Ares Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
     "Nexus": "https://www.thecosmicbyte.com/product-category/gaming-controllers/",
+    "Phantom TKL": "https://www.thecosmicbyte.com/product/cosmic-byte-phantom-tkl-tri-mode-gasket-hot-swappable-mechanical-switch-keyboard/",
+    "Phantom TKL Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-phantom-tkl-gasket-mechanical-wired-swappable-keyboard-with-prelubed-switches/",
+    "Pandora": "https://www.thecosmicbyte.com/product/cosmic-byte-pandora-tkl-mechanical-keyboard/",
+    "Vanth": "https://www.thecosmicbyte.com/product/cosmic-byte-vanth-mechanical-keyboard/",
     "Blitz Tri-Mode": "https://www.thecosmicbyte.com/product/cosmic-byte-blitz-wireless-wired-controller-for-pc-hall-effect-joystick-triggers-1000hz-polling-rate-black/",
     "Blitz Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-blitz-wireless-wired-controller-for-pc-hall-effect-joystick-triggers-1000hz-polling-rate-black/",
     "Eclipse": "https://www.thecosmicbyte.com/product/cosmic-byte-eclipse-tri-mode-controller-adjustable-force-tmr-joysticks/",
@@ -1273,6 +1277,179 @@ TROUBLESHOOTING:
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 """,
 
+    "Phantom TKL": """
+COSMIC BYTE PHANTOM TKL — WIRELESS TRIPLE MODE MECHANICAL KEYBOARD
+
+SPECS: 82 keys, US layout, Gasket mount. Hot-swappable 3/5-pin Outemu switches (50M keystrokes). PBT keycaps. RGB 18 lighting modes. 1000Hz polling. 1.8m braided USB-C cable with magnetic ring. 2500mAh battery. 333×143×43mm, 820g. Compatible: Windows, macOS, Linux, Android, iOS.
+
+CONNECTIVITY — MODE SWITCH (on keyboard):
+- Wired (middle/USB position): Connect USB-C cable. Keyboard works while charging. Red light = charging, Off = fully charged.
+- 2.4GHz (2.4G position): Pre-paired at factory — just plug receiver and go. Re-pair if lost: Hold FN + 4 for 3 seconds until white light blinks rapidly, then insert receiver.
+- Bluetooth (BT position): Supports 3 Bluetooth devices (BT1/BT2/BT3).
+  Pair new device: Hold FN + 1, FN + 2, or FN + 3 for 3 seconds until blue blinks rapidly. Select from device Bluetooth menu.
+  Switch between paired devices: Press FN + 1, 2, or 3 briefly.
+
+SYSTEM SWITCH (on keyboard):
+- Left = Windows mode (default)
+- Right = macOS mode (Win and Alt keys automatically swapped)
+
+KNOB CONTROL: Clockwise = Volume Up. Counter-clockwise = Volume Down. Press = Mute.
+
+FN KEY COMBINATIONS:
+- FN + F1/F2: Brightness control
+- FN + F3: Desktop (Win) / App Switch (Mac)
+- FN + F4: Multi-screen (Win) / App Switch (Mac)
+- FN + F5: Emoji
+- FN + F6: Screenshot
+- FN + F7/F8/F9: Cut / Copy / Paste
+- FN + F10/F11/F12: Previous / Play-Pause / Next
+- FN + L-WIN: Lock/Unlock Windows key
+- FN + W: Swap WASD keys with arrow keys
+
+BACKLIGHT:
+- FN + Backspace: Toggle backlight On/Off
+- FN + Home: Cycle through 18 lighting effects
+- FN + PgUp/PgDn: Change colors
+- FN + ↑/↓: Brightness (5 levels, 0–100%)
+- FN + →/←: Speed (5 levels)
+- FN + ESC (hold 3s): Restore factory settings
+- FN + 0: FPS mode (WASD + arrow keys lit)
+- FN + `~: Custom lighting record mode
+
+POWER SAVING:
+- Sleep: 2 minutes inactivity. Deep sleep: 30 minutes.
+- Wake: Press any key (takes 2–4 seconds).
+- Reduce backlight to extend battery life.
+
+TROUBLESHOOTING:
+- 2.4G not working: Check mode switch is on 2.4G, receiver plugged in. Re-pair: hold FN + 4 for 3s.
+- Bluetooth not connecting: Mode switch to BT. Hold FN + 1/2/3 for 3s until blue blinks. Ensure device Bluetooth is on. To reconnect previously paired device: press FN + 1/2/3 briefly.
+- Backlight not working: Press FN + Backspace to toggle. Increase brightness: FN + ↑.
+- WASD and arrow keys swapped: Press FN + W to toggle.
+- Battery drains fast: Reduce backlight brightness or switch to wired mode.
+- Windows key disabled: Press FN + L-WIN to unlock.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+""",
+
+    "Phantom TKL Wired": """
+COSMIC BYTE PHANTOM TKL WIRED — GASKET MECHANICAL KEYBOARD (CB-GK-42)
+
+WIRED ONLY. No wireless. Gasket design for reduced typing noise. Per-key RGB with Windows software.
+
+SPECS: 82 keys US layout. Pre-lubed Outemu swappable switches (50M keystrokes). Double-shot ABS keycaps. 1000Hz polling. Volume roller knob. Detachable USB-C port. 1.8m braided cable with magnetic ring. 333×143×43mm, 793g. Compatible: Windows 98/XP/Vista/7/8/10/11, macOS.
+
+VOLUME ROLLER: Clockwise = Vol+. Counter-clockwise = Vol-. Press = Mute.
+
+SWITCH SWAPPING: Switches are hot-swappable (not soldered). Use included keycap and switch puller to remove and replace. Compatible with Blue, Red, Brown or other Outemu swappable switches (3-pin and 5-pin).
+
+FN KEY COMBINATIONS:
+- FN + F1: Music. FN + F2: Vol-. FN + F3: Vol+. FN + F4: Mute.
+- FN + F5: Stop. FN + F6: Previous. FN + F7: Play/Pause. FN + F8: Next.
+- FN + F9: Email. FN + F10: Home Page. FN + F11: My Computer. FN + F12: Calculator.
+- FN + DEL: Scroll Lock. FN + Home: Insert. FN + PgUp: PrtSc. FN + PgDn: Pause.
+- FN + L-WIN: Lock/Unlock Windows key (W indicator lights).
+- FN + W: Swap WASD with arrow keys.
+
+BACKLIGHT:
+- FN + | (backslash+pipe key): Cycle 18 RGB lighting effects
+- FN + Enter: Change backlight colour
+- FN + X: Toggle backlight On/Off
+- FN + ESC (hold 3s): Restore factory settings
+- FN + ↑/↓: Increase/Decrease brightness (5 levels: 0/25/50/75/100%). Indicators blink 3x at limit.
+- FN + →/←: Increase/Decrease animation speed (5 levels)
+
+GAME MODES:
+- FN + 1: FPS mode (WASD + arrow keys lit)
+- FN + 2: LOL mode
+- FN + 3: Office mode (26 letters + punctuation)
+- FN + `~: Custom backlight recording mode
+
+CUSTOM BACKLIGHT RECORDING:
+- Enter mode: FN + `~ (indicators flash in top-right corner)
+- Press keys to cycle colours: 1st press = Red, 2nd = Orange, 3rd = Yellow, etc.
+- Save and exit: Press FN + `~ again
+
+SOFTWARE: Download from thecosmicbyte.com for per-key RGB customisation. Windows only.
+
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+""",
+
+    "Pandora": """
+COSMIC BYTE PANDORA TKL — MECHANICAL GAMING KEYBOARD (CB-GK-25/CB-GK-26)
+
+WIRED ONLY. TKL (87 keys, US layout). Outemu swappable switches (50M keystrokes). Rainbow LED backlight. Metal body. USB connection.
+
+SPECS: 87 keys. Outemu Blue (CB-GK-25) or Red (CB-GK-26) swappable switches. 2.0±0.6mm keystroke. PVC cable 1.5m. Metal body. 377×120×34mm, 565g. Win lock, Caps lock, Scroll lock indicators.
+
+SWITCH SWAPPING: Not soldered — use included keycap and switch puller to remove and replace. Compatible with Blue, Red, Brown or other Outemu swappable switches. Visit thecosmicbyte.com to buy switches.
+
+FN KEY COMBINATIONS:
+- FN + L-WIN: Lock/Unlock Windows key (top-right corner lights up)
+- FN + ←/→: Adjust backlight speed (5 levels)
+- FN + ↑/↓: Adjust backlight brightness (6 levels)
+- FN + Scroll Lock: Switch between 6-key and all-key anti-ghosting
+- FN + F1: My Computer. FN + F2: Search. FN + F3: Calculator. FN + F4: Media Player.
+- FN + F5: Previous. FN + F6: Next. FN + F7: Play/Pause. FN + F8: Stop.
+- FN + F9: Mute. FN + F10: Volume-. FN + F11: Volume+. FN + F12: Lock all keys.
+- FN + F10/F11/F12: Previous/Play-Pause/Next (media)
+
+GAME MODES (FN + 1 to 8):
+- FN + 1: FPS — WASD + arrow keys + Esc lit
+- FN + 2: CF mode
+- FN + 3: COD mode
+- FN + 4: RTS mode
+- FN + 5: LOL mode
+- FN + 6: Car Racing mode
+- FN + 7: NBA mode
+- FN + 8: LOL mode 2
+
+BACKLIGHT EFFECTS (20 total):
+- FN + HOME, FN + INS, FN + PgUp, FN + Del, FN + PgDn: 4 effects each = 20 total modes
+
+CUSTOM BACKLIGHT RECORDING:
+- FN + END: Enter/save recording mode
+- Press FN + 9 or FN + 0 to select custom mode slot, then FN + END to start recording
+- Press keys to set on/off. FN + END to save. FN + ESC to clear and restore normal.
+
+COMPATIBILITY: Windows and Mac (basic use). Software download from thecosmicbyte.com.
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+""",
+
+    "Vanth": """
+COSMIC BYTE VANTH — MECHANICAL GAMING KEYBOARD (CB-GK-27/CB-GK-28)
+
+WIRED ONLY. Full-size 104-key keyboard (US layout). Outemu swappable switches (50M keystrokes). Rainbow LED backlight. Long-lasting metal body. USB connection.
+
+SPECS: 104 keys. Outemu Blue (CB-GK-27) or Red (CB-GK-28) swappable switches. 2.0±0.6mm keystroke. PVC cable 1.5m. Metal body. 430×120×37mm, 670g. Win lock, Caps lock, Scroll lock indicators.
+
+SWITCH SWAPPING: Not soldered — use included keycap and switch puller to remove and replace. Compatible with Blue, Red, Brown or other Outemu swappable switches. Visit thecosmicbyte.com to buy switches.
+
+FN KEY COMBINATIONS:
+- FN + L-WIN: Lock/Unlock Windows key (top-right corner lights up)
+- FN + ←/→: Adjust backlight speed (5 levels)
+- FN + ↑/↓: Adjust backlight brightness (6 levels)
+- FN + Scroll Lock: Switch between 6-key and all-key anti-ghosting
+- FN + F1: My Computer. FN + F2: Search. FN + F3: Calculator. FN + F4: Media Player.
+- FN + F5: Previous. FN + F6: Next. FN + F7: Play/Pause. FN + F8: Stop.
+- FN + F9: Mute. FN + F10: Volume-. FN + F11: Volume+. FN + F12: Lock all keys.
+
+GAME MODES (FN + 1 to 8):
+- FN + 1: FPS. FN + 2: CF. FN + 3: COD. FN + 4: RTS.
+- FN + 5: LOL. FN + 6: Car Race. FN + 7: NBA. FN + 8: LOL 2.
+
+BACKLIGHT EFFECTS (20 total):
+- FN + HOME, FN + INS, FN + PgUp, FN + Del, FN + PgDn: 4 effects each = 20 total.
+
+CUSTOM BACKLIGHT RECORDING:
+- FN + END: Enter/save recording mode
+- FN + 9 or FN + 0 to select slot, then FN + END to start recording
+- Press keys on/off. FN + END to save. FN + ESC to clear and restore.
+
+COMPATIBILITY: Windows and Mac (basic use). Software download from thecosmicbyte.com.
+WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+""",
+
     "Ares": """
 COSMIC BYTE ARES - WIRED GAMEPAD - FULL MANUAL
 
@@ -1325,7 +1502,7 @@ KNOWLEDGE_BASE["All Products"] = "\n\n".join([
     f"=== {k} ===\n{v}" for k, v in KNOWLEDGE_BASE.items() if k != "All Products"
 ])
 
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth"]
 
 QUICK_QUESTIONS = {
     "All Products": [
@@ -1481,6 +1658,34 @@ QUICK_QUESTIONS = {
         "How do I change DPI?",
         "RGB setup",
         "Mouse cursor lagging",
+    ],
+    "Phantom TKL": [
+        "How to connect via Bluetooth?",
+        "How to switch between 3 Bluetooth devices?",
+        "2.4G not connecting — how to re-pair?",
+        "Battery draining fast",
+        "How to change backlight effect?",
+    ],
+    "Phantom TKL Wired": [
+        "How to swap switches?",
+        "How to change backlight effects?",
+        "FN key shortcuts list",
+        "Windows key locked — how to unlock?",
+        "WASD and arrows swapped — how to fix?",
+    ],
+    "Pandora": [
+        "How to swap switches?",
+        "How to change backlight?",
+        "Windows key locked — how to unlock?",
+        "Game mode shortcuts",
+        "Custom backlight recording",
+    ],
+    "Vanth": [
+        "How to swap switches?",
+        "How to change backlight?",
+        "Windows key locked — how to unlock?",
+        "Game mode shortcuts",
+        "Custom backlight recording",
     ],
 }
 
