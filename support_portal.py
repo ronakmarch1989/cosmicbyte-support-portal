@@ -1818,11 +1818,98 @@ STRICT RULES - always follow:
 # ── SESSION STATE ──
 if "messages" not in st.session_state:
     st.session_state.messages = []
+def match_product_from_title(title: str) -> str:
+    """
+    Match a raw WooCommerce page title to the closest product in our KB.
+    The WooCommerce plugin passes the raw product page title here.
+    Plugin NEVER needs to change — only update this file on GitHub.
+
+    ─── HOW TO ADD A NEW PRODUCT ───────────────────────────────────────────
+    When a new Cosmic Byte product is launched, do ALL of the following:
+
+    1. KEYWORD MAP (below): Add a new tuple ("keyword", "Product Name")
+       - Use the most specific keyword first (e.g. "ares pro" before "ares")
+       - The keyword should match part of the WooCommerce product page title
+
+    2. PRODUCTS LIST: Add "Product Name" to the PRODUCTS list further below
+       so it appears in the portal dropdown
+
+    3. KNOWLEDGE BASE: Add a full KB entry in KNOWLEDGE_BASE dict with:
+       - Full product specs (keys, switches, connectivity, battery if wireless)
+       - What's in the box
+       - All FN key shortcuts
+       - Backlight controls
+       - Connectivity setup (wired/2.4G/Bluetooth steps if applicable)
+       - Switch swapping steps (if hot-swappable)
+       - Software download info (thecosmicbyte.com)
+       - Full troubleshooting section (not detected, key not working,
+         backlight issues, wireless issues, factory reset procedure)
+       - Warranty and return policy
+       - Support: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
+
+    4. PRODUCT URL: Add to PRODUCT_URLS dict with the exact product page URL
+       from thecosmicbyte.com (verify the URL is live before adding)
+
+    5. QUICK QUESTIONS: Add 4-5 common questions to QUICK_QUESTIONS dict
+
+    6. WooCommerce plugin: NO CHANGES NEEDED — it auto-passes page title here
+    ────────────────────────────────────────────────────────────────────────
+    """
+    t = title.lower()
+    # Order matters — longer/more specific keywords must come first
+    checks = [
+        ("phantom tkl wireless",  "Phantom TKL"),
+        ("phantom tkl wired",     "Phantom TKL Wired"),
+        ("cb-gk-42",              "Phantom TKL Wired"),
+        ("phantom tkl",           "Phantom TKL"),
+        ("phantom",               "Phantom TKL"),
+        ("ares pro",              "Ares Pro"),
+        ("ares wireless",         "Ares Wireless"),
+        ("ares wired",            "Ares Wired"),
+        ("ares",                  "Ares"),
+        ("blitz tri",             "Blitz Tri-Mode"),
+        ("blitz wireless",        "Blitz Wireless"),
+        ("blitz",                 "Blitz Tri-Mode"),
+        ("stratos xenon",         "Stratos Xenon"),
+        ("stratos",               "Stratos Xenon"),
+        ("helios",                "Helios Mouse"),
+        ("atlas",                 "Atlas Mouse"),
+        ("aether",                "Aether Mouse"),
+        ("umbra",                 "Umbra Mouse"),
+        ("firestorm",             "Firestorm Mouse"),
+        ("ignis",                 "Ignis Mouse"),
+        ("raptor",                "Raptor Mouse"),
+        ("lumora",                "Lumora"),
+        ("stellaris",             "Stellaris"),
+        ("drakon",                "Drakon"),
+        ("nexus",                 "Nexus"),
+        ("eclipse",               "Eclipse"),
+        ("starforge",             "Starforge"),
+        ("quantum",               "Quantum"),
+        ("velox",                 "Velox"),
+        ("pandora",               "Pandora"),
+        ("vanth",                 "Vanth"),
+        ("artemis",               "Artemis"),
+        ("neon",                  "Neon"),
+        ("astra",                 "Astra"),
+    ]
+    for keyword, product in checks:
+        if keyword in t:
+            return product if product in PRODUCTS else "All Products"
+    return "All Products"
+
 if "selected_product" not in st.session_state:
-    # Read ?product= URL param — used when embedded as iframe on product pages
     _params = st.query_params
-    _url_product = _params.get("product", "All Products")
-    st.session_state.selected_product = _url_product if _url_product in PRODUCTS else "All Products"
+    # Support both ?page_title=... (new plugin — raw WooCommerce title)
+    # and ?product=... (direct/legacy embed) for backwards compatibility
+    _page_title = _params.get("page_title", "")
+    _url_product = _params.get("product", "")
+    if _page_title:
+        st.session_state.selected_product = match_product_from_title(_page_title)
+    elif _url_product and _url_product in PRODUCTS:
+        st.session_state.selected_product = _url_product
+    else:
+        st.session_state.selected_product = "All Products"
 if "embed_mode" not in st.session_state:
     _params = st.query_params
     st.session_state.embed_mode = _params.get("embed", "false").lower() == "true"
