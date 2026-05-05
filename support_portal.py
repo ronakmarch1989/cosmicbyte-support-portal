@@ -2337,16 +2337,113 @@ def match_product_from_title(title: str) -> str:
             return product if product in PRODUCTS else "All Products"
     return "All Products"
 
-def detect_product_from_message(messages: list) -> str:
+# ── COMPACT CATALOGUE for recommendation/comparison queries ──
+# Sent when a customer asks "which should I buy?" with no specific product.
+# ~2K tokens — far cheaper than the full 27K concatenated KB.
+CATALOGUE_CONTROLLERS = """
+COSMIC BYTE CONTROLLERS — Quick Comparison Guide
+
+WIRED (budget):
+- Ares Wired: Basic wired, dual vibration, works on PC/Android. Entry level.
+- Nexus: Wired, Hall Effect joysticks (drift-resistant), dual vibration. Best wired value.
+
+WIRELESS/TRI-MODE (mid range):
+- Ares Wireless: 2.4GHz + Bluetooth, 600mAh, no gyro, no software. Basic wireless.
+- Blitz Wireless: 2.4GHz + Bluetooth, Hall Effect, RGB, 600mAh. Wireless upgrade over Ares.
+
+TRI-MODE WITH ADVANCED FEATURES:
+- Ares Pro: Tri-mode (2.4GHz/BT/Wired), Hall Effect, gyro, software customisation, 600mAh. Best all-rounder.
+- Blitz Tri-Mode: Tri-mode, Hall Effect, gyro, RGB, macro, 1000Hz polling, 600mAh. Premium choice.
+
+PREMIUM / FLAGSHIP:
+- Lumora: Tri-mode, 6-axis gyro, touchpad, Hall Effect, 1000mAh. Console-style layout.
+- Stellaris: Tri-mode, touchpad, gyro, Hall Effect, RGB, 1000mAh. Premium build.
+- Drakon: Tri-mode, Hall Effect, gyro, RGB, 600mAh. Aggressive gaming design.
+- Starforge: Tri-mode, Hall Effect, gyro, 600mAh. Budget flagship.
+- Stratos Xenon: Tri-mode, Hall Effect, large grip. Comfort-focused.
+- Quantum: Tri-mode, Hall Effect, gyro. Mid-premium.
+- Eclipse: Tri-mode, Hall Effect. Entry flagship.
+
+BUYING GUIDE:
+- Just PC gaming, budget-friendly → Nexus (Hall Effect, wired)
+- Wireless PC + mobile → Ares Pro (software) or Blitz Tri-Mode (RGB/macro)
+- Console-style feel → Lumora or Stellaris
+- Best value wireless → Blitz Wireless or Ares Pro
+"""
+
+CATALOGUE_MICE = """
+COSMIC BYTE MICE — Quick Comparison Guide
+
+BASIC / OFFICE:
+- Atlas Mouse: Wired, 3200 DPI, basic gaming. Entry level.
+- Umbra Mouse: Wired, 3200 DPI, lightweight. Entry level.
+- Raptor Mouse: Wired, 3200 DPI. Budget option.
+
+MID RANGE:
+- Ignis Mouse: Wired, 6400 DPI, RGB, 6 buttons. Good everyday gaming.
+- Firestorm Mouse: Wired, 6400 DPI, RGB. Mid-range.
+- Aether Mouse: Wired, 6400 DPI, ergonomic. Comfort-focused.
+
+FLAGSHIP:
+- Helios Mouse: Wired, 10000 DPI, RGB, 7 buttons. Best CB mouse.
+- Velox: Wired, 6400 DPI, honeycomb shell, ultra-lightweight. Speed-focused.
+
+BUYING GUIDE:
+- Budget gaming → Ignis or Firestorm
+- Lightweight/fast → Velox
+- Best performance → Helios
+"""
+
+CATALOGUE_KEYBOARDS = """
+COSMIC BYTE KEYBOARDS — Quick Comparison Guide
+
+TKL (no numpad, compact):
+- Firefly TKL (CB-GK-16/18): Wired, membrane or outemu switches, backlit. Budget TKL.
+- Pandora: Wired TKL, Outemu Blue/Brown, RGB per-key. Mid-range.
+- Phantom TKL Wired (CB-GK-42): Wired TKL, Outemu switches, RGB. Good wired TKL.
+- Phantom TKL: Tri-mode wireless TKL, Outemu switches, RGB, 4000mAh. Best wireless TKL.
+- Artemis Wired (CB-GK-40): Wired TKL, optical switches, RGB. Fast actuation.
+- Artemis Wireless: Tri-mode, optical switches, RGB. Premium wireless TKL.
+
+FULL SIZE (with numpad):
+- Astra (CB-GK-33): Wired full-size, Outemu switches, RGB. Budget full.
+- Trinity (CB-GK-39): Wired full-size, OPTICAL switches (not mechanical), RGB. Note: NOT compatible with standard mech keycaps.
+- Vanth: Wired full-size, Outemu switches, RGB. Mid-range full.
+
+BUYING GUIDE:
+- Budget compact → Pandora or Firefly TKL
+- Wireless compact → Phantom TKL (wireless)
+- Fast switches → Artemis (optical)
+- Full size with numpad → Vanth or Astra
+- Note: Trinity uses optical switches — confirm customer wants optical, not mechanical
+"""
+
+CATALOGUE_ALL = CATALOGUE_CONTROLLERS + CATALOGUE_MICE + CATALOGUE_KEYBOARDS
+
+
+def detect_products_from_message(messages: list) -> tuple:
     """
-    Scan the full conversation so far for the first product keyword mention.
-    Used when 'All Products' is selected to avoid sending the full 27K KB.
-    Returns the matched product name or empty string if none found.
+    Scan conversation for product keyword mentions.
+    Returns (matched_products: list, is_recommendation_query: bool).
+    - matched_products: list of product names found (may be multiple for comparisons)
+    - is_recommendation_query: True if the customer seems to want a suggestion
     """
-    # Combine all user messages into one searchable string
     combined = " ".join(
         m["content"].lower() for m in messages if m["role"] == "user"
     )
+
+    # Detect recommendation/comparison intent
+    rec_keywords = [
+        "which should i", "which one should", "recommend", "suggestion",
+        "best for", "which is better", "compare", "difference between",
+        "vs ", " vs", "which to buy", "help me choose", "what to buy",
+        "which controller", "which mouse", "which keyboard", "which gamepad",
+        "good controller", "good mouse", "good keyboard", "good gamepad",
+        "budget", "under ", "best value",
+    ]
+    is_recommendation = any(kw in combined for kw in rec_keywords)
+
+    # Detect specific products mentioned (collect ALL, not just first)
     checks = [
         ("phantom tkl wired",    "Phantom TKL Wired"),
         ("cb-gk-42",             "Phantom TKL Wired"),
@@ -2390,10 +2487,20 @@ def detect_product_from_message(messages: list) -> str:
         ("astra",                "Astra"),
         ("cb-gk-33",             "Astra"),
     ]
+    found = []
+    seen = set()
     for keyword, product in checks:
-        if keyword in combined:
-            return product if product in PRODUCTS else ""
-    return ""
+        if keyword in combined and product not in seen and product in PRODUCTS:
+            found.append(product)
+            seen.add(product)
+
+    return found, is_recommendation
+
+
+# Keep old name as alias for backward compat with WooCommerce match flow
+def detect_product_from_message(messages: list) -> str:
+    products, _ = detect_products_from_message(messages)
+    return products[0] if products else ""
 
 if "selected_product" not in st.session_state:
     _params = st.query_params
@@ -2681,11 +2788,23 @@ for idx, msg in enumerate(st.session_state.messages):
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     user_question = st.session_state.messages[-1]["content"]
     product = st.session_state.selected_product
-    # For "All Products" mode: detect product from message to avoid sending 27K KB.
-    # Falls back to empty string — bot will ask which product the customer has.
+    # For "All Products" mode: smart KB injection to avoid sending 27K tokens.
+    # 1. If specific products are mentioned → inject only those KBs (e.g. comparison)
+    # 2. If recommendation/comparison intent but no specific product → inject compact catalogue
+    # 3. If nothing detected yet → empty (bot will ask which product)
     if product == "All Products":
-        detected = detect_product_from_message(st.session_state.messages)
-        knowledge = KNOWLEDGE_BASE.get(detected, "") if detected else ""
+        detected_list, is_rec = detect_products_from_message(st.session_state.messages)
+        if detected_list:
+            # Inject KB for every mentioned product (e.g. both sides of a comparison)
+            knowledge = "\n\n".join(
+                f"=== {p} ===\n{KNOWLEDGE_BASE[p]}"
+                for p in detected_list if p in KNOWLEDGE_BASE
+            )
+        elif is_rec:
+            # Recommendation query with no specific product — send compact catalogue
+            knowledge = CATALOGUE_ALL
+        else:
+            knowledge = ""  # Bot will ask which product the customer has
     else:
         knowledge = KNOWLEDGE_BASE.get(product, "")
 
