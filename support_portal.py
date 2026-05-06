@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.5.3
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.5.4
 ==============================================================================
 
 What this file is:
@@ -62,6 +62,29 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.5.4 (2026-05-06) -- Claude
+  - ROOT CAUSE FOUND. The "Unable to connect" error has been failing for
+    every query because of two pre-existing variable-name bugs in the
+    AI-response code block (lines 3710 + 3714 of the previous version).
+    Neither was introduced by recent edits -- both have been in the file
+    from the original version, on the main API-call code path.
+      Bug 1: line 3710 referenced `user_input`, which is only defined in
+        the form block FURTHER DOWN in the file (line 3768). Streamlit
+        runs the script top-to-bottom on every interaction, so when the
+        AI-response block executes, the form below it hasn't run yet --
+        `user_input` doesn't exist in scope. Fix: use `user_question`,
+        which IS defined just above the block at line 3655.
+      Bug 2: line 3714 referenced `kb_content`, which is never defined
+        anywhere in the file. The correct variable from the surrounding
+        code is `knowledge` (defined at lines 3665/3671/3673/3675).
+        This bug would have triggered immediately after fixing Bug 1.
+    Both fixed in this version. The portal should now respond to queries
+    once v2.5.4 is deployed and the footer reads v2.5.4.
+  - Diagnostic expander from v2.5.2/v2.5.3 is intentionally KEPT for now,
+    so if anything else fails post-deploy, we still see the traceback.
+    A future v2.5.5 patch can remove it once we confirm the portal works
+    cleanly across multiple test queries.
 
 v2.5.3 (2026-05-06) -- Claude
   - Deployment-verification patch. After v2.5.2 added a diagnostic expander,
@@ -154,7 +177,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.5.3"
+__version__ = "2.5.4"
 
 import streamlit as st
 import anthropic
@@ -3707,11 +3730,11 @@ KNOWLEDGE BASE (product manuals):
 CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
 
             # Enable web search for third-party brand queries
-            third_party = detect_third_party_brand(user_input)
+            third_party = detect_third_party_brand(user_question)
             api_kwargs = dict(
                 model="claude-haiku-4-5-20251001",
                 max_tokens=600,
-                system=SYSTEM_PROMPT + "\n\nPRODUCT KNOWLEDGE:\n" + kb_content,
+                system=SYSTEM_PROMPT + "\n\nPRODUCT KNOWLEDGE:\n" + knowledge,
                 messages=api_messages,
             )
             if third_party:
