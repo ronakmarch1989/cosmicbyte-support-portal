@@ -332,6 +332,21 @@ TRIGGER MODE SWITCH (physical, on back): Analog = longer travel, gradual input (
 
 LED BATTERY CHECK: Press CAPTURE + START (shows 3 seconds). LED1=1-25%, LED2=26-50%, LED3=51-75%, LED4=76-100%.
 
+TRIGGER MODE SWITCH (physical switch on controller):
+- Flip INWARD = Analog mode (pressure-sensitive, gradual — good for racing games).
+- Flip OUTWARD = Digital mode (instant button-like input — good for FPS/action games).
+
+BUTTON LAYOUT SWAP SHORTCUTS (PC mode only):
+- Swap A/B and X/Y buttons: Hold TURBO + R3 for 3 seconds. Both pairs swap simultaneously. Motor vibration confirms. Repeat to revert.
+- Swap D-Pad and Left Stick: Hold START + L3 for 3 seconds. Motor vibration confirms. Repeat to revert.
+- BOTH swaps are cleared by Factory Reset (SELECT + L3 + R3 held for 5 seconds).
+- Note: A/B X/Y swap applies to both pairs simultaneously — you cannot swap just one pair independently.
+
+TURBO SPEED ADJUSTMENT:
+- Increase Turbo speed: Hold TURBO + Right Stick (push right).
+- Decrease Turbo speed: Hold TURBO + Right Stick (push left).
+- Three speed levels: 5, 12, and 20 presses per second.
+
 TURBO: Hold TURBO + A/B/X/Y/L1/L2/R1/R2. Cycle: Manual Turbo -> Auto Turbo -> Off. Hold TURBO for 5 seconds to clear all.
 Speed: Level 1=5/sec, Level 2=12/sec (default), Level 3=20/sec. Adjust: TURBO + Right Stick Right (up), Left (down).
 
@@ -443,6 +458,14 @@ IMPORTANT - SOFTWARE SUPPORT MODEL CHECK:
 - Older models work fine as controllers but cannot use software customization features.
 
 FIRMWARE UPDATE - CRITICAL WARNING:
+LATEST FIRMWARE FEATURES (2026 update):
+- New joystick calibration shortcut: Power OFF controller → Press and hold Back + X + Home for 1 second → LEDs flash green and blue + controller vibrates once → Follow on-screen steps → Press Start to confirm → Green LED + vibration = done.
+- Joystick mode switching now has clear vibration cues.
+- Auto shutdown time can now be adjusted via the software.
+- Controller vibration strength shortcut updated to prevent unintended changes during gameplay.
+- To update firmware: Connect in WIRED mode via software, then click Firmware Update. Do NOT use any other firmware files.
+
+
 - TWO different firmware versions exist.
 - Models WITH "App Support" label: update firmware ONLY through the Cosmic Byte software (connect wired, press firmware update in software). NEVER use the standalone firmware file.
 - Models WITHOUT "App Support" label: use the separate standalone firmware file from thecosmicbyte.com.
@@ -711,7 +734,21 @@ COSMIC BYTE BLITZ TRI-MODE CONTROLLER - FULL MANUAL
 
 PC primary platform. Consoles NOT supported. Some functions may not work on Android/iOS. No warranty for unsupported device damage.
 
-KEY FEATURES: Tri-Mode (USB Wired/2.4GHz/Bluetooth), TMR joysticks (drift-resistant), Hall Effect analog triggers, 1000Hz polling (PC wired & 2.4GHz), Turbo & Auto Fire, Macro programming, Adjustable dual-motor vibration, Charging dock support (sold separately).
+KEY FEATURES: Tri-Mode (USB Wired/2.4GHz/Bluetooth), TMR joysticks (drift-resistant), Hall Effect analog triggers, 1000Hz polling (PC wired & 2.4GHz), Turbo & Auto Fire, Macro programming, Adjustable dual-motor vibration, Charging dock support (sold separately), Gyro support.
+
+POWER & RESET:
+- Power ON: Press HOME for 0.5-1 second.
+- Power OFF: Hold HOME for 5 seconds.
+- Auto-sleep: After 5 minutes of inactivity.
+- Soft reset: Hold HOME for 8 seconds.
+- Factory reset: Hold SELECT + L3 + R3 simultaneously for 5 seconds (clears all custom settings).
+- Controller charging but not working: Press HOME once to wake it.
+- Controller won't turn on: Charge for 30-60 minutes first. If still unresponsive, hold HOME for 8 seconds.
+
+CLOUD GAMING:
+Works with GeForce Now, Xbox Cloud Gaming, and OnePlay when connected via PC USB Wired or 2.4GHz Wireless. Avoid Bluetooth for cloud gaming.
+
+SOFTWARE NOTE: Software only works with latest Blitz Tri-Mode model (back label shows "App Support"). Does NOT work with older dual-mode model.
 
 CONNECTIVITY:
 Platform | Mode | How to Connect | LED
@@ -1375,7 +1412,10 @@ POWER AND BATTERY:
 - Charging: Use the included USB-C cable. Red = charging. Light turns off when fully charged.
 - Software works in wired mode AND wireless mode (2.4G and Bluetooth)
 
-SOFTWARE: Download from thecosmicbyte.com (software page). Windows only. Lets you remap keys, customise per-key RGB, set macros. Keyboard must be connected via USB-C for software to detect it.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website. (software page). Windows only. Lets you remap keys, customise per-key RGB, set macros. Keyboard must be connected via USB-C for software to detect it.
 
 TROUBLESHOOTING:
 - Keyboard not detected in wired mode: Try a different USB port (preferably USB 3.0). Try a different USB-C cable. Make sure mode switch is on USB/middle position.
@@ -1442,7 +1482,10 @@ GAME LIGHTING MODES:
   Set key colours: Press a key repeatedly to cycle — 1st press = Red, 2nd = Orange, 3rd = Yellow, 4th = Green, 5th = Cyan, 6th = Blue, 7th = Purple, 8th = White, 9th = Off
   Save: Press FN + ~ again to save and exit
 
-SOFTWARE: Download from thecosmicbyte.com (Windows only). Enables per-key RGB customisation, macros, and key remapping. Visit the Phantom TKL product page on the website > Software & User Manual tab > download.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website. (Windows only). Enables per-key RGB customisation, macros, and key remapping. Visit the Phantom TKL product page on the website > Software & User Manual tab > download.
 
 TROUBLESHOOTING:
 - Keyboard not detected: Try a different USB port (USB 2.0 or 3.0 both work). Try a different USB-C cable. Try on a different PC to isolate the issue.
@@ -1503,7 +1546,10 @@ CUSTOM BACKLIGHT RECORDING:
 4. Press FN + End to save
 5. Press FN + ESC to clear custom and restore to normal lighting
 
-SOFTWARE: Download from thecosmicbyte.com (Windows only). Allows per-key RGB customisation and advanced settings.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website. (Windows only). Allows per-key RGB customisation and advanced settings.
 
 TROUBLESHOOTING:
 - Keyboard not detected: Try a different USB port. Try a different cable. Test on another PC.
@@ -1563,7 +1609,10 @@ CUSTOM BACKLIGHT RECORDING:
 3. Press keys to assign colours
 4. FN + End to save | FN + ESC to clear
 
-SOFTWARE: Download from thecosmicbyte.com (Windows only). Per-key RGB and advanced customisation.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website. (Windows only). Per-key RGB and advanced customisation.
 
 TROUBLESHOOTING:
 - Keyboard not detected: Try different USB port. Different cable. Test on another PC.
@@ -1648,7 +1697,10 @@ CUSTOM BACKLIGHT RECORDING:
 SWITCH SWAPPING:
 Step 1: Remove keycap with keycap puller. Step 2: Use switch puller on both sides, squeeze and pull straight up. Step 3: Insert new switch straight down until it clicks. Compatible: Outemu Blue, Red, Brown or any Outemu swappable switches.
 
-SOFTWARE: Download from thecosmicbyte.com. Windows only. Per-key RGB, macros, key remapping. Keyboard must be in wired mode for software to work.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website.. Windows only. Per-key RGB, macros, key remapping. Keyboard must be in wired mode for software to work.
 
 TROUBLESHOOTING:
 - Keyboard not powering on in wireless: Check battery switch on back is turned ON.
@@ -1672,6 +1724,8 @@ WIRED ONLY. No wireless, no battery. 68-key compact layout. Outemu swappable swi
 
 SPECS: 68 keys, US layout. Outemu swappable switches, 50M keystrokes. 1.7m PVC USB-C cable. 292x102x40mm, 560g. Software: Windows and Mac (basic use). Keycaps: Injection molded double-shot. All key anti-ghosting. Win-Key lock available.
 
+SOFTWARE WARNING: ALWAYS download software from thecosmicbyte.com ONLY. Do NOT use old software from other download links — it can force an older firmware and cause LEDs to stop working. The 2025 updated software auto-detects the keyboard RGB generation and prompts for upgrade. If LED issues occur due to wrong firmware, contact cc@thecosmicbyte.com for the correct firmware fix.
+
 WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, user manual.
 
 FN KEY SHORTCUTS:
@@ -1694,7 +1748,10 @@ BACKLIGHT CONTROLS:
 SWITCH SWAPPING:
 Step 1: Remove keycap with keycap puller. Step 2: Squeeze switch puller on both sides of switch, pull straight up. Step 3: Insert new switch straight down until it clicks. Compatible: Outemu Blue, Red, Brown or any Outemu swappable switches. Buy from thecosmicbyte.com.
 
-SOFTWARE: Download from thecosmicbyte.com. Windows only. Enables per-key RGB customization, macros, key remapping. IMPORTANT: Use only the official software from the Artemis product page. Older third-party software versions can cause LED firmware issues.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website.. Windows only. Enables per-key RGB customization, macros, key remapping. IMPORTANT: Use only the official software from the Artemis product page. Older third-party software versions can cause LED firmware issues.
 
 TROUBLESHOOTING:
 - Keyboard not detected: Try different USB port. Connect directly to PC (not via USB hub or extension). Try different cable.
@@ -1738,7 +1795,10 @@ FN KEY SHORTCUTS (based on Firefly model):
 - FN + ESC (hold 3s): Factory reset — restores all defaults
 - Multimedia controls available via FN + F-key row
 
-SOFTWARE: Download from thecosmicbyte.com (Windows only). Full per-key RGB customization, macro programming, key remapping. Check thecosmicbyte.com Firefly TKL product page for latest software version.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website. (Windows only). Full per-key RGB customization, macro programming, key remapping. Check thecosmicbyte.com Firefly TKL product page for latest software version.
 
 TROUBLESHOOTING:
 - Keyboard not detected: Try different USB port (directly to PC, not via hub). Try different cable.
@@ -1821,7 +1881,10 @@ CUSTOM BACKLIGHT RECORDING (5 custom groups):
 SWITCH SWAPPING (OPTICAL — must use optical switches only):
 Step 1: Remove keycap with keycap puller. Step 2: Squeeze switch puller, pull straight up. Step 3: Insert optical switch straight down until it clicks. WARNING: Only use optical swappable switches — mechanical switches will damage the keyboard.
 
-SOFTWARE: Download from thecosmicbyte.com. Windows only. IMPORTANT: Software only works when keyboard is connected via USB-C wired mode. Wireless modes do not support software.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website.. Windows only. IMPORTANT: Software only works when keyboard is connected via USB-C wired mode. Wireless modes do not support software.
 
 TROUBLESHOOTING:
 - Not powering on wireless: Turn on battery switch on back of keyboard.
@@ -1909,7 +1972,10 @@ Step 2: Squeeze switch puller on both sides, pull straight up.
 Step 3: Insert new switch straight down until it clicks.
 Buy switches from thecosmicbyte.com.
 
-SOFTWARE: Download from thecosmicbyte.com. Windows only. Must be in wired mode — Bluetooth mode does not support software.
+SOFTWARE: Download from thecosmicbyte.com
+- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
+- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
+Always use the latest version from the official website.. Windows only. Must be in wired mode — Bluetooth mode does not support software.
 
 TROUBLESHOOTING:
 - Keyboard not working wirelessly: Check bottom toggle switch is ON. Hold FN + Left Shift/Ctrl/Alt for 3s to re-pair.
@@ -1941,8 +2007,17 @@ PLATFORM COMPATIBILITY:
 - Designed for Windows PC and Android (OTG).
 - NOT compatible with any gaming console. No warranty or support for console use.
 
-LED INDICATORS:
-- LED lights indicate player slot assigned (1-4) on PC.
+LED INDICATORS (upgraded 2026 tri-mode model):
+- Orange LED = XInput mode (PC).
+- Red LED = DirectInput mode (PC).
+- Green LED = Android mode.
+- Blue LED = iOS/Bluetooth pairing mode.
+- Older 125Hz batch: LED indicates player slot (1-4) only.
+
+NOTE — Two generations exist:
+- 2026 model: Tri-Mode (2.4GHz/Bluetooth/Wired), Hall Effect joystick, 1000Hz polling rate.
+- Previous model: Wired only, 125Hz polling rate (hardware limitation — cannot be changed).
+If you have lag on cloud gaming with an older Ares, switching to wired or 2.4GHz on the new model resolves it.
 
 TURBO:
 - Enable: hold Turbo button + desired face button simultaneously.
