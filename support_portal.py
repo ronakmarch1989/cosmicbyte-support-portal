@@ -99,18 +99,10 @@ hr{border-color:var(--border2)!important;}
 
 /* ── GAMING BACKGROUND ─────────────────────────────────────────── */
 html,body,[data-testid="stAppViewContainer"],[data-testid="stApp"],.stApp{
-    background:
-        repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,176,32,0.022) 40px),
-        repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,176,32,0.022) 40px),
-        #060606 !important;
+    background: #060606 !important;
 }
 [data-testid="stHeader"]{background:transparent!important;}
 [data-testid="stSidebar"]{background:#060606!important;}
-/* Scanlines on the main container */
-[data-testid="stAppViewContainer"]::after{
-    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
-}
 .main .block-container{position:relative;z-index:1;}
 @keyframes glowPulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
 @keyframes wmarkPulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
