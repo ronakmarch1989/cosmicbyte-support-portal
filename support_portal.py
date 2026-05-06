@@ -70,8 +70,8 @@ st.markdown("""
 :root{--orange:#FFB020;--orange-dim:rgba(255,176,32,0.12);--orange-border:rgba(255,176,32,0.3);--bg:#080808;--s1:#101010;--s2:#171717;--border2:#282828;--text:#EFEFEF;--muted:#777;}
 html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);}
 .stApp{background-color:var(--bg);}
-.main .block-container{max-width:780px;padding-top:0.5rem;padding-bottom:4rem;}
-.cb-header{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--border2);margin-bottom:0.75rem;position:relative;}
+.main .block-container{max-width:780px;padding-top:0!important;padding-bottom:4rem;margin-top:0!important;}
+.cb-header{display:flex;align-items:center;justify-content:space-between;padding:0.3rem 0 0.5rem;border-bottom:1px solid var(--border2);margin-bottom:0.6rem;position:relative;}
 .cb-header::after{content:'';position:absolute;bottom:-1px;left:0;width:100px;height:2px;background:var(--orange);}
 .cb-brand{display:flex;align-items:center;gap:14px;}
 .cb-logo-text{display:none;}
@@ -110,8 +110,8 @@ hr{border-color:var(--border2)!important;}
 /* ── GAMING BACKGROUND ─────────────────────────────────────────── */
 html,body,[data-testid="stAppViewContainer"],[data-testid="stApp"],.stApp{
     background: #060606 !important;
-}
-[data-testid="stHeader"]{background:transparent!important;height:0!important;min-height:0!important;}
+padding-top:0!important;margin-top:0!important;}
+[data-testid="stHeader"]{display:none!important;height:0!important;min-height:0!important;visibility:hidden!important;}section[data-testid="stMain"] > div:first-child{padding-top:0!important;}div[data-testid="stVerticalBlock"] > div:first-child{padding-top:0!important;}.appview-container .main .block-container{padding-top:0!important;}
 [data-testid="stSidebar"]{background:#060606!important;}
 .main .block-container{position:relative;z-index:1;}
 @keyframes glowPulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
