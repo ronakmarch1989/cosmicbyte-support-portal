@@ -1,5 +1,6 @@
 """
 Patches Streamlit + Tornado to remove X-Frame-Options before launching.
+Also patches index.html to inject OG meta tags for WhatsApp/social link previews.
 Streamlit runs directly on $PORT — no proxy, no WebSocket issues.
 """
 import os
@@ -64,6 +65,26 @@ if tornado_web:
         ('"SAMEORIGIN"',       '"ALLOWALL"'),
         ("'SAMEORIGIN'",       "'ALLOWALL'"),
     ])
+
+# 4. Patch Streamlit index.html — inject OG meta tags for WhatsApp/social previews
+print("=== Patching OG meta tags ===")
+st_index = get_package_file(
+    'import streamlit; import os; print(os.path.join(os.path.dirname(streamlit.__file__), "static", "index.html"))'
+)
+if st_index and os.path.exists(st_index):
+    OG_TAGS = """<meta property="og:title" content="Cosmic Byte AI Support">
+<meta property="og:description" content="Instant AI-powered support for all Cosmic Byte gaming products.">
+<meta property="og:image" content="https://ai.thecosmicbyte.com/app/static/favicon.png">
+<meta property="og:url" content="https://ai.thecosmicbyte.com/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cosmic Byte AI Support">
+<meta name="twitter:description" content="Instant AI-powered support for all Cosmic Byte gaming products.">"""
+    patch_file(st_index, [
+        ('<title>Streamlit</title>', f'<title>Cosmic Byte AI Support</title>\n    {OG_TAGS}'),
+    ])
+else:
+    print(f"  index.html not found at: {st_index}")
 
 print("=== Starting Streamlit ===")
 
