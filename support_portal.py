@@ -2589,9 +2589,19 @@ def match_product_from_title(title: str) -> str:
         ("firefly",               "Firefly TKL"),
         ("trinity",               "Trinity"),
         ("cb-gk-39",              "Trinity"),
-        ("neon",                  "Neon"),
         ("astra",                 "Astra"),
         ("cb-gk-33",              "Astra"),
+        ("cryocore",              "CryoCore"),
+        ("cryo core",             "CryoCore"),
+        ("proteus",               "Proteus"),
+        ("cosmobuds x220",        "CosmoBuds X220"),
+        ("cosmobuds",             "CosmoBuds X220"),
+        ("x220",                  "CosmoBuds X220"),
+        ("cyclone rgb",           "Cyclone RGB"),
+        ("cyclone",               "Cyclone RGB"),
+        ("dragonfly",             "Dragonfly"),
+        ("cb-gkm-19",             "Dragonfly"),
+        ("gkm-19",                "Dragonfly"),
     ]
     for keyword, product in checks:
         if keyword in t:
