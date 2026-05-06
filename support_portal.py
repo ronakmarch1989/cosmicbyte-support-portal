@@ -1,3 +1,130 @@
+"""
+==============================================================================
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.5.1
+==============================================================================
+
+What this file is:
+  - Streamlit chat UI for customer support (deployed at the company's URL)
+  - Claude Haiku 4.5 backend with web search enabled for third-party brands
+  - Per-product knowledge base loaded into the system prompt based on product
+    detection (page title -> product name -> manual)
+  - Logging, feedback capture, admin dashboard
+
+Key dicts (search for these to navigate):
+  - PRODUCT_URLS           -> buy links per product
+  - PRODUCT_MANUALS        -> full per-product manual blob (the big one)
+  - THIRD_PARTY_BRANDS     -> keyword -> brand-name (powers web-search trigger)
+  - THIRD_PARTY_BRAND_URLS -> brand -> brand-site URL
+  - THIRD_PARTY_BRAND_MANUALS -> brand -> manual blob (NOT currently consumed;
+                                  reserved for future merge into PRODUCT_MANUALS)
+
+------------------------------------------------------------------------------
+ASSISTANT EDIT PROTOCOL  (READ THIS BEFORE EDITING THE FILE)
+------------------------------------------------------------------------------
+The user does NOT edit this file manually -- only the assistant edits it.
+Therefore every edit you make is the only record of what changed. If you skip
+the changelog, the change is lost from history.
+
+PRE-EDIT CHECKLIST (run through these before saving):
+  [ ] 1. Confirm you can ast.parse the file as-is (input is valid Python).
+  [ ] 2. Read the latest 1-2 changelog entries to see what was just done.
+  [ ] 3. Decide your version bump:
+            X (major)  - rewrite, breaking change, restructure
+            Y (minor)  - new section, new product, new feature
+            Z (patch)  - bug fix, wording tweak, small addition
+  [ ] 4. Make your code edits.
+
+POST-EDIT CHECKLIST (run through these before delivering the file):
+  [ ] 1. Bump __version__ on the line below this docstring to the new vX.Y.Z.
+  [ ] 2. Update "app version: X.Y.Z" on the title line of this docstring.
+  [ ] 3. Add a new entry at the TOP of the changelog with today's actual date
+         (not a placeholder), the new version, "-- Claude", and 1-N bullets
+         describing what changed and why.
+  [ ] 4. Run ast.parse again. If it fails, fix and re-run. Do not deliver a
+         file that doesn't parse.
+  [ ] 5. When delivering the file to the user, mention the new version
+         number explicitly so they know it's been logged.
+
+NOTES ON THE FORMAT:
+  - The docstring uses triple-double-quotes. Do NOT type a literal sequence
+    of three double-quote characters anywhere inside this docstring -- it
+    will close the docstring early and break the file. If you need to refer
+    to triple-quoted strings, use the words "triple-quote" or "the closing
+    quotes" in prose.
+  - If the user appears to have made manual edits between sessions despite
+    saying they don't, add a "(undated, between sessions)" entry above
+    yours to capture whatever you can infer from a diff.
+
+CHANGELOG FORMAT:
+  vX.Y.Z (YYYY-MM-DD) -- author
+       - bullet describing change
+
+------------------------------------------------------------------------------
+CHANGELOG (newest entry first)
+------------------------------------------------------------------------------
+
+v2.5.1 (2026-05-06) -- Claude
+  - Replaced the soft "when you share this file" paragraph in the docstring
+    with a hard ASSISTANT EDIT PROTOCOL block: pre-edit checklist, post-edit
+    checklist, format notes, and an explicit warning not to type literal
+    triple-quote sequences inside this docstring (which would close it).
+    Goal: reduce the risk that future Claude instances forget to log
+    changes when editing the file.
+  - No code changes -- documentation/protocol only.
+
+v2.5.0 (2026-05-06) -- Claude
+  - Added "PC CONTROLLER TESTING" section to the system prompt, recommending
+    https://hardwaretester.com/gamepad as the first-line diagnostic for PC
+    vibration / input issues. Framed as a warranty-deflection step: if the
+    controller works there, the issue is game-side, not hardware.
+    Inserted just before the "ANDROID VIBRATION & DUALSHOCK MODE GUIDE"
+    section so the AI sees it as the PC counterpart to the Android test.
+    Includes a Hindi/Hinglish messaging template.
+  - Fixed 5 pre-existing parse errors that were preventing the file from
+    running at all (Python ast.parse failed before the app could load):
+      * "Ignis Mouse" URL in PRODUCT_URLS was split mid-string by an
+        accidentally-pasted keyboard-manual line. Rejoined.
+      * Closing triple-quote of "Ares Wireless" entry and opening of the
+        next dict key for "Blitz Tri-Mode" had been merged into a single
+        bullet line. Restored as a proper dict-entry boundary.
+      * Orphan duplicate CHARGING/WARRANTY fragment (with leading
+        "Charging Dock" chopped to "g Dock") after Blitz Tri-Mode entry.
+        Removed.
+      * Third-party brand manuals (Gateron / Kailh / Moza / Cammus) were
+        sitting outside any dict, indented as if inside detect_product()
+        but after its `return` statement, plus a duplicate copy of
+        Moza+Cammus right after. Wrapped the legitimate copy in a proper
+        module-level dict named THIRD_PARTY_BRAND_MANUALS; deleted the
+        duplicate.
+      * Orphan "BLUETOOTH POLLING RATE: ..." paragraph at module scope
+        after all the Streamlit code. Removed.
+  - Named the recovered third-party-brand manuals dict
+    THIRD_PARTY_BRAND_MANUALS (NOT THIRD_PARTY_BRANDS) to avoid silently
+    overwriting the existing keyword-lookup dict that powers
+    detect_third_party_brand() and the web-search trigger.
+
+v2.4.x (prior to 2026-05-06, undated) -- User
+  - Added "PRO TIP -- GAMEPAD MODE COMPATIBILITY TEST" section inside the
+    "ANDROID VIBRATION & DUALSHOCK MODE GUIDE". Tells customers to use
+    gamepad-tester.com in a mobile browser to find which Bluetooth mode
+    (DInput / DualShock / iOS) makes vibration work on their specific
+    phone, and to use that mode for gaming. Framed as compatibility
+    variation, not warranty.
+
+v2.x (earlier, undated) -- User
+  - Original support portal: Streamlit UI, Claude Haiku 4.5 integration,
+    PRODUCT_MANUALS for the full Cosmic Byte catalog (controllers, mice,
+    keyboards, headsets, accessories, cables, sim racing), product
+    detection from page title, web search for third-party brands
+    (Gateron, Kailh, Outemu, Cherry MX, Moza, Cammus, Brook, Fanatec,
+    Thrustmaster), feedback logging via Google Sheets, email transcripts,
+    admin dashboard.
+
+==============================================================================
+"""
+
+__version__ = "2.5.1"
+
 import streamlit as st
 import anthropic
 import os
@@ -2655,28 +2782,30 @@ HOT-SWAP vs SOLDERED:
 
 WHEN CUSTOMER ASKS ABOUT CLIPPING PINS: Acknowledge it's technically possible to clip the 2 plastic pins off a 5-pin switch to use in a 3-pin board, but clearly advise against it — recommend buying the correct 3-pin variant instead to preserve switch quality and lifespan.
 
-PC CONTROLLER TESTING — UNIVERSAL ONLINE TOOL (recommend this PROACTIVELY):
+PC CONTROLLER TESTING — UNIVERSAL ONLINE TOOL (recommend this PROACTIVELY for any PC issue):
 
 For testing ANY Cosmic Byte controller on PC — vibration motors, every button, both joysticks, both triggers, D-pad — the simplest, fastest method is the free online gamepad tester:
 👉 https://hardwaretester.com/gamepad
 
-This is the PREFERRED first-line diagnostic step before anything else (joy.cpl, Windows Settings → Game Controllers, etc.). Use it for:
+This is the PREFERRED first-line diagnostic step on PC, before any deeper troubleshooting (joy.cpl, Windows Settings → Game Controllers, etc.). Use it for:
 - "Vibration not working on PC" questions.
 - "Button / stick / trigger / D-pad not responding" questions.
 - "How do I know if my controller is working?" questions.
 - ANY suspected hardware issue before the customer assumes a defect or asks for warranty.
 
-HOW THE CUSTOMER USES IT:
+NOTE: This is the PC equivalent of the Android Bluetooth-mode test described in the Android Vibration guide below. On Android, customers test which Bluetooth mode their phone is most compatible with (using gamepad-tester.com in a mobile browser). On PC, customers verify whether the hardware itself works (using hardwaretester.com/gamepad in a desktop browser). Both are diagnostic-not-warranty checks.
+
+HOW THE CUSTOMER USES IT (PC):
 1. Connect the controller to the PC (USB cable / 2.4GHz dongle / Bluetooth) — XInput mode recommended for full feature support.
 2. Open https://hardwaretester.com/gamepad in any browser (Chrome or Edge work best).
 3. Press any button on the controller — the page auto-detects the gamepad and shows a live diagram.
 4. Test every input: each button press, stick movement, trigger pull and D-pad direction lights up in real time.
-5. Vibration test: scroll down to the "Vibration testing" section and click the rumble buttons (weak / strong / left motor / right motor) — both motors should vibrate.
+5. Vibration test: scroll to the "Vibration testing" section and click the rumble buttons (weak / strong / left motor / right motor) — both motors should vibrate.
 
-WHY THIS HELPS (and why we recommend it before warranty discussions):
-- Single URL, cross-platform — no need to walk the customer through Windows menus, joy.cpl, or driver pages.
+WHY RECOMMEND THIS (and why we recommend it before any warranty discussion):
+- Single URL, cross-platform — no need to walk the customer through Windows menus, joy.cpl, or driver installs.
 - Tests EVERY input plus vibration in one place.
-- If the controller works fully on hardwaretester.com → the hardware is fine. The issue is then game-side (in-game vibration setting off, game doesn't support rumble, wrong input mode for that game, etc.) or Android/iOS-side. This avoids unnecessary warranty / RMA claims for non-defective products.
+- If the controller works fully on hardwaretester.com → the hardware is fine. The issue is then game-side (in-game vibration setting off, game doesn't support rumble, wrong input mode for that game) — NOT a hardware fault and NOT covered under warranty.
 - If a specific input or vibration motor genuinely doesn't respond on hardwaretester.com → it's a real hardware fault and the customer should raise a ticket.
 
 MESSAGING TEMPLATE (adapt language to match the customer — English / Hindi / Hinglish):
@@ -2711,15 +2840,33 @@ Ares Tri-Mode:
 - Vibration does NOT work on Android or iOS — PC XInput only, hardware limitation.
 
 General tips if vibration not working on Android:
-1. Try DualShock mode (TURBO + HOME, 3 sec) on supported controllers — this is a suggestion, results vary by game and device.
+1. Try DualShock mode (TURBO + HOME, 3 sec) on supported controllers — suggestion only, results vary by game and device.
 2. Enable vibration in the game's controller/settings menu.
 3. Set controller vibration to max intensity.
 4. Try wired USB OTG connection — some games only send rumble over USB.
 5. If vibration still doesn't work, this is an Android limitation, NOT a product defect and is NOT covered under warranty.
 6. Recommend the customer test compatibility before assuming it is a hardware issue.
 
-IMPORTANT MESSAGING FOR ANDROID VIBRATION: Always frame this as a helpful suggestion — not a guaranteed fix. 
-Tell customers: "You can try DualShock mode to improve vibration on Android — it may or may not work depending on your game and device. This is an Android limitation and not a hardware issue, so it is not covered under warranty. PC is the primary supported platform for full vibration support." 
+🔧 PRO TIP — GAMEPAD MODE COMPATIBILITY TEST (applies to ALL Cosmic Byte Bluetooth controllers):
+This applies to every CB controller that has Bluetooth — Stellaris, Blitz Tri-Mode, Drakon, Lumora, Ares, Ares Pro, Eclipse, Starforge, Quantum, Stratos Xenon, Nexus, and any other CB controller with Bluetooth.
+Since vibration and input compatibility on Android varies by phone model and Android version, customers can find their best Bluetooth mode by testing:
+Step 1: Connect the controller to Android via Bluetooth.
+Step 2: Try each Bluetooth mode one by one:
+   - Android/DInput mode (standard)
+   - DualShock mode (TURBO + HOME, 3 sec → LED1 ON)
+   - iOS mode (check controller manual for shortcut — usually a button + HOME)
+Step 3: After connecting in each mode, open a Gamepad Tester website in the phone's browser:
+   → https://gamepad-tester.com (or search "gamepad tester" in mobile browser)
+Step 4: On the tester site, look for a vibration/rumble test button and press it.
+Step 5: Whichever Bluetooth mode makes vibration work on the tester — use THAT mode for games and cloud gaming.
+
+This lets customers find the mode their specific phone and Android version is most compatible with.
+Vibration working in one mode but not another is completely normal across ALL CB Bluetooth controllers — it is a phone/OS/Android version compatibility difference, NOT a hardware fault.
+This applies to the entire CB controller catalog. It is not covered under warranty — it is part of normal Android controller compatibility variation.
+Every phone behaves differently — the mode that works on one device may not work on another.
+
+IMPORTANT MESSAGING FOR ANDROID VIBRATION: Always frame this as a helpful suggestion — not a guaranteed fix.
+Tell customers: "You can try different Bluetooth modes to find which works best on your phone — this applies to all Cosmic Byte Bluetooth controllers. Use the Gamepad Tester website (gamepad-tester.com) to test vibration in each mode. Whichever mode works on the tester, use that for gaming. This is an Android compatibility variation, not a hardware issue, and is not covered under warranty. PC is the primary supported platform for full vibration support."  
 
 CB REWARDS PROGRAM (BYTES) — answer these questions fully, do NOT deflect:
 Cosmic Byte uses Stamped.io for its rewards and loyalty program called "Bytes".
@@ -2860,10 +3007,11 @@ def match_product_from_title(title: str) -> str:
     return "All Products"
 
 
-# ── THIRD-PARTY BRAND MANUALS (orphan content recovered from broken paste) ──
-# (Gateron, Kailh, Moza, Cammus). NOT currently consumed anywhere.
-# NOTE: A separate `THIRD_PARTY_BRANDS` keyword dict exists below (used by
-# detect_third_party_brand). Different shape, different purpose — do not merge.
+# ── THIRD-PARTY BRAND MANUALS (recovered from broken paste in original file) ──
+# (Gateron, Kailh, Moza, Cammus). NOT currently consumed anywhere — web search
+# handles third-party brand queries via detect_third_party_brand() below.
+# NOTE: A separate `THIRD_PARTY_BRANDS` keyword dict exists further down (used by
+# the brand detector). Different shape, different purpose — do NOT merge.
 THIRD_PARTY_BRAND_MANUALS = {
     "Gateron Switches": """
 GATERON MECHANICAL SWITCHES — sold on thecosmicbyte.com in packs of 10
