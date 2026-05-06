@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.5.2
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.5.3
 ==============================================================================
 
 What this file is:
@@ -62,6 +62,23 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.5.3 (2026-05-06) -- Claude
+  - Deployment-verification patch. After v2.5.2 added a diagnostic expander,
+    user reported the same "Unable to connect" error twice with no expander
+    visible in the screenshots -- strongly suggesting the deployed code was
+    still an older version. To make this impossible to misdiagnose:
+      * Added "v2.5.3" label to the bottom-right of the page footer using
+        the __version__ constant. Now the user can see at a glance which
+        version is actually live.
+      * Set the diagnostic expander to expanded=True so the error details
+        appear automatically when the API call fails -- no clicking needed.
+      * Added a startup print of the version to server logs (visible in
+        Streamlit Cloud / deployment logs) so deploys can be confirmed
+        without opening the UI.
+    Once deployed, the footer should read "v2.5.3" and the next failed
+    request will show the full traceback inline. That traceback is what
+    we need to identify the root cause of the "Unable to connect" error.
 
 v2.5.2 (2026-05-06) -- Claude
   - DIAGNOSTIC PATCH. The deployed app showed "Unable to connect" with no
@@ -137,12 +154,16 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.5.2"
+__version__ = "2.5.3"
 
 import streamlit as st
 import anthropic
 import os
 from datetime import datetime, timedelta
+
+# Print version on startup so it appears in deployment logs (Streamlit Cloud, etc.)
+# Helps confirm which version is actually live after a deploy.
+print(f"[support_portal_v2] starting up — app version {__version__}", flush=True)
 
 # ── PRODUCT BUY LINKS ──
 PRODUCT_URLS = {
@@ -3724,7 +3745,7 @@ CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
             # Hidden behind an expander so the customer-facing UX stays clean.
             # Remove or comment out once the underlying issue is resolved.
             import traceback
-            with st.expander("🔧 Technical details (for support diagnosis)"):
+            with st.expander("🔧 Technical details (for support diagnosis)", expanded=True):
                 st.write(f"**Error type:** `{type(e).__name__}`")
                 st.write(f"**Error message:** {str(e)}")
                 # Most common Anthropic SDK errors expose a status_code / response
@@ -3804,7 +3825,10 @@ st.markdown("""
     </div>
     <a href="https://www.thecosmicbyte.com" target="_blank" style="color:#444;font-size:11px">thecosmicbyte.com</a>
 </div>
-""", unsafe_allow_html=True)
+<div style="text-align:right;color:#333;font-size:10px;font-family:'Inter',sans-serif;margin-top:4px">
+    v__VERSION_PLACEHOLDER__
+</div>
+""".replace("__VERSION_PLACEHOLDER__", __version__), unsafe_allow_html=True)
 
 # Admin access link (subtle, at bottom)
 st.markdown("<div style='margin-top:1.5rem;text-align:center'>", unsafe_allow_html=True)
