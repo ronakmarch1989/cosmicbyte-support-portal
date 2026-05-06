@@ -18,6 +18,11 @@ PRODUCT_URLS = {
     "Firefly TKL": "https://www.thecosmicbyte.com/product/cosmic-byte-firefly-tkl-per-key-rgb-mechanical-keyboard/",
     "Trinity": "https://www.thecosmicbyte.com/product/cosmic-byte-trinity-optical-swappable-switch-keyboard/",
     "Astra": "https://www.thecosmicbyte.com/product/cosmic-byte-cb-gk-33-astra-hot-swappable-mechanical-wired-bluetooth-keyboard-with-per-key-rgb-and-software-2/",
+    "CryoCore":       "https://www.thecosmicbyte.com/product/cryocore/",
+    "Proteus":        "https://www.thecosmicbyte.com/product/proteus/",
+    "CosmoBuds X220": "https://www.thecosmicbyte.com/product/cosmobuds-x220/",
+    "Cyclone RGB":    "https://www.thecosmicbyte.com/product/cyclone-rgb/",
+    "Dragonfly":      "https://www.thecosmicbyte.com/product/dragonfly-cb-gkm-19/",
     "Phantom TKL": "https://www.thecosmicbyte.com/product/cosmic-byte-phantom-tkl-tri-mode-gasket-hot-swappable-mechanical-switch-keyboard/",
     "Phantom TKL Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-phantom-tkl-gasket-mechanical-wired-swappable-keyboard-with-prelubed-switches/",
     "Pandora": "https://www.thecosmicbyte.com/product/cosmic-byte-pandora-tkl-mechanical-keyboard/",
@@ -1965,13 +1970,272 @@ WARRANTY:
 
 
 
+# ── HEADSETS ──────────────────────────────────────────────────────────────────
+KNOWLEDGE_BASE["CryoCore"] = """
+PRODUCT: Cosmic Byte CryoCore — 7.1 USB Wired Gaming Headset
+
+SPECS:
+- Connection: USB 2.0 only (no 3.5mm)
+- Cable length: 2.0m
+- Driver: 50mm | Sensitivity: 110dB ±5dB | Impedance: 32Ω | Freq: 20Hz–20kHz
+- Rated power: 20mW | Max power: 50mW
+- Weight: 277g | Dimensions: 195×95×165mm
+- Mic: Electret condenser, omnidirectional, 6.0×5.0mm, -42dB ±3dB sensitivity
+- Mic SNR: 58dB | Mic output impedance: ≤2.2kΩ
+
+WHAT'S IN THE BOX: CryoCore headset, detachable microphone, user manual
+
+CONTROLS:
+- Volume dial on earcup — rotate to adjust volume
+- Mic switch on earcup — slide UP = mic ON, slide DOWN = mic MUTED
+- Detachable microphone — plug into the port on the left earcup
+
+SETUP — PC/LAPTOP:
+1. Connect USB to PC
+2. Download driver from www.thecosmicbyte.com
+3. Extract and run setup.exe
+4. Enable 7.1 Surround Sound in the software
+5. In Windows Sound Settings, select "CB CryoCore" as both output AND input device
+
+SETUP — PS4/PS5:
+- Plug USB directly into console. No driver or software needed.
+- Adjust volume from PlayStation Audio Settings
+
+NOTE: Xbox is NOT officially supported via USB.
+
+TROUBLESHOOTING:
+Q: Headset not detected on PC?
+A: Check USB connection → reinstall driver → try different USB port → set "CB CryoCore" as default audio device in Windows Sound Settings
+
+Q: No 7.1 surround sound?
+A: Install the driver software → enable 7.1 in software settings → confirm "CB CryoCore" is default output in Windows Sound Settings
+
+Q: Microphone not working?
+A: Check mic is firmly plugged in → ensure mic switch is slid UP (ON position) → select "CB CryoCore" as microphone input in Windows Sound Settings
+
+Q: No audio from headset?
+A: Rotate the volume dial → set "CB CryoCore" as default output in Windows Sound Settings
+
+CARE: Keep away from moisture. Store in cool dry place. Avoid bending cable. Do not disassemble.
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
+KNOWLEDGE_BASE["Proteus"] = """
+PRODUCT: Cosmic Byte Proteus — Gaming Headset (Dual Input USB + 3.5mm)
+
+SPECS:
+- Connection: Dual input — USB (7.1 surround) AND 3.5mm jack
+- Driver: 50mm | Sensitivity: 111 ±3dB | Impedance: 32Ω±15% | Freq: 20Hz–20,000Hz
+- Cable: Headset cable 0.7m + 3.5mm audio jack 1.5m + USB cable 1.5m (braided)
+- Power: 20mW rated, 30mW input
+- Weight: 280g (without cable), 336g (with cable) | Dims: 190×90×220mm
+- Mic: ENC detachable, uni-directional, ø6.0×2.7mm, sensitivity -50±3dB
+- RGB LED lights, on-cable controller
+
+WHAT'S IN THE BOX: Proteus headset, detachable ENC microphone, USB-C to USB-A connector, 3.5mm audio cable, user manual
+
+ON-CABLE CONTROLLER:
+- Volume wheel: scroll up = volume +, scroll down = volume −
+- Mic mute button: tap once = microphone on/off
+- LED button: tap once = RGB lights on/off
+- Volume mute button: tap once = volume mute/unmute
+
+COMPATIBILITY:
+- PC/Mac/Laptop: USB (7.1 surround + software) OR 3.5mm jack
+- PS4/PS5: USB OR 3.5mm via controller jack. Volume from PlayStation Audio Settings.
+- Xbox One S/X: 3.5mm jack on controller ONLY. USB does NOT work on Xbox.
+- Mobile/Tablet: 3.5mm jack only
+- Nintendo Switch: 3.5mm jack only
+- LED tip for mobile: plug USB into a power bank/charger while using 3.5mm for audio — this powers the RGB lights
+
+7.1 SURROUND: Download software from www.thecosmicbyte.com (USB mode only)
+
+TROUBLESHOOTING:
+Q: Xbox not working?
+A: Xbox only supports 3.5mm on the controller. USB connection will not work on Xbox.
+
+Q: Mic not working?
+A: Ensure mic is firmly attached → check mic mute button (not muted) → select Proteus as input device in your system sound settings
+
+Q: No RGB lights when using with mobile?
+A: Plug the USB cable into a USB power source (power bank, charger) while using 3.5mm for audio
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
+# ── EARBUDS ────────────────────────────────────────────────────────────────────
+KNOWLEDGE_BASE["CosmoBuds X220"] = """
+PRODUCT: Cosmic Byte CosmoBuds X220 — True Wireless Gaming Earbuds
+
+SPECS:
+- Bluetooth: 5.3
+- Low latency: 40ms in GOD Mode
+- Driver: 13mm | Frequency: 20Hz–20kHz
+- Earbud battery: 40mAh | Case battery: 400mAh
+- Music playtime: up to 10 hours per charge
+- Total battery life with case: 40 hours
+- Talk time: up to 7 hours
+- Standby: 100 days
+- Charging: USB-C, ~1.5 hours full charge
+- Fast charge: 15 minutes = 100 minutes playtime
+- Range: 10m
+- Water resistance: IPX5 (sweat and water resistant)
+- Mic: ENC/DNS, omnidirectional
+- Codecs: AAC + SBC
+
+⚠️ CHARGER WARNING: Use ONLY 5V/1A chargers. Fast chargers WILL damage the battery — not covered under warranty.
+
+TOUCH CONTROLS:
+Music playback:
+- Double tap either earbud = pause/resume
+- Long press RIGHT (1.5s) = volume up
+- Long press LEFT (1.5s) = volume down
+
+Calls:
+- Double tap either earbud = answer/hang up
+- Long press either earbud (2s) = reject incoming call
+- Triple tap RIGHT earbud = voice assistant
+
+Mode switching:
+- Triple tap LEFT earbud = toggle GOD Mode ↔ Music Mode
+  • GOD Mode = 40ms low latency (best for gaming)
+  • Music Mode = high-fidelity audio + bass (best for music)
+
+PAIRING — FIRST TIME:
+1. Remove earbuds from case → they auto-enter pairing mode
+2. Go to phone Bluetooth settings → connect to "CosmoBuds X220"
+After pairing once, earbuds auto-reconnect when removed from case (IOP™ instant pairing)
+
+SINGLE EARBUD USE: Remove one earbud, it pairs solo in mono mode. Return the other — stereo resumes automatically.
+
+VOLUME LIMIT REMOVAL:
+- iOS: Settings → Music → turn off Sound Check
+- Android: Bluetooth settings → tap CosmoBuds X220 → disable "Sync volume with phone"
+- Spotify/Amazon Music: Turn off Audio Normalisation in app settings
+
+FACTORY RESET:
+1. Forget "CosmoBuds X220" from phone Bluetooth settings
+2. Remove both earbuds from case
+3. Tap each earbud 7 times — LED turns off
+4. Place back in case for 5 seconds
+5. Re-pair normally
+
+TROUBLESHOOTING:
+Q: One earbud not working?
+A: Place both in case → take out again. If still failing, perform factory reset.
+
+Q: Earbuds won't connect?
+A: Forget device from phone Bluetooth → perform factory reset → re-pair
+
+Q: Disconnecting during calls?
+A: Charge the earbuds. If persists, perform factory reset.
+
+Q: Low volume?
+A: Remove volume limit (see above)
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage, tampered products, and battery wear and tear not covered.
+SUPPORT: cc@thecosmicbyte.com | 07969273222 | Mon–Sat 10am–6pm
+"""
+
+# ── ACCESSORIES / COMBOS ───────────────────────────────────────────────────────
+KNOWLEDGE_BASE["Cyclone RGB"] = """
+PRODUCT: Cosmic Byte Cyclone RGB — Laptop Cooling Pad
+
+SPECS:
+- Dimensions: 405×290×43mm | Weight: 1123g
+- Fans: 1× 140mm (centre, RGB) + 4× 60mm (corners, blue)
+- Fan speed: 1600–2500 RPM ±10%
+- USB ports: 2× USB 2.0 HUB
+- Power: DC 5V, 1A, 5W (USB powered)
+- Material: ABS + Metal
+- Laptop compatibility: up to 17-inch laptops
+
+FEATURES:
+- 12 RGB lighting effects on the centre fan and edge strip
+- 7-level adjustable height/angle (fold-out legs) for optimal viewing and typing
+- 3 fan modes — control which fans are on/off
+- 3-level adjustable fan speed
+- 2 USB ports to connect other devices while cooling
+
+SETUP:
+1. Connect the USB cable from the cooling pad to a USB port on your laptop
+2. Place your laptop on the pad
+3. Use the control panel to adjust fan speed, fan mode, and RGB effects
+
+TROUBLESHOOTING:
+Q: Fans not spinning?
+A: Ensure USB is properly connected to the laptop. Try a different USB port.
+
+Q: RGB not working?
+A: Check USB connection. Cycle through RGB modes using the control button.
+
+Q: Laptop still overheating?
+A: Increase fan speed to max. Ensure laptop vents are not blocked. Clean laptop vents if dusty.
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
+KNOWLEDGE_BASE["Dragonfly"] = """
+PRODUCT: Cosmic Byte Dragonfly — RGB Membrane Keyboard + Mouse Combo (CB-GKM-19)
+
+KEYBOARD SPECS:
+- Type: Full-size RGB membrane keyboard
+- Anti-ghosting: 19-key
+- Key life: 10 million keystrokes
+- Weight: 637g ±10g | Dimensions: 458×170×32mm | Cable: 1.5m braided
+- Features: Windows lock key, mobile phone holder, multimedia hotkeys, fold-out legs
+
+MOUSE SPECS:
+- Buttons: 7
+- DPI: 200–12,800 (adjustable)
+- Polling rate: up to 1000Hz
+- Sensor: Instant 825 | Acceleration: 20G | Tracking: 60 IPS
+- Switches: Huano 5M (L/R buttons)
+- Weight: 80g (without cable) | Dimensions: 122×66×40.5mm
+- RGB effects customisable via software
+
+KEYBOARD SHORTCUTS (FN combinations):
+FN + F1 = Media Select | FN + F2 = Volume − | FN + F3 = Volume + | FN + F4 = Mute
+FN + F5 = Stop | FN + F6 = Previous Track | FN + F7 = Play/Pause | FN + F8 = Next Track
+FN + F9 = Email | FN + F10 = Web/Home | FN + F11 = My Computer | FN + F12 = Calculator
+FN + WIN-L = Lock/unlock Windows key
+
+RGB MODES (keyboard):
+FN+1=RGB | FN+2=RGB2 | FN+3=Colours Cycle | FN+4=7 Colour Breathing
+FN+5=7 Colour Switch | FN+6=Light 1 | FN+7=Light 2 | FN+8=LED Off
+FN+9=Custom (FN + ←/→ to choose colour, FN+9 again to save)
+FN + ←/→ = direction control | FN + PgUp/PgDn = brightness up/down
+
+SOFTWARE: Download from www.thecosmicbyte.com for macro assignment, DPI tuning, RGB customisation (separate software for keyboard and mouse)
+
+TROUBLESHOOTING:
+Q: Keyboard keys not registering?
+A: 19-key anti-ghosting — some key combinations may not be supported simultaneously. Check Windows key is not locked (FN + WIN-L).
+
+Q: Mouse DPI not changing?
+A: Use the DPI button on the mouse or adjust via software.
+
+Q: RGB not working?
+A: Press FN+1 to cycle RGB modes. Ensure USB is fully connected. Reinstall software from thecosmicbyte.com.
+
+Q: Multimedia keys not working?
+A: Use FN + function key combinations (e.g., FN+F7 for Play/Pause).
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
 # "All Products" is intentionally lean — only the matched product KB is injected
 # at query time via detect_product_from_message(). Sending 27K tokens every call
 # was 8x more expensive and unnecessary since the system prompt already instructs
 # the bot to ask which product the customer has.
 KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
 
 QUICK_QUESTIONS = {
     "All Products": [
@@ -2410,7 +2674,33 @@ BUYING GUIDE:
 - Note: Trinity uses optical switches — confirm customer wants optical, not mechanical
 """
 
-CATALOGUE_ALL = CATALOGUE_CONTROLLERS + CATALOGUE_MICE + CATALOGUE_KEYBOARDS
+CATALOGUE_HEADSETS = """
+COSMIC BYTE HEADSETS & EARBUDS — Quick Comparison Guide
+
+WIRED HEADSETS:
+- CryoCore: USB only, 7.1 surround (needs driver), 50mm driver, detachable mic, PS4/PS5 compatible. No 3.5mm option.
+- Proteus: Dual input (USB + 3.5mm), 7.1 surround via USB, ENC detachable mic, RGB LED, on-cable controller. Xbox = 3.5mm only.
+
+EARBUDS:
+- CosmoBuds X220: True wireless TWS, Bluetooth 5.3, 40ms GOD Mode gaming latency, 40hr total battery, IPX5 waterproof, ENC mic, fast charge.
+
+BUYING GUIDE:
+- PC gaming headset (7.1 surround) → CryoCore (USB only) or Proteus (USB + 3.5mm flexibility)
+- Multi-platform (PC/console/mobile) → Proteus (dual input)
+- Wireless earbuds for gaming + music → CosmoBuds X220
+"""
+
+CATALOGUE_ACCESSORIES = """
+COSMIC BYTE ACCESSORIES — Quick Overview
+
+LAPTOP COOLING:
+- Cyclone RGB: 5-fan cooling pad (1×140mm + 4×60mm), 12 RGB effects, 7-level height adjustment, 2 USB ports, fits up to 17" laptops.
+
+KEYBOARD + MOUSE COMBOS:
+- Dragonfly (CB-GKM-19): Full-size RGB membrane keyboard + 7-button gaming mouse. 19-key anti-ghosting, 200-12800 DPI, 1000Hz polling rate, braided cable, software support.
+"""
+
+CATALOGUE_ALL = CATALOGUE_CONTROLLERS + CATALOGUE_MICE + CATALOGUE_KEYBOARDS + CATALOGUE_HEADSETS + CATALOGUE_ACCESSORIES
 
 
 def detect_products_from_message(messages: list) -> tuple:
@@ -2477,6 +2767,19 @@ def detect_products_from_message(messages: list) -> tuple:
         ("trinity",              "Trinity"),
         ("cb-gk-39",             "Trinity"),
         ("astra",                "Astra"),
+        # Headsets
+        ("cryocore",             "CryoCore"),
+        ("cryo core",            "CryoCore"),
+        ("proteus",              "Proteus"),
+        # Earbuds
+        ("cosmobuds x220",       "CosmoBuds X220"),
+        ("cosmobuds",            "CosmoBuds X220"),
+        ("x220",                 "CosmoBuds X220"),
+        # Accessories
+        ("cyclone rgb",          "Cyclone RGB"),
+        ("cyclone",              "Cyclone RGB"),
+        ("dragonfly",            "Dragonfly"),
+        ("cb-gkm-19",            "Dragonfly"),
         ("cb-gk-33",             "Astra"),
     ]
     found = []
