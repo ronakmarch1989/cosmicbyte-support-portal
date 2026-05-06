@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.5.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.5.2
 ==============================================================================
 
 What this file is:
@@ -63,6 +63,20 @@ CHANGELOG FORMAT:
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
 
+v2.5.2 (2026-05-06) -- Claude
+  - DIAGNOSTIC PATCH. The deployed app showed "Unable to connect" with no
+    detail when the customer asked about Blitz vibration on Android. The
+    exception handler at the API-call site was swallowing the real error.
+    Modified it to:
+      * Keep the existing friendly st.error for customers.
+      * Add a collapsible "Technical details" expander showing error type,
+        message, HTTP status (if available), response body (if available),
+        and full Python traceback.
+      * Print the same to server logs via print(..., flush=True) so it
+        appears in Streamlit Cloud / deployment logs.
+    Once the root cause is identified and fixed, this expander block can
+    be removed in a future patch (it's marked with a comment).
+
 v2.5.1 (2026-05-06) -- Claude
   - Replaced the soft "when you share this file" paragraph in the docstring
     with a hard ASSISTANT EDIT PROTOCOL block: pre-edit checklist, post-edit
@@ -123,7 +137,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.5.1"
+__version__ = "2.5.2"
 
 import streamlit as st
 import anthropic
@@ -3706,6 +3720,23 @@ CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
 
         except Exception as e:
             st.error("Unable to connect. Please try again or visit thecosmicbyte.com/raise-a-ticket/")
+            # ── DIAGNOSTICS: surface the real error so we can debug ──
+            # Hidden behind an expander so the customer-facing UX stays clean.
+            # Remove or comment out once the underlying issue is resolved.
+            import traceback
+            with st.expander("🔧 Technical details (for support diagnosis)"):
+                st.write(f"**Error type:** `{type(e).__name__}`")
+                st.write(f"**Error message:** {str(e)}")
+                # Most common Anthropic SDK errors expose a status_code / response
+                if hasattr(e, "status_code"):
+                    st.write(f"**HTTP status:** `{e.status_code}`")
+                if hasattr(e, "response") and hasattr(e.response, "text"):
+                    st.code(e.response.text[:2000], language="json")
+                st.write("**Full traceback:**")
+                st.code(traceback.format_exc(), language="python")
+            # Also print to server logs (visible in Streamlit Cloud / wherever deployed)
+            print(f"[support_portal_v2 error] {type(e).__name__}: {e}", flush=True)
+            print(traceback.format_exc(), flush=True)
 
 # ── INPUT ──
 st.markdown("<div style='margin-top:1rem'></div>", unsafe_allow_html=True)
