@@ -272,7 +272,7 @@ JOYSTICK RANGE MODES: L3/R3 + Macro to toggle: Full Circle (default) -> Small Ci
 RESET: Pin into RESET hole on back for 2 seconds. Does NOT delete macros. Clears pairing data.
 GYRO (6-axis built-in):
 ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
-- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from https://www.thecosmicbyte.com/downloaddrivers/).
 - Assign gyro to any button of your choice.
 - Three activation modes:
   * Always On - Gyro is always active (good for racing/flight games).
@@ -296,9 +296,16 @@ TROUBLESHOOTING:
 WARRANTY: 1 year manufacturing defects only. Physical damage, water damage, tampered products NOT covered.
 """,
     "Stellaris": """
-COSMIC BYTE STELLARIS - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
+COSMIC BYTE STELLARIS 2ND GEN - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
 
 PC primary platform. Not supported on any gaming console. No warranty for console use.
+
+KEY UPGRADES vs OLD STELLARIS:
+- TMR (Tunnel Magnetoresistance) Joysticks — higher precision, lower drift, longer lifespan than older Hall Effect joysticks. Only the 2nd Gen Stellaris has TMR joysticks. Check back label for "APP Support" to confirm 2nd Gen.
+- 1000Hz polling rate (Wired & 2.4GHz) — old Stellaris had lower polling rate.
+- Software support (Windows app) — old Stellaris does NOT support the software.
+
+JOYSTICK TYPE: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision, replaceable.
 
 CONNECTIVITY TABLE:
 Mode | Platform | How to Connect (hold 3 sec) | LED
@@ -313,11 +320,17 @@ Bluetooth XInput | PC/Android | Press B + HOME | LED2 on
 Bluetooth Gyro | PC/Android/iOS | Press Y + HOME | LED4 on
 Bluetooth DualShock | iOS | Press Turbo + HOME | LED1 on
 Polling: Wired/2.4GHz up to 1000Hz. Bluetooth = 125Hz.
+BLUETOOTH POLLING RATE:
+- Bluetooth mode supports up to 500Hz polling rate.
+- Actual Bluetooth polling rate can range between 125Hz–500Hz depending on the system, OS, and Bluetooth chip of the connected device.
+- For the most stable and consistent polling rate, use Wired (USB-C) or 2.4GHz Wireless mode.
+- 1000Hz polling rate is only available in Wired and 2.4GHz Wireless modes.
+
 
 GYRO: Bluetooth mode ONLY natively (press Y + HOME for 3 sec, LED4 on).
 Via Cosmic Byte software (wired/2.4GHz):
 ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
-- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from https://www.thecosmicbyte.com/downloaddrivers/).
 - Assign gyro to any button of your choice.
 - Three activation modes:
   * Always On - Gyro is always active (good for racing/flight games).
@@ -341,6 +354,15 @@ BUTTON LAYOUT SWAP SHORTCUTS (PC mode only):
 - Swap D-Pad and Left Stick: Hold START + L3 for 3 seconds. Motor vibration confirms. Repeat to revert.
 - BOTH swaps are cleared by Factory Reset (SELECT + L3 + R3 held for 5 seconds).
 - Note: A/B X/Y swap applies to both pairs simultaneously — you cannot swap just one pair independently.
+
+ANDROID / MOBILE VIBRATION TIP:
+Standard Android/DInput Bluetooth mode may not send vibration. If vibration is not working on Android or iOS:
+→ You can try switching to DualShock mode: Hold TURBO + HOME for 3 seconds → LED1 ON.
+⚠ DualShock mode is a Bluetooth protocol for MOBILE and PC use only — NOT for PS4/console use. This controller CANNOT be used on PlayStation.
+Vibration in DualShock mode on Android is NOT guaranteed — depends on the game and Android device.
+This is an Android OS/game limitation, NOT a hardware defect, and is NOT covered under warranty.
+PC is the primary platform for full reliable vibration support.
+Vibration adjust: TURBO + Right Stick UP (increase) / DOWN (decrease). Multiple levels available.
 
 TURBO SPEED ADJUSTMENT:
 - Increase Turbo speed: Hold TURBO + Right Stick (push right).
@@ -391,7 +413,7 @@ CONNECTIVITY:
 GYRO: Bluetooth mode ONLY natively (press Y + HOME for 3 sec, LED4 on).
 Via Cosmic Byte software (wired/2.4GHz):
 ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
-- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from https://www.thecosmicbyte.com/downloaddrivers/).
 - Assign gyro to any button of your choice.
 - Three activation modes:
   * Always On - Gyro is always active (good for racing/flight games).
@@ -446,6 +468,9 @@ WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 """,
     "Stellaris": """
 [Already defined above]
+
+
+BLUETOOTH POLLING RATE: Up to 500Hz in Bluetooth mode. Actual rate can range 125Hz to 500Hz depending on the connected device and its Bluetooth chip. For the most stable and consistent polling rate, use Wired (USB-C) or 2.4GHz Wireless — both deliver the full 1000Hz.
 """,
 
     "Ares Pro": """
@@ -719,20 +744,25 @@ DISCONNECTIONS:
 - Move dongle to front USB port or use USB extension for better line of sight.
 - Keep away from Wi-Fi routers and USB 3.0 devices (2.4GHz interference).
 - Replace/charge battery even if LEDs appear lit.
-- Double-press HOME to re-pair if both LEDs blink continuously.
-
-WARRANTY:
-- 1 year against manufacturing defects only.
-- Physical damage, water damage, tampered products NOT covered.
-- Fast charger battery damage NOT covered.
-- Battery wear and tear NOT covered.
-- Console use NOT covered.
+- Double-press HOME to re-pair if disconnected.
 """,
 
     "Blitz Tri-Mode": """
 COSMIC BYTE BLITZ TRI-MODE CONTROLLER - FULL MANUAL
 
-PC primary platform. Consoles NOT supported. Some functions may not work on Android/iOS. No warranty for unsupported device damage.
+PC primary platform. Consoles NOT supported.
+
+BLITZ TRI-MODE vs OLD BLITZ WIRELESS — KEY DIFFERENCES:
+| Feature           | Blitz Tri-Mode (current) | Blitz Wireless (old)     |
+|-------------------|--------------------------|--------------------------|
+| Joystick type     | TMR (Tunnel MR)          | Hall Effect              |
+| Connectivity      | USB + 2.4GHz + Bluetooth | USB + 2.4GHz only        |
+| Gyro              | Yes                      | No                       |
+| Software support  | Yes (App Support label)  | No                       |
+| Polling rate      | 1000Hz (wired/2.4GHz)    | 1000Hz (wired/2.4GHz)    |
+| Charging dock     | Yes (sold separately)    | No                       |
+
+The Blitz Tri-Mode is NOT just a connectivity upgrade — TMR joysticks, gyro, and software are significant additions. Some functions may not work on Android/iOS. No warranty for unsupported device damage.
 
 KEY FEATURES: Tri-Mode (USB Wired/2.4GHz/Bluetooth), TMR joysticks (drift-resistant), Hall Effect analog triggers, 1000Hz polling (PC wired & 2.4GHz), Turbo & Auto Fire, Macro programming, Adjustable dual-motor vibration, Charging dock support (sold separately), Gyro support.
 
@@ -771,7 +801,7 @@ STEAM MODE (wired only): Power OFF. Hold R3. While holding, plug USB-C cable -> 
 GYRO: Bluetooth ONLY natively (press Y + HOME for 3 sec, LED4 on).
 Via Cosmic Byte software (wired/2.4GHz):
 ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
-- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from thecosmicbyte.com).
+- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from https://www.thecosmicbyte.com/downloaddrivers/).
 - Assign gyro to any button of your choice.
 - Three activation modes:
   * Always On - Gyro is always active (good for racing/flight games).
@@ -805,6 +835,19 @@ POWER: ON=press HOME (0.5-1 sec). Auto sleep=5 min. OFF=hold HOME 5 sec. Reset (
 CHARGING: USB-C or Charging Dock (sold separately). 5V/1A or PC USB ONLY. Fast chargers damage battery and void warranty. 2.5-3 hours charge. Battery: 600mAh, 7-15 hours.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered. Fast charger damage NOT covered.
+
+
+ANDROID / MOBILE VIBRATION TIP:
+Standard Android Bluetooth (D-Input) may not send vibration commands. If vibration is not working on Android or iOS:
+→ You can try switching to DualShock mode: Hold TURBO + HOME for 3 seconds → LED1 ON.
+⚠ IMPORTANT: DualShock mode is a Bluetooth protocol for MOBILE and PC ONLY — NOT for PS4/console use. This controller cannot be used on PlayStation.
+Vibration in DualShock mode on Android is NOT guaranteed — depends on the game and Android device.
+This is an Android OS/game limitation, NOT a hardware defect, and is NOT covered under warranty.
+PC is the primary platform for full, reliable vibration support.
+Vibration levels: 100%, 70% (default), 40%, 0% — adjust with TURBO + Right Stick UP/DOWN.
+Cloud gaming vibration depends on whether the platform and game support haptic feedback for external controllers.
+
+BLUETOOTH POLLING RATE: Up to 500Hz in Bluetooth mode. Actual rate can range 125Hz to 500Hz depending on the connected device and its Bluetooth chip. For the most stable and consistent polling rate, use Wired (USB-C) or 2.4GHz Wireless — both deliver the full 1000Hz.
 """,
 
     "Blitz Wireless": """
@@ -965,6 +1008,12 @@ WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
     "Quantum": """
 COSMIC BYTE QUANTUM - PS4-STYLE DUAL MODE CONTROLLER - FULL MANUAL
 
+⭐ GENUINE CONSOLE SUPPORT: The Quantum is one of the few Cosmic Byte controllers with REAL PS4 console support.
+It works as a proper PS4 controller on PS4, Android, iOS, PC, and Nintendo Switch.
+Unlike other CB controllers that have a "DualShock mode" only for mobile/PC Bluetooth protocol,
+the Quantum genuinely functions as a DualShock 4 compatible controller on actual PlayStation hardware.
+Vibration, touchpad, and full button support work natively on PS4.
+
 PLATFORM COMPATIBILITY: PS4 (primary/full support), PS5 (PS4 games only - NOT PS5 native), Nintendo Switch (wired + Bluetooth), PC, iOS 13.0+, Android. NOT suitable as primary PS5 controller.
 
 LED COLOURS: Blue = PS4/PC. Pink = iOS connected. White = Android connected or pairing mode.
@@ -1002,7 +1051,12 @@ WARRANTY: 1 year manufacturing defects only. Physical, water, battery wear NOT c
 """,
 
     "Stratos Xenon": """
-COSMIC BYTE STRATOS XENON - PS4-STYLE WIRELESS CONTROLLER - FULL MANUAL
+COSMIC BYTE STRATOS XENON
+
+⭐ GENUINE CONSOLE SUPPORT: The Stratos Xenon is one of the few Cosmic Byte controllers with REAL console support.
+It is designed for PS4, iOS, and Android with native compatibility.
+Unlike other CB controllers whose "DualShock mode" is only a Bluetooth protocol trick for mobile/PC,
+the Stratos Xenon genuinely works on PS4 hardware with full button and vibration support. - PS4-STYLE WIRELESS CONTROLLER - FULL MANUAL
 
 PLATFORM COMPATIBILITY:
 - PS4: primary platform, full wireless Bluetooth support.
@@ -1093,7 +1147,7 @@ TROUBLESHOOTING:
 - Buttons unresponsive: test in wired mode first. If wired OK = wireless issue. If wired also fails = contact support.
 
 SOFTWARE:
-- Cosmic Byte Velox software available on thecosmicbyte.com.
+- Cosmic Byte Velox software available at https://www.thecosmicbyte.com/downloaddrivers/.
 - Allows custom DPI up to 26000, button remapping, polling rate adjustment.
 - macOS: basic plug-and-play on all 3 modes. Software may be Windows-primary - check website.
 
@@ -1131,7 +1185,7 @@ POLLING RATE:
 
 BATTERY: 500mAh built-in. ON/OFF switch controls wireless power.
 
-SOFTWARE: 5 buttons fully programmable via Cosmic Byte software (Windows only). Download from thecosmicbyte.com.
+SOFTWARE: 5 buttons fully programmable via Cosmic Byte software (Windows only). Download from https://www.thecosmicbyte.com/downloaddrivers/.
 
 TROUBLESHOOTING:
 - Not responding: check ON/OFF switch is ON. Check L1 for battery. Try different USB port for receiver. Re-pair: switch between modes using M button.
@@ -1174,7 +1228,7 @@ TROUBLESHOOTING:
 - Bluetooth not pairing: device must support BLE. Remove old pairing first. Hold L+M+R 3s for pairing mode.
 - Cursor erratic: use mousepad, lower DPI, check for interference.
 
-SOFTWARE: All 6 buttons programmable. Windows-primary (check website for macOS). Download from thecosmicbyte.com.
+SOFTWARE: All 6 buttons programmable. Windows-primary (check website for macOS). Download from https://www.thecosmicbyte.com/downloaddrivers/.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
@@ -1280,7 +1334,7 @@ SENSOR: PixArt 3311, 1000Hz polling, Huano switches (20M clicks).
 SLEEP: Auto-sleep after inactivity. Press any button to wake. Centre switch = OFF when storing.
 
 SOFTWARE: DPI up to 24000, macros, button customisation. Windows XP/Vista/7/8/10/11.
-Download from thecosmicbyte.com. macOS not officially supported for software.
+Download from https://www.thecosmicbyte.com/downloaddrivers/. macOS not officially supported for software.
 
 TROUBLESHOOTING:
 - No RGB is normal - by design.
@@ -1367,7 +1421,7 @@ COSMIC BYTE PHANTOM TKL — WIRELESS TRIPLE MODE MECHANICAL KEYBOARD
 
 SPECS: 82 keys, US layout, Gasket mount. Hot-swappable 3/5-pin Outemu switches (50M keystrokes). PBT keycaps. RGB 18 lighting modes with power-off memory. 1000Hz polling. 1.8m braided USB-C cable with magnetic ring. 2500mAh battery. 333x143x43mm, 820g. Compatible: Windows, macOS, Linux, Android, iOS.
 
-WHAT'S IN THE BOX: Keyboard, USB-C cable, USB 2.4G receiver, keycap puller, switch puller, user manual.
+WHAT'S IN THE BOX: Keyboard, USB-C cable, USB 2.4G receiver, keycap puller, switch puller, 2 extra switches, user manual.
 
 CONNECTIVITY — MODE SWITCH (physical switch on keyboard side):
 - Wired (middle/USB): Connect USB-C cable. Charges battery while working. Red LED = Charging, LED off = Fully charged.
@@ -1412,7 +1466,7 @@ POWER AND BATTERY:
 - Charging: Use the included USB-C cable. Red = charging. Light turns off when fully charged.
 - Software works in wired mode AND wireless mode (2.4G and Bluetooth)
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website. (software page). Windows only. Lets you remap keys, customise per-key RGB, set macros. Keyboard must be connected via USB-C for software to detect it.
@@ -1442,7 +1496,7 @@ WIRED ONLY — no wireless, no Bluetooth, no battery. Plug USB-C and use. Gasket
 
 SPECS: 82 keys, US layout, Gasket mount. Pre-lubed Outemu hot-swappable switches (50M keystrokes). Double-shot ABS keycaps. 1000Hz polling. Volume roller knob. Detachable USB-C port. 1.8m braided USB-C cable with magnetic ring. 333x143x43mm, 793g. Compatible: Windows 98/XP/Vista/7/8/10/11, macOS.
 
-WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, user manual.
+WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, 2 extra switches, user manual.
 
 VOLUME ROLLER: Turn clockwise = Volume Up. Turn counter-clockwise = Volume Down. Press = Mute/Unmute.
 
@@ -1482,7 +1536,7 @@ GAME LIGHTING MODES:
   Set key colours: Press a key repeatedly to cycle — 1st press = Red, 2nd = Orange, 3rd = Yellow, 4th = Green, 5th = Cyan, 6th = Blue, 7th = Purple, 8th = White, 9th = Off
   Save: Press FN + ~ again to save and exit
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website. (Windows only). Enables per-key RGB customisation, macros, and key remapping. Visit the Phantom TKL product page on the website > Software & User Manual tab > download.
@@ -1546,7 +1600,7 @@ CUSTOM BACKLIGHT RECORDING:
 4. Press FN + End to save
 5. Press FN + ESC to clear custom and restore to normal lighting
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website. (Windows only). Allows per-key RGB customisation and advanced settings.
@@ -1609,7 +1663,7 @@ CUSTOM BACKLIGHT RECORDING:
 3. Press keys to assign colours
 4. FN + End to save | FN + ESC to clear
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website. (Windows only). Per-key RGB and advanced customisation.
@@ -1697,7 +1751,7 @@ CUSTOM BACKLIGHT RECORDING:
 SWITCH SWAPPING:
 Step 1: Remove keycap with keycap puller. Step 2: Use switch puller on both sides, squeeze and pull straight up. Step 3: Insert new switch straight down until it clicks. Compatible: Outemu Blue, Red, Brown or any Outemu swappable switches.
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website.. Windows only. Per-key RGB, macros, key remapping. Keyboard must be in wired mode for software to work.
@@ -1726,7 +1780,7 @@ SPECS: 68 keys, US layout. Outemu swappable switches, 50M keystrokes. 1.7m PVC U
 
 SOFTWARE WARNING: ALWAYS download software from thecosmicbyte.com ONLY. Do NOT use old software from other download links — it can force an older firmware and cause LEDs to stop working. The 2025 updated software auto-detects the keyboard RGB generation and prompts for upgrade. If LED issues occur due to wrong firmware, contact cc@thecosmicbyte.com for the correct firmware fix.
 
-WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, user manual.
+WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, 2 extra switches, user manual.
 
 FN KEY SHORTCUTS:
 - FN + 1 to 9: F1-F9 | FN + 0: F10 | FN + -: F11 | FN + =: F12
@@ -1748,7 +1802,7 @@ BACKLIGHT CONTROLS:
 SWITCH SWAPPING:
 Step 1: Remove keycap with keycap puller. Step 2: Squeeze switch puller on both sides of switch, pull straight up. Step 3: Insert new switch straight down until it clicks. Compatible: Outemu Blue, Red, Brown or any Outemu swappable switches. Buy from thecosmicbyte.com.
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website.. Windows only. Enables per-key RGB customization, macros, key remapping. IMPORTANT: Use only the official software from the Artemis product page. Older third-party software versions can cause LED firmware issues.
@@ -1773,9 +1827,9 @@ COSMIC BYTE FIREFLY TKL — WIRED 87-KEY MECHANICAL KEYBOARD (CB-GK-16 / CB-GK-1
 WIRED ONLY. 87-key TKL layout (no numpad). Outemu swappable switches. Per-key RGB. Adjustable height legs. Compact design.
 
 VARIANTS: CB-GK-16 (Outemu Blue switches — tactile, clicky) | CB-GK-18 (Outemu Red switches — linear, quiet)
-SPECS: 87 keys US layout. Outemu swappable switches, 50M keystrokes. 1000Hz polling rate. 1.6m braided cable, detachable USB-C port. 360x127x40mm, 800g. Full key anti-ghosting. 11 lighting animations, 18 preset RGB configurations. Adjustable height via fold-out legs. Software: Windows (download from thecosmicbyte.com).
+SPECS: 87 keys US layout. Outemu swappable switches, 50M keystrokes. 1000Hz polling rate. 1.6m braided cable, detachable USB-C port. 360x127x40mm, 800g. Full key anti-ghosting. 11 lighting animations, 18 preset RGB configurations. Adjustable height via fold-out legs. Software: Windows (download from https://www.thecosmicbyte.com/downloaddrivers/).
 
-WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, user manual.
+WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, 2 extra switches, user manual.
 
 ADJUSTABLE HEIGHT: Fold-out legs on the bottom allow 2 typing height options. Open legs for higher angle, closed for flat.
 
@@ -1795,7 +1849,7 @@ FN KEY SHORTCUTS (based on Firefly model):
 - FN + ESC (hold 3s): Factory reset — restores all defaults
 - Multimedia controls available via FN + F-key row
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website. (Windows only). Full per-key RGB customization, macro programming, key remapping. Check thecosmicbyte.com Firefly TKL product page for latest software version.
@@ -1881,7 +1935,7 @@ CUSTOM BACKLIGHT RECORDING (5 custom groups):
 SWITCH SWAPPING (OPTICAL — must use optical switches only):
 Step 1: Remove keycap with keycap puller. Step 2: Squeeze switch puller, pull straight up. Step 3: Insert optical switch straight down until it clicks. WARNING: Only use optical swappable switches — mechanical switches will damage the keyboard.
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website.. Windows only. IMPORTANT: Software only works when keyboard is connected via USB-C wired mode. Wireless modes do not support software.
@@ -1909,7 +1963,7 @@ DUAL MODE: Wired USB-C + Bluetooth 5.0 (up to 3 devices). NO 2.4GHz wireless. 67
 
 SPECS: 67 keys + volume knob, US layout. Preinstalled Outemu Blue switches, hot-swappable. Supports Cherry MX, Gateron, Kailh, Outemu switches. 1000Hz polling rate. 1800mAh Li-Po battery. 18 preset RGB lighting configs, per-key RGB. 1.8m removable USB-C PVC cable. ABS Doubleshot Keycaps. All key anti-ghosting. Dual adjustable height. Software: Windows only, wired mode only.
 
-WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, user manual.
+WHAT'S IN THE BOX: Keyboard, USB-C cable, keycap puller, switch puller, 2 extra switches, user manual.
 
 IMPORTANT: Toggle switch on the BOTTOM of the keyboard controls Bluetooth mode.
 - Switch ON = Bluetooth active | Switch OFF = Wired mode only
@@ -1972,7 +2026,7 @@ Step 2: Squeeze switch puller on both sides, pull straight up.
 Step 3: Insert new switch straight down until it clicks.
 Buy switches from thecosmicbyte.com.
 
-SOFTWARE: Download from thecosmicbyte.com
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website.. Windows only. Must be in wired mode — Bluetooth mode does not support software.
@@ -2013,6 +2067,10 @@ LED INDICATORS (upgraded 2026 tri-mode model):
 - Green LED = Android mode.
 - Blue LED = iOS/Bluetooth pairing mode.
 - Older 125Hz batch: LED indicates player slot (1-4) only.
+
+VIBRATION ON ANDROID/iOS: NOT SUPPORTED — vibration only works on PC (XInput mode).
+- On PC: enable with A + Back if accidentally turned off. Vibration auto-disables at low battery.
+- Vibration will not function on Android or iOS regardless of connection mode.
 
 NOTE — Two generations exist:
 - 2026 model: Tri-Mode (2.4GHz/Bluetooth/Wired), Hall Effect joystick, 1000Hz polling rate.
@@ -2072,7 +2130,7 @@ CONTROLS:
 
 SETUP — PC/LAPTOP:
 1. Connect USB to PC
-2. Download driver from www.thecosmicbyte.com
+2. Download driver from https://www.thecosmicbyte.com/downloaddrivers/
 3. Extract and run setup.exe
 4. Enable 7.1 Surround Sound in the software
 5. In Windows Sound Settings, select "CB CryoCore" as both output AND input device
@@ -2130,7 +2188,7 @@ COMPATIBILITY:
 - Nintendo Switch: 3.5mm jack only
 - LED tip for mobile: plug USB into a power bank/charger while using 3.5mm for audio — this powers the RGB lights
 
-7.1 SURROUND: Download software from www.thecosmicbyte.com (USB mode only)
+7.1 SURROUND: Download software from https://www.thecosmicbyte.com/downloaddrivers/ (USB mode only)
 
 TROUBLESHOOTING:
 Q: Xbox not working?
@@ -2290,7 +2348,7 @@ FN+5=7 Colour Switch | FN+6=Light 1 | FN+7=Light 2 | FN+8=LED Off
 FN+9=Custom (FN + ←/→ to choose colour, FN+9 again to save)
 FN + ←/→ = direction control | FN + PgUp/PgDn = brightness up/down
 
-SOFTWARE: Download from www.thecosmicbyte.com for macro assignment, DPI tuning, RGB customisation (separate software for keyboard and mouse)
+SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/ for macro assignment, DPI tuning, RGB customisation (separate software for keyboard and mouse)
 
 TROUBLESHOOTING:
 Q: Keyboard keys not registering?
@@ -2567,14 +2625,132 @@ STEP 3 - WARRANTY ESCALATION (only after troubleshooting fails):
 - Then direct them with this exact message: "For warranty claims and faster resolution, please raise a support ticket at https://www.thecosmicbyte.com/raise-a-ticket/ or email us at cc@thecosmicbyte.com. Our team operates Mon-Sat, 10am-6pm. You can also call +91 7351615161."
 - Do NOT ask customers to collect or upload images, videos or documents - just direct them to raise a ticket or email.
 
+SERVICE CENTER — CRITICAL: Cosmic Byte does NOT have service centers in any city. If a customer asks about a local service center or repair center, always respond with this explanation:
+"Cosmic Byte operates a centralised service model — there are no walk-in service centers in any city. Here's how it works:
+1. Raise a ticket or contact our support team so they can verify the defect.
+2. Once verified, we arrange a doorstep pickup from your location at no extra cost.
+3. The product is repaired or replaced at our centralised service facility.
+4. It is then dispatched back to you.
+The entire process typically takes 7–14 days depending on your city, pincode and pickup location."
+
+MECHANICAL SWITCH COMPATIBILITY — 3-PIN vs 5-PIN (answer fully, do not deflect):
+
+SWITCH PIN TYPES:
+- 3-pin switches (plate-mounted): Have 1 centre pin + 2 side metal legs. Fit in 3-pin AND 5-pin hot-swap sockets.
+- 5-pin switches (PCB-mounted): Have 1 centre pin + 2 side metal legs + 2 extra plastic alignment pins. Fit ONLY in 5-pin sockets natively.
+
+COMPATIBILITY RULES:
+✓ 3-pin switches → work in both 3-pin and 5-pin hot-swap keyboards (no modification needed).
+✓ 5-pin switches → work in 5-pin hot-swap keyboards (no modification needed).
+⚠ 5-pin switches in 3-pin keyboard: The 2 extra PLASTIC pins can be carefully clipped/cut off to make them fit — but this is NOT recommended. Cutting pins may affect switch feel, stability, actuation, and long-term lifespan. It also voids switch warranty. Advise customers to use 3-pin switches for 3-pin keyboards instead.
+
+COSMIC BYTE KEYBOARD SOCKET TYPES:
+- 3-pin sockets only: Artemis wired, Artemis Wireless (CB-GK-40), Firefly TKL (CB-GK-16/18), Pandora, Vanth.
+- 5-pin sockets (support both 3-pin and 5-pin): Astra (CB-GK-33), Phantom TKL, Phantom TKL Wired (CB-GK-42).
+- NOTE: Trinity (CB-GK-39) uses OPTICAL switches — not compatible with standard mechanical switches at all.
+
+HOT-SWAP vs SOLDERED:
+- Hot-swap: Switches can be removed and replaced without soldering. All CB swappable keyboards are hot-swap.
+- Soldered: Switches are permanently fixed. CB's older non-swappable models are soldered — switches cannot be changed.
+
+WHEN CUSTOMER ASKS ABOUT CLIPPING PINS: Acknowledge it's technically possible to clip the 2 plastic pins off a 5-pin switch to use in a 3-pin board, but clearly advise against it — recommend buying the correct 3-pin variant instead to preserve switch quality and lifespan.
+
+PC CONTROLLER TESTING — UNIVERSAL ONLINE TOOL (recommend this PROACTIVELY):
+
+For testing ANY Cosmic Byte controller on PC — vibration motors, every button, both joysticks, both triggers, D-pad — the simplest, fastest method is the free online gamepad tester:
+👉 https://hardwaretester.com/gamepad
+
+This is the PREFERRED first-line diagnostic step before anything else (joy.cpl, Windows Settings → Game Controllers, etc.). Use it for:
+- "Vibration not working on PC" questions.
+- "Button / stick / trigger / D-pad not responding" questions.
+- "How do I know if my controller is working?" questions.
+- ANY suspected hardware issue before the customer assumes a defect or asks for warranty.
+
+HOW THE CUSTOMER USES IT:
+1. Connect the controller to the PC (USB cable / 2.4GHz dongle / Bluetooth) — XInput mode recommended for full feature support.
+2. Open https://hardwaretester.com/gamepad in any browser (Chrome or Edge work best).
+3. Press any button on the controller — the page auto-detects the gamepad and shows a live diagram.
+4. Test every input: each button press, stick movement, trigger pull and D-pad direction lights up in real time.
+5. Vibration test: scroll down to the "Vibration testing" section and click the rumble buttons (weak / strong / left motor / right motor) — both motors should vibrate.
+
+WHY THIS HELPS (and why we recommend it before warranty discussions):
+- Single URL, cross-platform — no need to walk the customer through Windows menus, joy.cpl, or driver pages.
+- Tests EVERY input plus vibration in one place.
+- If the controller works fully on hardwaretester.com → the hardware is fine. The issue is then game-side (in-game vibration setting off, game doesn't support rumble, wrong input mode for that game, etc.) or Android/iOS-side. This avoids unnecessary warranty / RMA claims for non-defective products.
+- If a specific input or vibration motor genuinely doesn't respond on hardwaretester.com → it's a real hardware fault and the customer should raise a ticket.
+
+MESSAGING TEMPLATE (adapt language to match the customer — English / Hindi / Hinglish):
+"Sabse easy tarika hai — apna controller PC se connect karein aur https://hardwaretester.com/gamepad open karein. Yeh page har button, joystick, trigger aur vibration motor ko test karta hai. Agar yahan sab kuch sahi kaam kar raha hai, toh controller hardware bilkul theek hai — issue game ke vibration setting ya game ke rumble support se related hai. Agar yahan koi button ya vibration kaam nahi karta, tab humein ticket raise karke bata dijiye."
+
+You can still mention joy.cpl or Windows Settings → Devices → Game Controllers as a Windows-only fallback, but lead with hardwaretester.com — it's faster, clearer, and cross-platform.
+
+ANDROID VIBRATION & DUALSHOCK MODE GUIDE — answer fully:
+
+⚠ CRITICAL DUALSHOCK MODE DISCLAIMER — ALWAYS state this clearly:
+DualShock mode on CB gaming controllers (Stellaris, Blitz Tri-Mode, Drakon, etc.) is ONLY a Bluetooth communication protocol mode for use with MOBILE PHONES and PC.
+It does NOT make these controllers compatible with PS4, PS5, or any Sony/Microsoft/Nintendo console.
+ONLY the Quantum and Stratos Xenon have genuine console support and work as real PS4 controllers on PS4, iOS, and Android.
+NEVER suggest DualShock mode enables console use — it does not. Controllers without genuine console support cannot be used on consoles under any circumstances.
+
+VIBRATION NOT WORKING ON ANDROID — troubleshooting steps by controller:
+
+Stellaris 2nd Gen / Blitz Tri-Mode / Drakon:
+- Standard Android D-Input Bluetooth mode may not send vibration commands.
+- Suggestion: Try switching to DualShock mode → Hold TURBO + HOME for 3 seconds → LED1 ON.
+- This is a mobile/PC Bluetooth protocol mode only — NOT for PS4/console use.
+- Vibration may or may not work depending on the game and Android device — this is NOT guaranteed.
+- This is an Android OS and game-level limitation, NOT a hardware defect. Not covered under warranty.
+- Vibration adjust: TURBO + Right Stick UP (increase) / DOWN (decrease).
+
+Lumora:
+- No dedicated DualShock mode. Set max vibration: Hold R3 + Left Stick Up for 3 seconds.
+- Try switching connection modes or reconnecting if vibration still absent.
+- Vibration on Android is not guaranteed and not covered under warranty.
+
+Ares Tri-Mode:
+- Vibration does NOT work on Android or iOS — PC XInput only, hardware limitation.
+
+General tips if vibration not working on Android:
+1. Try DualShock mode (TURBO + HOME, 3 sec) on supported controllers — this is a suggestion, results vary by game and device.
+2. Enable vibration in the game's controller/settings menu.
+3. Set controller vibration to max intensity.
+4. Try wired USB OTG connection — some games only send rumble over USB.
+5. If vibration still doesn't work, this is an Android limitation, NOT a product defect and is NOT covered under warranty.
+6. Recommend the customer test compatibility before assuming it is a hardware issue.
+
+IMPORTANT MESSAGING FOR ANDROID VIBRATION: Always frame this as a helpful suggestion — not a guaranteed fix. 
+Tell customers: "You can try DualShock mode to improve vibration on Android — it may or may not work depending on your game and device. This is an Android limitation and not a hardware issue, so it is not covered under warranty. PC is the primary supported platform for full vibration support." 
+
+CB REWARDS PROGRAM (BYTES) — answer these questions fully, do NOT deflect:
+Cosmic Byte uses Stamped.io for its rewards and loyalty program called "Bytes".
+
+HOW TO EARN BYTES:
+- Create an account: 1,250 Bytes on signup.
+- Purchases: Earn up to 5 Bytes per ₹1 spent on thecosmicbyte.com.
+- Other actions: Various bonus actions on the rewards page.
+
+HOW TO REDEEM BYTES:
+1. Go to https://www.thecosmicbyte.com/rewards/ and LOG IN to your account.
+2. Once logged in, a rewards widget appears at the BOTTOM RIGHT corner of the website.
+3. Click the widget to view your Bytes balance and redeem for discount coupons.
+4. Redeemed coupons can be applied at checkout for a discount on your purchase.
+
+IMPORTANT NOTES:
+- Customers MUST be logged in to see the redemption widget.
+- If the widget is not visible, ask them to log in first, then refresh the page.
+- Bytes cannot be transferred between accounts and have no cash value.
+- For issues with Bytes not showing or redemption errors, direct to cc@thecosmicbyte.com.
+
 STRICT RULES - always follow:
 1. NEVER mention, compare or reference competitor brands (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state Cosmic Byte controllers are NOT compatible with those consoles.
+   CONSOLE COMPATIBILITY RULE: When customers ask about using a CB controller on PS4/PS5/Xbox/Switch — ONLY the Quantum and Stratos Xenon have real console support. ALL other CB controllers (Stellaris, Blitz, Lumora, Ares, Drakon, Eclipse, Starforge, etc.) CANNOT be used on any console. DualShock mode on these controllers is ONLY a Bluetooth protocol mode for mobile/PC — it does NOT enable console use. Never imply otherwise. (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state Cosmic Byte controllers are NOT compatible with those consoles.
 2. ONLY answer using the provided product manual content. Never make up features or specs.
-3. If a question is unrelated to Cosmic Byte products: "I can only assist with Cosmic Byte product queries. Please visit thecosmicbyte.com for other information."
+3. If a question is about a THIRD-PARTY BRAND that Cosmic Byte sells (Gateron, Kailh, Outemu, Moza, Cammus, Brook, Cherry MX) — you CAN and SHOULD assist fully. These are products sold on thecosmicbyte.com. Use your knowledge about these brands and direct customers to the product page on thecosmicbyte.com and the brand's official site for deeper technical docs. If a question is truly unrelated to any product Cosmic Byte sells: "I can only assist with products available on thecosmicbyte.com. Please visit thecosmicbyte.com for more."
 4. Be friendly, clear and concise. Use simple language - customers may not be technical.
 5. Use numbered steps for procedures. Keep answers focused and scannable.
-6. If you genuinely cannot find the answer in the manual: "I don't have specific information on that. Please contact us at cc@thecosmicbyte.com or call +91 7351615161 (Mon-Sat 10am-6pm)."
-7. Always recommend thecosmicbyte.com for software, firmware downloads and support.
+6. If you genuinely cannot find the answer in the manual, OR if the customer asks about a product not in your knowledge base: first check if it might be an older/discontinued product — if so, share the legacy software archive: https://www.dropbox.com/scl/fo/u664rfeihvph7h56sroi3/ABcXiAkWnRt2qT70OkuLozU?rlkey=hvtdfgageoqugaa2yt4pux7pt&dl=0 and also direct them to cc@thecosmicbyte.com or +91 7351615161 (Mon-Sat 10am-6pm).
+7. SOFTWARE & MANUAL DOWNLOADS — ALWAYS give this exact link: https://www.thecosmicbyte.com/downloaddrivers/ — Customers can search their product name and download software and user manuals from this page. It is also available on each product page under the 'Software & User Manual' tab next to Overview. Never just say 'visit thecosmicbyte.com' — always give the direct download link.
+   OLDER / DISCONTINUED PRODUCTS: If a customer asks about software or manuals for a product that is older or no longer listed on thecosmicbyte.com (e.g. Alturas, or any product not in your knowledge base), share this Dropbox link which contains software and manuals for legacy products: https://www.dropbox.com/scl/fo/u664rfeihvph7h56sroi3/ABcXiAkWnRt2qT70OkuLozU?rlkey=hvtdfgageoqugaa2yt4pux7pt&dl=0 — Tell the customer: "This product may have been discontinued. You can find software and manuals for older Cosmic Byte products here: [Dropbox link]. If you still can't find it, contact cc@thecosmicbyte.com" 
 8. BUYING INTENT & LINKS — CRITICAL RULE: When a customer asks about price, buying, or where to purchase — you MUST use ONLY the exact URL provided above under "OFFICIAL BUY LINK". NEVER generate, guess, or search for a different URL. Copy the link exactly as given. Also always mention the ONLINEPAY coupon (10% off). If no buy link is provided, direct to thecosmicbyte.com.
 9. DYNAMIC PRODUCT INFO: If asked for live price or current offers, direct to the product page link and mention checking thecosmicbyte.com for current deals.
 10. SUPPORT DETAILS - ALWAYS USE THESE, NO EXCEPTIONS: Email: cc@thecosmicbyte.com | Phone: +91 7351615161 | Hours: Mon-Sat 10am-6pm. Ignore any different contact details that may appear in product manuals - these are the only correct details."""
@@ -2682,6 +2858,97 @@ def match_product_from_title(title: str) -> str:
         if keyword in t:
             return product if product in PRODUCTS else "All Products"
     return "All Products"
+
+
+# ── THIRD-PARTY BRAND MANUALS (orphan content recovered from broken paste) ──
+# (Gateron, Kailh, Moza, Cammus). NOT currently consumed anywhere.
+# NOTE: A separate `THIRD_PARTY_BRANDS` keyword dict exists below (used by
+# detect_third_party_brand). Different shape, different purpose — do not merge.
+THIRD_PARTY_BRAND_MANUALS = {
+    "Gateron Switches": """
+GATERON MECHANICAL SWITCHES — sold on thecosmicbyte.com in packs of 10
+
+COMPATIBILITY: Cherry MX-style. Available in 3-pin (plate-mount) and 5-pin (PCB-mount) variants.
+- 3-pin Gateron: Fits all CB hot-swap keyboards.
+- 5-pin Gateron: Fits CB keyboards with 5-pin sockets ONLY — Astra (CB-GK-33), Phantom TKL, Phantom TKL Wired (CB-GK-42). Does NOT fit Artemis Wireless (3-pin only).
+- DO NOT use 5-pin switches in 3-pin-only keyboards (Artemis wired, Artemis Wireless CB-GK-40, Firefly TKL, Pandora, Vanth) without clipping — clipping is not recommended.
+
+SWITCH TYPES AVAILABLE ON CB:
+- Gateron G Pro Yellow 2.0: Linear, 35g actuation, silent, smooth. Ideal for gaming.
+- Gateron G Pro Silver 2.0: Linear, 45g actuation, 1.2mm actuation point (fastest). Ideal for competitive gaming.
+- Gateron Milky Yellow: Linear, 35-40g actuation, budget-friendly smooth switch.
+- Gateron Blue: Tactile + clicky, 55g, audible click. Typing/general use.
+- Gateron Red: Linear, 45g, smooth and quiet. Gaming.
+- Gateron Brown: Tactile (no click), 45g. Balanced typing/gaming.
+
+KEY SPECS: 50 million keystroke rating. Plate-mounted (3-pin) or PCB-mount (5-pin) available.
+NOTE: Switches do NOT carry any warranty. Cannot be exchanged or returned.
+BUY: https://www.thecosmicbyte.com/product/gateron-mechanical-switches-compatible-with-cosmic-byte-hot-swappable-keyboards-qty-1pc/
+Brand site: https://en.gateron.com
+""",
+
+    "Kailh Switches": """
+KAILH MECHANICAL SWITCHES — sold on thecosmicbyte.com in packs of 10
+
+COMPATIBILITY: Cherry MX-style. Kailh switches come in 3-pin and 5-pin variants.
+- 3-pin Kailh: Fits all CB hot-swap keyboards.
+- 5-pin Kailh: Fits CB keyboards with 5-pin sockets ONLY — Astra (CB-GK-33), Phantom TKL, Phantom TKL Wired (CB-GK-42). Does NOT fit Artemis Wireless (3-pin only).
+- Kailh Box switches: Most are 5-pin — check product listing before buying for a 3-pin keyboard.
+
+SWITCH TYPES:
+- Kailh Box switches: Extra "box" housing around stem for dust/water resistance. Crisper click on clicky variants.
+- Kailh Red: Linear, 45g, quiet. Gaming.
+- Kailh Blue: Tactile + clicky, 60g. Typing.
+- Kailh Brown: Tactile, 45g. Balanced.
+- Kailh Speed switches: Shorter actuation point (1.1-1.4mm) for faster response.
+
+NOTE: Switches do NOT carry any warranty. Cannot be exchanged or returned.
+BUY: https://www.thecosmicbyte.com/product/kailh-mechanical-switches-for-swappable-keyboards-pack-of-10/
+Brand site: https://www.kailhswitch.com
+""",
+
+    "Moza": """
+MOZA SIM RACING — sold on thecosmicbyte.com
+
+Moza Racing is a premium direct drive sim racing brand. Cosmic Byte is an authorised reseller in India.
+
+WHEELBASES SOLD ON CB:
+- Moza R3: Entry-level DD, 3.5Nm torque. PC + Xbox compatible.
+- Moza R5: 5.5Nm, PC. Great entry DD wheelbase.
+- Moza R9 V2: 9Nm, PC. Mid-range DD.
+- Moza R12: 12Nm, PC. High performance.
+
+STEERING WHEELS SOLD ON CB:
+- Moza ES / ESX: Entry round wheel (PC + Xbox for ESX).
+- Moza KS: Classic round wheel.
+- Moza CS V2P: Premium podium wheel with displays.
+- Moza RS V2: Race spec wheel.
+- Moza FSR: Formula style wheel.
+- Moza TSW: Truck wheel.
+
+BUNDLES: R3 Bundle, R5 Bundle, Trucking Bundle — include base + wheel + SR-P Lite pedals + clamp.
+
+COMPATIBILITY: Most Moza wheelbases are PC-only. R3 Bundle also supports Xbox.
+SOFTWARE: Moza Pit House software for configuration — download from mozaracing.com.
+WARRANTY: 1 year via Cosmic Byte (cc@thecosmicbyte.com). For technical support: https://mozaracing.com/support
+CB SIM RACING PAGE: https://www.thecosmicbyte.com/product-category/sim-racing/
+""",
+
+    "Cammus": """
+CAMMUS SIM RACING — sold on thecosmicbyte.com
+
+Cammus is a direct drive sim racing brand. Cosmic Byte is an authorised reseller in India.
+
+PRODUCTS SOLD ON CB:
+- Cammus C5 Bundle: C5 direct drive wheelbase + CP5 pedals + CS5 desk clamp. PC-compatible.
+  - If no force feedback: turn the steering wheel all the way to one end first to initialise.
+
+WARRANTY: 1 year via Cosmic Byte (cc@thecosmicbyte.com).
+Brand site: https://www.cammus.com
+CB SIM RACING PAGE: https://www.thecosmicbyte.com/product-category/sim-racing/
+""",
+}
+
 
 # ── COMPACT CATALOGUE for recommendation/comparison queries ──
 # Sent when a customer asks "which should I buy?" with no specific product.
@@ -2792,6 +3059,37 @@ KEYBOARD + MOUSE COMBOS:
 
 CATALOGUE_ALL = CATALOGUE_CONTROLLERS + CATALOGUE_MICE + CATALOGUE_KEYBOARDS + CATALOGUE_HEADSETS + CATALOGUE_ACCESSORIES
 
+
+THIRD_PARTY_BRANDS = {
+    "gateron":   "Gateron",
+    "kailh":     "Kailh",
+    "outemu":    "Outemu",
+    "cherry mx": "Cherry MX",
+    "cherry":    "Cherry MX",
+    "moza":      "Moza",
+    "cammus":    "Cammus",
+    "brook":     "Brook",
+    "fanatec":   "Fanatec",
+    "thrustmaster": "Thrustmaster",
+}
+
+THIRD_PARTY_BRAND_URLS = {
+    "Gateron":   "https://en.gateron.com",
+    "Kailh":     "https://www.kailhswitch.com",
+    "Outemu":    "https://www.outemu.com",
+    "Cherry MX": "https://www.cherrymx.de/en",
+    "Moza":      "https://mozaracing.com",
+    "Cammus":    "https://www.cammus.com",
+    "Brook":     "https://www.brookaccessory.com",
+}
+
+def detect_third_party_brand(text: str) -> str | None:
+    """Return brand name if a third-party brand sold on thecosmicbyte.com is mentioned."""
+    t = text.lower()
+    for kw, brand in THIRD_PARTY_BRANDS.items():
+        if kw in t:
+            return brand
+    return None
 
 def detect_products_from_message(messages: list) -> tuple:
     """
@@ -3225,12 +3523,18 @@ KNOWLEDGE BASE (product manuals):
 
 CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
 
-            response = client.messages.create(
+            # Enable web search for third-party brand queries
+            third_party = detect_third_party_brand(user_input)
+            api_kwargs = dict(
                 model="claude-haiku-4-5-20251001",
                 max_tokens=600,
-                system=SYSTEM_PROMPT,
-                messages=api_messages
+                system=SYSTEM_PROMPT + "\n\nPRODUCT KNOWLEDGE:\n" + kb_content,
+                messages=api_messages,
             )
+            if third_party:
+                api_kwargs["tools"] = [{"type": "web_search_20250305", "name": "web_search"}]
+                api_kwargs["system"] += f"\n\nThe customer is asking about {third_party} — a third-party brand sold on thecosmicbyte.com. Use web search to find accurate specs, compatibility and support info. Always link back to thecosmicbyte.com for purchasing."
+            response = client.messages.create(**api_kwargs)
             # Extract text from response (may contain tool use blocks)
             answer = ""
             for block in response.content:
