@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.13.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.13.1
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,61 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.13.1 (2026-05-07) -- Claude
+  - Z-bump: fix StreamlitDuplicateElementKey regression introduced
+    in v2.13.0. The admin auth work added three additional
+    `stx.CookieManager(key="cb_cookie_mgr")` calls (auth-restore
+    check, login success handler, sign-out button) on top of the
+    existing one in the v2.12.0 customer history block. I had
+    assumed Streamlit dedupes components by key; it does not --
+    each call registers a fresh element with the same key, which
+    Streamlit refuses with StreamlitDuplicateElementKey.
+
+  Fix:
+     Hoist the cookie manager to a single instantiation point
+     before the admin gate. Bind the manager and its cookies dict
+     to module-level names (_cookie_manager, _cookies) so all
+     downstream code -- admin gate, login handler, sign-out
+     button inside render_admin(), and the customer history
+     block -- reads from the same instance. The original four
+     instantiations are reduced to one.
+
+  Specifics:
+
+  1. New top-level block placed just before "# -- ADMIN LOGIN
+     GATE --":
+        _cookie_manager = None
+        _cookies = None
+        if not st.session_state.get("embed_mode"):
+            _cookie_manager = stx.CookieManager(key="cb_cookie_mgr")
+            _cookies = _cookie_manager.get_all()
+     Skipped in embed_mode (third-party cookies unreliable in
+     iframes; same gating as v2.12.0).
+
+  2. Admin gate auth-restore check no longer creates a manager;
+     it reads the shared `_cookies` dict directly. If `_cookies`
+     is None (first render, or embed mode) it falls through to
+     the login form, same as before.
+
+  3. Login success handler calls `_cookie_manager.set(...)` on
+     the shared instance instead of creating its own. Guarded by
+     `if _cookie_manager is not None` for the embed_mode edge
+     case (admin should never be entered via embed in practice,
+     but the guard keeps it from crashing if it ever were).
+
+  4. Sign-out button inside render_admin() also uses the shared
+     `_cookie_manager`. Functions can read module-level names, so
+     this works without parameter passing. Guarded the same way.
+
+  5. Customer history block updated to use the already-bound
+     `_cookies` and `_cookie_manager` instead of instantiating
+     its own. The `if not embed_mode` gate stays; it's now only
+     guarding the rehydration logic, not the component creation.
+
+  Why this didn't break in v2.12.0 alone: there was only one
+  CookieManager instantiation in the file. v2.13.0 added three
+  more, and any path that crossed two of them tripped the check.
 
 v2.13.0 (2026-05-07) -- Claude
   - Y-bump: two admin-page UX fixes that user reported:
@@ -1473,7 +1528,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.13.0"
+__version__ = "2.13.1"
 
 import streamlit as st
 import anthropic
@@ -5395,9 +5450,13 @@ def render_admin():
             st.rerun()
     with _bar_c2:
         if st.button("🚪 Sign out", key="admin_signout", help="Clear admin session and return to Support"):
+            # v2.13.1: use the shared module-level _cookie_manager rather
+            # than instantiating a new CookieManager (which would trip
+            # StreamlitDuplicateElementKey). Guarded for embed_mode where
+            # _cookie_manager is None.
             try:
-                _signout_cookie_mgr = stx.CookieManager(key="cb_cookie_mgr")
-                _signout_cookie_mgr.delete(ADMIN_AUTH_COOKIE_NAME)
+                if _cookie_manager is not None:
+                    _cookie_manager.delete(ADMIN_AUTH_COOKIE_NAME)
             except Exception:
                 # Cookie delete failures shouldn't block sign-out; the
                 # session_state clear below is the source of truth.
@@ -5589,24 +5648,32 @@ def render_admin():
         st.session_state.show_admin = False
         st.rerun()
 
+# ── COOKIE MANAGER (v2.13.1: SINGLE INSTANCE PER RENDER) ──
+# Streamlit does NOT dedupe components by key -- a second
+# stx.CookieManager(key=...) in the same render raises
+# StreamlitDuplicateElementKey. So this is the ONE place the cookie
+# manager is created. Both the admin auth flow (immediately below) and
+# the customer history block (further down) read from this same
+# instance via the module-level _cookie_manager / _cookies bindings.
+# Skipped in embed_mode where third-party cookies are unreliable in
+# iframes anyway.
+_cookie_manager = None
+_cookies = None
+if not st.session_state.get("embed_mode"):
+    _cookie_manager = stx.CookieManager(key="cb_cookie_mgr")
+    _cookies = _cookie_manager.get_all()
+
 # ── ADMIN LOGIN GATE ──
 if st.session_state.show_admin:
-    # v2.13.0: try to restore admin auth from cookie BEFORE rendering the
-    # login form, so a hard refresh on the admin page reuses the active
-    # session instead of dumping the operator back to the password screen.
-    # Same cookie manager (key="cb_cookie_mgr") that the customer history
-    # block uses below; Streamlit dedupes the component by key.
-    if not st.session_state.admin_authenticated:
-        _admin_cookie_mgr = stx.CookieManager(key="cb_cookie_mgr")
-        _admin_cookies = _admin_cookie_mgr.get_all()
-        # _admin_cookies is None on first render (component still mounting);
-        # in that case we fall through to the login form and a second render
-        # will catch the cookie. Brief flicker of the password field on hard
-        # refresh is the cost; full reauth was the previous behavior.
-        if _admin_cookies:
-            _admin_token = _admin_cookies.get(ADMIN_AUTH_COOKIE_NAME)
-            if _admin_token and _verify_admin_auth_token(_admin_token, ADMIN_PASSWORD):
-                st.session_state.admin_authenticated = True
+    # v2.13.0/.1: try to restore admin auth from cookie BEFORE rendering
+    # the login form, so a hard refresh on the admin page reuses the
+    # active session instead of dumping the operator back to the
+    # password screen. Reads the shared _cookies dict (set above) --
+    # never re-instantiates the manager.
+    if not st.session_state.admin_authenticated and _cookies:
+        _admin_token = _cookies.get(ADMIN_AUTH_COOKIE_NAME)
+        if _admin_token and _verify_admin_auth_token(_admin_token, ADMIN_PASSWORD):
+            st.session_state.admin_authenticated = True
 
     if not st.session_state.admin_authenticated:
         st.markdown("### 🔒 Admin Login")
@@ -5616,14 +5683,16 @@ if st.session_state.show_admin:
             if st.button("Login"):
                 if pwd == ADMIN_PASSWORD:
                     st.session_state.admin_authenticated = True
-                    # v2.13.0: set the persistent auth cookie so the next
-                    # refresh / new tab is auto-authenticated.
-                    _login_cookie_mgr = stx.CookieManager(key="cb_cookie_mgr")
-                    _login_cookie_mgr.set(
-                        ADMIN_AUTH_COOKIE_NAME,
-                        _make_admin_auth_token(ADMIN_PASSWORD),
-                        expires_at=datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS),
-                    )
+                    # v2.13.0/.1: set the persistent auth cookie via the
+                    # shared manager. Guarded for the embed_mode edge case
+                    # where _cookie_manager is None (admin should never be
+                    # entered via embed_mode in practice).
+                    if _cookie_manager is not None:
+                        _cookie_manager.set(
+                            ADMIN_AUTH_COOKIE_NAME,
+                            _make_admin_auth_token(ADMIN_PASSWORD),
+                            expires_at=datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS),
+                        )
                     st.rerun()
                 else:
                     st.error("Incorrect password")
@@ -5645,10 +5714,11 @@ if st.session_state.show_admin:
 # from get_all() until its iframe has mounted (one extra Streamlit rerun).
 # We treat None as "not yet loaded" and skip rehydration on that pass; the
 # next rerun has the cookies and rehydrates normally.
-if not st.session_state.get("embed_mode"):
-    _cookie_manager = stx.CookieManager(key="cb_cookie_mgr")
-    _cookies = _cookie_manager.get_all()
-
+#
+# v2.13.1: this block uses the module-level _cookie_manager / _cookies that
+# were instantiated once before the admin gate. It does NOT create its own
+# CookieManager (which would trigger StreamlitDuplicateElementKey).
+if not st.session_state.get("embed_mode") and _cookie_manager is not None:
     if _cookies is not None:
         _bid = _cookies.get(HISTORY_COOKIE_NAME)
         if not _bid:
