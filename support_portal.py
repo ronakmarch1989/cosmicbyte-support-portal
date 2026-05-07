@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.6.3
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.6.4
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,58 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.6.4 (2026-05-07) -- Claude
+  - Z-bump: behavior fix. The Gamepad Tester multi-mode test had
+    been added to the system prompt back in v2.5.5 (after the user
+    validated it first-hand on real Android hardware), but the AI
+    was not proactively offering it when customers reported
+    vibration not working on mobile. User flagged this directly:
+    "You are not suggesting this option to the customer when they
+    claim vibration does not work in mobile."
+
+    Root cause: structural ordering. The "VIBRATION NOT WORKING ON
+    ANDROID" section led with per-controller troubleshooting AND
+    the warranty-disclaimer line ("this is an Android limitation,
+    not covered under warranty"). The Gamepad Tester multi-mode
+    test was buried at the end as a "pro tip". The AI was anchoring
+    on the first content it saw, dismissing the issue as
+    out-of-warranty, and never reaching the actually-helpful
+    suggestion at the bottom.
+
+    Fix: hard restructure of the VIBRATION NOT WORKING ON ANDROID
+    section.
+    1. Added a new ENFORCEMENT RULE at the very top: "your FIRST
+       response must offer the multi-mode Gamepad Tester test...
+       Do NOT lead with 'this is an Android limitation, not covered
+       under warranty' -- that line goes at the END as context,
+       after you've offered an actual solution."
+    2. The Gamepad Tester multi-mode test now sits FIRST in the
+       section as the primary recommendation, with full step-by-step
+       instructions and an exact verbatim messaging template the AI
+       should use (or come close to). The template starts with
+       "I have a suggestion that's been tested first-hand by our
+       team and works well..." -- frames it as a positive,
+       action-oriented suggestion rather than a deflection.
+    3. The warranty/limitation line is now framed as "ONLY AFTER
+       you've offered the test above" -- the AI is explicitly told
+       to use it as background context, not as the lead.
+    4. Per-controller specific notes (Stellaris/Blitz/Drakon
+       DualShock shortcut, Lumora R3 method, Ares Tri-Mode PC-only
+       carve-out) are kept but moved BELOW the lead recommendation
+       and clearly labelled "supplementary -- use as context AFTER
+       the test recommendation, not as a substitute for it".
+    5. Ares Tri-Mode special case (vibration genuinely doesn't work
+       on mobile at all -- PC XInput only) gets explicit guidance:
+       "Be upfront with the customer about this rather than running
+       them through a test that won't work."
+    6. Other supplementary tips (game vibration setting, max
+       intensity, OTG, PC verification via hardwaretester.com)
+       reframed as "offer these only if the multi-mode test alone
+       doesn't help" -- not as the primary path.
+
+    No data changes -- just reordering and stronger enforcement
+    language so the AI surfaces the right information first.
 
 v2.6.3 (2026-05-07) -- Claude
   - Z-bump: added 3 customer-self-service URLs that the AI now
@@ -539,7 +591,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.6.3"
+__version__ = "2.6.4"
 
 import streamlit as st
 import anthropic
@@ -3268,31 +3320,53 @@ It does NOT make these controllers compatible with PS4, PS5, or any Sony/Microso
 ONLY the Quantum and Stratos Xenon have genuine console support and work as real PS4 controllers on PS4, iOS, and Android.
 NEVER suggest DualShock mode enables console use — it does not. Controllers without genuine console support cannot be used on consoles under any circumstances.
 
-VIBRATION NOT WORKING ON ANDROID — troubleshooting steps by controller:
+VIBRATION NOT WORKING ON ANDROID — primary recommendation (ALWAYS lead with this):
+
+⚠ ENFORCEMENT RULE: Whenever a customer reports vibration not working on their phone — for ANY Cosmic Byte Bluetooth controller, regardless of model — your FIRST response must offer the multi-mode Gamepad Tester test described below. Do NOT lead with "this is an Android limitation, not covered under warranty" — that line goes at the END as context, after you've offered an actual solution. The Gamepad Tester multi-mode test has been validated first-hand by the Cosmic Byte team on real Android hardware — recommend it confidently as the first thing to try.
+
+🔧 GAMEPAD TESTER MULTI-MODE TEST — applies to ALL CB Bluetooth controllers:
+✅ VALIDATED BY THE COSMIC BYTE TEAM: This approach has been verified first-hand on real Android hardware. It works.
+
+Applies to every CB controller with Bluetooth: Stellaris, Blitz Tri-Mode, Drakon, Lumora, Ares, Ares Pro, Eclipse, Starforge, Quantum, Stratos Xenon, Nexus, and any other CB Bluetooth controller in our catalog.
+
+Why it works: Vibration and input compatibility on Android varies by phone model and Android version. Different Bluetooth modes (iOS, Android/D-Input, DualShock) speak different protocols, and which one your specific phone supports for vibration is unpredictable. Testing each mode in turn finds the one that works for that phone — no guessing.
+
+Steps to share with the customer:
+Step 1: Connect the controller to your phone via Bluetooth.
+Step 2: Try each Bluetooth mode one by one:
+   - Android / D-Input mode (default)
+   - DualShock mode (on supported controllers: Hold TURBO + HOME for 3 sec → LED1 ON)
+   - iOS mode (check controller manual for shortcut — usually a button + HOME)
+Step 3: In each mode, open the Gamepad Tester website in your phone's browser:
+   → https://gamepad-tester.com (or search "gamepad tester" in mobile browser)
+Step 4: On the tester page, look for a vibration / rumble test button and press it.
+Step 5: Whichever Bluetooth mode makes vibration work in the tester — use THAT mode for games and cloud gaming on your phone.
+
+EXACT MESSAGING TEMPLATE — use this verbatim or close to it:
+"I have a suggestion that's been tested first-hand by our team and works well: try connecting your controller to your phone in different Bluetooth modes — iOS, Android, and DualShock — and then open the Gamepad Tester website (https://gamepad-tester.com) in your phone's browser. Test vibration in each mode. If vibration works in any particular mode on your phone, use that same mode when you play games or use cloud gaming on mobile. You might need to try a few different modes to find what works on your specific phone — that's completely normal because Android phones vary a lot in Bluetooth-controller compatibility. This applies to all Cosmic Byte Bluetooth controllers in our catalog."
+
+Then, ONLY AFTER you've offered the test above, add the warranty/limitation context as background:
+"If vibration still doesn't work in any of the modes, that's typically an Android OS-level / game-level compatibility limit rather than a hardware issue, so it isn't covered under warranty. PC remains the primary supported platform for full vibration on every CB controller — if you also use the controller on PC and vibration works there, the hardware is fine."
+
+================================================================
+PER-CONTROLLER SUPPLEMENTARY DETAILS (use as context AFTER the test recommendation, not as a substitute for it):
 
 Stellaris 2nd Gen / Blitz Tri-Mode / Drakon:
-- Standard Android D-Input Bluetooth mode may not send vibration commands.
-- Suggestion: Try switching to DualShock mode → Hold TURBO + HOME for 3 seconds → LED1 ON.
-- This is a mobile/PC Bluetooth protocol mode only — NOT for PS4/console use.
-- Vibration may or may not work depending on the game and Android device — this is NOT guaranteed.
-- This is an Android OS and game-level limitation, NOT a hardware defect. Not covered under warranty.
+- Standard Android D-Input may not send vibration commands. DualShock mode (TURBO + HOME, 3 sec → LED1 ON) often works better for vibration on Android. Mention this when guiding the customer through Step 2 above.
 - Vibration adjust: TURBO + Right Stick UP (increase) / DOWN (decrease).
 
 Lumora:
-- No dedicated DualShock mode. Set max vibration: Hold R3 + Left Stick Up for 3 seconds.
-- Try switching connection modes or reconnecting if vibration still absent.
-- Vibration on Android is not guaranteed and not covered under warranty.
+- No dedicated DualShock mode button shortcut. Set max vibration: Hold R3 + Left Stick Up for 3 seconds. Customer can still try the multi-mode test by switching/reconnecting through any modes the controller offers.
 
 Ares Tri-Mode:
-- Vibration does NOT work on Android or iOS — PC XInput only, hardware limitation.
+- Vibration does NOT work on Android or iOS at all — PC XInput only. This is a hardware-level limitation specific to the Tri-Mode Ares (not the Ares Pro or other models). For this controller specifically, the Gamepad Tester test on mobile won't help — recommend PC use for vibration. Be upfront with the customer about this rather than running them through a test that won't work.
 
-General tips if vibration not working on Android:
-1. Try DualShock mode (TURBO + HOME, 3 sec) on supported controllers — suggestion only, results vary by game and device.
-2. Enable vibration in the game's controller/settings menu.
-3. Set controller vibration to max intensity.
-4. Try wired USB OTG connection — some games only send rumble over USB.
-5. If vibration still doesn't work, this is an Android limitation, NOT a product defect and is NOT covered under warranty.
-6. Recommend the customer test compatibility before assuming it is a hardware issue.
+Other supplementary tips (offer these only if the multi-mode test alone doesn't help):
+1. Enable vibration in the game's controller/settings menu — some games disable it by default.
+2. Set the controller's vibration intensity to maximum.
+3. Try a wired USB OTG connection — some Android games only send rumble over USB, not Bluetooth.
+4. Confirm the controller's vibration motors actually work by testing on PC at https://hardwaretester.com/gamepad — if it works there, the hardware is fine and the issue is purely Android compatibility.
+================================================================
 
 🔧 PRO TIP — GAMEPAD MODE COMPATIBILITY TEST (applies to ALL Cosmic Byte Bluetooth controllers):
 ✅ VALIDATED BY THE COSMIC BYTE TEAM: This testing approach has been verified first-hand on real hardware connected to Android. Recommend it confidently — it works.
