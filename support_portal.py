@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.12.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.12.3
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,130 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.12.3 (2026-05-07) -- Claude
+  - Z-bump: fix Raptor Mouse line in the All-Products compact
+    catalogue (line ~4897 before this edit) to match its full
+    manual. User confirmed the max DPI is 4800.
+
+  Before:
+     - Raptor Mouse: Wired, 3200 DPI. Budget option.
+  After:
+     - Raptor Mouse: Dual-mode (wired + 2.4GHz, no Bluetooth),
+       4800 DPI. Entry-level wireless option.
+
+  Two errors corrected on the same line:
+     1. "Wired" -- the Raptor is dual-mode (2.4GHz + wired) per
+        its full manual, not wired-only.
+     2. "3200 DPI" -- the Raptor's sensor (PixArt 3212) goes from
+        800 to 4800 DPI per its full manual; user confirmed.
+
+  Why this matters operationally:
+     The compact catalogue is what the AI sees in the system
+     prompt when the dropdown is set to "All Products." The full
+     per-product manual is only injected when a specific product
+     is selected. So a customer in "All Products" mode asking
+     "which budget mouse has wireless?" would have been told the
+     Raptor is wired (wrong), or one asking "what DPI does the
+     Raptor go up to?" would have been told 3200 (wrong by 1600
+     DPI). Now both views agree.
+
+  Note: I left the category heading "BASIC / OFFICE" unchanged.
+  Strictly speaking, Raptor is now in a slightly different niche
+  from Atlas and Umbra (which really are wired-only), but the
+  catalogue's coarse buckets still work. Recategorising is a UX
+  call, not a correctness fix, and you may want to do it
+  alongside any future catalogue restructure.
+
+v2.12.2 (2026-05-07) -- Claude
+  - Z-bump: KB content fix to stop the AI claiming the Blitz Tri-Mode
+    charging dock is "sold separately" and currently purchasable.
+    User reported a real customer interaction where the bot said
+    the dock was sold separately, gave a coupon code (ONLINEPAY,
+    10% off), and linked to the Blitz Tri-Mode CONTROLLER product
+    page when the customer asked where to find the charging dock.
+    The dock has not yet launched.
+
+  Root cause:
+     The Blitz Tri-Mode manual described the charging dock as
+     "sold separately" in three places:
+       - Comparison table row: "Charging dock | Yes (sold separately)"
+       - Key features list: "Charging dock support (sold separately)"
+       - Charging section: "CHARGING: USB-C or Charging Dock (sold
+         separately)."
+     "Sold separately" reads as a real, currently-purchasable
+     accessory. Claude combined that with the controller's product
+     URL (the only Blitz product page that exists) and the standard
+     ONLINEPAY coupon pattern from elsewhere in the system prompt,
+     and produced a confident purchase journey for an item that
+     does not yet exist.
+
+  Fix:
+     Inserted a "CHARGING DOCK STATUS — IMPORTANT" block right
+     under the Blitz vs old-Blitz comparison table. The block:
+       (a) States plainly that the dock has NOT YET LAUNCHED and
+           will be available on thecosmicbyte.com on its own
+           product link when released.
+       (b) Explicitly tells the AI not to say "sold separately"
+           or "available now," not to link the controller page
+           for the dock, and not to apply a coupon code to it.
+       (c) Gives the AI the correct response template for when a
+           customer asks about the dock: "coming soon, here's how
+           to charge in the meantime via USB-C."
+     The three legacy "sold separately" mentions are reworded to
+     "coming soon (not yet launched)" so the manual is internally
+     consistent and the AI can't pattern-match against the old
+     phrasing if the override block is partially missed.
+
+  Same failure pattern as v2.12.1 (Raptor software). Both bugs
+  are caused by KB sentences that imply a product/feature exists
+  when it doesn't. A future content sweep should look for:
+     - "sold separately"  (anywhere a product is not yet launched)
+     - "Check the website for available X"
+     - "X support" without a clear yes/no
+     - Mismatches between full manuals and the All-Products
+       compact catalogue (still pending: Raptor specs at line
+       ~4897 contradict the full manual).
+
+v2.12.1 (2026-05-07) -- Claude
+  - Z-bump: KB content fix to stop the AI hallucinating that the
+    Raptor Mouse has companion software. User reported a real
+    customer interaction where the bot confidently linked
+    /downloaddrivers/ for a Raptor and described software features
+    (RGB customisation, DPI levels, etc.) that do not exist for
+    this model.
+
+  Root cause:
+     The Raptor Mouse entry in PRODUCT_MANUALS (line ~2833 before
+     this fix) ended its RGB description with:
+        "Check thecosmicbyte.com for available Raptor software."
+     That phrasing reads as "go check, software is available." The
+     AI then pattern-matched against the ~15 other mouse / keyboard
+     manuals in the KB that all legitimately point to
+     thecosmicbyte.com/downloaddrivers/, and produced a confident
+     answer with the URL filled in. The model was being faithful
+     to its source material; the source material was the bug.
+
+  Fix:
+     Replaced the misleading sentence with an explicit "SOFTWARE:
+     NONE" block that:
+       (a) states clearly that the Raptor has no companion software
+       (b) tells the AI not to direct customers to /downloaddrivers/
+           for this model
+       (c) gives the AI the correct response to use when a customer
+           asks about Raptor software (configured via buttons on
+           the mouse itself).
+     The surrounding RGB sentence is kept but reworded to make
+     hardware-only control explicit.
+
+  Side issue NOT fixed in this bump (flagged for the user):
+     The "All Products" compact catalogue at line ~4897 describes
+     the Raptor Mouse as "Wired, 3200 DPI. Budget option." which
+     contradicts the full manual (dual-mode 2.4GHz + wired, no BT,
+     800-4800 DPI). Same product, two different specs in two
+     places. Did not touch this in v2.12.1 because the user has
+     better visibility on which spec is actually correct. Worth
+     reconciling on a future content pass.
 
 v2.12.0 (2026-05-07) -- Claude
   - Y-bump: per-product chat history that persists across browser
@@ -1269,7 +1393,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.12.0"
+__version__ = "2.12.3"
 
 import streamlit as st
 import anthropic
@@ -2228,11 +2352,20 @@ BLITZ TRI-MODE vs OLD BLITZ WIRELESS — KEY DIFFERENCES:
 | Gyro              | Yes                      | No                       |
 | Software support  | Yes (App Support label)  | No                       |
 | Polling rate      | 1000Hz (wired/2.4GHz)    | 1000Hz (wired/2.4GHz)    |
-| Charging dock     | Yes (sold separately)    | No                       |
+| Charging dock     | Coming soon (not yet launched) | No                |
 
 The Blitz Tri-Mode is NOT just a connectivity upgrade — TMR joysticks, gyro, and software are significant additions. Some functions may not work on Android/iOS. No warranty for unsupported device damage.
 
-KEY FEATURES: Tri-Mode (USB Wired/2.4GHz/Bluetooth), TMR joysticks (drift-resistant), Hall Effect analog triggers, 1000Hz polling (PC wired & 2.4GHz), Turbo & Auto Fire, Macro programming, Adjustable dual-motor vibration, Charging dock support (sold separately), Gyro support.
+CHARGING DOCK STATUS — IMPORTANT:
+The Blitz Tri-Mode charging dock has NOT YET LAUNCHED. It is coming soon and will be available on thecosmicbyte.com on its own separate product page when released.
+
+Do NOT tell customers the charging dock is "sold separately," "available now," or "in stock." It is not yet listed on the website.
+Do NOT direct customers to the Blitz Tri-Mode controller product page for the dock — that page sells the controller only.
+Do NOT apply ONLINEPAY or any other coupon code to the charging dock — there is no SKU yet to apply it to.
+
+If a customer asks where to find or buy the Blitz Tri-Mode charging dock, the correct response is: "The charging dock for the Blitz Tri-Mode is launching soon and will be available on thecosmicbyte.com on its own product page when released. In the meantime, you can charge your Blitz Tri-Mode using the included USB-C cable — plug it into a 5V/1A adapter or a PC USB port. Avoid fast chargers as they can damage the battery and void your warranty. A full charge takes 2.5–3 hours."
+
+KEY FEATURES: Tri-Mode (USB Wired/2.4GHz/Bluetooth), TMR joysticks (drift-resistant), Hall Effect analog triggers, 1000Hz polling (PC wired & 2.4GHz), Turbo & Auto Fire, Macro programming, Adjustable dual-motor vibration, Charging dock support (dock launching soon — see CHARGING DOCK STATUS section above), Gyro support.
 
 POWER & RESET:
 - Power ON: Press HOME for 0.5-1 second.
@@ -2300,7 +2433,7 @@ STICK SHAPE: Hold L3 + TURBO -> Circle (default) / Square 45-degree mode.
 CONTROLLER LOCK (bag): Hold SELECT + R3 for 5 seconds until all 4 LEDs light. Unlock: plug in USB charger.
 
 POWER: ON=press HOME (0.5-1 sec). Auto sleep=5 min. OFF=hold HOME 5 sec. Reset (frozen)=hold HOME 8 sec. Factory reset=hold SELECT + L3 + R3 for 5 seconds (clears all settings).
-CHARGING: USB-C or Charging Dock (sold separately). 5V/1A or PC USB ONLY. Fast chargers damage battery and void warranty. 2.5-3 hours charge. Battery: 600mAh, 7-15 hours.
+CHARGING: USB-C cable only for now. Charging Dock launching soon — see CHARGING DOCK STATUS section above. Use 5V/1A adapter or PC USB ONLY. Fast chargers damage battery and void warranty. 2.5-3 hours charge. Battery: 600mAh, 7-15 hours.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered. Fast charger damage NOT covered.
 
@@ -2830,7 +2963,14 @@ Tracking: 30 IPS. Switches: Huano (10M clicks). Weight: 96g without cable.
 
 DPI: Press DPI button near scroll wheel to cycle through levels (800-4800).
 
-RGB: 11 RGB effects on body and logo. Check thecosmicbyte.com for available Raptor software.
+RGB: 11 RGB effects on body and logo (controlled by the mouse hardware — no software customisation).
+
+SOFTWARE: NONE. The Raptor Mouse does NOT have any companion software.
+Do NOT direct customers to thecosmicbyte.com/downloaddrivers/ for this model
+— that page is for other Cosmic Byte mice (Helios, Atlas, Ignis, Firestorm,
+Aether, Velox, etc.). If a customer asks about software for the Raptor, the
+correct answer is that this model has no companion software; all functions
+are configured via the buttons on the mouse itself.
 
 BATTERY: Internal (not user-replaceable). Red LED may indicate charging. Charge via USB cable.
 
@@ -4894,7 +5034,7 @@ COSMIC BYTE MICE — Quick Comparison Guide
 BASIC / OFFICE:
 - Atlas Mouse: Wired, 3200 DPI, basic gaming. Entry level.
 - Umbra Mouse: Wired, 3200 DPI, lightweight. Entry level.
-- Raptor Mouse: Wired, 3200 DPI. Budget option.
+- Raptor Mouse: Dual-mode (wired + 2.4GHz, no Bluetooth), 4800 DPI. Entry-level wireless option.
 
 MID RANGE:
 - Ignis Mouse: Wired, 6400 DPI, RGB, 6 buttons. Good everyday gaming.
