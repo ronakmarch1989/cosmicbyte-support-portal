@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.8.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.8.2
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,113 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.8.2 (2026-05-07) -- Claude
+  - Y-bump: bulk photo export from the admin dashboard.
+    Complements the per-thumbnail download from v2.8.1 -- when
+    the team needs to grab photos from an entire week's worth
+    of warranty/return queries in one go, this is the faster
+    path.
+
+  Implementation:
+
+  1. New helper build_images_zip(rows) sits next to
+     build_csv_bytes() in the helpers section. Iterates the
+     filtered rows, decodes each row's "Image Thumbnails" JSON,
+     and writes every photo into an in-memory ZIP file using
+     Python's stdlib zipfile module (no new dependency).
+
+  2. Folder structure inside the ZIP:
+       {date}_{session_id}/
+           01_<original_name_basename>.jpg
+           02_<original_name_basename>.jpg
+           ...
+     Examples:
+       07-May-2026_e30e4078/
+           01_L3-stick-defect.jpg
+           02_packaging-damage.jpg
+       06-May-2026_b7724dda/
+           01_warranty-card.jpg
+     Per-session folders keep all photos from one customer
+     interaction together. Folder names include the date so
+     they sort chronologically when extracted, and so duplicate
+     session-IDs across days never collide. Numeric prefix on
+     filenames preserves the order the customer attached them.
+
+  3. Filename sanitisation: original name's basename is used,
+     extension forced to .jpg (since stored bytes are JPEG --
+     same logic as v2.8.1 single-photo download), and any
+     stray path separators are stripped so a malformed name
+     can't write outside the intended folder.
+
+  4. Returns (zip_bytes, image_count, conversation_count) or
+     (None, 0, 0) if no photos were found across the rows.
+
+  5. UI -- new "📦 Export Photos (ZIP)" section placed right
+     below the existing "📧 Email CSV Report" section in the
+     admin dashboard. Honors the existing date / product /
+     feedback filters at the top -- you filter to what you
+     want, then click export.
+
+  6. Button label dynamically shows what's about to be
+     exported, e.g. "📦 Download all photos (47 from 23
+     conversations · 1.2 MB)" so the admin knows the scope
+     and size before clicking.
+
+  7. Empty-state handling:
+     - Filters match no rows: yellow warning ("No rows match
+       current filters")
+     - Filters match rows but none have photos: blue info
+       ("No photos in the filtered conversations -- nothing
+       to export")
+     - ZIP build fails: red error with exception text
+
+  8. Output filename includes the date filter and a timestamp,
+     e.g. "cb_photos_07-May-2026_20260507_1430.zip" or
+     "cb_photos_all_dates_20260507_1430.zip" -- helps when
+     multiple exports accumulate in the admin's downloads.
+
+  Performance note: ZIP is generated in-memory on each render
+  while the admin is on the page. With a few hundred filtered
+  rows and ~25KB per thumbnail, this is fractions of a second
+  -- well within Streamlit's render budget. If filter scope
+  ever grows to thousands of rows, can revisit by deferring
+  ZIP build until button click via a session_state flag.
+
+v2.8.1 (2026-05-07) -- Claude
+  - Z-bump: small UX win on the admin dashboard. Each thumbnail
+    in the conversation expander now has a "📥 Download photo"
+    button right below it. One click saves a JPEG to the admin's
+    computer with the original filename (extension forced to
+    .jpg since the bytes are JPEG regardless of what the
+    customer originally uploaded — prevents mismatched-MIME
+    issues when opening). Removes the need to manually decode
+    base64 from the CSV cell when the team wants to forward an
+    image to a courier (delivery damage claim) or attach to an
+    internal ticket.
+
+  Implementation:
+  - Used Streamlit's native st.download_button — no extra
+    dependency, no JS hacks. Each button gets a unique key
+    f"dl_{row_idx}_{thumb_idx}" so multiple downloads don't
+    collide in Streamlit's widget tree.
+  - Filename: original name's basename + .jpg. So a customer's
+    "L3-defect.png" becomes "L3-defect.jpg" on download
+    (matches the actual JPEG bytes).
+  - Tiny CSS extension: .stDownloadButton button now picks up
+    the same orange CB button styling as .stButton and
+    .stFormSubmitButton (was previously rendering as a default
+    Streamlit grey button -- looked out of place in the admin
+    dashboard).
+
+  No data model changes -- thumbnails were already in the CSV
+  from v2.8.0. This bump just adds the download trigger.
+
+  Future bigger improvement still on the table if useful: a
+  bulk "📦 Export images for date range" button that ZIPs all
+  thumbnails from filtered rows into a single download with
+  per-session subfolders. Not done in this bump -- only do
+  if/when the per-thumbnail download proves insufficient.
 
 v2.8.0 (2026-05-07) -- Claude
   - Y-bump: NEW FEATURE -- attached photos now visible in the
@@ -891,7 +998,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.8.0"
+__version__ = "2.8.2"
 
 import streamlit as st
 import anthropic
@@ -947,6 +1054,7 @@ import json
 import csv
 import base64
 import io
+import zipfile
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -994,8 +1102,8 @@ html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);
 .stSelectbox > div > div{background:var(--s1)!important;border:1px solid var(--border2)!important;border-radius:5px!important;color:var(--text)!important;}
 .stSelectbox > div > div:focus-within{border-color:var(--orange)!important;box-shadow:0 0 0 2px var(--orange-dim)!important;}
 .stSelectbox svg{fill:var(--orange)!important;}
-.stButton button,.stFormSubmitButton button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.1em!important;text-transform:uppercase!important;font-family:'Rajdhani',sans-serif!important;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)!important;transition:all 0.15s!important;}
-.stButton button:hover,.stFormSubmitButton button:hover{background:#FFC040!important;}
+.stButton button,.stFormSubmitButton button,.stDownloadButton button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.1em!important;text-transform:uppercase!important;font-family:'Rajdhani',sans-serif!important;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)!important;transition:all 0.15s!important;}
+.stButton button:hover,.stFormSubmitButton button:hover,.stDownloadButton button:hover{background:#FFC040!important;}
 [data-testid="stForm"]{border:none!important;padding:0!important;}
 /* File uploader — make it visible against the dark theme */
 [data-testid="stFileUploader"] label{color:var(--orange)!important;font-size:12px!important;font-weight:600!important;font-family:'Inter',sans-serif!important;margin-bottom:6px!important;}
@@ -1145,6 +1253,49 @@ def build_csv_bytes(rows):
     writer.writeheader()
     writer.writerows(rows)
     return buf.getvalue().encode("utf-8")
+
+def build_images_zip(rows):
+    """Bundle every thumbnail in `rows` into an in-memory ZIP.
+    Folder structure inside the archive: {date}_{session_id}/{NN}_{name}.jpg
+    where NN is the per-conversation image index (zero-padded 2 digits).
+    Returns (zip_bytes, image_count, conversation_count). If no images are
+    found across the rows, returns (None, 0, 0)."""
+    buf = io.BytesIO()
+    image_count = 0
+    convo_count = 0
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for r in rows:
+            thumbs_raw = r.get("Image Thumbnails", "")
+            if not thumbs_raw:
+                continue
+            try:
+                thumbs = json.loads(thumbs_raw)
+            except (json.JSONDecodeError, TypeError):
+                continue
+            if not thumbs:
+                continue
+            convo_count += 1
+            # Folder name: "07-May-2026_e30e4078"  -> sorts chronologically
+            # when extracted, sessions stay grouped.
+            date_str = r.get("Date", "unknown").replace(" ", "-")
+            session = r.get("Session ID", "unknown") or "unknown"
+            folder = f"{date_str}_{session}"
+            for idx, t in enumerate(thumbs, start=1):
+                try:
+                    img_bytes = base64.b64decode(t["data"])
+                    name = t.get("name", f"image_{idx}")
+                    base_name = os.path.splitext(name)[0] or f"image_{idx}"
+                    # Sanitise: strip path separators in case any slipped in.
+                    base_name = base_name.replace("/", "_").replace("\\", "_")
+                    arcname = f"{folder}/{idx:02d}_{base_name}.jpg"
+                    zf.writestr(arcname, img_bytes)
+                    image_count += 1
+                except Exception:
+                    # Bad image -- skip it but keep going on the rest
+                    continue
+    if image_count == 0:
+        return None, 0, 0
+    return buf.getvalue(), image_count, convo_count
 
 def send_email_with_csv(csv_bytes, subject, recipient=DIGEST_EMAIL):
     try:
@@ -4685,7 +4836,22 @@ def render_admin():
                                 with cols[ti % len(cols)]:
                                     try:
                                         thumb_bytes = base64.b64decode(t["data"])
-                                        st.image(thumb_bytes, caption=t.get("name", ""), width=180)
+                                        original_name = t.get("name", f"image_{ti+1}")
+                                        # Thumbnails are stored as JPEG (we convert in
+                                        # _make_thumbnails_for_log), so force .jpg on
+                                        # download so the file opens cleanly regardless
+                                        # of what the customer originally uploaded.
+                                        base_name = os.path.splitext(original_name)[0] or f"image_{ti+1}"
+                                        dl_filename = f"{base_name}.jpg"
+                                        st.image(thumb_bytes, caption=original_name, width=180)
+                                        st.download_button(
+                                            label="📥 Download photo",
+                                            data=thumb_bytes,
+                                            file_name=dl_filename,
+                                            mime="image/jpeg",
+                                            key=f"dl_{i}_{ti}",
+                                            use_container_width=True,
+                                        )
                                     except Exception:
                                         st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
                     except (json.JSONDecodeError, TypeError):
@@ -4735,6 +4901,35 @@ def render_admin():
                 )
             except Exception as e:
                 st.error(f"CSV error: {e}")
+
+    # ── Bulk Photo Export ──
+    st.markdown("#### 📦 Export Photos (ZIP)")
+    st.caption("Bundles every photo attached to the filtered conversations into a single ZIP, "
+               "organised in per-session folders named `{date}_{session_id}`. "
+               "Useful for batch warranty/return reviews and forwarding to couriers.")
+    if filtered:
+        try:
+            zip_bytes, n_imgs, n_convos = build_images_zip(filtered)
+            if zip_bytes:
+                size_kb = len(zip_bytes) / 1024
+                size_label = f"{size_kb:.0f} KB" if size_kb < 1024 else f"{size_kb/1024:.1f} MB"
+                period_label = selected_date if selected_date != "All dates" else "all_dates"
+                period_label = period_label.replace(" ", "-")
+                zip_filename = f"cb_photos_{period_label}_{datetime.now().strftime('%Y%m%d_%H%M')}.zip"
+                st.download_button(
+                    label=f"📦 Download all photos ({n_imgs} from {n_convos} conversations · {size_label})",
+                    data=zip_bytes,
+                    file_name=zip_filename,
+                    mime="application/zip",
+                    key="admin_photos_zip",
+                    use_container_width=False,
+                )
+            else:
+                st.info("No photos in the filtered conversations — nothing to export.")
+        except Exception as e:
+            st.error(f"ZIP build error: {e}")
+    else:
+        st.warning("No rows match current filters — adjust the filters above to export photos.")
 
     st.divider()
     if st.button("<- Back to Support", key="admin_back"):
