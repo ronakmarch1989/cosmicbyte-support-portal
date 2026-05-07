@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.6.5
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.7.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,104 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.7.0 (2026-05-07) -- Claude
+  - Y-bump: NEW FEATURE -- image attachments. Customers can now
+    attach up to 4 photos (PNG/JPG/WebP/GIF, 5MB max each) along
+    with their message. The AI examines the images and integrates
+    what it sees into the response.
+
+  Implementation:
+
+  1. UI -- file uploader added to the chat form (st.file_uploader,
+     accept_multiple_files=True, type=[png/jpg/jpeg/webp/gif]).
+     Caption above the form tells the customer the limits (up to
+     4 photos, 5MB each, supported formats). Uploader sits below
+     the text input + Send button inside the same form so files
+     submit together with the text on Send / Enter.
+
+  2. Validation -- client-side checks before sending:
+     * Cap at 4 images per message (extras dropped, customer
+       warned which were skipped).
+     * 5MB per file (Anthropic API hard limit; oversized files
+       skipped with friendly warning).
+     * Media-type detection from upload header, with PIL fallback
+       for files where the browser didn't set Content-Type.
+     * Files that fail validation are listed back to the customer
+       in a yellow st.warning so they know what got dropped --
+     no silent failures.
+
+  3. Storage -- session state messages now optionally carry
+     "images": [{"data": base64, "media_type": "...", "name": "..."}].
+     Backward compatible: messages without "images" key continue
+     to work as plain text.
+
+  4. Chat history rendering -- when displaying a user message
+     that has attached images, small thumbnails (180px wide) are
+     rendered below the message bubble in up to 4 columns, each
+     captioned with the original filename. Customers can see what
+     they sent in the conversation history.
+
+  5. API call -- the message construction loop was refactored.
+     Plain-text user messages still send as a content string
+     (existing behaviour, no regression). User messages with
+     attached images now send as a content list:
+       [
+         {"type": "text", "text": "..."},
+         {"type": "image", "source": {"type": "base64",
+                                      "media_type": "...",
+                                      "data": "..."}},
+         ...
+       ]
+     The KB/buy-info injection logic was updated to handle BOTH
+     content shapes -- if the first user message is a string, it
+     wraps as before; if it's a list of blocks, the wrapper is
+     applied to the text block only and image blocks are left
+     intact. A note is added to the wrapped text telling the AI
+     "the customer attached one or more images with this message
+     -- examine each one carefully" so it doesn't ignore them.
+
+  6. System prompt -- new "VISUAL EVIDENCE HANDLING" section
+     placed right above the existing PC CONTROLLER TESTING
+     section. Covers concrete cases: physical damage (route to
+     warranty if defect; explain non-coverage if drop/water/
+     tampering); receipts/invoices/warranty cards (read date +
+     serial directly); packaging damage on delivery (returns
+     portal + ticket, both); keyboard switches (reseat vs
+     replacement guidance); LED state photos (mode confirmation);
+     Windows error dialog screenshots (read error text verbatim);
+     "is this a defect?" close-ups (be honest about manufacturing
+     tolerance vs real defect); cable/connector damage (cable
+     swap as first step). Plus 6 general rules: reference what
+     you see specifically, answer text+image together, ask for
+     clearer photos if unclear, be honest about non-coverage,
+     never invent image details, never ask for re-upload.
+
+  7. Logging -- the conversation log now records "[+N image(s)
+     attached]" appended to the user_question text whenever the
+     message included images. Lets analytics/admin dashboard
+     see which sessions used the new feature.
+
+  Cost impact -- a typical phone photo costs roughly 1000-2000
+  input tokens (depending on dimensions). Per Anthropic's pricing
+  for Haiku 4.5 this is single-digit-paise per image. The
+  diagnostic accuracy gain (e.g. avoiding wrongly-routed warranty
+  tickets, immediate visual confirmation of a defect) is worth a
+  lot more than the marginal token cost.
+
+  Out of scope this bump:
+  - Video files (Anthropic API doesn't accept video natively;
+    would need ffmpeg-based frame extraction -- deferred).
+  - Audio (would need separate transcription step -- deferred).
+  - Server-side image resizing/compression (5MB limit + 4-image
+    cap is enough for v1; can add later if real-world uploads
+    hit issues).
+
+  Diagnostic expander from v2.5.2 is still in place -- if any
+  image-related API call fails, the technical-details panel will
+  show the error and full traceback for fast debugging during
+  initial rollout. Plan to remove the expander once image support
+  has been validated in production.
 
 v2.6.5 (2026-05-07) -- Claude
   - Z-bump: data correction + new authoritative quick-reference
@@ -648,7 +746,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.6.5"
+__version__ = "2.7.0"
 
 import streamlit as st
 import anthropic
@@ -3365,6 +3463,34 @@ CB sells a SEPARATE product called "Cosmic Byte Optical Switches (Pack of 20)" �
 - If a customer has the Trinity keyboard and wants replacement switches, the Optical Switches Pack of 20 is the ONLY compatible replacement option — do not suggest mechanical switches for it.
 - No warranty on switches, no exchange/return.
 
+VISUAL EVIDENCE HANDLING — when the customer attaches images:
+
+Customers can attach photos of their product or issue along with their message. When you see an image in the conversation, examine it carefully and integrate what you see into your response. Common things customers will photograph and what to do with each:
+
+- Physical damage (cracked shell, broken stick, bent connector, peeled rubber, water marks): Acknowledge what you see specifically (e.g. "I can see the right joystick has clearly snapped"). Route to warranty/raise-a-ticket flow if the damage looks like a manufacturing defect (and warranty is still valid). If the damage looks like physical/water/drop damage, gently let the customer know that's typically NOT covered under warranty per CB's policy — but still offer to help via raise-a-ticket so the team can review.
+
+- Receipts, invoices, warranty cards, order confirmations: Read the date, order number, and serial number directly from the image. Use these to determine warranty status (1 year from purchase date for most products) and to populate any raise-a-ticket suggestion with concrete details.
+
+- Packaging damage on delivery (torn box, damaged seal, missing accessories): Treat as a delivery issue. Direct customer to the returns submission portal at https://track.thecosmicbyte.com/returns AND raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/ — both, since this typically needs faster human attention.
+
+- Keyboard switches (broken stem, stuck switch, switch popped out): Identify the switch type if you can (Cherry MX-style cross stem, optical, etc.). For pulled-out switches in hot-swap boards, give the simple reseat instruction (align pins, press straight down). For broken stems / damaged switches, point to the relevant switch pack on CB.
+
+- LED states / RGB modes: Check whether the LED color/pattern matches a documented mode for that controller. If a customer is in DualShock mode but doesn't realise it, the LED tells you. Confirm the mode and explain what it does.
+
+- Windows error dialogs / Game Controllers panel screenshots: Read the exact error text. Don't paraphrase — cite the dialog wording so the customer knows you read it. Then give precise troubleshooting based on what's actually shown.
+
+- "Is this a defect?" close-ups (joystick wobble, key wobble, slight cosmetic variance): Be honest. If it looks like normal manufacturing tolerance, say so without dismissing the customer. If it looks like a real defect, route to warranty.
+
+- Cables/connectors (USB end, dongle, charging cable): Check for visible damage. Recommend cable swap as a first step if the cable looks fine — many "controller dead" issues are actually cable issues.
+
+GENERAL RULES FOR IMAGE-ATTACHED MESSAGES:
+1. ALWAYS reference what you see specifically. Don't say "your image shows an issue" — say what the issue actually looks like in the image. Customers want to know you actually looked.
+2. If the customer wrote a question alongside the image, answer the question while incorporating what you see. Don't ignore one for the other.
+3. If the image is unclear/blurry/too dark to make a judgement on, say so honestly and ask for a clearer photo of the specific area in question (e.g. "Could you send a closer photo of the L3 button area in better light? I want to see the stick base clearly before suggesting next steps.").
+4. If the image shows something that's clearly outside CB's warranty (drop damage, water exposure, tampering, third-party-brand product), be honest about it — but still recommend the closest path to resolution (paid repair quote via raise-a-ticket, replacement purchase, etc.).
+5. NEVER invent details about what's in an image. If you can't see something clearly, say so. Don't claim a product looks fine when you can't tell.
+6. Don't ask the customer to upload the same image again or describe it in text. You can already see it.
+
 PC CONTROLLER TESTING — UNIVERSAL ONLINE TOOL (recommend this PROACTIVELY for any PC issue):
 
 For testing ANY Cosmic Byte controller on PC — vibration motors, every button, both joysticks, both triggers, D-pad — the simplest, fastest method is the free online gamepad tester:
@@ -4497,6 +4623,17 @@ for idx, msg in enumerate(st.session_state.messages):
         <div class="msg-user">
             <div class="msg-user-bubble">{msg["content"]}</div>
         </div>""", unsafe_allow_html=True)
+        # If the customer attached images, render small thumbnails right under
+        # the message bubble so the chat history reflects what was sent.
+        if msg.get("images"):
+            thumb_cols = st.columns(min(4, len(msg["images"])))
+            for ti, img in enumerate(msg["images"]):
+                with thumb_cols[ti % len(thumb_cols)]:
+                    try:
+                        img_bytes = base64.b64decode(img["data"])
+                        st.image(img_bytes, caption=img.get("name", ""), width=180)
+                    except Exception:
+                        st.caption(f"📎 {img.get('name', 'attached image')}")
     else:
         st.markdown(f"""
         <div class="msg-bot">
@@ -4570,7 +4707,22 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             api_messages = []
             for m in trimmed:
                 role = "user" if m["role"] == "user" else "assistant"
-                api_messages.append({"role": role, "content": m["content"]})
+                # Assistant messages stay as plain text. User messages with
+                # attached images become a content list with text + image blocks.
+                if role == "user" and m.get("images"):
+                    blocks = [{"type": "text", "text": m["content"]}]
+                    for img in m["images"]:
+                        blocks.append({
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": img["media_type"],
+                                "data": img["data"],
+                            },
+                        })
+                    api_messages.append({"role": role, "content": blocks})
+                else:
+                    api_messages.append({"role": role, "content": m["content"]})
 
             # Inject KB + buy link into first user message only
             buy_link = PRODUCT_URLS.get(product, "https://www.thecosmicbyte.com/product-category/gaming-controllers/")
@@ -4580,13 +4732,36 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 COUPON: ONLINEPAY (10% off online payments — always mention this)
 """ if product != "All Products" else ""
 
-            api_messages[0]["content"] = f"""PRODUCT SELECTED: {product}
+            # The first user message may now be either a plain string or a
+            # content list (if images were attached on the very first turn).
+            # Either way, we need to inject the KB + buy info around the
+            # original customer text. Find the text block (or use the string)
+            # and wrap it; leave any image blocks intact.
+            first = api_messages[0]
+            if isinstance(first["content"], str):
+                original_text = first["content"]
+                first["content"] = f"""PRODUCT SELECTED: {product}
 
 KNOWLEDGE BASE (product manuals):
 {knowledge}
 {buy_info}
 
-CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
+CUSTOMER MESSAGE: {original_text}"""
+            else:
+                # Content is a list of blocks. Find the text block, wrap it.
+                for blk in first["content"]:
+                    if blk.get("type") == "text":
+                        original_text = blk["text"]
+                        blk["text"] = f"""PRODUCT SELECTED: {product}
+
+KNOWLEDGE BASE (product manuals):
+{knowledge}
+{buy_info}
+
+CUSTOMER MESSAGE: {original_text}
+
+(NOTE: The customer attached one or more images with this message. Examine each image carefully and incorporate what you see into your response per the VISUAL EVIDENCE HANDLING rule in your system prompt.)"""
+                        break
 
             # Third-party brand handling:
             #   - If we have a structured manual for the brand in THIRD_PARTY_BRAND_MANUALS,
@@ -4632,10 +4807,15 @@ CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
             if not answer:
                 answer = "I was unable to get a response. Please try again or contact us at cc@thecosmicbyte.com."
             # Log conversation and store index directly in message
+            # Annotate logged question with image count so analytics can see
+            # which queries included visual evidence.
+            last_user_msg = st.session_state.messages[-1]
+            n_imgs = len(last_user_msg.get("images", []))
+            logged_question = user_question + (f" [+{n_imgs} image(s) attached]" if n_imgs else "")
             row_num = log_conversation(
                 st.session_state.session_id,
                 product,
-                user_question,
+                logged_question,
                 answer
             )
             st.session_state.messages.append({
@@ -4667,7 +4847,7 @@ CUSTOMER MESSAGE: {api_messages[0]["content"]}"""
 
 # ── INPUT ──
 st.markdown("<div style='margin-top:1rem'></div>", unsafe_allow_html=True)
-st.markdown("<p style='font-size:10px;color:#555;margin:0 0 4px'>Press Enter or click Send to submit</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:10px;color:#555;margin:0 0 4px'>Press Enter or click Send to submit. You can attach up to 4 photos of your product / issue (PNG/JPG/WebP, max 5MB each).</p>", unsafe_allow_html=True)
 with st.form(key=f"chat_form_{st.session_state.input_key}", clear_on_submit=True):
     col_input, col_btn = st.columns([5, 1])
     with col_input:
@@ -4675,8 +4855,63 @@ with st.form(key=f"chat_form_{st.session_state.input_key}", clear_on_submit=True
                                     label_visibility="collapsed")
     with col_btn:
         submitted = st.form_submit_button("Send ->", use_container_width=True)
-    if submitted and user_input.strip():
-        st.session_state.messages.append({"role": "user", "content": user_input.strip()})
+    uploaded_files = st.file_uploader(
+        "Attach photos (optional)",
+        type=["png", "jpg", "jpeg", "webp", "gif"],
+        accept_multiple_files=True,
+        key=f"uploader_{st.session_state.input_key}",
+        label_visibility="collapsed",
+    )
+    if submitted and (user_input.strip() or uploaded_files):
+        # Validate + base64-encode any attached images. Cap at 4 images, 5MB each
+        # (Anthropic API limit). Skip oversized files with a friendly warning.
+        image_payloads = []
+        skipped = []
+        if uploaded_files:
+            for uf in uploaded_files[:4]:
+                raw = uf.getvalue()
+                if len(raw) > 5 * 1024 * 1024:
+                    skipped.append(f"{uf.name} (over 5MB)")
+                    continue
+                # Map content_type to media_type Anthropic accepts.
+                ct = (uf.type or "").lower()
+                if ct in ("image/jpeg", "image/jpg"):
+                    media_type = "image/jpeg"
+                elif ct == "image/png":
+                    media_type = "image/png"
+                elif ct == "image/webp":
+                    media_type = "image/webp"
+                elif ct == "image/gif":
+                    media_type = "image/gif"
+                else:
+                    # Fallback: try to detect via PIL
+                    try:
+                        with _PILImage.open(_io.BytesIO(raw)) as im:
+                            fmt = (im.format or "").lower()
+                            if fmt == "jpeg":
+                                media_type = "image/jpeg"
+                            elif fmt == "png":
+                                media_type = "image/png"
+                            elif fmt == "webp":
+                                media_type = "image/webp"
+                            elif fmt == "gif":
+                                media_type = "image/gif"
+                            else:
+                                skipped.append(f"{uf.name} (unsupported format)")
+                                continue
+                    except Exception:
+                        skipped.append(f"{uf.name} (unreadable)")
+                        continue
+                b64 = base64.b64encode(raw).decode("ascii")
+                image_payloads.append({"data": b64, "media_type": media_type, "name": uf.name})
+            if len(uploaded_files) > 4:
+                skipped.append(f"{len(uploaded_files) - 4} extra file(s) — only first 4 sent")
+        if skipped:
+            st.warning("Some attachments were skipped: " + "; ".join(skipped))
+        msg = {"role": "user", "content": user_input.strip() or "(image attached — please look at it)"}
+        if image_payloads:
+            msg["images"] = image_payloads
+        st.session_state.messages.append(msg)
         st.session_state.input_key += 1
         st.rerun()
 
