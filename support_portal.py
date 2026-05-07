@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.6.4
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.6.5
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,63 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.6.5 (2026-05-07) -- Claude
+  - Z-bump: data correction + new authoritative quick-reference
+    matrix for Hall Effect on Ares controllers.
+
+    Production failure on 07 May 2026 (session b7724dda, on the
+    Ares product page): customer asked "DOES THIS HAVE BOTH HALL
+    EFFECT JOYSTICKS AND TRIGGERS". The AI confirmed Hall Effect
+    joysticks but said "Hall Effect triggers — Not documented in
+    the manual I have access to" and routed the customer to the
+    product page and customer support to confirm. User flagged
+    the gap directly: "Yes Ares Tri Mode also has Hall Effect
+    Triggers as well as Joystick. Same for Ares Wired, Ares
+    Wireless, Ares Pro."
+
+    Root cause: the "Ares" (Tri-Mode) PRODUCT_MANUALS entry was
+    the only one of the four Ares variants that didn't mention
+    Hall Effect triggers. Pre-fix line read:
+      "2026 model: Tri-Mode (...), Hall Effect joystick, 1000Hz
+       polling rate."
+    -- "joystick" only, "triggers" missing. The other three Ares
+    variants (Wired, Wireless, Pro) already correctly stated both
+    in their PRODUCT_MANUALS entries -- this was a gap in just one
+    of the four entries.
+
+    Fix #1 -- Ares (Tri-Mode) PRODUCT_MANUALS entry updated:
+      * "Hall Effect joystick" -> "Hall Effect joysticks AND Hall
+        Effect analog triggers" in the generation note.
+      * Added a dedicated "HALL EFFECT (2026 BATCH)" section
+        mirroring the structure of the Ares Wired and Ares Wireless
+        entries -- explicit confirmation that BOTH joysticks AND
+        analog triggers are Hall Effect on current models, with the
+        older-batch carve-out preserved.
+
+    Fix #2 -- new HALL EFFECT QUICK-REFERENCE MATRIX added to
+    SYSTEM_PROMPT (placed right above the LIVE PRICES line, near
+    the existing model-disambiguation guidance). The matrix:
+      * Confirms BOTH joysticks AND triggers are Hall Effect on
+        current-batch Ares (Tri-Mode), Ares Wired, Ares Wireless,
+        Ares Pro -- so the AI never has to fall back on "the
+        manual doesn't specify".
+      * Explicit instruction NOT to hedge: "do not say 'the manual
+        doesn't specify' or 'I'm not sure about the triggers' for
+        these four controllers."
+      * Reference rows for other CB controllers with Hall Effect:
+        Quantum (HE joysticks + HE triggers), Stratos Xenon (HE
+        joystick + HE triggers), Stellaris 2nd Gen (TMR joysticks
+        + HE analog triggers), Blitz Tri-Mode (TMR + HE triggers),
+        Drakon (HE joysticks), Lumora (standard, no HE -- be
+        honest about this).
+      * Safety note: for models NOT in the matrix, ask the customer
+        for exact model + batch year before answering -- do NOT
+        guess "yes" for models not on the confirmed list.
+
+    The matrix is now always loaded in context, so even if a
+    customer asks about Hall Effect on a different product page,
+    the AI has the authoritative answer.
 
 v2.6.4 (2026-05-07) -- Claude
   - Z-bump: behavior fix. The Gamepad Tester multi-mode test had
@@ -591,7 +648,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.6.4"
+__version__ = "2.6.5"
 
 import streamlit as st
 import anthropic
@@ -2673,9 +2730,14 @@ VIBRATION ON ANDROID/iOS: NOT SUPPORTED — vibration only works on PC (XInput m
 - Vibration will not function on Android or iOS regardless of connection mode.
 
 NOTE — Two generations exist:
-- 2026 model: Tri-Mode (2.4GHz/Bluetooth/Wired), Hall Effect joystick, 1000Hz polling rate.
+- 2026 model: Tri-Mode (2.4GHz/Bluetooth/Wired), Hall Effect joysticks AND Hall Effect analog triggers, 1000Hz polling rate.
 - Previous model: Wired only, 125Hz polling rate (hardware limitation — cannot be changed).
 If you have lag on cloud gaming with an older Ares, switching to wired or 2.4GHz on the new model resolves it.
+
+HALL EFFECT (2026 BATCH):
+- Both joysticks AND both analog triggers are Hall Effect on the current 2026 Ares Tri-Mode.
+- Hall Effect = magnetic sensors, drift-resistant, no physical wear.
+- Older Ares models (wired-only, 125Hz batch) have standard joysticks and standard triggers — drift from wear is NOT covered under warranty.
 
 TURBO:
 - Enable: hold Turbo button + desired face button simultaneously.
@@ -3200,6 +3262,28 @@ QUICK_QUESTIONS = {
 SYSTEM_PROMPT = """You are the official Cosmic Byte customer support assistant. You ONLY help with Cosmic Byte products. You are knowledgeable, helpful, and make it easy for customers to buy and get support.
 
 PRODUCT BUY LINKS: When a customer asks about price, buying, or where to buy a product, ALWAYS include the direct product page link from thecosmicbyte.com. Format it clearly like: "You can buy it here: [link]". Also mention that a coupon code ONLINEPAY gives 10% off for online payments.
+
+HALL EFFECT QUICK-REFERENCE MATRIX (answer confidently when customers ask; do NOT hedge with "the manual doesn't specify"):
+
+All four current-generation Ares controllers — Ares (Tri-Mode), Ares Wired, Ares Wireless, Ares Pro — have BOTH Hall Effect joysticks AND Hall Effect analog triggers on their current 2026 batches. Confirmed by the Cosmic Byte team. When a customer asks "does this have Hall Effect joysticks AND triggers?" for any Ares model, the answer is YES on both — do not say "the manual doesn't specify" or "I'm not sure about the triggers" for these four controllers.
+
+  Controller        | Hall Effect Joysticks | Hall Effect Triggers | Generation note
+  ---------------------------------------------------------------------------------------
+  Ares (Tri-Mode)   | YES                   | YES                  | Current 2026 batch only. Older 125Hz wired-only batch had standard joysticks/triggers.
+  Ares Wired        | YES                   | YES                  | Current 2026 batch. Older batch had standard joysticks/triggers.
+  Ares Wireless     | YES                   | YES                  | Current 2026 batch. Older batch had standard joysticks/triggers.
+  Ares Pro          | YES                   | YES (analog/digital switchable) | All Ares Pro models. Triggers are digital/analog switchable via software.
+
+Other CB controllers with Hall Effect (for reference):
+- Quantum: Hall Effect joysticks + Hall Effect triggers (confirmed in product manual).
+- Stratos Xenon: Hall Effect joystick + Hall Effect triggers (confirmed in product manual).
+- Stellaris 2nd Gen: TMR joysticks (Tunnel Magnetoresistance — different and superior tech to Hall Effect for joysticks specifically) + Hall Effect analog triggers.
+- Blitz Tri-Mode: TMR joysticks + Hall Effect analog triggers.
+- Drakon: Hall Effect joysticks (older, pre-TMR generation).
+- Lumora: standard joysticks (no Hall Effect on Lumora — be honest about this).
+- Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
+
+If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
 
 LIVE PRICES: If the customer asks for the current price, let them know you can check the live price and direct them to the product page for the most up-to-date pricing. Mention the ONLINEPAY coupon for 10% off.
 
