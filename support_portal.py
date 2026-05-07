@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.11.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.12.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,131 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.12.0 (2026-05-07) -- Claude
+  - Y-bump: per-product chat history that persists across browser
+    sessions for 7 days. A returning customer on the same browser
+    sees their previous conversation rehydrated automatically;
+    switching products in the dropdown loads that product's history
+    independently. Server-ephemeral storage -- history lives in an
+    @st.cache_resource shared store that is wiped on Render restart.
+    User explicitly chose this depth in preference to disk/DB
+    persistence; if Render redeploys the file (which we do often),
+    history is lost. Acceptable tradeoff for a 7-day window.
+
+  Why per-product, not global, history:
+     A global thread carries Lumora context into Ares conversations
+     etc. The existing API call sends the entire message list plus
+     the currently-selected product's manual in the system prompt.
+     Mixing products in the message history confuses pronoun
+     attribution ("the same on this one"), leaks stale facts (button
+     combos differ per controller), and grows token cost linearly.
+     Each product gets its own thread; switching products switches
+     threads.
+
+  Why server-ephemeral, not persistent:
+     Render's filesystem is ephemeral by default. Disk persistence
+     would require a paid persistent-disk add-on; a real DB would
+     be more setup. User picked the simple option. Worst case: a
+     redeploy wipes everyone's history mid-window. Acceptable.
+
+  Implementation:
+
+  1. New dependency: extra-streamlit-components (stx). Provides a
+     CookieManager component that exposes browser cookies to
+     Python. Add to requirements.txt:
+         extra-streamlit-components
+     Without this, the import at the top of this file fails and
+     the portal will not start.
+
+  2. Constants near the top of the helpers section:
+        HISTORY_EXPIRY_DAYS = 7
+        HISTORY_COOKIE_NAME = "cb_bid"
+
+  3. New shared store get_history_store() decorated with
+     @st.cache_resource. Keys are tuples of (browser_id, product
+     name); values are {"messages": [...], "updated_at": datetime}.
+     Same lifetime as the existing log store.
+
+  4. Helpers:
+        _strip_images_for_history(messages) -> list
+            Clones messages, drops base64 image payloads, and
+            appends "*[image attached in original message]*" inline
+            so the rehydrated conversation flow still reads
+            sensibly when the customer scrolls back.
+        _load_history(browser_id, product) -> entry or None
+            Returns the entry if present and within
+            HISTORY_EXPIRY_DAYS; lazily evicts expired entries on
+            access.
+        _save_history(browser_id, product, messages)
+            Persists the conversation. Called only on real state
+            transitions (after each AI response, and just before
+            the user switches products) -- not on every Streamlit
+            rerun.
+        _clear_history(browser_id, product=None)
+            Drops history for one product or for the whole browser.
+        _purge_expired()
+            Sweeps expired entries from the store. Cheap; runs
+            once per page load.
+
+  5. Cookie + rehydration block placed AFTER the admin
+     authentication st.stop() so it does not render on the admin
+     page, and BEFORE the customer-facing header. Flow:
+        a. Skip entirely if embed_mode is True. Cookies are
+           unreliable inside iframes embedded on third-party
+           domains (Chrome, Safari, Firefox block third-party
+           cookies by default). Embed-mode visits are one-shot
+           anyway.
+        b. Instantiate CookieManager and call get_all(). On the
+           very first render of a new tab, this returns None
+           (component still mounting); we skip rehydration on that
+           render and pick up on the next rerun. This causes a
+           ~100ms delay before history appears -- standard
+           behavior for any custom Streamlit component.
+        c. If a cb_bid cookie exists, that is the browser ID. If
+           not, mint a fresh UUID and call cookie_manager.set with
+           expires_at = now + 14 days (2x the history window so a
+           returning visitor whose history is alive still has a
+           valid cookie).
+        d. Look up history for (browser_id, current_product). If
+           an entry exists and st.session_state.messages is empty
+           (i.e. we're not mid-conversation), rehydrate it and
+           stash the entry's updated_at timestamp in
+           st.session_state._restored_from for the toast notice.
+        e. Use a session_state marker keyed by (browser_id |
+           product) to avoid re-rehydrating on every rerun.
+        f. Sweep expired entries with _purge_expired().
+
+  6. Toast notice on rehydrate:
+        "Restored from your visit on 5 May"
+     Shown once per (browser, product) combination per session,
+     gated by st.session_state._restored_shown so it does not
+     re-fire on every Streamlit rerun.
+
+  7. _on_product_change extended: before switching products, save
+     the current product's messages (if non-empty). After
+     switching, clear the rehydration marker so the new product
+     rehydrates on the next render.
+
+  8. Save-after-response: in the main chat handler, right after
+     st.session_state.messages.append({"role": "assistant", ...}),
+     call _save_history(bid, product, messages) so each turn
+     immediately persists. Skipped in embed mode.
+
+  9. New "Manage history" expander rendered after the chat history,
+     visible only when there are messages and not in embed mode.
+     Contains a clear-history button and a one-line caption noting
+     the 7-day retention. Clear-history wipes both the store and
+     the in-session message list and reruns.
+
+  Privacy notes:
+     Image attachments are NOT persisted -- they are stripped at
+     save time and replaced with the inline placeholder. Warranty
+     photos and address-label photos are the most sensitive
+     payloads in this portal; they exist only in the live
+     conversation and the daily CSV/email digest, never in the
+     history store. The customer's IP IS persisted via the v2.10.0
+     "Client IP" column in the conversation log; that is unchanged.
 
 v2.11.0 (2026-05-07) -- Claude
   - Y-bump: revert all of v2.9.0 (agent-name tagging). User
@@ -1144,11 +1269,12 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.11.0"
+__version__ = "2.12.0"
 
 import streamlit as st
 import anthropic
 import os
+import extra_streamlit_components as stx
 from datetime import datetime, timedelta
 
 # Print version on startup so it appears in deployment logs (Streamlit Cloud, etc.)
@@ -1335,6 +1461,79 @@ def get_shared_store():
 
 def get_log():
     return get_shared_store()["log"]
+
+# ── BROWSER-PERSISTENT CHAT HISTORY (v2.12.0) ──
+# Server-ephemeral; per-product; 7-day expiry. See the v2.12.0 changelog
+# entry at the top of this file for the full design rationale.
+HISTORY_EXPIRY_DAYS = 7
+HISTORY_COOKIE_NAME = "cb_bid"
+
+@st.cache_resource
+def get_history_store():
+    """Per-(browser_id, product) chat history. Lives across sessions on the
+    same Render instance; lost on Render restart. Each entry:
+        {"messages": list[dict], "updated_at": datetime}"""
+    return {}
+
+def _strip_images_for_history(messages):
+    """Clone the message list with image payloads removed. If a message had
+    images attached, append a small inline placeholder so the rehydrated
+    conversation still reads coherently when the customer scrolls back.
+    log_idx is preserved when present so feedback widget keys remain stable."""
+    out = []
+    for m in messages:
+        if not m.get("content"):
+            continue
+        clean = {"role": m["role"], "content": m["content"]}
+        if m.get("images"):
+            clean["content"] = clean["content"] + "\n\n*[image attached in original message]*"
+        if "log_idx" in m:
+            clean["log_idx"] = m["log_idx"]
+        out.append(clean)
+    return out
+
+def _load_history(browser_id, product):
+    """Return the entry for (browser_id, product) if alive (within
+    HISTORY_EXPIRY_DAYS), else None. Lazily evicts expired entries on access."""
+    store = get_history_store()
+    entry = store.get((browser_id, product))
+    if not entry:
+        return None
+    age = datetime.now() - entry.get("updated_at", datetime.min)
+    if age >= timedelta(days=HISTORY_EXPIRY_DAYS):
+        store.pop((browser_id, product), None)
+        return None
+    return entry
+
+def _save_history(browser_id, product, messages):
+    """Persist the conversation. No-op for empty message lists."""
+    if not messages:
+        return
+    store = get_history_store()
+    store[(browser_id, product)] = {
+        "messages": _strip_images_for_history(messages),
+        "updated_at": datetime.now(),
+    }
+
+def _clear_history(browser_id, product=None):
+    """Drop history for one product (if `product` given) or for the entire
+    browser_id."""
+    store = get_history_store()
+    if product is None:
+        for k in list(store.keys()):
+            if k[0] == browser_id:
+                store.pop(k, None)
+    else:
+        store.pop((browser_id, product), None)
+
+def _purge_expired():
+    """Sweep expired entries from the store. Runs once per page load. Cheap
+    because the store is small (one entry per active (browser, product))."""
+    store = get_history_store()
+    cutoff = datetime.now() - timedelta(days=HISTORY_EXPIRY_DAYS)
+    expired = [k for k, v in store.items() if v.get("updated_at", datetime.min) < cutoff]
+    for k in expired:
+        store.pop(k, None)
 
 def _get_client_ip():
     """Best-effort client IP from request headers. Reads X-Forwarded-For from
@@ -5131,6 +5330,59 @@ if st.session_state.show_admin:
         render_admin()
         st.stop()
 
+# ── BROWSER-PERSISTENT HISTORY: COOKIE + REHYDRATION (v2.12.0) ──
+# Skipped in embed mode -- third-party cookies are blocked by default in
+# iframes on modern browsers (Chrome, Safari, Firefox), so cookie persistence
+# is unreliable there. Embed-mode visits are one-shot anyway.
+#
+# Note on the first-render quirk: the CookieManager component returns None
+# from get_all() until its iframe has mounted (one extra Streamlit rerun).
+# We treat None as "not yet loaded" and skip rehydration on that pass; the
+# next rerun has the cookies and rehydrates normally.
+if not st.session_state.get("embed_mode"):
+    _cookie_manager = stx.CookieManager(key="cb_cookie_mgr")
+    _cookies = _cookie_manager.get_all()
+
+    if _cookies is not None:
+        _bid = _cookies.get(HISTORY_COOKIE_NAME)
+        if not _bid:
+            # New visitor — mint an ID. Cookie expiry = 2x history window so
+            # a returning visitor whose history is still alive has a valid
+            # cookie waiting for them.
+            _bid = str(uuid.uuid4())
+            _cookie_manager.set(
+                HISTORY_COOKIE_NAME,
+                _bid,
+                expires_at=datetime.now() + timedelta(days=HISTORY_EXPIRY_DAYS * 2),
+            )
+        st.session_state.browser_id = _bid
+
+        # Rehydrate this product's history once per (browser_id | product)
+        # combination; the marker prevents re-rehydration on every rerun.
+        _current_product = st.session_state.selected_product
+        _marker = f"{_bid}|{_current_product}"
+        if st.session_state.get("_history_restored_for") != _marker:
+            _entry = _load_history(_bid, _current_product)
+            if _entry and _entry.get("messages") and not st.session_state.messages:
+                st.session_state.messages = list(_entry["messages"])
+                # Stash timestamp so the toast below can render once.
+                st.session_state._restored_from = _entry.get("updated_at")
+                st.session_state._restored_shown = False
+            st.session_state._history_restored_for = _marker
+
+        # Sweep expired entries opportunistically.
+        _purge_expired()
+
+    # One-time toast notice for the customer that history was restored.
+    if st.session_state.get("_restored_from") and not st.session_state.get("_restored_shown"):
+        _restored_dt = st.session_state["_restored_from"]
+        if isinstance(_restored_dt, datetime):
+            st.toast(
+                f"💬 Restored your conversation from {_restored_dt.strftime('%d %b')}",
+                icon="💬",
+            )
+        st.session_state._restored_shown = True
+
 # ── HEADER ──
 st.markdown(f"""
 <div class="cb-header">
@@ -5148,12 +5400,23 @@ st.markdown('<div class="cb-label">Select your product</div>', unsafe_allow_html
 def _on_product_change():
     new_product = st.session_state.get("product_dropdown", "All Products")
     if new_product != st.session_state.selected_product:
+        # Save the current product's history before switching away. Skipped in
+        # embed mode (cookies unreliable in iframes -> no browser_id).
+        bid = st.session_state.get("browser_id")
+        if bid and not st.session_state.get("embed_mode") and st.session_state.messages:
+            _save_history(bid, st.session_state.selected_product, st.session_state.messages)
+
         st.session_state.selected_product = new_product
         st.session_state.messages = []
         st.session_state.row_nums = []
         st.session_state.feedback_given = {}
         st.session_state.input_key += 1
         st.session_state.session_id = str(uuid.uuid4())[:8]
+        # Clear the rehydration markers so the new product's history loads on
+        # the next render (handled by the cookie+rehydration block).
+        st.session_state.pop("_history_restored_for", None)
+        st.session_state.pop("_restored_from", None)
+        st.session_state.pop("_restored_shown", None)
 
 # In embed mode (iframe on product page), product is locked to URL param — no dropdown
 if not st.session_state.get("embed_mode"):
@@ -5245,6 +5508,35 @@ for idx, msg in enumerate(st.session_state.messages):
             st.markdown(f"<p style='font-size:11px;color:#555;margin:2px 0 10px'>Thanks for your feedback: {st.session_state.feedback_given.get(fb_key, '')}</p>", unsafe_allow_html=True)
 
         ai_response_index += 1
+
+# ── MANAGE HISTORY (v2.12.0) ──
+# Visible only when there are messages AND we're not in embed mode AND a
+# browser_id has been established. Lets the customer wipe their stored
+# conversation for the current product.
+if (
+    st.session_state.messages
+    and not st.session_state.get("embed_mode")
+    and st.session_state.get("browser_id")
+):
+    with st.expander("🕘 Manage chat history", expanded=False):
+        st.caption(
+            f"Your chat for **{st.session_state.selected_product}** is "
+            f"remembered on this browser for {HISTORY_EXPIRY_DAYS} days. "
+            f"Image attachments are not saved."
+        )
+        if st.button("🗑️ Clear my chat history for this product", key="clear_history_btn"):
+            _clear_history(
+                st.session_state.browser_id,
+                st.session_state.selected_product,
+            )
+            st.session_state.messages = []
+            st.session_state.row_nums = []
+            st.session_state.feedback_given = {}
+            st.session_state.pop("_restored_from", None)
+            st.session_state.pop("_restored_shown", None)
+            st.session_state.pop("_history_restored_for", None)
+            st.toast("History cleared.", icon="🗑️")
+            st.rerun()
 
 # ── AI RESPONSE ──
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
@@ -5402,6 +5694,11 @@ CUSTOMER MESSAGE: {original_text}
                 "content": answer,
                 "log_idx": row_num
             })
+            # v2.12.0: persist this turn so a returning customer can pick up
+            # where they left off. Skipped in embed mode (no browser_id).
+            _bid_save = st.session_state.get("browser_id")
+            if _bid_save and not st.session_state.get("embed_mode"):
+                _save_history(_bid_save, product, st.session_state.messages)
             st.rerun()
 
         except Exception as e:
