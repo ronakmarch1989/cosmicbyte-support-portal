@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.7.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.7.1
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,38 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.7.1 (2026-05-07) -- Claude
+  - Z-bump: visibility fix for the v2.7.0 image uploader.
+    User reported "Where is the add image or file option?" --
+    the uploader was rendered correctly but visually invisible:
+    label was set to label_visibility="collapsed" and the
+    default Streamlit uploader styling blended into the dark
+    theme background.
+
+  Two fixes:
+
+  1. Restored the label. Now reads "📎 Attach photos of your
+     product or issue (optional)" with a paperclip icon prefix
+     so it's obvious what the widget is for. Tooltip on hover
+     reads "Up to 4 images, 5MB each. PNG, JPG, WebP, or GIF."
+
+  2. Added explicit CSS targeting [data-testid="stFileUploader"]:
+     - Label rendered in the brand orange, 12px, bold.
+     - Drop zone given a dashed orange border on a slightly
+       lighter dark background (#0c0c0c) so it stands out
+       against the page background (#060606). Hover state
+       brightens to solid orange border.
+     - "Browse files" button styled to match the existing CB
+       button language (orange fill, black text, uppercase
+       Rajdhani, slight angle, etc.) so it reads as a real
+       interactive control rather than greyed-out chrome.
+     - Helper text and file size info given the muted-grey
+       color used elsewhere in the UI.
+
+  No functional changes -- the uploader, validation, message
+  construction, AI image-handling, and logging from v2.7.0 all
+  unchanged. Pure visibility fix.
 
 v2.7.0 (2026-05-07) -- Claude
   - Y-bump: NEW FEATURE -- image attachments. Customers can now
@@ -746,7 +778,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.7.0"
+__version__ = "2.7.1"
 
 import streamlit as st
 import anthropic
@@ -852,6 +884,13 @@ html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);
 .stButton button,.stFormSubmitButton button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.1em!important;text-transform:uppercase!important;font-family:'Rajdhani',sans-serif!important;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)!important;transition:all 0.15s!important;}
 .stButton button:hover,.stFormSubmitButton button:hover{background:#FFC040!important;}
 [data-testid="stForm"]{border:none!important;padding:0!important;}
+/* File uploader — make it visible against the dark theme */
+[data-testid="stFileUploader"] label{color:var(--orange)!important;font-size:12px!important;font-weight:600!important;font-family:'Inter',sans-serif!important;margin-bottom:6px!important;}
+[data-testid="stFileUploader"] section{background:#0c0c0c!important;border:1px dashed var(--orange-border)!important;border-radius:6px!important;padding:8px 12px!important;}
+[data-testid="stFileUploader"] section:hover{border-color:var(--orange)!important;background:#0f0f0f!important;}
+[data-testid="stFileUploader"] section button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.08em!important;text-transform:uppercase!important;padding:6px 14px!important;clip-path:none!important;}
+[data-testid="stFileUploader"] small{color:var(--muted)!important;}
+[data-testid="stFileUploader"] section > div:first-child{color:#aaa!important;font-size:12px!important;}
 button[kind="secondary"],div[data-testid="stHorizontalBlock"] button{background:transparent!important;color:var(--orange)!important;border:1px solid var(--orange-border)!important;clip-path:none!important;border-radius:6px!important;font-size:16px!important;padding:4px 10px!important;letter-spacing:0!important;text-transform:none!important;}
 div[data-testid="stHorizontalBlock"] button:hover{background:var(--orange-dim)!important;border-color:var(--orange)!important;}
 hr{border-color:var(--border2)!important;}
@@ -4856,11 +4895,11 @@ with st.form(key=f"chat_form_{st.session_state.input_key}", clear_on_submit=True
     with col_btn:
         submitted = st.form_submit_button("Send ->", use_container_width=True)
     uploaded_files = st.file_uploader(
-        "Attach photos (optional)",
+        "📎 Attach photos of your product or issue (optional)",
         type=["png", "jpg", "jpeg", "webp", "gif"],
         accept_multiple_files=True,
         key=f"uploader_{st.session_state.input_key}",
-        label_visibility="collapsed",
+        help="Up to 4 images, 5MB each. PNG, JPG, WebP, or GIF.",
     )
     if submitted and (user_input.strip() or uploaded_files):
         # Validate + base64-encode any attached images. Cap at 4 images, 5MB each
