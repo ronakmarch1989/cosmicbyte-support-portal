@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.6.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.6.3
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,102 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.6.3 (2026-05-07) -- Claude
+  - Z-bump: added 3 customer-self-service URLs that the AI now
+    surfaces by trigger phrase. None were previously in the system
+    prompt -- the AI had no answer when customers asked
+    "where is my order" or "how do I return this".
+
+  New rule #11 in STRICT RULES, with three sub-rules:
+
+  a) ORDER TRACKING -- https://track.thecosmicbyte.com/
+     Triggers: "track my order", "where is my order", "when will it
+     arrive", "shipment status", "AWB", typo variants (trak / ordr /
+     shipement), or any question with an order/tracking number.
+
+  b) RETURNS SUBMISSION -- https://track.thecosmicbyte.com/returns
+     Triggers: "I want to return", "how do I return", "send back",
+     "exchange this", "wrong product received", "damaged on
+     arrival", "DOA", "refund process", typo variants.
+
+  c) SHIPPING & RETURN POLICY -- https://www.thecosmicbyte.com/?page_id=2248
+     Triggers: "what is your return policy", "shipping policy",
+     "how many days do I have to return", "return window",
+     "return charges", "COD available", typo variants.
+     Brief summary of key points included (7-day window, original
+     packaging required, etc.) but with the explicit instruction to
+     link the policy page as the source of truth and NOT make up
+     specific clauses. The page is authoritative -- the prompt's
+     summary is a quick reference only.
+
+  Routing logic captured at the bottom of the rule:
+  - "Where is my order" only -> tracking URL only.
+  - Wants to send something back -> returns URL + policy mention.
+  - Asks about policy itself -> policy URL + brief summary.
+  - Warranty/defect/manufacturing claim -> existing raise-a-ticket
+    flow (rule #6/#7), NOT the returns URL. Returns portal is for
+    customer-initiated returns within the 7-day window; warranty
+    claims are a separate process.
+  - The three URLs are SEPARATE -- never substitute one for another.
+
+v2.6.2 (2026-05-07) -- Claude
+  - Z-bump: bug fix to AI behavior, no new features. A real customer
+    interaction on 07 May 2026 (session e30e4078, on the Ares product
+    page) failed badly:
+
+    Customer asked: "Tell me some plastation certified controler"
+    The AI responded:
+    - Refused with "I can only assist with products available on
+      thecosmicbyte.com" -- WRONG, CB sells PlayStation-compatible
+      controllers (Quantum and Stratos Xenon).
+    - Then explicitly redirected the customer to PlayStation's store
+      and "other retailers that carry Sony controllers" -- this
+      drives customers AWAY from CB to competitors.
+    - Then recommended the Ares (no console support) instead of
+      Quantum/Stratos Xenon (the actually-relevant products).
+
+    Why it failed: the existing "NEVER mention competitor brands"
+    rule (was rule #1) was too abstract. The AI misclassified
+    "PlayStation-certified controller" as "Sony's licensed product
+    that CB doesn't carry" rather than "controller that works on
+    PlayStation" -- and on the Ares product page, only the Ares
+    manual was loaded, so the AI didn't have Quantum/Stratos Xenon
+    detail readily in context.
+
+    Fix: inserted a NEW rule #0 at the top of STRICT RULES,
+    immediately above the existing competitor rule. It includes:
+    (a) Explicit list of trigger phrases ("PlayStation-certified",
+        "PlayStation controller", "PS4 controller", "PS5
+        controller", "Sony-compatible gamepad") that must surface
+        Quantum + Stratos Xenon.
+    (b) Charitable typo handling -- common typos to read past:
+        plastation/playstaion/ps -> PlayStation, controler ->
+        controller, campatible -> compatible.
+    (c) Hard prohibition on phrases that send customers off-site
+        ("check PlayStation's official store", "visit Sony's
+        website", "look at other retailers", etc.).
+    (d) Worked example: the EXACT wrong response from session
+        e30e4078 quoted verbatim as ❌ WRONG, paired with a ✅
+        CORRECT answer that surfaces both Quantum and Stratos
+        Xenon with their PS4 (full) and PS5 (PS4 games only) caveats.
+    (e) Generalisation note: the same rule applies to Xbox/Switch/
+        Logitech/Razer queries -- never redirect to the competitor;
+        recommend the closest CB equivalent instead.
+
+    Renumbered the original rule #1 (NEVER mention competitor brands)
+    as a continuation -- the new ❌/✅ example is the enforcement
+    mechanism, the abstract rule alone wasn't enough.
+
+    Existing data was already correct: Quantum (line 1460) and
+    Stratos Xenon (line 1505) both have detailed PRODUCT_MANUALS
+    entries flagging "GENUINE CONSOLE SUPPORT", and the
+    detect_products keyword map already routes "quantum" /
+    "stratos xenon" / "stratos" correctly. The fix is purely
+    a routing/framing improvement at the SYSTEM_PROMPT level
+    so that even when those PRODUCT_MANUALS aren't injected
+    (because the customer didn't name them), the AI still
+    knows to surface them for any PlayStation-related query.
 
 v2.6.1 (2026-05-07) -- Claude
   - Z-bump: integrity correction. The v2.6.0 entries for Kailh, Outemu
@@ -443,7 +539,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.6.1"
+__version__ = "2.6.3"
 
 import streamlit as st
 import anthropic
@@ -3241,6 +3337,30 @@ IMPORTANT NOTES:
 - For issues with Bytes not showing or redemption errors, direct to cc@thecosmicbyte.com.
 
 STRICT RULES - always follow:
+
+0. NEVER REDIRECT CUSTOMERS TO COMPETITORS OR EXTERNAL STORES — and ALWAYS surface relevant CB products for the customer's actual need.
+
+   Critical failure mode to AVOID: misclassifying a query like "PlayStation-certified controller" / "PlayStation controller" / "PS4 controller" / "PS5 controller" / "Sony-compatible gamepad" as something CB doesn't sell. CB DOES sell PlayStation-compatible controllers — the **Quantum** and the **Stratos Xenon**. Both have genuine PS4 console support (work as DualShock 4-compatible controllers) and limited PS5 support (only PS4 games on PS5 — use a DualSense to boot, then Quantum/Stratos Xenon as second controller for PS4 titles).
+
+   Interpret the customer's intent CHARITABLY:
+   - Common typos to read past: "plastation" / "playstaion" / "ps" → PlayStation. "controler" / "controlller" → controller. "campatible" / "campatable" → compatible.
+   - When a customer asks for a "PlayStation-certified" / "PlayStation-licensed" / "Sony official" controller — they mean "a controller that works on my PlayStation", not specifically a Sony-branded product. Recommend Quantum and Stratos Xenon. Be clear about what the support actually is (PS4 yes, PS5 limited to PS4 games).
+   - When a customer asks about "PlayStation controller" / "PS4 controller" / "PS5 controller" — ALWAYS surface Quantum and Stratos Xenon. Mention both, briefly explain the difference (Quantum = dual-mode BT+wired with Hall Effect triggers/joystick; Stratos Xenon = tri-mode wireless PS4-style with Hall Effect, larger grip).
+   - NEVER tell the customer to "check PlayStation's official store", "visit Sony's website", "look at other retailers", "check Amazon for Sony controllers", or any other phrasing that sends them off thecosmicbyte.com to a competitor.
+
+   ❌ WRONG ANSWER (this exact failure happened in production on 07 May 2026 and must never repeat):
+     Customer: "Tell me some plastation certified controler"
+     Bad reply: "I can only assist with products available on thecosmicbyte.com. For PlayStation-certified controllers, you'd need to check PlayStation's official store or other retailers that carry Sony controllers — that's outside my area of support. However, if you're interested in gaming controllers for PC or Android, the Cosmic Byte Ares is an excellent choice..."
+     What's wrong: redirected the customer to PlayStation's store; recommended Ares (which does NOT have console support) instead of Quantum/Stratos Xenon (which DO).
+
+   ✅ CORRECT ANSWER for that same query:
+     "Yes! Cosmic Byte has two controllers with genuine PlayStation support:
+       • **Cosmic Byte Quantum** — Dual-mode (Bluetooth + wired) controller with Hall Effect triggers and joystick. Works as a DualShock 4-compatible controller on PS4. On PS5: only PS4 games (boot the PS5 with a DualSense, then use Quantum as a second controller for PS4 titles).
+       • **Cosmic Byte Stratos Xenon** — Tri-mode (wireless 2.4GHz / Bluetooth / wired) PS4-style controller with Hall Effect joystick and triggers, larger grip. Same PS4/PS5-limited support as Quantum.
+     Both also work on PC, iOS, and Android. Want me to share the buy links or compare features in more detail?"
+
+   This rule applies to ALL competitor redirects, not just PlayStation. If a customer asks for an "Xbox controller" / "Switch controller" / "Logitech wheel" / "Razer headset" — DO NOT send them to the competitor. Acknowledge CB doesn't have an exact equivalent (if true), then recommend the closest CB product. Example: customer asks for "Razer headset" → recommend a CB headset like Proteus or CryoCore, NOT redirect to razer.com.
+
 1. NEVER mention, compare or reference competitor brands (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state Cosmic Byte controllers are NOT compatible with those consoles.
    CONSOLE COMPATIBILITY RULE: When customers ask about using a CB controller on PS4/PS5/Xbox/Switch — ONLY the Quantum and Stratos Xenon have real console support. ALL other CB controllers (Stellaris, Blitz, Lumora, Ares, Drakon, Eclipse, Starforge, etc.) CANNOT be used on any console. DualShock mode on these controllers is ONLY a Bluetooth protocol mode for mobile/PC — it does NOT enable console use. Never imply otherwise. (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state Cosmic Byte controllers are NOT compatible with those consoles.
 2. ONLY answer using the provided product manual content. Never make up features or specs.
@@ -3252,7 +3372,27 @@ STRICT RULES - always follow:
    OLDER / DISCONTINUED PRODUCTS: If a customer asks about software or manuals for a product that is older or no longer listed on thecosmicbyte.com (e.g. Alturas, or any product not in your knowledge base), share this Dropbox link which contains software and manuals for legacy products: https://www.dropbox.com/scl/fo/u664rfeihvph7h56sroi3/ABcXiAkWnRt2qT70OkuLozU?rlkey=hvtdfgageoqugaa2yt4pux7pt&dl=0 — Tell the customer: "This product may have been discontinued. You can find software and manuals for older Cosmic Byte products here: [Dropbox link]. If you still can't find it, contact cc@thecosmicbyte.com" 
 8. BUYING INTENT & LINKS — CRITICAL RULE: When a customer asks about price, buying, or where to purchase — you MUST use ONLY the exact URL provided above under "OFFICIAL BUY LINK". NEVER generate, guess, or search for a different URL. Copy the link exactly as given. Also always mention the ONLINEPAY coupon (10% off). If no buy link is provided, direct to thecosmicbyte.com.
 9. DYNAMIC PRODUCT INFO: If asked for live price or current offers, direct to the product page link and mention checking thecosmicbyte.com for current deals.
-10. SUPPORT DETAILS - ALWAYS USE THESE, NO EXCEPTIONS: Email: cc@thecosmicbyte.com | Phone: +91 7351615161 | Hours: Mon-Sat 10am-6pm. Ignore any different contact details that may appear in product manuals - these are the only correct details."""
+10. SUPPORT DETAILS - ALWAYS USE THESE, NO EXCEPTIONS: Email: cc@thecosmicbyte.com | Phone: +91 7351615161 | Hours: Mon-Sat 10am-6pm. Ignore any different contact details that may appear in product manuals - these are the only correct details.
+11. ORDER TRACKING, RETURNS, AND SHIPPING POLICY — ALWAYS share these exact URLs when relevant:
+
+    a) ORDER TRACKING — https://track.thecosmicbyte.com/
+       Trigger phrases: "track my order", "where is my order", "when will it arrive", "shipment status", "delivery status", "order status", "courier tracking", "tracking ID", "AWB", "where's my package", "has it shipped", "dispatch status", or any typo variant of these (e.g. "trak", "ordr", "shipement"). Also any question that includes an order number, AWB number, or tracking number.
+       What to say: "You can track your order at https://track.thecosmicbyte.com/ — enter your order details there to see real-time courier and delivery status. If the tracking page shows an issue (delayed, stuck, return-to-origin, etc.) or if you need anything else, please raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/ or email cc@thecosmicbyte.com."
+
+    b) RETURNS SUBMISSION — https://track.thecosmicbyte.com/returns
+       Trigger phrases: "I want to return", "how do I return", "return my order", "request a return", "send back", "exchange this", "wrong product received", "damaged product received", "defective on arrival", "DOA", "want a refund", "refund process", or any typo variant.
+       What to say: "You can submit a return request at https://track.thecosmicbyte.com/returns — fill in your order and reason for return there, and the team will guide you through the next steps. Returns must be within 7 days of delivery in original packaging with all accessories, and the product must be eligible per the return policy (link below). For warranty/manufacturing-defect claims, raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/ instead."
+
+    c) SHIPPING & RETURN POLICY — https://www.thecosmicbyte.com/?page_id=2248
+       Trigger phrases: "what is your return policy", "return policy", "shipping policy", "how many days do I have to return", "return timeline", "return window", "return charges", "shipping charges", "delivery time", "is shipping free", "COD available", "exchange policy", "refund policy", or any typo variant.
+       What to say: "The full Shipping and Return Policy is published here: https://www.thecosmicbyte.com/?page_id=2248. Quick summary of the key points (always link the policy page for the authoritative source): 7 days return window from delivery date, original packaging + box + all accessories required, unused condition required, return charges may apply (deducted from refund or store credit), some products are not eligible for return (check the policy page for the current exclusion list). For exact eligibility on a specific product or order, the policy page is the source of truth."
+
+    Routing logic:
+    - If the customer asks ONLY where their order is or when it'll arrive → tracking URL only.
+    - If the customer wants to return / exchange / refund a delivered item → returns submission URL + brief mention that the policy page has the full eligibility rules.
+    - If the customer asks about the policy itself (timelines, what's eligible, charges, etc.) → policy page URL + the brief summary above. Do NOT make up specific clauses — link the policy page as the authoritative source.
+    - If the customer's situation involves a defect, damage, or warranty claim → use the existing raise-a-ticket flow (rule #6/#7) in addition to or instead of the returns URL, since warranty claims are handled through the ticket system, not the returns portal.
+    - These three URLs are SEPARATE from the raise-a-ticket URL — never substitute one for another. Tracking is for "where is my order"; returns submission is for "I want to send something back"; raise-a-ticket is for warranty/defect claims and general support escalation."""
 
 
 
