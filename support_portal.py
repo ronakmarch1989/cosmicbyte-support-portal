@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.7.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.7.2
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,44 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.7.2 (2026-05-07) -- Claude
+  - Z-bump: fix misleading "200MB per file" text on the file
+    uploader. User flagged: "200MB per file?" -- the helper text
+    Streamlit auto-generates was contradicting the actual 5MB
+    limit my Python validation enforces. A customer could pick
+    a 50MB photo, wait for it to upload, then get rejected with
+    a yellow warning -- bad UX, wasted bandwidth.
+
+  Two parts to the fix:
+
+  1. IN CODE (this bump):
+     * Updated the file_uploader label to include the actual
+       limits explicitly: "📎 Attach photos of your product or
+       issue (optional) -- up to 4 images, 5MB each".
+       Customers now see the real constraint before they pick
+       a file.
+     * Added CSS rules targeting
+       [data-testid="stFileUploaderDropzoneInstructions"] small
+       and [data-testid="stFileUploader"] section small to
+       display:none, hiding Streamlit's default "200MB per file
+       • PNG, JPG, WEBP, GIF" text. The accurate limit lives in
+       the label + the help tooltip now, not in conflicting
+       places.
+
+  2. ON THE SERVER (one-time setup, not a code change in this
+     file):
+     User should add the env var STREAMLIT_SERVER_MAX_UPLOAD_SIZE=5
+     to the Render service. This makes Streamlit enforce the
+     5MB limit at the upload stage itself -- the browser refuses
+     to even start uploading a file over 5MB. Saves bandwidth
+     and gives instant feedback rather than waiting for the
+     upload to complete and then being rejected by my Python
+     validation.
+
+  No functional changes to image handling, AI processing, or
+  message construction. Pure UX accuracy fix on the frontend +
+  one infrastructure note for the user.
 
 v2.7.1 (2026-05-07) -- Claude
   - Z-bump: visibility fix for the v2.7.0 image uploader.
@@ -778,7 +816,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.7.1"
+__version__ = "2.7.2"
 
 import streamlit as st
 import anthropic
@@ -889,7 +927,10 @@ html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);
 [data-testid="stFileUploader"] section{background:#0c0c0c!important;border:1px dashed var(--orange-border)!important;border-radius:6px!important;padding:8px 12px!important;}
 [data-testid="stFileUploader"] section:hover{border-color:var(--orange)!important;background:#0f0f0f!important;}
 [data-testid="stFileUploader"] section button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.08em!important;text-transform:uppercase!important;padding:6px 14px!important;clip-path:none!important;}
-[data-testid="stFileUploader"] small{color:var(--muted)!important;}
+/* Hide Streamlit's default "200MB per file" helper text — it's wrong (we enforce 5MB).
+   The accurate limit is communicated in the label and via the help tooltip instead. */
+[data-testid="stFileUploaderDropzoneInstructions"] small,
+[data-testid="stFileUploader"] section small{display:none!important;}
 [data-testid="stFileUploader"] section > div:first-child{color:#aaa!important;font-size:12px!important;}
 button[kind="secondary"],div[data-testid="stHorizontalBlock"] button{background:transparent!important;color:var(--orange)!important;border:1px solid var(--orange-border)!important;clip-path:none!important;border-radius:6px!important;font-size:16px!important;padding:4px 10px!important;letter-spacing:0!important;text-transform:none!important;}
 div[data-testid="stHorizontalBlock"] button:hover{background:var(--orange-dim)!important;border-color:var(--orange)!important;}
@@ -4895,11 +4936,11 @@ with st.form(key=f"chat_form_{st.session_state.input_key}", clear_on_submit=True
     with col_btn:
         submitted = st.form_submit_button("Send ->", use_container_width=True)
     uploaded_files = st.file_uploader(
-        "📎 Attach photos of your product or issue (optional)",
+        "📎 Attach photos of your product or issue (optional) — up to 4 images, 5MB each",
         type=["png", "jpg", "jpeg", "webp", "gif"],
         accept_multiple_files=True,
         key=f"uploader_{st.session_state.input_key}",
-        help="Up to 4 images, 5MB each. PNG, JPG, WebP, or GIF.",
+        help="Supported: PNG, JPG, WebP, GIF. Max 4 images, 5MB per file.",
     )
     if submitted and (user_input.strip() or uploaded_files):
         # Validate + base64-encode any attached images. Cap at 4 images, 5MB each
