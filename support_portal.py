@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.12.3
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.13.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,86 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.13.0 (2026-05-07) -- Claude
+  - Y-bump: two admin-page UX fixes that user reported:
+       (a) Refreshing the admin page logged the operator out
+           because admin_authenticated is in st.session_state,
+           which Streamlit wipes on hard refresh.
+       (b) The admin panel had no way to refresh the data view
+           without going Back to Support and re-entering it.
+
+  Fix (a) -- persistent admin auth via signed cookie:
+
+  1. Two new constants near the existing HISTORY constants:
+        ADMIN_AUTH_COOKIE_NAME = "cb_admin_auth"
+        ADMIN_AUTH_DURATION_HOURS = 8
+     Eight hours = roughly one work day. Long enough to avoid
+     re-login during a shift; short enough that a forgotten
+     browser overnight expires the session.
+
+  2. New helpers _make_admin_auth_token() and
+     _verify_admin_auth_token() use HMAC-SHA256 keyed by
+     ADMIN_PASSWORD over the expiry timestamp. Token format:
+        "<expiry_iso>|<hmac_hex>"
+     Stateless: survives Render restart because the password
+     comes from environment / secrets, so the same HMAC verifies
+     after a redeploy. No server-side token store needed.
+
+  3. Admin gate flow extended:
+       - On entering the gate while not authenticated, instantiate
+         the cookie manager (same key "cb_cookie_mgr" used by the
+         v2.12.0 customer history flow -- Streamlit dedupes the
+         component by key) and read cookies.
+       - If a cb_admin_auth cookie is present, validate it. On
+         success, set admin_authenticated = True and continue to
+         render_admin() in the same render. No password prompt.
+       - On failed validation or missing cookie, fall through to
+         the existing password form.
+       - On successful password login, mint a fresh token and call
+         cookie_manager.set with expires_at = now + 8h. The cookie
+         is what makes the auth survive page refresh.
+
+  4. Brief login-form flash on hard refresh: the cookie manager
+     component takes one render to mount (returns None from
+     get_all() initially). On hard refresh you may briefly see
+     the password field before the second render auto-restores
+     the session. Acceptable papercut; a true loading screen
+     would add complexity for marginal UX gain.
+
+  Fix (b) -- in-panel actions:
+
+  5. New top-of-panel action row in render_admin() with two
+     buttons placed before the existing data divider:
+       - "🔄 Refresh data" -- calls st.rerun(). Because
+         render_admin() snapshots the log via list(get_log()) at
+         the top, a rerun reads the latest store state. No auth
+         change.
+       - "🚪 Sign out" -- deletes the cb_admin_auth cookie, clears
+         admin_authenticated and show_admin in session_state, and
+         reruns. This is the explicit "I'm done" action.
+
+  6. Behavior of the existing bottom "<- Back to Support" button
+     is unchanged: it sets show_admin = False but keeps the
+     auth cookie, so the operator can return to admin without
+     re-login. Two distinct actions:
+        Back to Support -> go back, stay logged in
+        Sign out        -> clear cookie, full logout
+
+  7. New stdlib imports near the top of the file: hmac, hashlib.
+     Both are part of the Python standard library; no
+     requirements.txt change needed.
+
+  Security notes:
+     The token is HMAC'd against ADMIN_PASSWORD, so a stolen
+     cookie cannot be forged without the password (or a hash
+     match that's astronomically unlikely with SHA-256). However,
+     a stolen cookie value is replayable until expiry -- there is
+     no per-cookie revocation list. For the threat model of an
+     internal admin tool this is fine; if it ever needs hardening,
+     options are: shorter expiry, IP binding (with the trade-off
+     that it breaks on network change), or a server-side token
+     store (loses the stateless-across-restart property).
 
 v2.12.3 (2026-05-07) -- Claude
   - Z-bump: fix Raptor Mouse line in the All-Products compact
@@ -1393,11 +1473,13 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.12.3"
+__version__ = "2.13.0"
 
 import streamlit as st
 import anthropic
 import os
+import hmac
+import hashlib
 import extra_streamlit_components as stx
 from datetime import datetime, timedelta
 
@@ -1591,6 +1673,44 @@ def get_log():
 # entry at the top of this file for the full design rationale.
 HISTORY_EXPIRY_DAYS = 7
 HISTORY_COOKIE_NAME = "cb_bid"
+
+# ── ADMIN AUTH PERSISTENCE (v2.13.0) ──
+# Cookie-based admin auth so a hard refresh doesn't kick the operator out.
+# Token is an HMAC-SHA256 of the expiry timestamp, keyed by ADMIN_PASSWORD.
+# Stateless: the same HMAC re-verifies after a Render restart because
+# ADMIN_PASSWORD lives in env/secrets, not in-memory state.
+ADMIN_AUTH_COOKIE_NAME = "cb_admin_auth"
+ADMIN_AUTH_DURATION_HOURS = 8
+
+def _make_admin_auth_token(password):
+    """Mint a signed token. Format: '<expiry_iso>|<hmac_hex>'."""
+    expiry = datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS)
+    expiry_iso = expiry.isoformat()
+    sig = hmac.new(
+        password.encode(),
+        expiry_iso.encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    return f"{expiry_iso}|{sig}"
+
+def _verify_admin_auth_token(token, password):
+    """Return True iff `token` is well-formed, unexpired, and HMAC-valid
+    against `password`. Defensive against any parse error."""
+    if not token or "|" not in token:
+        return False
+    try:
+        expiry_iso, sig = token.split("|", 1)
+        expiry = datetime.fromisoformat(expiry_iso)
+        if datetime.now() > expiry:
+            return False
+        expected_sig = hmac.new(
+            password.encode(),
+            expiry_iso.encode(),
+            hashlib.sha256,
+        ).hexdigest()
+        return hmac.compare_digest(sig, expected_sig)
+    except Exception:
+        return False
 
 @st.cache_resource
 def get_history_store():
@@ -5265,6 +5385,27 @@ ADMIN_PASSWORD = get_secret("ADMIN_PASSWORD", "cosmicbyte_admin")
 
 def render_admin():
     st.markdown("## 🎮 Cosmic Byte — Admin Dashboard")
+
+    # v2.13.0: top action bar — refresh data without losing session, plus
+    # explicit sign-out that clears the auth cookie. Distinct from the
+    # bottom "Back to Support" button which keeps the session alive.
+    _bar_c1, _bar_c2, _bar_spacer = st.columns([1, 1, 4])
+    with _bar_c1:
+        if st.button("🔄 Refresh data", key="admin_refresh", help="Reload conversation log without signing out"):
+            st.rerun()
+    with _bar_c2:
+        if st.button("🚪 Sign out", key="admin_signout", help="Clear admin session and return to Support"):
+            try:
+                _signout_cookie_mgr = stx.CookieManager(key="cb_cookie_mgr")
+                _signout_cookie_mgr.delete(ADMIN_AUTH_COOKIE_NAME)
+            except Exception:
+                # Cookie delete failures shouldn't block sign-out; the
+                # session_state clear below is the source of truth.
+                pass
+            st.session_state.admin_authenticated = False
+            st.session_state.show_admin = False
+            st.rerun()
+
     st.divider()
 
     # Snapshot the shared log to avoid race conditions during iteration
@@ -5450,6 +5591,23 @@ def render_admin():
 
 # ── ADMIN LOGIN GATE ──
 if st.session_state.show_admin:
+    # v2.13.0: try to restore admin auth from cookie BEFORE rendering the
+    # login form, so a hard refresh on the admin page reuses the active
+    # session instead of dumping the operator back to the password screen.
+    # Same cookie manager (key="cb_cookie_mgr") that the customer history
+    # block uses below; Streamlit dedupes the component by key.
+    if not st.session_state.admin_authenticated:
+        _admin_cookie_mgr = stx.CookieManager(key="cb_cookie_mgr")
+        _admin_cookies = _admin_cookie_mgr.get_all()
+        # _admin_cookies is None on first render (component still mounting);
+        # in that case we fall through to the login form and a second render
+        # will catch the cookie. Brief flicker of the password field on hard
+        # refresh is the cost; full reauth was the previous behavior.
+        if _admin_cookies:
+            _admin_token = _admin_cookies.get(ADMIN_AUTH_COOKIE_NAME)
+            if _admin_token and _verify_admin_auth_token(_admin_token, ADMIN_PASSWORD):
+                st.session_state.admin_authenticated = True
+
     if not st.session_state.admin_authenticated:
         st.markdown("### 🔒 Admin Login")
         pwd = st.text_input("Password", type="password")
@@ -5458,6 +5616,14 @@ if st.session_state.show_admin:
             if st.button("Login"):
                 if pwd == ADMIN_PASSWORD:
                     st.session_state.admin_authenticated = True
+                    # v2.13.0: set the persistent auth cookie so the next
+                    # refresh / new tab is auto-authenticated.
+                    _login_cookie_mgr = stx.CookieManager(key="cb_cookie_mgr")
+                    _login_cookie_mgr.set(
+                        ADMIN_AUTH_COOKIE_NAME,
+                        _make_admin_auth_token(ADMIN_PASSWORD),
+                        expires_at=datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS),
+                    )
                     st.rerun()
                 else:
                     st.error("Incorrect password")
