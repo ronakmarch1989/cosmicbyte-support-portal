@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.7.2
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.8.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,81 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.8.0 (2026-05-07) -- Claude
+  - Y-bump: NEW FEATURE -- attached photos now visible in the
+    Admin dashboard. User confirmed they're on Render Hobby
+    (ephemeral filesystem, no persistent disk), so persistent-
+    file storage was ruled out -- went with thumbnails inline
+    in the CSV log instead. Defaults agreed:
+      * Medium thumbnails: 400px wide, JPEG quality 75
+      * Retention: natural log lifetime (no extra cleanup needed)
+      * Email CSV: thumbnails included automatically
+      * Disclaimer: one-line photo-retention disclosure added
+
+  Implementation:
+
+  1. CSV schema -- added new column "Image Thumbnails" to
+     CSV_COLUMNS (now 9 columns). Existing rows with no images
+     write empty for this column. csv.DictWriter handles
+     missing keys gracefully -- backward compatible.
+
+  2. Thumbnail generation -- new helper _make_thumbnails_for_log()
+     above log_conversation():
+        * Decodes the base64 from each uploaded image
+        * Opens via PIL (already imported as _PILImage)
+        * Converts to RGB if needed (so RGBA/palette/etc. can
+          save as JPEG)
+        * Resizes to max 400px wide, preserving aspect ratio,
+          using LANCZOS resampling (best quality for downsizing)
+        * Saves as JPEG quality=75, optimize=True -- typical
+          output is 20-40KB per thumbnail
+        * Base64-encodes the JPEG bytes
+        * Returns a JSON-serialized list of {name, data} dicts
+     Per-image errors are caught individually -- a single bad
+     image won't break the whole log entry. If all images fail,
+     returns "" so the column stays empty.
+
+  3. log_conversation() -- new optional `images=None` parameter.
+     When provided, calls _make_thumbnails_for_log and stores
+     the JSON in the new column. Existing call signatures still
+     work (images defaults to None).
+
+  4. Call site -- the AI-response handler now passes
+     last_user_msg.get("images") into log_conversation. If no
+     images attached, this is None and the column stays empty.
+
+  5. Admin dashboard -- the row-expander rendering now reads
+     the "Image Thumbnails" column. If non-empty, JSON-decodes
+     and renders thumbnails in a 4-column grid (180px wide each)
+     between the customer message and the AI response, captioned
+     with the original filename. Malformed JSON or old rows
+     without the column are handled gracefully.
+
+  6. Email CSV -- no changes needed. build_csv_bytes() uses
+     CSV_COLUMNS and writes whatever's in each row dict.
+     Thumbnails travel with the email automatically. Each row
+     with 4 images is ~80-160KB heftier than text-only rows --
+     still very manageable for emailed reports.
+
+  7. Customer disclaimer -- added one line to the existing
+     orange-bordered AI disclaimer at the bottom of the chat:
+     "Photos you attach are retained briefly with your
+      conversation for support quality review."
+     Keeps things transparent without scaring customers off
+     using the feature.
+
+  Storage math: a typical customer query with 2 images of
+  defects/packaging adds ~60KB to one CSV row. Even with 100
+  image-attached queries per day, the daily added log size is
+  ~6MB, well within Hobby tier's working memory + email-CSV
+  practical limits. If volume grows materially, can revisit
+  by either:
+    (a) reducing thumbnail size further (200px → ~10KB each)
+    (b) adding retention cleanup (auto-delete thumbnails from
+        log rows older than N days)
+    (c) upgrading to Render with persistent disk and switching
+        to Option 2 (full images on disk).
 
 v2.7.2 (2026-05-07) -- Claude
   - Z-bump: fix misleading "200MB per file" text on the file
@@ -816,7 +891,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.7.2"
+__version__ = "2.8.0"
 
 import streamlit as st
 import anthropic
@@ -991,7 +1066,7 @@ def get_secret(key, default=""):
 client = anthropic.Anthropic(api_key=get_secret("ANTHROPIC_API_KEY"))
 
 # ── CONSTANTS ──
-CSV_COLUMNS = ["Date", "Time", "Session ID", "Product", "Customer Message", "AI Response", "Feedback", "Feedback Note"]
+CSV_COLUMNS = ["Date", "Time", "Session ID", "Product", "Customer Message", "AI Response", "Feedback", "Feedback Note", "Image Thumbnails"]
 DIGEST_EMAIL = "thecosmicbyte2017@gmail.com"
 
 # ── SHARED LOG (cache_resource = shared across ALL sessions/iframes) ──
@@ -1007,7 +1082,41 @@ def get_shared_store():
 def get_log():
     return get_shared_store()["log"]
 
-def log_conversation(session_id, product, user_msg, ai_response):
+def _make_thumbnails_for_log(images):
+    """Resize each uploaded image to a 400px-wide JPEG (quality 75), base64-encode,
+    and return a JSON-serializable list of {name, data} dicts.
+    Used to persist a viewable thumbnail in the conversation log so admin can
+    review what customers attached. Skips silently on per-image errors so a
+    bad image never breaks logging."""
+    if not images:
+        return ""
+    thumbs = []
+    MAX_W = 400
+    for img in images:
+        try:
+            raw = base64.b64decode(img["data"])
+            with _PILImage.open(_io.BytesIO(raw)) as pil:
+                # Convert RGBA / palette / etc. to RGB so we can save as JPEG.
+                if pil.mode != "RGB":
+                    pil = pil.convert("RGB")
+                w, h = pil.size
+                if w > MAX_W:
+                    new_h = int(h * MAX_W / w)
+                    pil = pil.resize((MAX_W, new_h), _PILImage.LANCZOS)
+                out = _io.BytesIO()
+                pil.save(out, format="JPEG", quality=75, optimize=True)
+                thumbs.append({
+                    "name": img.get("name", "image"),
+                    "data": base64.b64encode(out.getvalue()).decode("ascii"),
+                })
+        except Exception:
+            # Bad image -- skip the thumbnail but don't break logging
+            continue
+    if not thumbs:
+        return ""
+    return json.dumps(thumbs)
+
+def log_conversation(session_id, product, user_msg, ai_response, images=None):
     now = datetime.now()
     row = {
         "Date": now.strftime("%d %b %Y"),
@@ -1018,6 +1127,7 @@ def log_conversation(session_id, product, user_msg, ai_response):
         "AI Response": ai_response,
         "Feedback": "",
         "Feedback Note": "",
+        "Image Thumbnails": _make_thumbnails_for_log(images),
     }
     get_log().append(row)
     return len(get_log()) - 1
@@ -4562,6 +4672,25 @@ def render_admin():
                 st.caption(f"Session: {r.get('Session ID','?')}")
                 st.markdown("**Customer message**")
                 st.text(customer_msg)
+                # If this row has thumbnails attached, render them in a 4-column grid.
+                # Stored as a JSON list of {name, data} where data is a base64 JPEG.
+                thumbs_raw = r.get("Image Thumbnails", "")
+                if thumbs_raw:
+                    try:
+                        thumbs = json.loads(thumbs_raw)
+                        if thumbs:
+                            st.markdown(f"**Attached photos ({len(thumbs)})**")
+                            cols = st.columns(min(4, len(thumbs)))
+                            for ti, t in enumerate(thumbs):
+                                with cols[ti % len(cols)]:
+                                    try:
+                                        thumb_bytes = base64.b64decode(t["data"])
+                                        st.image(thumb_bytes, caption=t.get("name", ""), width=180)
+                                    except Exception:
+                                        st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
+                    except (json.JSONDecodeError, TypeError):
+                        # Old log row or malformed value -- skip silently
+                        pass
                 st.markdown("**AI response**")
                 st.text(ai_resp)
                 fb  = r.get("Feedback") or "No feedback"
@@ -4896,7 +5025,8 @@ CUSTOMER MESSAGE: {original_text}
                 st.session_state.session_id,
                 product,
                 logged_question,
-                answer
+                answer,
+                images=last_user_msg.get("images"),
             )
             st.session_state.messages.append({
                 "role": "assistant",
@@ -5024,6 +5154,7 @@ st.markdown("""
     Responses may not always be accurate, complete, or up to date.
     For warranty claims, order issues, returns, or any official matter, please contact our support team directly.
     Cosmic Byte is not liable for any decisions made solely based on AI-generated responses.
+    Photos you attach are retained briefly with your conversation for support quality review.
 </div>
 """, unsafe_allow_html=True)
 
