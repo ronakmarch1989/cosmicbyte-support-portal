@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.8.2
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.11.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,152 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.11.0 (2026-05-07) -- Claude
+  - Y-bump: revert all of v2.9.0 (agent-name tagging). User
+    decision: only IP-based identification on the support
+    portal; no name capture. Reasoning -- the "Tester ID"
+    expander from v2.9.0 was visible to customers (collapsed
+    but present), and the value of name tagging was marginal
+    once IP logging from v2.10.0 was in place. IP is captured
+    without user cooperation, customers see no UI change at
+    all, and cross-referencing against the test-portal email
+    digest (which has agent name + IP) does not need a name
+    on the support side.
+
+  Reverts (relative to v2.10.0):
+
+  1. Removed "Agent Name" column from CSV_COLUMNS. The CSV
+     schema goes back to its v2.8.x shape plus the v2.10.0
+     "Client IP" column at the end. Existing in-memory rows
+     written between v2.9.0 and now have an "Agent Name" key
+     that csv.DictWriter will silently drop because of
+     extrasaction='ignore' default... actually DictWriter's
+     default is 'raise', so we explicitly do NOT carry the
+     pre-bump rows forward as-is. Practically: the in-memory
+     log resets on each Render restart anyway, so this is
+     fine. If you have an older CSV export sitting in email
+     with an "Agent Name" column, that file is fine as-is --
+     this change only affects new exports going forward.
+
+  2. log_conversation() signature: removed the agent_name=""
+     kwarg and the "Agent Name" entry from the row dict.
+
+  3. Call site at the bottom of the chat handler: removed
+     the agent_name= argument. client_ip= stays.
+
+  4. Session_state init: removed the block that reads
+     `?tester=NAME` from query_params. The param is now
+     ignored (Streamlit will not error on unknown params).
+
+  5. Header: removed the _tester_pill rendering. Header
+     reverts to just the brand image and the Live badge, as
+     it was before v2.9.0.
+
+  6. Removed the entire "Tester ID (internal use)" expander
+     that sat under the header. Customers no longer see any
+     internal-looking control. This is the main customer-UX
+     cleanup the user asked for.
+
+  Net effect:
+     The support portal is back to a pure customer-facing
+     UI (no internal-only widgets visible) plus the v2.10.0
+     IP logging running silently in the background.
+
+v2.10.0 (2026-05-07) -- Claude
+  - Y-bump: log the client IP for every conversation row.
+    Companion change in app.py captures the test-taker's IP
+    once per test session and includes it in the result
+    email. Together these enable cross-referencing test
+    submissions against support-portal queries by IP --
+    stronger than the agent-name tagging from v2.9.0
+    because it does not depend on the agent voluntarily
+    identifying themselves.
+
+  Implementation:
+
+  1. New helper _get_client_ip() reads X-Forwarded-For from
+     st.context.headers (set by Streamlit Cloud and most
+     managed proxies). First entry in the comma-separated
+     list is the original client. Falls back to X-Real-IP,
+     then to "" if neither is present (bare-metal deploys
+     without a reverse proxy, or Streamlit < 1.36). Wrapped
+     in try/except so any deployment quirk degrades to ""
+     rather than crashing the page.
+
+  2. New "Client IP" column appended to CSV_COLUMNS. Placed
+     at the end so the visible columns (Date, Time, Session
+     ID, Agent Name, Product, Customer Message, AI Response)
+     stay in the same order managers are used to seeing in
+     the digest. csv.DictWriter fills missing keys with ""
+     so older in-memory rows from before the bump still
+     write a well-formed CSV.
+
+  3. log_conversation() takes an optional client_ip="" kwarg
+     and writes it into the row dict. The single call site
+     at the bottom of the chat handler passes
+     _get_client_ip() directly so we capture per query --
+     this matters because a long-lived browser session can
+     change networks (laptop unplugged, switched to mobile
+     hotspot) and we want each query attributed correctly.
+
+  Operational notes:
+     - Office NAT means multiple agents share one public IP.
+       Use IP + timestamp + test-portal email to disambiguate
+       which agent was testing at the moment a portal query
+       fired from the office IP.
+     - Home-network IPs are usually unique per agent, which
+       makes attribution clean for remote testing -- record
+       each agent's test IP once and look for it in the
+       portal log.
+     - VPN / mobile carrier CGNAT can defeat IP attribution.
+       Combine with v2.9.0 agent-name tagging and the test-
+       portal timing flags for a layered signal.
+
+v2.9.0 (2026-05-07) -- Claude
+  - Y-bump: tag conversation log rows with the operator's name
+    so portal usage during agent-test windows can be cross-
+    referenced against test-portal submissions. Companion
+    change in app.py records per-question timing -- a join on
+    (agent name, timestamp) flags any test answer submitted
+    within seconds of a portal query, which is the strongest
+    available signal that an agent is Claude'ing the test
+    instead of taking it.
+
+  Implementation:
+
+  1. New session_state field "agent_name" populated from a
+     `?tester=NAME` query param on page load. Empty string
+     for normal customer traffic -- no behavioural change in
+     the customer-facing path.
+
+  2. New "Agent Name" column inserted into CSV_COLUMNS
+     between "Session ID" and "Product". csv.DictWriter fills
+     missing keys with "" by default, so older in-memory rows
+     from before the bump still write a well-formed CSV.
+
+  3. log_conversation() takes an optional agent_name=""
+     kwarg and writes it into the row dict. The single call
+     site at the bottom of the chat handler passes
+     st.session_state.get("agent_name", "").
+
+  4. UI: when agent_name is set, a small "Tester: NAME" pill
+     renders next to the Live badge in the header so the
+     operator visibly knows their queries are being tagged.
+     A collapsed "Tester ID" expander below the header lets
+     them set/clear the name manually if the URL param was
+     missed. Customer traffic without the param sees no
+     change at all.
+
+  Operational:
+     Distribute per-agent URLs like
+     `https://<portal-host>/?tester=Priya` before each test
+     window. After the window, build the cross-reference by
+     joining test-portal email digests (which now include
+     per-question submission timestamps and elapsed seconds)
+     against the support-portal CSV log on agent name --
+     any portal query within ~60s before a test answer
+     submission is the smoking gun.
 
 v2.8.2 (2026-05-07) -- Claude
   - Y-bump: bulk photo export from the admin dashboard.
@@ -998,7 +1144,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.8.2"
+__version__ = "2.11.0"
 
 import streamlit as st
 import anthropic
@@ -1174,7 +1320,7 @@ def get_secret(key, default=""):
 client = anthropic.Anthropic(api_key=get_secret("ANTHROPIC_API_KEY"))
 
 # ── CONSTANTS ──
-CSV_COLUMNS = ["Date", "Time", "Session ID", "Product", "Customer Message", "AI Response", "Feedback", "Feedback Note", "Image Thumbnails"]
+CSV_COLUMNS = ["Date", "Time", "Session ID", "Product", "Customer Message", "AI Response", "Feedback", "Feedback Note", "Image Thumbnails", "Client IP"]
 DIGEST_EMAIL = "thecosmicbyte2017@gmail.com"
 
 # ── SHARED LOG (cache_resource = shared across ALL sessions/iframes) ──
@@ -1189,6 +1335,32 @@ def get_shared_store():
 
 def get_log():
     return get_shared_store()["log"]
+
+def _get_client_ip():
+    """Best-effort client IP from request headers. Reads X-Forwarded-For from
+    st.context.headers (set by Streamlit Cloud and most managed proxies); the
+    first entry in the comma-separated list is the original client. Falls back
+    to X-Real-IP, then to "". Wrapped in try/except so any Streamlit version
+    quirk or bare-metal deployment without a reverse proxy degrades to "".
+    """
+    try:
+        ctx = getattr(st, "context", None)
+        if ctx is None:
+            return ""
+        headers = getattr(ctx, "headers", None)
+        if headers is None:
+            return ""
+        for key in ("X-Forwarded-For", "x-forwarded-for"):
+            v = headers.get(key)
+            if v:
+                return v.split(",")[0].strip()
+        for key in ("X-Real-IP", "x-real-ip"):
+            v = headers.get(key)
+            if v:
+                return v.strip()
+        return ""
+    except Exception:
+        return ""
 
 def _make_thumbnails_for_log(images):
     """Resize each uploaded image to a 400px-wide JPEG (quality 75), base64-encode,
@@ -1224,7 +1396,7 @@ def _make_thumbnails_for_log(images):
         return ""
     return json.dumps(thumbs)
 
-def log_conversation(session_id, product, user_msg, ai_response, images=None):
+def log_conversation(session_id, product, user_msg, ai_response, images=None, client_ip=""):
     now = datetime.now()
     row = {
         "Date": now.strftime("%d %b %Y"),
@@ -1236,6 +1408,7 @@ def log_conversation(session_id, product, user_msg, ai_response, images=None):
         "Feedback": "",
         "Feedback Note": "",
         "Image Thumbnails": _make_thumbnails_for_log(images),
+        "Client IP": client_ip,
     }
     get_log().append(row)
     return len(get_log()) - 1
@@ -5222,6 +5395,7 @@ CUSTOMER MESSAGE: {original_text}
                 logged_question,
                 answer,
                 images=last_user_msg.get("images"),
+                client_ip=_get_client_ip(),
             )
             st.session_state.messages.append({
                 "role": "assistant",
