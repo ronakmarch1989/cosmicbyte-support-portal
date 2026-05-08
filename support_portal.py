@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.2
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,73 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.15.2 (2026-05-08) -- Claude
+  - Z-bump: add INVOICE POLICY block to SYSTEM_PROMPT after a
+    real customer interaction where the AI invented a
+    self-service invoice download portal that does not exist.
+
+  Trigger:
+     Customer asked "how to download invoice" (All Products
+     context). The AI confidently walked the customer through
+     visiting "https://track.thecosmicbyte.com/", entering
+     order number + email, and "downloading the invoice"
+     from a non-existent self-service page. Same KB-silence
+     hallucination pattern as v2.12.1 (Raptor), v2.12.2
+     (Blitz dock), v2.14.0 firmware-updater, v2.14.1 Gen 1
+     LED, and v2.15.1 Eclipse/Starforge software.
+
+  Root cause:
+     "How to download invoice" is a generic e-commerce
+     question. The KB has no section covering order-management
+     or invoice/shipping policies — only product manuals.
+     With no information available, the AI pattern-matched to
+     typical e-commerce flows (Amazon-style "View Order ->
+     Download Invoice button") and fabricated a URL that
+     sounded plausible.
+
+  Reality (per Ronak):
+     - Orders shipped through the Cosmic Byte website
+       generate invoices automatically.
+     - Customers receive the invoice via EMAIL once the order
+       is shipped, and again on delivery.
+     - Customers also receive a HARDCOPY of the invoice with
+       the product (inside the package).
+     - There is NO online invoice download portal. Customers
+       cannot self-serve download an invoice from any URL.
+
+  Fix:
+     New INVOICE POLICY block added to SYSTEM_PROMPT (placed
+     near the WARRANTY OVERVIEW section since both are
+     cross-product policy content rather than per-product
+     manual content). Block states the three facts above
+     explicitly and tells the AI:
+       - DO NOT invent a self-service download URL.
+       - DO NOT direct customers to a "track.thecosmicbyte.com"
+         invoice page or any other invoice download URL.
+       - If customer hasn't received the email, suggest
+         checking spam/promotions, confirming the email
+         address on the order, and contacting support to
+         have it resent.
+       - Hardcopy is always inside the product package — if
+         customer says they didn't receive a hardcopy, that's
+         a packaging issue and should be raised with support.
+
+  Followup gap (offered, not shipped):
+     The KB has no general "ORDER & SHIPPING POLICIES" section.
+     This means the AI is currently underdetermined on:
+       - Order tracking (where does the customer track? does
+         the website have an order tracker, or is it via a
+         shipping partner like Shiprocket?)
+       - Returns and refunds (process, timeline, eligibility)
+       - Shipping speed expectations (delivery windows, regions)
+       - Cancellation policy
+       - Coupon/discount policies beyond ONLINEPAY
+     Each of these is a future invention waiting to happen.
+     Ronak should consider a sweep of order/shipping policies
+     when convenient (separate from product manual sweep).
+
+  Verification: ast.parse OK on Python 3.
 
 v2.15.1 (2026-05-08) -- Claude
   - Z-bump: correct an incorrect claim shipped in v2.15.0
@@ -2003,7 +2070,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.15.1"
+__version__ = "2.15.2"
 
 import streamlit as st
 import anthropic
@@ -5233,6 +5300,19 @@ KEY LINKER MOBILE APP — used by THREE Cosmic Byte products, each with differen
   - Starforge: Key Linker = button remapping ONLY (firmware uses Category B path — manual file from website).
   - All other Cosmic Byte products do NOT use Key Linker at all.
   - Platform: Key Linker is iOS / Android only. There is no PC version.
+
+INVOICE POLICY — applies to all customer orders. There is NO online invoice download portal. Customers cannot self-serve download an invoice from any URL on thecosmicbyte.com or anywhere else. Do NOT invent a download URL or direct customers to any "track invoice" or "view invoice" page — none exists.
+
+How customers receive their invoice:
+  1. EMAIL: When an order ships from the Cosmic Byte warehouse, the customer receives an email with the invoice. They receive another email on delivery confirmation. Both emails come automatically from cosmicbyte; no customer action required.
+  2. HARDCOPY: A printed invoice is included physically inside the product package. The customer will find it when they open the box.
+
+If a customer asks how to download or get their invoice, the answer is:
+  - Their invoice was emailed automatically when the order shipped (and again on delivery). Suggest they check their email inbox, including spam / promotions / updates folders. Confirm the email address used on the order (sometimes typos cause emails to bounce).
+  - A hardcopy is also inside the product package — they may have received it physically.
+  - If they cannot find either copy, they should contact support (cc@thecosmicbyte.com / +91 7351615161, Mon-Sat 10am-6pm) and request the invoice be resent. Support can email a fresh copy.
+
+Do NOT direct customers to any URL purporting to download invoices. Do NOT invent a "track.thecosmicbyte.com" or similar self-service portal — these do not exist for invoices.
 
 WARRANTY OVERVIEW — all Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period.
 
