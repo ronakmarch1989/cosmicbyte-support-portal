@@ -2,3 +2,4 @@ streamlit
 anthropic
 extra-streamlit-components
 discord.py
+aiohttp-socks
