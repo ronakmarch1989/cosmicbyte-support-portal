@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.14.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.14.1
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,69 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.14.1 (2026-05-08) -- Claude
+  - Z-bump: tighten the Stellaris Gen 1 / Gen 2 boundary in
+    KNOWLEDGE_BASE["Stellaris"]. Real customer interaction
+    revealed two boundary gaps in the v2.14.0 rewrite.
+
+  Trigger:
+     Customer asked "How do I change LED in Stellaris Gen 1?"
+     The AI walked the customer through using the Key Linker
+     mobile app to change LED color. WRONG. Key Linker on
+     Gen 1 is for button remap + firmware updates only --
+     RGB lighting on Gen 1 is controlled exclusively via
+     gamepad button shortcuts (SELECT + D-pad Left to cycle
+     modes, SELECT + D-pad Right to switch single colors,
+     etc.). The AI also did not ask the customer about black
+     vs transparent variant before answering, which the
+     ASK-FIRST guidance specifically requires for RGB
+     questions.
+
+  Root cause:
+     The v2.14.0 Gen 1 section said "Key Linker handles
+     firmware" without explicitly saying what Key Linker
+     does NOT handle. The AI synthesised "Gen 1 has no PC
+     software, Key Linker is the only mobile app mentioned,
+     therefore Key Linker is the way to do anything on
+     Gen 1." Same KB-silence-fills-with-plausible-fiction
+     pattern as v2.12.1 (Raptor), v2.12.2 (Blitz dock),
+     v2.14.0 firmware-updater.
+
+  Fixes:
+
+  1. Gen 1 section: Key Linker scope now stated explicitly
+     as "button remap + firmware update ONLY". The exact
+     phrase "RGB and lighting on Gen 1 are NOT done through
+     Key Linker -- use gamepad shortcuts" added in two
+     places (lighting subsection and Key Linker subsection)
+     so neither path can be reached without seeing the
+     boundary. Added a step-by-step "HOW TO CHANGE LED
+     COLOR ON GEN 1" procedural block so the AI has explicit
+     steps to recite rather than synthesising from scattered
+     shortcut references.
+
+  2. Gen 2 section: explicit "Gen 2 does NOT support Key
+     Linker -- Key Linker is Gen 1 only" line added, to
+     prevent the inverse error (telling a Gen 2 customer
+     to use Key Linker because that's how the AI saw
+     Stellaris-and-mobile-app paired in the KB).
+
+  3. ASK-FIRST GUIDANCE: variant question for RGB topics
+     promoted from "ask if the answer would differ" to
+     "ALWAYS ask before answering any RGB / lighting
+     question on Stellaris", because the variant-difference
+     (transparent has the outer ring) is essentially always
+     material to a complete answer, and the previous
+     softer phrasing let the AI skip the ask.
+
+  4. COMMON FAILURE MODES TO AVOID block: two new bullets
+     covering the Key Linker scope boundary and the variant-
+     ask requirement.
+
+  Verification:
+     ast.parse on Python 3 confirms file parses. Pure KB
+     content edit, no UI/data-flow changes.
 
 v2.14.0 (2026-05-08) -- Claude
   - Y-bump: Stellaris knowledge-base restructure + universal
@@ -1649,7 +1712,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.14.0"
+__version__ = "2.14.1"
 
 import streamlit as st
 import anthropic
@@ -2190,7 +2253,7 @@ COSMIC BYTE STELLARIS - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
 ASK-FIRST GUIDANCE (READ BEFORE ANSWERING ANY STELLARIS QUESTION):
 ═══════════════════════════════════════════════════════════════════════
 
-VARIANTS: The Stellaris is sold in BLACK and TRANSPARENT variants. The transparent variant has an additional outer RGB ring around the controller body that the black variant does NOT have. When customer asks about RGB / lighting and the answer would differ between variants (e.g. "how do I turn off all the lights"), ASK which variant they have. For non-RGB questions or RGB questions where the answer is the same regardless of variant, do NOT ask.
+VARIANTS: The Stellaris is sold in BLACK and TRANSPARENT variants. The transparent variant has an additional outer RGB ring around the controller body that the black variant does NOT have. ALWAYS ask which variant the customer has BEFORE answering ANY RGB / lighting question on Stellaris (either gen). Do not assume; do not skip this ask. The variant difference (transparent has the outer ring) is material to almost every RGB answer — what zones can be controlled, what "turn off all lights" means, etc. For non-RGB questions, do not ask about variant.
 
 GENERATIONS: There are two physical generations of Stellaris. The CURRENT (Gen 2) is the default — assume the customer has the current Stellaris unless they signal otherwise. Gen 1 is DISCONTINUED but some units are still under warranty. Switch to the LEGACY GEN 1 section ONLY if the customer signals one of:
   - References "magnetic joysticks" (Gen 1 has magnetic, current has TMR)
@@ -2314,6 +2377,7 @@ AUTO SLEEP: 30 seconds if not connected, 5 minutes if connected but inactive. Wa
 FIRMWARE UPDATE (current Stellaris):
 - Done THROUGH the Cosmic Byte companion software (same software used for RGB/macro/mapping config). There is NO separate firmware updater tool.
 - Process: download the Cosmic Byte software from https://www.thecosmicbyte.com/downloaddrivers/ → connect Stellaris via USB-C in WIRED mode → power on the controller → open the software → it should detect the controller automatically → use the firmware update option inside the software → do not disconnect during update.
+- The current Stellaris does NOT support the Key Linker mobile app — Key Linker is for Gen 1 only. If a customer asks about Key Linker for the current Stellaris, the answer is "Key Linker is not used for this controller — use the PC companion software instead."
 
 CHARGING: 5V charger or PC USB ONLY. Fast chargers damage battery and void warranty. Battery: 1000mAh.
 
@@ -2395,6 +2459,34 @@ GEN 1 FIRMWARE UPDATE:
 - Select "Update Device" from menu. If a new version is available, click "Update Now" → "Yes".
 - Note from Gen 1 manual: firmware updates fix occasional bugs only. No need to update unless experiencing issues. No functional difference between firmware versions.
 
+GEN 1 KEY LINKER APP — SCOPE (CRITICAL TO GET RIGHT):
+The Key Linker mobile app on Gen 1 handles ONLY two things:
+  1. Firmware updates (see above).
+  2. Button remapping (custom button assignments).
+
+Key Linker does NOT control RGB / LED color / lighting modes / brightness on Gen 1. RGB and lighting on Gen 1 are controlled EXCLUSIVELY via gamepad button shortcuts on the controller itself (see GEN 1 RGB SHORTCUTS above). Do NOT tell Gen 1 customers to change LED color via Key Linker — that is wrong. Use the gamepad shortcuts.
+
+Key Linker is also Gen 1 ONLY. The current Stellaris (Gen 2) does NOT pair with or support Key Linker — Gen 2 uses the PC companion software for everything (RGB, macros, button mapping, firmware).
+
+HOW TO CHANGE LED COLOR ON GEN 1 — STEP-BY-STEP (gamepad shortcuts only, NOT Key Linker):
+First, ask the customer if their Stellaris is the BLACK or TRANSPARENT variant — the answer affects which RGB zones are available.
+
+  Step 1 — Cycle to Single Color mode if not already there:
+    Hold SELECT and press D-pad LEFT. This cycles between the three RGB modes: Mixed Color Wave (default), Color Breathing, Single Color.
+    Stop when you reach Single Color mode.
+
+  Step 2 — Switch to the desired color:
+    Hold SELECT and press D-pad RIGHT to step to the next color in Single Color mode.
+    Repeat until the desired color is showing.
+
+  Step 3 (optional) — Adjust brightness:
+    Hold BACK and press D-pad UP to increase brightness, BACK + D-pad DOWN to decrease.
+
+  Step 4 (optional, transparent variant only) — Toggle the outer side RGB ring on/off:
+    Hold LB + RT for 6 seconds.
+
+If the customer wants the LED to be a specific color all the time (not cycling), they need to be in Single Color mode (not Mixed Color Wave or Color Breathing). Confirm they understand which mode they're currently in if needed.
+
 ═══════════════════════════════════════════════════════════════════════
 SECTION 3: TRANSPARENT VARIANT (applies to BOTH gens)
 ═══════════════════════════════════════════════════════════════════════
@@ -2419,6 +2511,9 @@ SECTION 4: COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
 - Do NOT forget the transparent variant's outer RGB ring when answering "how do I turn off all the lights" — the master toggles cover it for current Stellaris, but Gen 1 has a separate side-lights shortcut for the transparent variant.
 - Do NOT proactively ask "Gen 1 or Gen 2?" on every query. Default to current Stellaris. Only switch to Gen 1 on a customer signal (magnetic joysticks reference, "no software," shortcut not working, explicit "1st gen / older").
 - Do NOT invent a "Stellaris Firmware Updater" tool — it does not exist. Current Stellaris firmware = Cosmic Byte software (PC, wired). Gen 1 firmware = Key Linker mobile app (Bluetooth). No third path.
+- Do NOT tell Gen 1 customers to use Key Linker for RGB / LED color / lighting changes. Key Linker on Gen 1 covers ONLY firmware updates and button remapping. RGB on Gen 1 is gamepad shortcuts ONLY. This is a real bug that has happened — when a Gen 1 customer asks about LED color, walk them through gamepad shortcuts (SELECT + D-pad Left to cycle modes, SELECT + D-pad Right to switch single colors), NOT Key Linker.
+- Do NOT tell current-Stellaris (Gen 2) customers to use Key Linker for anything. Key Linker is Gen 1 only. Gen 2 uses the PC companion software for RGB, macros, button mapping, and firmware. Gen 2 does not pair with Key Linker.
+- ALWAYS ask the customer if they have the BLACK or TRANSPARENT variant before answering ANY RGB / lighting question on Stellaris (either gen). The transparent variant has the extra outer RGB ring; the black variant does not. This affects almost every RGB answer. Do not skip the variant ask — answer fully only after the customer tells you the variant.
 
 ═══════════════════════════════════════════════════════════════════════
 WARRANTY (BOTH GENS): 1 year manufacturing defects only. Physical damage, water damage, tampered products NOT covered. Battery wear and tear NOT covered. Console use NOT covered.
