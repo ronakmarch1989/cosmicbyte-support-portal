@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.19.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.21.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,227 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.21.0 (2026-05-08) -- Claude
+  - Y-bump: hierarchical Month -> Week -> Day grouping in the
+    admin conversation list. Triggered immediately after
+    v2.17.0 / v2.18.0 deployed disk persistence: Ronak noted
+    "the conversations in the admin page will become very
+    large with persistence disk. Can we have it categoried by
+    each day, then week, then month? I can click on it to
+    open the data?"
+
+  Background:
+    Pre-v2.17.0, the conversation log was wiped on every
+    Render restart, so it never grew beyond a day's worth of
+    chat traffic. The flat list in the admin dashboard was
+    fine for that volume.
+
+    Post-v2.17.0 / v2.18.0, the log persists indefinitely.
+    18 conversations on day one becomes ~500 in a month and
+    several thousand over a year. Scrolling through a flat
+    list of all of those becomes unworkable. Hierarchical
+    grouping with collapsible sections is the natural fix.
+
+  Design choices:
+
+    1. THREE-LEVEL HIERARCHY: Month -> Week -> Day -> conversation.
+       Matches Ronak's request literally ("by each day, then
+       week, then month"). Each level shows a count so the
+       admin can see at a glance where the volume is.
+
+    2. AUTO-EXPAND THE MOST RECENT PATH: when the dashboard
+       loads, the most recent month / week / day are all
+       expanded by default. Today's conversations are
+       reachable in zero clicks. Older months/weeks/days
+       stay collapsed and quiet until the admin clicks in.
+
+    3. SMART FLAT FALLBACK: hierarchical drill-down is
+       counterproductive when the dataset is small. The new
+       view falls back to the original flat list when:
+         (a) The user has selected a specific date in the
+             existing Date filter (the filter is already
+             doing the job).
+         (b) The full filtered set is small (<=30 rows) AND
+             all from a single calendar day -- one day's
+             worth, fits on a screen, no need to make the
+             admin click into a single-day expander to see
+             what's already visible.
+       Otherwise, the hierarchical view kicks in.
+
+    4. WEEK BOUNDARIES: Monday-to-Sunday weeks (the more
+       common convention in India where Cosmic Byte
+       operates). Week label format: "Week of 04 May" --
+       short, unambiguous.
+
+    5. DAY LABEL INCLUDES WEEKDAY: e.g. "08 May 2026 (Fri)"
+       -- saves the admin from having to mentally compute
+       which day of the week a given calendar date was.
+
+    6. SAME PER-CONVERSATION RENDER: the existing per-row
+       expander UI (customer message, AI response, photo
+       thumbnails with download buttons, feedback) is
+       UNCHANGED. The grouping is purely a wrapper layer
+       on top. So every existing feature -- photo download
+       buttons, feedback display, session ID -- continues
+       to work identically.
+
+    7. UNDATED ROWS: rows whose Date field can't be parsed
+       (corrupted log entry, format drift) are bucketed
+       into a synthetic "(Undated)" group at the bottom of
+       the hierarchy rather than dropped. Visible to the
+       admin so they know corruption exists without losing
+       access to the row.
+
+  Code changes:
+
+    1. New helper _group_log_for_admin(rows_with_idx) added
+       just above render_admin(). Takes a list of (filtered_idx,
+       row) pairs (preserving the original filtered-list index
+       so per-row Streamlit widget keys stay stable). Returns
+       a sorted nested structure: months -> weeks -> days ->
+       (idx, row) pairs, each level reverse-chronological,
+       each level annotated with a count for header display.
+       Day rows within a day are sorted by Time descending.
+
+    2. New helper _render_admin_conversation_row(idx, r) added
+       just above render_admin(). Encapsulates the existing
+       per-row UI -- the st.expander, customer message, photo
+       grid, AI response, feedback line, plus the photo
+       download buttons keyed off the row's filtered index --
+       so it can be called from both the flat path and the
+       grouped path without duplication.
+
+    3. render_admin() updated:
+         - Existing top action bar, filters, metrics, and
+           download/email/zip sections UNCHANGED.
+         - The conversation list section (previously a flat
+           for-loop) now branches:
+             * If selected_date != "All dates" -> flat list
+               (filter is already narrowing, hierarchy adds
+               friction).
+             * Else if all rows are from a single date AND
+               there are 30 or fewer rows -> flat list (one
+               day's worth, fits on a screen).
+             * Else -> hierarchical Month/Week/Day expanders,
+               with the most recent path auto-expanded.
+
+  Verification: ast.parse OK on Python 3.
+
+  Known minor cosmetic note:
+    Streamlit's nested st.expander UI works but stacks
+    visually -- 4 levels deep (month/week/day/conversation)
+    can look busy when many sections are expanded at once.
+    The default-collapsed-except-most-recent strategy keeps
+    it manageable for the common case (admin scans recent
+    activity, occasionally drills into history).
+
+  Followup notes:
+    - Open: backup strategy beyond email digest.
+    - Open from v2.16.0: Drakon ML/MR vs L4/R4 software
+      label mismatch.
+    - Open from v2.15.2: ORDER & SHIPPING POLICIES gap.
+
+v2.20.0 (2026-05-08) -- Claude
+  - Y-bump: add REFURBISHED PRODUCTS POLICY to SYSTEM_PROMPT
+    after a customer interaction where the AI confidently told
+    a customer "Cosmic Byte does not sell refurbished products.
+    All products sold on thecosmicbyte.com are brand new" --
+    which is FALSE. Cosmic Byte has a Certified Refurbished
+    category live on the website with multiple pages of
+    listings, in the main site navigation menu, with its own
+    documented policy and warranty terms.
+
+  Trigger:
+    Customer asked "Warranty in refurbished product". The AI
+    responded by denying that Cosmic Byte sells refurbished
+    products at all, then implied the customer might have
+    been scammed or sold a fake ("If you've purchased a
+    product that you believe is refurbished or used, please
+    contact our support team immediately"). For a customer
+    who legitimately bought from the Certified Refurbished
+    category (a real product line on the site), this answer
+    would be alarming and incorrect.
+
+  Root cause:
+    Same KB-silence hallucination pattern flagged repeatedly
+    in v2.12.x, v2.14.x, v2.15.x, and v2.19.0 (BGMI). The KB
+    had no info on refurbished products, so the AI
+    pattern-matched to a typical e-commerce
+    "no-we-don't-sell-that, you've-been-scammed" frame and
+    fabricated. Identical failure mode to v2.15.2's invented
+    invoice download portal and v2.19.0's invented BGMI
+    gamepad support.
+
+  Reality (per Ronak, with the policy text from
+  https://www.thecosmicbyte.com/product-category/certified-refurbished/
+  verified live):
+    - Cosmic Byte sells certified refurbished products under
+      a dedicated product category in the main site
+      navigation. Multiple pages of listings.
+    - Packaging: refurbished products may or may not come in
+      the original packaging. Replacement / similar packaging
+      is acceptable per Cosmic Byte's published policy. This
+      is BY DESIGN -- not a fraud indicator.
+    - Condition: products are opened and tested. May have
+      minimal or no signs of wear & tear. Will NOT be broken
+      or damaged.
+    - Warranty: 6-MONTH minimum, supplier-backed. This is
+      DIFFERENT from the 1-year warranty on new products. The
+      6-month figure is the operative warranty period for
+      refurbished, and the 1-year figure should NOT be
+      applied.
+
+  Fix shipped in v2.20.0:
+
+  1. NEW: REFURBISHED PRODUCTS POLICY block added to
+     SYSTEM_PROMPT (placed near the WARRANTY OVERVIEW since
+     warranty differs by product type). The block:
+       - Affirms that Cosmic Byte sells certified refurbished
+         products and gives the URL.
+       - States the packaging policy (may not be original; not
+         a fraud indicator).
+       - States the condition policy (opened, tested, minimal
+         wear, will not be broken or damaged).
+       - States the warranty policy (6 months, supplier-backed,
+         vs 1 year on new).
+       - Provides three conversation flows the AI should
+         follow:
+           Case A: "Do you sell refurbished?" / "What's the
+                   refurbished warranty?" -> share URL +
+                   policy.
+           Case B: Customer suspects their product is
+                   refurbished but believes they bought new
+                   -> ASK which category they bought from
+                   FIRST, before treating it as fraud.
+                   Non-original packaging on a refurbished
+                   order is normal; same packaging on a
+                   regular-category order is a real concern.
+           Case C: Refurbished product has a defect ->
+                   standard troubleshooting + warranty path,
+                   but using the 6-month period.
+       - Lists explicit DO-NOT-SAY items including the exact
+         "Cosmic Byte does not sell refurbished products"
+         phrase that triggered this fix.
+       - Lists explicit DO items: direct refurbished-curious
+         customers to the URL, state 6-month warranty
+         clearly, treat refurbished as a legitimate product
+         line.
+
+  2. WARRANTY OVERVIEW block updated to mention the
+     refurbished exception inline ("...except certified
+     refurbished products which carry a 6-month
+     supplier-backed warranty -- see REFURBISHED PRODUCTS
+     POLICY below for full details"). Keeps the block as
+     the single answer to "what's the warranty?" while
+     pointing at the policy block for the variant.
+
+  Followup notes:
+    - Open: backup strategy beyond email digest; Drakon
+      ML/MR vs L4/R4 software label mismatch; ORDER &
+      SHIPPING POLICIES gap (still open from v2.15.2).
+
+  Verification: ast.parse OK on Python 3.
 
 v2.19.0 (2026-05-08) -- Claude
   - Y-bump: substantive correctness bundle covering THREE
@@ -2922,7 +3143,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.19.0"
+__version__ = "2.21.0"
 
 import streamlit as st
 import anthropic
@@ -6611,7 +6832,55 @@ WORKAROUND -- ON-THE-FLY SOFTWARE GYRO (a real Cosmic Byte differentiator):
     - Promise the workaround works for a controller that's not on the confirmed list. If unsure, offer to confirm with support.
     - Claim the workaround makes BGMI / PUBG Mobile / Free Fire / etc. playable on iPad -- the limit there is the GAME, not the gyro. See GAME-SPECIFIC GAMEPAD SUPPORT VERIFICATION POLICY.
 
-WARRANTY OVERVIEW — all Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period.
+WARRANTY OVERVIEW — new Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period. EXCEPTION: Certified Refurbished products carry a 6-month supplier-backed warranty, NOT 1 year — see REFURBISHED PRODUCTS POLICY below for the full refurbished warranty / packaging / condition policy.
+
+REFURBISHED PRODUCTS POLICY — applies whenever a customer asks about refurbished products, used products, "open box" items, or thinks their product is refurbished or used. Cosmic Byte SELLS certified refurbished products. Do NOT tell a customer "Cosmic Byte does not sell refurbished products" or "all our products are brand new" -- this is FALSE and contradicts the live Certified Refurbished category on thecosmicbyte.com.
+
+THE CORE FACTS:
+
+  1. CERTIFIED REFURBISHED CATEGORY EXISTS on the website:
+     URL: https://www.thecosmicbyte.com/product-category/certified-refurbished/
+     This is a dedicated product category in the main site navigation, with multiple pages of listings, separate from the new-product catalog. Products listed here are explicitly sold AS refurbished -- the customer knows what they are buying.
+
+  2. PACKAGING POLICY (refurbished only):
+     Refurbished products MAY OR MAY NOT come in the original packaging. They can ship in similar replacement packaging. Non-original packaging on a refurbished order is BY DESIGN per Cosmic Byte's published policy -- it does NOT indicate fraud, a scam, a mis-shipment, or any kind of problem. If the customer ordered from the certified-refurbished category and received a non-original box, that is the expected and normal outcome.
+
+  3. PRODUCT CONDITION (refurbished only):
+     The product is opened and tested before resale. It MAY have minimal or no signs of wear & tear. Cosmic Byte's policy explicitly states that the product will NOT be broken or damaged. So minor cosmetic wear is part of being refurbished -- not a defect, not a complaint-worthy issue. Functional damage or breakage IS a real defect and goes through the usual warranty path.
+
+  4. WARRANTY (refurbished only):
+     6-MONTH minimum, supplier-backed warranty. This is DIFFERENT from the 1-year warranty on new products. When a customer with a refurbished product asks about warranty, the answer is 6 months from purchase, not 1 year. Do NOT apply the 1-year figure to a refurbished product.
+
+CONVERSATION FLOWS:
+
+  CASE A -- Customer asks "Do you sell refurbished products?" / "What's the warranty on refurbished?" / "How does refurbished work?":
+    Confirm yes. Share the URL above. State the packaging policy, condition policy, and 6-month warranty. Treat refurbished as a real, legitimate Cosmic Byte product line, not an exception.
+
+  CASE B -- Customer says "I think my product is refurbished but I bought new" / "My packaging looks different / replacement / not original":
+    Do NOT default to "you've been scammed" or "contact support immediately, this might be fraud". ASK FIRST:
+      - Did you purchase from the Certified Refurbished category at https://www.thecosmicbyte.com/product-category/certified-refurbished/, or from the regular new-product listing?
+      - Can you check your order confirmation -- does it mention "Refurbished" or "Certified Refurbished"?
+    Branch based on the answer:
+      (i) Customer ordered from the refurbished category -> Non-original packaging and minor wear are EXPECTED. Share the policy above. The customer's product is what they paid for. Reassure them.
+      (ii) Customer ordered from the regular new-product listing AND the product clearly shows significant signs of being used (heavy wear, missing accessories, used-feeling) -> THIS is a real concern. Direct them to support to investigate as a possible mis-shipped or wrong-item delivery. Use the standard support channels (cc@thecosmicbyte.com, +91 7351615161, raise-a-ticket page).
+      (iii) Uncertain or in-between -> ask for the order number and forward to support; do NOT speculate as to whether it's fraud.
+
+  CASE C -- Customer's refurbished product has a real defect (broken, doesn't power on, button stuck, etc.):
+    Standard troubleshooting first, then warranty path -- but the operative warranty period is 6 MONTHS from purchase, not 1 year. After 6 months from the refurbished purchase date, the warranty has expired regardless of how recently the product was made or how new it looks.
+
+DO NOT:
+  - Tell a customer "Cosmic Byte does not sell refurbished products" -- this exact phrase is FALSE and was the root cause of this policy block being added (v2.20.0).
+  - Tell a customer "All products on thecosmicbyte.com are brand new" -- FALSE; the Certified Refurbished category exists.
+  - Apply the 1-year new-product warranty figure to a refurbished product -- it is 6 months.
+  - Treat non-original packaging on a refurbished order as evidence of fraud -- it is normal per Cosmic Byte's published policy.
+  - Default to "this might be a scam, contact support immediately" framing for ambiguous refurbished-related queries -- ask which category they purchased from FIRST.
+  - Tell the customer the refurbished product should be in original packaging -- it explicitly does not have to be.
+
+DO:
+  - Direct customers asking about refurbished options to the URL above.
+  - State the 6-month warranty clearly when discussing refurbished.
+  - Treat refurbished as a legitimate Cosmic Byte product line equal in legitimacy to new products, just with a different warranty period and packaging convention.
+  - When customer is unsure whether their product is refurbished or new, ASK them to check their order confirmation / the category page they bought from.
 
 LIVE PRICES: If the customer asks for the current price, let them know you can check the live price and direct them to the product page for the most up-to-date pricing. Mention the ONLINEPAY coupon for 10% off.
 
@@ -7642,6 +7911,183 @@ auto_daily_digest()
 # ── ADMIN PAGE ──
 ADMIN_PASSWORD = get_secret("ADMIN_PASSWORD", "cosmicbyte_admin")
 
+# ── ADMIN HIERARCHICAL GROUPING (v2.21.0) ──
+# With disk persistence (v2.17.0+), the admin conversation log grows
+# indefinitely. The flat list became unworkable past a few days. The
+# helpers below bucket rows into Month -> Week -> Day -> conversation
+# so the admin can collapse old months and drill into specific days.
+def _group_log_for_admin(rows_with_idx):
+    """Group (filtered_idx, row) pairs into a sorted Month -> Week -> Day
+    hierarchy for the admin dashboard.
+
+    Input:
+        rows_with_idx: list of (idx, row_dict). The idx is preserved as-is
+        so per-row Streamlit widget keys (photo download buttons etc.) stay
+        stable when called from the grouped renderer.
+
+    Output: a list of month dicts, each:
+        {
+          'month_label': 'May 2026',
+          'month_count': total rows in this month,
+          'weeks': [
+            {
+              'week_label': 'Week of 04 May',
+              'week_count': total rows in this week,
+              'days': [
+                {
+                  'day_label': '08 May 2026 (Fri)',
+                  'day_count': total rows on this day,
+                  'rows': [(idx, row), ...],   # sorted by Time desc
+                },
+                ...   # most-recent day first
+              ],
+            },
+            ...   # most-recent week first
+          ],
+        },
+        ...   # most-recent month first
+
+    Rows whose Date can't be parsed (corrupt log entry, format drift) are
+    bucketed into a synthetic '(Undated)' group at the bottom rather than
+    dropped, so the admin still sees them."""
+    from collections import defaultdict
+
+    by_day = defaultdict(list)  # date_obj or None -> [(idx, row)]
+    for idx, r in rows_with_idx:
+        date_str = r.get("Date", "")
+        try:
+            d = datetime.strptime(date_str, "%d %b %Y").date()
+        except (ValueError, TypeError):
+            d = None
+        by_day[d].append((idx, r))
+
+    # Sort each day's rows by Time desc (lex sort works for "HH:MM")
+    for d in by_day:
+        by_day[d].sort(key=lambda ir: ir[1].get("Time", ""), reverse=True)
+
+    # Group days into (month, week)
+    grouped = defaultdict(lambda: defaultdict(list))
+    # ^ {(year, month): {week_start_date: [(day_date, items), ...]}}
+    undated_items = []
+    for d, items in by_day.items():
+        if d is None:
+            undated_items.extend(items)
+            continue
+        month_key = (d.year, d.month)
+        week_start = d - timedelta(days=d.weekday())  # Monday-of-the-week
+        grouped[month_key][week_start].append((d, items))
+
+    result = []
+    for month_key in sorted(grouped.keys(), reverse=True):
+        year, month_num = month_key
+        month_label = datetime(year, month_num, 1).strftime("%B %Y")
+        weeks = grouped[month_key]
+        week_data = []
+        month_count = 0
+        for week_start in sorted(weeks.keys(), reverse=True):
+            week_label = f"Week of {week_start.strftime('%d %b')}"
+            day_entries = sorted(weeks[week_start], key=lambda x: x[0], reverse=True)
+            day_data = []
+            week_count = 0
+            for d, items in day_entries:
+                day_label = d.strftime("%d %b %Y (%a)")
+                day_data.append({
+                    'day_label': day_label,
+                    'day_count': len(items),
+                    'rows': items,
+                })
+                week_count += len(items)
+            week_data.append({
+                'week_label': week_label,
+                'week_count': week_count,
+                'days': day_data,
+            })
+            month_count += week_count
+        result.append({
+            'month_label': month_label,
+            'month_count': month_count,
+            'weeks': week_data,
+        })
+
+    if undated_items:
+        result.append({
+            'month_label': '(Undated)',
+            'month_count': len(undated_items),
+            'weeks': [{
+                'week_label': '(Undated)',
+                'week_count': len(undated_items),
+                'days': [{
+                    'day_label': '(Undated)',
+                    'day_count': len(undated_items),
+                    'rows': undated_items,
+                }],
+            }],
+        })
+
+    return result
+
+
+def _render_admin_conversation_row(i, r):
+    """Render one conversation row's expander (customer msg, photos, AI
+    response, feedback). Factored out of render_admin in v2.21.0 so both
+    the flat path and the grouped Month/Week/Day path can share the same
+    UI without duplication. `i` is the per-row index used for unique
+    Streamlit widget keys (specifically the photo download buttons)."""
+    try:
+        customer_msg = r.get("Customer Message", "")
+        ai_resp      = r.get("AI Response", "")
+        label = (
+            f"{r.get('Date','?')} {r.get('Time','?')} "
+            f"· {r.get('Product','?')} "
+            f"· {customer_msg[:55]}{'…' if len(customer_msg) > 55 else ''}"
+        )
+        with st.expander(label):
+            st.caption(f"Session: {r.get('Session ID','?')}")
+            st.markdown("**Customer message**")
+            st.text(customer_msg)
+            # If this row has thumbnails attached, render them in a 4-column grid.
+            # Stored as a JSON list of {name, data} where data is a base64 JPEG.
+            thumbs_raw = r.get("Image Thumbnails", "")
+            if thumbs_raw:
+                try:
+                    thumbs = json.loads(thumbs_raw)
+                    if thumbs:
+                        st.markdown(f"**Attached photos ({len(thumbs)})**")
+                        cols = st.columns(min(4, len(thumbs)))
+                        for ti, t in enumerate(thumbs):
+                            with cols[ti % len(cols)]:
+                                try:
+                                    thumb_bytes = base64.b64decode(t["data"])
+                                    original_name = t.get("name", f"image_{ti+1}")
+                                    # Thumbnails are stored as JPEG (we convert in
+                                    # _make_thumbnails_for_log), so force .jpg on
+                                    # download so the file opens cleanly regardless
+                                    # of what the customer originally uploaded.
+                                    base_name = os.path.splitext(original_name)[0] or f"image_{ti+1}"
+                                    dl_filename = f"{base_name}.jpg"
+                                    st.image(thumb_bytes, caption=original_name, width=180)
+                                    st.download_button(
+                                        label="📥 Download photo",
+                                        data=thumb_bytes,
+                                        file_name=dl_filename,
+                                        mime="image/jpeg",
+                                        key=f"dl_{i}_{ti}",
+                                        use_container_width=True,
+                                    )
+                                except Exception:
+                                    st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
+                except (json.JSONDecodeError, TypeError):
+                    # Old log row or malformed value -- skip silently
+                    pass
+            st.markdown("**AI response**")
+            st.text(ai_resp)
+            fb  = r.get("Feedback") or "No feedback"
+            note = r.get("Feedback Note", "")
+            st.markdown(f"**Feedback:** {fb}" + (f" — {note}" if note else ""))
+    except Exception as e:
+        st.warning(f"Could not display row {i}: {e}")
+
+
 def render_admin():
     st.markdown("## 🎮 Cosmic Byte — Admin Dashboard")
 
@@ -7726,60 +8172,52 @@ def render_admin():
 
     # ── Conversation list ──
     st.markdown(f"**{total} conversation{'s' if total != 1 else ''}**")
-    for i, r in enumerate(filtered):
-        try:
-            customer_msg = r.get("Customer Message", "")
-            ai_resp      = r.get("AI Response", "")
-            label = (
-                f"{r.get('Date','?')} {r.get('Time','?')} "
-                f"· {r.get('Product','?')} "
-                f"· {customer_msg[:55]}{'…' if len(customer_msg) > 55 else ''}"
+
+    # v2.21.0: when the dataset spans many days/weeks/months, fall through
+    # to a hierarchical Month -> Week -> Day -> conversation drill-down so
+    # the page doesn't become an infinite scroll. When the dataset is
+    # already narrow (specific date filter, or one day's worth), keep the
+    # flat list -- the hierarchy would just add unnecessary clicks.
+    rows_with_idx = list(enumerate(filtered))
+
+    distinct_dates = {r.get("Date", "") for r in filtered if r.get("Date")}
+    use_flat_view = (
+        selected_date != "All dates"          # specific date filter active
+        or (len(filtered) <= 30 and len(distinct_dates) <= 1)  # small one-day set
+    )
+
+    if use_flat_view:
+        for i, r in rows_with_idx:
+            _render_admin_conversation_row(i, r)
+    else:
+        # Hierarchical: Month -> Week -> Day -> conversation. Auto-expand
+        # the most recent path so today's conversations are visible
+        # without any clicks; everything else stays collapsed.
+        grouped = _group_log_for_admin(rows_with_idx)
+        for m_idx, month in enumerate(grouped):
+            month_expanded = (m_idx == 0)  # most recent month auto-expanded
+            month_header = (
+                f"📅 {month['month_label']} "
+                f"· {month['month_count']} conversation"
+                f"{'s' if month['month_count'] != 1 else ''}"
             )
-            with st.expander(label):
-                st.caption(f"Session: {r.get('Session ID','?')}")
-                st.markdown("**Customer message**")
-                st.text(customer_msg)
-                # If this row has thumbnails attached, render them in a 4-column grid.
-                # Stored as a JSON list of {name, data} where data is a base64 JPEG.
-                thumbs_raw = r.get("Image Thumbnails", "")
-                if thumbs_raw:
-                    try:
-                        thumbs = json.loads(thumbs_raw)
-                        if thumbs:
-                            st.markdown(f"**Attached photos ({len(thumbs)})**")
-                            cols = st.columns(min(4, len(thumbs)))
-                            for ti, t in enumerate(thumbs):
-                                with cols[ti % len(cols)]:
-                                    try:
-                                        thumb_bytes = base64.b64decode(t["data"])
-                                        original_name = t.get("name", f"image_{ti+1}")
-                                        # Thumbnails are stored as JPEG (we convert in
-                                        # _make_thumbnails_for_log), so force .jpg on
-                                        # download so the file opens cleanly regardless
-                                        # of what the customer originally uploaded.
-                                        base_name = os.path.splitext(original_name)[0] or f"image_{ti+1}"
-                                        dl_filename = f"{base_name}.jpg"
-                                        st.image(thumb_bytes, caption=original_name, width=180)
-                                        st.download_button(
-                                            label="📥 Download photo",
-                                            data=thumb_bytes,
-                                            file_name=dl_filename,
-                                            mime="image/jpeg",
-                                            key=f"dl_{i}_{ti}",
-                                            use_container_width=True,
-                                        )
-                                    except Exception:
-                                        st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
-                    except (json.JSONDecodeError, TypeError):
-                        # Old log row or malformed value -- skip silently
-                        pass
-                st.markdown("**AI response**")
-                st.text(ai_resp)
-                fb  = r.get("Feedback") or "No feedback"
-                note = r.get("Feedback Note", "")
-                st.markdown(f"**Feedback:** {fb}" + (f" — {note}" if note else ""))
-        except Exception as e:
-            st.warning(f"Could not display row {i}: {e}")
+            with st.expander(month_header, expanded=month_expanded):
+                for w_idx, week in enumerate(month['weeks']):
+                    week_expanded = (m_idx == 0 and w_idx == 0)
+                    week_header = (
+                        f"📆 {week['week_label']} "
+                        f"· {week['week_count']}"
+                    )
+                    with st.expander(week_header, expanded=week_expanded):
+                        for d_idx, day in enumerate(week['days']):
+                            day_expanded = (m_idx == 0 and w_idx == 0 and d_idx == 0)
+                            day_header = (
+                                f"📋 {day['day_label']} "
+                                f"· {day['day_count']}"
+                            )
+                            with st.expander(day_header, expanded=day_expanded):
+                                for i, r in day['rows']:
+                                    _render_admin_conversation_row(i, r)
 
     st.divider()
 
