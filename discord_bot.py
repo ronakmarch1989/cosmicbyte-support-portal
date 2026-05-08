@@ -17,6 +17,121 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
 
 CHANGELOG
 ---------
+v1.0.3 (2026-05-09) -- Claude
+  * Z-bump: optional outbound HTTP proxy for the Discord
+    connection, gated on env var. Lets the bot route its
+    Discord REST + gateway traffic through a static-IP proxy
+    (QuotaGuard, Fixie, or anything HTTP-proxy-compatible)
+    instead of Render's shared egress IP pool.
+
+  Why:
+    The /users/@me 429 + 40062 rate-limit problem we keep
+    hitting on Render is a Cloudflare per-IP rate limit on
+    Discord's API. Render's egress IPs are shared with every
+    other tenant in the region, so when a noisy neighbour
+    burns the rate-limit budget we all eat 429s. A static-IP
+    proxy gives us IPs from a different (less-noisy) pool.
+
+  Behaviour:
+    * If env var QUOTAGUARDSTATIC_URL is set (Render's
+      QuotaGuard add-on uses this name) -- use it as the
+      proxy.
+    * Else if FIXIE_URL is set (Fixie add-on uses this name)
+      -- use it.
+    * Else if HTTPS_PROXY or HTTP_PROXY is set (generic
+      Unix convention; useful for local testing) -- use it.
+    * Else -- no proxy, behave exactly like v1.0.2.
+
+    URL format expected:  http://user:pass@host:port
+    Auth is parsed out of the URL, percent-decoded, and
+    passed to discord.py via aiohttp.BasicAuth. The proxy
+    URL stripped of credentials goes to discord.Client's
+    `proxy=` kwarg. Both REST calls (where the rate limit
+    is) and the gateway WebSocket are routed through the
+    proxy -- discord.py does this automatically once `proxy`
+    is set on the Client.
+
+  Operator-friendly logging:
+    * Startup banner adds a `proxy: host:port` line so you
+      can verify the env var is being read. Password is NOT
+      logged.
+    * If proxy URL is malformed, we WARN and fall back to no
+      proxy rather than crashing -- the v1.0.2 retry would
+      hide the misconfiguration as transient HTTP errors
+      otherwise.
+
+  Compatibility:
+    * Setting the env var requires no code changes. Unset it
+      to revert to the previous behaviour.
+    * Same code works on Render (with proxy env var) and on
+      a VPS later (without it). No conditional deploys.
+
+  Not a permanent fix:
+    Even with this in place, the proxy provider's IPs are
+    shared with their other customers. If those customers
+    also run Discord bots, we may still see rate limits
+    eventually -- just less often. The truly permanent fix
+    is a host with a dedicated egress IP (separate VPS).
+    This bump is the cheap experiment to find out whether
+    a different shared pool is enough for our traffic.
+
+v1.0.2 (2026-05-09) -- Claude
+  * Z-bump: startup retry-resilience after the bot crashed
+    permanently on a 429 from Discord's /users/@me endpoint.
+
+  Background:
+    Render's egress IP is shared across all tenants in the
+    region. Discord rate-limits /users/@me at the IP level via
+    Cloudflare, so when a noisy neighbour or a flurry of
+    redeploys gets the IP into Discord's penalty box, every
+    bot startup eats a 429 on the very first API call. On
+    2026-05-08 the bot deployed at 20:53, hit five 429s in
+    14 seconds, and then got an error code 40062 ("Service
+    resource is being rate limited" -- Discord's "scaled"
+    rate limit, much longer-lived than the standard 429).
+    discord.py's internal retry-after loop gave up and raised
+    HTTPException, which our bottom-of-file `except Exception`
+    caught and called _fatal() on. Bot exited and stayed dead
+    until manual redeploy -- which would just hit the same
+    rate limit.
+
+  Fix:
+    Wrap the bot.run() call in a retry loop that:
+      - keeps discord.LoginFailure terminal (token problems
+        aren't going to fix themselves);
+      - catches discord.HTTPException (the 429 case), sleeps
+        with exponential backoff, rebuilds the Client, and
+        retries;
+      - keeps generic Exception terminal (anything we can't
+        classify needs human attention, not a retry).
+    Backoff schedule: 60s, 2m, 4m, 8m, 16m, 30m (capped),
+    then 30m for the remaining attempts. 12 attempts total,
+    ~3.7 hours wall-clock budget. That window matches the
+    typical duration of a 40062 scaled rate limit. If we're
+    still rate-limited after 3.7 hours, the IP is likely
+    persistently flagged and the bot fatal-exits with an
+    operator-actionable message pointing at the static-IP
+    proxy / VPS-move options.
+
+  Implementation note:
+    discord.py's Client cannot be reused across .run() calls
+    -- its event loop and HTTP session are torn down inside
+    .run() when it raises. Refactored the bot creation into a
+    small _build_bot() function that the retry loop calls each
+    iteration. The on_ready / on_message coroutines stay at
+    module level (no body change) and are registered onto the
+    fresh Client via bot.event() rather than the @bot.event
+    decorator, so the same coroutine objects are bound to
+    whichever Client is currently active. They look up `bot`
+    at call time via the global, so they always see the live
+    instance.
+
+  Note: this fix does NOT make the rate limit go away. It just
+  makes the bot recover automatically once Discord lifts it,
+  instead of requiring a manual redeploy. The longer-term fix
+  is still to move the bot to a host with a non-shared egress
+  IP (separate VPS, or a static-IP proxy).
+
 v1.0.1 (2026-05-09) -- Claude
   * Z-bump alongside support_portal_v2 v2.23.2.
 
@@ -106,7 +221,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.0.1"
+__version__ = "1.0.3"
 
 import os
 import sys
@@ -114,7 +229,9 @@ import json
 import asyncio
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse, unquote
 
+import aiohttp  # already a transitive dep via discord.py; we use it for BasicAuth
 import discord
 import anthropic
 
@@ -161,6 +278,79 @@ MAX_TOKENS = 600
 
 
 # ─────────────────────────────────────────────────────────────────────
+# Optional outbound HTTP proxy for the Discord connection (v1.0.3)
+# ─────────────────────────────────────────────────────────────────────
+# When set, all of discord.py's traffic (REST calls + gateway WebSocket)
+# is routed through this proxy. We set it on Render to bypass the shared
+# egress IP pool that keeps eating Discord rate limits. On a VPS or any
+# other host with a dedicated IP, leave the env vars unset and the bot
+# behaves exactly like v1.0.2.
+#
+# Recognised env var names, in priority order:
+#   QUOTAGUARDSTATIC_URL  -- Render's QuotaGuard add-on
+#   FIXIE_URL             -- Render's Fixie add-on
+#   HTTPS_PROXY           -- generic Unix convention; useful for local testing
+#   HTTP_PROXY            -- generic Unix convention; useful for local testing
+#
+# Expected URL format: http://user:pass@host:port
+# Username and password are percent-decoded and passed to discord.py via
+# aiohttp.BasicAuth. The proxy URL stripped of credentials goes to
+# discord.Client's `proxy=` kwarg.
+PROXY_URL_RAW = (
+    os.environ.get("QUOTAGUARDSTATIC_URL")
+    or os.environ.get("FIXIE_URL")
+    or os.environ.get("HTTPS_PROXY")
+    or os.environ.get("HTTP_PROXY")
+)
+
+# These three are the parsed-and-ready values consumed by _build_bot.
+# They stay None when no proxy is configured (or when parsing fails).
+PROXY_NETLOC = None        # str: "http://host:port"  (no credentials)
+PROXY_AUTH = None          # aiohttp.BasicAuth or None
+PROXY_HOST_DISPLAY = "(none)"  # logged on startup; never includes password
+
+if PROXY_URL_RAW:
+    try:
+        _parsed = urlparse(PROXY_URL_RAW)
+        if not _parsed.scheme or not _parsed.hostname:
+            print(
+                "[discord_bot] WARNING: proxy URL is malformed (missing "
+                "scheme or host); proceeding WITHOUT a proxy.",
+                flush=True,
+            )
+            PROXY_HOST_DISPLAY = "(parse failed)"
+        else:
+            # Display "host:port" for the operator. Never include creds.
+            PROXY_HOST_DISPLAY = (
+                f"{_parsed.hostname}:{_parsed.port}"
+                if _parsed.port
+                else _parsed.hostname
+            )
+            # Strip credentials from the URL we hand to discord.py --
+            # auth goes via the separate proxy_auth kwarg.
+            PROXY_NETLOC = f"{_parsed.scheme}://{_parsed.hostname}"
+            if _parsed.port:
+                PROXY_NETLOC += f":{_parsed.port}"
+            if _parsed.username and _parsed.password:
+                PROXY_AUTH = aiohttp.BasicAuth(
+                    unquote(_parsed.username),
+                    unquote(_parsed.password),
+                )
+    except Exception as e:
+        # Don't crash on a misconfigured env var -- warn and fall back to
+        # no-proxy behaviour. The v1.0.2 retry would otherwise mask the
+        # misconfiguration as a stream of transient HTTP errors.
+        print(
+            f"[discord_bot] WARNING: could not parse proxy URL ({e}); "
+            f"proceeding WITHOUT a proxy.",
+            flush=True,
+        )
+        PROXY_NETLOC = None
+        PROXY_AUTH = None
+        PROXY_HOST_DISPLAY = "(parse failed)"
+
+
+# ─────────────────────────────────────────────────────────────────────
 # Startup validation
 # ─────────────────────────────────────────────────────────────────────
 def _fatal(msg):
@@ -184,6 +374,7 @@ print(f"[discord_bot]   support channel id : {SUPPORT_CHANNEL_ID or '(not set)'}
 print(f"[discord_bot]   guild id           : {GUILD_ID or '(not set)'}", flush=True)
 print(f"[discord_bot]   reply to DMs       : {REPLY_TO_DMS}", flush=True)
 print(f"[discord_bot]   log file           : {LOG_FILE_PATH or '(disk persistence off)'}", flush=True)
+print(f"[discord_bot]   proxy              : {PROXY_HOST_DISPLAY}", flush=True)
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -380,13 +571,47 @@ def _should_respond(message, bot_user_id):
 # ─────────────────────────────────────────────────────────────────────
 # Discord client + event handlers
 # ─────────────────────────────────────────────────────────────────────
+# v1.0.2: bot creation is now a function so the startup-retry loop in
+# __main__ can rebuild the Client on each retry. discord.py's Client
+# can't be reused after bot.run() raises -- its event loop and HTTP
+# session are torn down. The on_ready / on_message coroutines stay at
+# module level (they reference `bot` via global lookup at call time,
+# so they always see the currently-live instance) and are registered
+# onto the fresh Client via bot.event() inside _build_bot.
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message text. Already
                                 # enabled in the Discord Developer Portal.
-bot = discord.Client(intents=intents)
+
+bot = None  # Set by _build_bot() below; declared here so the event
+            # handlers' module-global `bot` references resolve.
 
 
-@bot.event
+def _build_bot():
+    """Create a fresh discord.Client and register our event handlers on it.
+    Replaces the module-level `bot` global so the on_ready / on_message
+    coroutines (which look up `bot` at call time) see the new instance.
+    Used at module load and on each retry inside __main__.
+
+    v1.0.3: when PROXY_NETLOC is set, pass it (with optional PROXY_AUTH)
+    to discord.Client so all REST and gateway traffic routes through the
+    configured outbound proxy. This is the mechanism by which the bot's
+    Discord traffic comes from the proxy provider's IPs instead of the
+    host's default egress IP. When PROXY_NETLOC is None (no env var or
+    parse failure), Client is constructed without the proxy kwargs and
+    the bot uses the host's default outbound IP -- identical to v1.0.2.
+    """
+    global bot
+    client_kwargs = {"intents": intents}
+    if PROXY_NETLOC:
+        client_kwargs["proxy"] = PROXY_NETLOC
+        if PROXY_AUTH is not None:
+            client_kwargs["proxy_auth"] = PROXY_AUTH
+    bot = discord.Client(**client_kwargs)
+    bot.event(on_ready)
+    bot.event(on_message)
+    return bot
+
+
 async def on_ready():
     print(f"[discord_bot] connected as {bot.user} (id={bot.user.id})", flush=True)
     if GUILD_ID:
@@ -395,7 +620,6 @@ async def on_ready():
             print(f"[discord_bot] in guild: {guild.name}", flush=True)
 
 
-@bot.event
 async def on_message(message: discord.Message):
     bot_user_id = bot.user.id if bot.user else 0
     if not _should_respond(message, bot_user_id):
@@ -563,16 +787,82 @@ async def on_message(message: discord.Message):
         print(f"[discord_bot] unhandled error in on_message: {e}", flush=True)
 
 
+# Initial bot creation at module load. Subsequent retries inside __main__
+# call _build_bot() again to get a fresh Client.
+_build_bot()
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Entry point
 # ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    try:
-        bot.run(TOKEN)
-    except discord.LoginFailure:
-        _fatal(
-            "Discord login failed -- token is invalid or expired. "
-            "Regenerate it in the Developer Portal and update the env var."
-        )
-    except Exception as e:
-        _fatal(f"bot crashed: {e}")
+    import time
+
+    # v1.0.2: retry on HTTPException at startup so a Discord rate-limit
+    # (most commonly a 429 on GET /users/@me from a noisy shared egress IP)
+    # doesn't permanently kill the bot. Each redeploy is a fresh
+    # /users/@me hit; previously a single rate-limited startup would
+    # FATAL-exit the process, leaving no way to recover without manual
+    # redeploy -- which often hit the same rate limit again. The retry
+    # converts "permanently dead" into "offline for a while, then
+    # auto-recovers when Discord lifts the rate limit."
+    #
+    # Backoff: 60s, 2m, 4m, 8m, 16m, 30m (capped). 12 attempts total.
+    # Wall-clock budget ~3.7 hours, which matches the typical duration of
+    # a Discord 40062 "scaled" rate limit. If we're still rate-limited
+    # after the full budget, the IP is likely persistently flagged --
+    # exit with an operator-actionable message so the runner (Render /
+    # systemd) can decide what to do.
+    MAX_STARTUP_RETRIES = 12
+    BASE_BACKOFF_S = 60
+    MAX_BACKOFF_S = 30 * 60
+
+    for attempt in range(1, MAX_STARTUP_RETRIES + 1):
+        try:
+            bot.run(TOKEN)
+            # bot.run only returns on a clean shutdown (SIGTERM,
+            # KeyboardInterrupt that discord.py handled, etc). Anything
+            # bad raises.
+            print("[discord_bot] bot.run returned -- shutting down cleanly.", flush=True)
+            break
+        except discord.LoginFailure:
+            # Token problem -- retrying won't help, this needs a human.
+            _fatal(
+                "Discord login failed -- token is invalid or expired. "
+                "Regenerate it in the Developer Portal and update the env var."
+            )
+        except discord.HTTPException as e:
+            # Most common case: 429 rate-limited (sometimes with error
+            # code 40062, "Service resource is being rate limited").
+            # discord.py's internal retry-after backoff gives up after a
+            # few attempts and raises HTTPException to here; we catch it
+            # and retry the whole bot.run() with our own (longer) backoff.
+            status = getattr(e, "status", "?")
+            if attempt >= MAX_STARTUP_RETRIES:
+                _fatal(
+                    f"bot crashed after {MAX_STARTUP_RETRIES} startup retries "
+                    f"(last error: status={status} {e}). The host's egress IP "
+                    f"is likely persistently rate-limited by Discord. Move the "
+                    f"bot to a host with a different egress IP, or use a "
+                    f"static-IP proxy."
+                )
+            backoff = min(BASE_BACKOFF_S * (2 ** (attempt - 1)), MAX_BACKOFF_S)
+            print(
+                f"[discord_bot] HTTPException on startup "
+                f"(attempt {attempt}/{MAX_STARTUP_RETRIES}, status={status}): {e}",
+                flush=True,
+            )
+            print(
+                f"[discord_bot] Sleeping {backoff}s before next attempt. "
+                f"This is usually a Discord per-IP rate limit; the bot will "
+                f"come back online automatically once the window clears.",
+                flush=True,
+            )
+            time.sleep(backoff)
+            # discord.Client can't be reused across .run() calls -- its
+            # event loop and HTTP session are torn down inside .run() when
+            # it raises. Build a fresh one for the next attempt.
+            _build_bot()
+        except Exception as e:
+            # Anything else (OOM, programmer error, etc) -- not a retry case.
+            _fatal(f"bot crashed: {e}")
