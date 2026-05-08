@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.17.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.19.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,341 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.19.0 (2026-05-08) -- Claude
+  - Y-bump: substantive correctness bundle covering THREE
+    related issues all surfaced by one customer interaction
+    where the AI was asked "does the Ares Pro work on iPad?"
+    and then "to play games like BGMI". The AI's responses
+    contained multiple compounding errors that would
+    directly cost Cosmic Byte sales and trust.
+
+  Triggers (all from the same iPad / BGMI conversation):
+
+    (1) AI told the iPad customer "Gyro is NOT supported on
+        iPad -- the motion control only works on PC, not iOS
+        devices. This is an Apple limitation, not a controller
+        limitation." Two problems:
+          (a) The Ares Pro does NOT have gyro hardware at
+              all. Confirmed by Ronak: "Ares Pro does not have
+              Gyro." The AI was answering "doesn't work on
+              iPad" when the truthful answer is "this
+              controller doesn't have gyro period -- not on
+              iPad, not on PC, not anywhere." Tracked back
+              to a wrong CATALOGUE_CONTROLLERS entry that
+              listed "gyro" as an Ares Pro feature.
+          (b) Even for controllers that DO have gyro
+              (Lumora, Drakon, Stellaris, Blitz Tri-Mode),
+              when a customer asks about gyro on a
+              non-Windows platform, the AI was just saying
+              "doesn't work on this platform" -- missing
+              the on-the-fly software gyro workaround
+              that Ronak flagged: "if gamepad supports
+              software you can do on the fly gyro so it
+              can work even in unsupported games. Gyro
+              will mimic Joystick function once assigned
+              in Software." This workaround is documented
+              in the Lumora / Drakon / Stellaris / Blitz
+              manuals already, but the AI wasn't
+              proactively surfacing it for non-Windows
+              platform questions.
+
+    (2) Follow-up turn: customer asked "to play games like
+        BGMI" on iPad. AI responded "BGMI will recognize
+        it as a standard gamepad for button input (aim,
+        shoot, move, etc.)" -- which is FALSE. Web search
+        confirms: BGMI / PUBG Mobile does NOT natively
+        support gamepads on iOS or Android. The Quora /
+        Cashify / Amkette product-listing sources are all
+        consistent on this. The third-party workarounds
+        (Mantis Gamepad Pro, Panda Gamepad Pro) are
+        Android-only with rooted devices and risk Krafton
+        ban; on iOS / iPad there is no working solution.
+        AI fabricated game support from gamepad-shape
+        priors -- the same KB-silence hallucination
+        pattern flagged repeatedly in v2.12.x / v2.14.x /
+        v2.15.x.
+
+    (3) The iPad customer was specifically asking about
+        BGMI. The AI's compounded errors meant: customer
+        thinks gyro is a workaround that exists on PC but
+        not iPad (false -- the Ares Pro has no gyro at
+        all), AND BGMI works as a standard gamepad on
+        iPad (false -- BGMI doesn't accept gamepads on
+        iPad in any way). The customer would have bought,
+        plugged in, found nothing worked, and asked for a
+        refund. Worse: if they tried Mantis/Panda on
+        Android, they could get their BGMI account banned.
+
+  Fixes shipped in v2.19.0:
+
+  1. ARES PRO -- NO GYRO correction:
+     - CATALOGUE_CONTROLLERS Ares Pro line: removed "gyro"
+       from the feature list. New line correctly omits
+       gyro from the feature set. Description updated to
+       reflect actual capability.
+     - Ares Pro PRODUCT_MANUALS entry: added an explicit
+       "GYRO: NONE" section near the top of the manual.
+       States clearly that the Ares Pro has NO gyro
+       hardware, that this is a hardware fact (not a
+       platform limitation), and recommends Lumora /
+       Drakon / Stellaris / Blitz Tri-Mode for customers
+       who need gyro.
+     - Ares Pro "COMMON FAILURE MODES TO AVOID" block:
+       added a "Do NOT claim Ares Pro has gyro" rule.
+       The catalog was wrong; the manual was right by
+       omission. Both now consistent.
+     - BUYING GUIDE: kept Ares Pro as "best all-rounder"
+       since gyro removal does not change its top-level
+       value prop, but customers prioritising gyro now
+       get redirected to the gyro-equipped models.
+
+  2. NEW: GAME-SPECIFIC GAMEPAD SUPPORT VERIFICATION POLICY
+     block added to SYSTEM_PROMPT (placed near the existing
+     CONSOLE COMPATIBILITY RULE since both deal with
+     platform / game compatibility claims). The block tells
+     the AI:
+       - Before claiming a specific game works (or works
+         well) with a CB controller, web_search the game's
+         current gamepad support status. Don't trust priors;
+         mobile-game gamepad support changes and many
+         touch-first games have NO native support.
+       - If web search confirms support: state confidently
+         with the source.
+       - If web search confirms no support: state THAT
+         clearly, plus any third-party workarounds AND
+         their risks.
+       - If inconclusive: don't fabricate; recommend the
+         customer check the game's official documentation
+         or contact support.
+       - NEVER fabricate game compatibility -- the BGMI
+         "will recognize it as a standard gamepad" line
+         is exactly the kind of fabrication that costs
+         Cosmic Byte sales.
+
+     Plus an explicit BGMI / PUBG Mobile sub-section with
+     actual facts:
+       - Does NOT natively support gamepads on iOS or
+         Android.
+       - Third-party Android apps (Mantis Gamepad Pro,
+         Panda Gamepad Pro) work via touch-coordinate
+         mapping but require rooted Android, cost money,
+         and risk Krafton account ban.
+       - On iOS / iPad: no working solution. iOS doesn't
+         allow this kind of input-mapping app.
+       - Legitimate path for BGMI + controller: PC via
+         emulator (BlueStacks / GameLoop / LD Player) --
+         the emulator handles input mapping at the OS
+         level so the game itself doesn't need to support
+         gamepads.
+       - Honest answer to "will [CB controller] work for
+         BGMI on iPad?" -> NO. Recommend touch controls
+         on iPad, or PC + emulator.
+       - Honest answer to "will [CB controller] work for
+         BGMI on Android?" -> Native: NO. Workaround
+         exists with caveats. Recommend PC + emulator.
+       - Other potentially-problematic mobile titles
+         flagged for verification: Free Fire, Call of
+         Duty Mobile, Mobile Legends, Genshin Impact.
+         Always web search before answering.
+
+  3. NEW: ON-THE-FLY SOFTWARE GYRO ON NON-WINDOWS PLATFORMS
+     POLICY block added to SYSTEM_PROMPT (placed near the
+     v2.16.0 MAC COMPATIBILITY POLICY). The block tells
+     the AI:
+       - When customer asks about gyro / motion control on
+         iOS / iPad / Mac / Android, do NOT just say "gyro
+         doesn't work on this platform". The honest answer
+         is more nuanced and useful.
+       - Native gyro on Bluetooth gamepads is generally
+         unavailable on iOS / iPad (MFi protocol limit),
+         limited on macOS, varies on Android.
+       - WORKAROUND -- ON-THE-FLY SOFTWARE GYRO: a real CB
+         differentiator. Explained step by step:
+           1. Configure on Windows via Cosmic Byte software
+              -- assign gyro to LEFT or RIGHT joystick.
+           2. Setting persists in onboard memory.
+           3. Pair to iPad / Mac / Android via Bluetooth.
+           4. Gyro now drives joystick movement on the new
+              platform.
+           5. Works in any game that supports gamepad /
+              joystick input.
+       - Confirmed controllers with this feature: Lumora,
+         Drakon, Stellaris, Blitz Tri-Mode (manuals
+         describe it explicitly).
+       - EXPLICITLY NOT in this list: Ares Pro (no gyro
+         hardware at all -- see fix #1 above), Ares
+         (Tri-Mode), Ares Wired, Ares Wireless, Nexus,
+         Eclipse, Starforge -- these models do not have
+         gyro and / or do not have on-the-fly software
+         gyro; the workaround does not apply.
+       - Caveats: requires one-time Windows access for
+         setup; the destination game must support gamepad
+         / joystick input (loops back to the BGMI
+         policy -- if the game doesn't accept gamepads
+         at all, the gyro workaround can't help).
+       - WHAT NOT TO SAY:
+           * "Gyro is NOT supported on iPad" without
+             checking if the controller has on-the-fly
+             gyro -- this loses sales.
+           * Promise the workaround works without
+             confirming the controller is on the
+             confirmed list.
+           * Claim the workaround makes BGMI / Free Fire
+             / etc. playable on iPad -- the limit there
+             is the GAME, not the gyro.
+
+  Followup notes:
+    - The AI's iPad / BGMI response also said "Vibration
+      works, but you can't adjust it via iPad. You'd need
+      to configure vibration settings on a Windows PC ...
+      using the Cosmic Byte software, and those settings
+      carry over to iPad use." This part was actually
+      reasonable per the v2.16.0 MAC COMPATIBILITY
+      POLICY. Not changed in this version.
+    - Open from earlier: backup strategy beyond email
+      digest; Drakon ML/MR vs L4/R4 software label
+      mismatch; ORDER & SHIPPING POLICIES gap.
+
+  Verification: ast.parse OK on Python 3.
+
+v2.18.0 (2026-05-08) -- Claude
+  - Y-bump: persist customer-facing chat history to disk so a
+    customer's previous thread is restored on revisit even
+    after a Render redeploy. Triggered immediately after
+    v2.17.0 was deployed: Ronak tested by sending a message,
+    closing the tab, and reopening, and was surprised that
+    the thread didn't restore. v2.17.0 had only persisted the
+    admin-facing conversation log; the customer-facing chat
+    history (the cookie-keyed in-memory store from v2.12.0)
+    was still server-ephemeral by the v2.10.x design. v2.18.0
+    extends disk persistence to cover that store too, since
+    we now have the disk infrastructure.
+
+  Background:
+    The portal has TWO independent stores. v2.17.0 made (1)
+    persistent. v2.18.0 makes (2) persistent.
+      (1) Admin conversation log (admin dashboard, daily
+          email digest, support records). File:
+          /var/data/support_log.jsonl. Done in v2.17.0.
+      (2) Per-(browser_id, product) chat history. When a
+          customer comes back to the portal, their previous
+          thread is rehydrated from this store via the
+          cb_bid cookie. File: /var/data/chat_history.json
+          (new in v2.18.0).
+
+    Without v2.18.0, every time Render redeployed, every
+    customer's open chat thread vanished. With v2.18.0, the
+    thread is still there. 7-day expiry from v2.12.0 is
+    preserved -- expired entries get dropped on both load
+    and the existing _purge_expired sweep.
+
+  What this version does NOT do (still ephemeral, by intent):
+    - Image attachments are still stripped from history
+      before storage (same as v2.12.0 -- _strip_images_for_history
+      replaces image payloads with an inline placeholder). The
+      original image bytes do NOT go to disk; only the customer's
+      text + an "[image attached in original message]" note. This
+      keeps the file small and avoids storing potentially-sensitive
+      raw uploads to disk indefinitely.
+    - Cross-device continuity (same customer on a different
+      browser sees the same thread) is OUT OF SCOPE. The cookie
+      is per-browser by design. Cross-device would need a
+      server-side identity / login system, which the portal
+      doesn't have.
+    - Streamlit session state for the active session.
+
+  Code changes:
+
+  1. New constant HISTORY_FILE_PATH added to the v2.17.0 disk
+     persistence block. Set to {PERSISTENT_DATA_DIR}/chat_history.json
+     when the disk is mounted; None otherwise. Co-located with
+     LOG_FILE_PATH and DIGEST_STATE_PATH so all on-disk file
+     paths live in one place.
+
+  2. The startup "persistent disk OK" log line updated to mention
+     both stores so the operator can see at a glance that v2.18.0
+     persistence covers both.
+
+  3. New helpers in the chat history section:
+
+       _history_disk_lock -- separate threading.Lock from the
+         conversation log lock. Different files, independent
+         locks; a chat-history rewrite shouldn't block a
+         conversation-log append (or vice versa).
+
+       _load_history_from_disk() -- reads the JSON file once on
+         cold start. Format is {"entries": [{"bid", "product",
+         "messages", "updated_at"}, ...]}. Tuple keys are
+         reconstructed from the bid+product fields. Expired
+         entries (older than HISTORY_EXPIRY_DAYS) are dropped
+         on load -- same eviction policy as the in-memory
+         _purge_expired. Malformed entries are skipped with a
+         counter print, not raised; corruption in one entry
+         shouldn't lose every other customer's chat. Returns
+         {} on cold-start-with-no-file, parse failure, or if
+         the disk isn't mounted.
+
+       _save_history_to_disk(store) -- atomic full-rewrite
+         (tmp + os.replace) under the lock. Datetimes are
+         serialised via .isoformat(). No-op if disk not mounted.
+
+  4. get_history_store() now rehydrates from disk on cold
+     start (same @st.cache_resource pattern as get_shared_store
+     in v2.17.0). Disk read happens once per Render instance
+     lifetime; subsequent reads are served from RAM.
+
+  5. _save_history() now calls _save_history_to_disk(store)
+     after the in-memory mutation. Every chat turn = one disk
+     write. At realistic volume (~100 active browsers, ~2MB
+     file) this is a few-millisecond rewrite -- well within
+     SSD bandwidth.
+
+  6. _clear_history() now calls _save_history_to_disk(store)
+     after dropping entries. Covers both the per-product clear
+     and the full-browser-id clear paths.
+
+  7. _purge_expired() now calls _save_history_to_disk(store)
+     ONLY when something was actually evicted. Preserves the
+     "no-op when nothing to do" pattern so a quiet page load
+     doesn't cause a disk write.
+
+  Test plan (for Ronak):
+    1. Open https://ai.thecosmicbyte.com, send a message,
+       close the tab.
+    2. Trigger a Render redeploy (Manual Deploy or push any
+       small change).
+    3. After redeploy, reopen the same browser to the same
+       product page.
+    4. Expected: the previous thread re-appears.
+    5. Bonus: also check the admin dashboard -- the message
+       should still be there too (v2.17.0 path).
+
+  Caveats:
+    - Pre-v2.18.0 in-memory chat history will be lost on the
+      deploy that adds this. From the next conversation
+      onward, history persists.
+    - Race window: if Render restarts mid-write (between
+      tmp file write and os.replace), the live file is
+      either the old version OR the new version, never a
+      partial-write. os.replace is atomic on POSIX. So
+      restart safety is fine; we may lose at most the last
+      message that hadn't yet completed its write.
+    - Disk size projection: 7 days * 100 browsers/day *
+      2 products * 10KB = ~14MB worst-case at current
+      volume. The 1GB disk attached in v2.17.0 has 70x
+      headroom. No size action needed.
+
+  Followup notes:
+    - Open from v2.17.0: backup strategy beyond daily email
+      digest (e.g. periodic rsync to S3).
+    - Open from v2.16.0: Drakon trigger sensor tech still
+      unspecified; Drakon ML/MR vs software's L4/R4 label
+      mismatch.
+    - Open from v2.15.2: no general ORDER & SHIPPING
+      POLICIES section in the KB.
+
+  Verification: ast.parse OK on Python 3.
 
 v2.17.0 (2026-05-08) -- Claude
   - Y-bump: persist the conversation log to disk so it
@@ -2587,7 +2922,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.17.0"
+__version__ = "2.19.0"
 
 import streamlit as st
 import anthropic
@@ -2800,11 +3135,13 @@ def _disk_persistence_enabled():
 if _disk_persistence_enabled():
     LOG_FILE_PATH = os.path.join(PERSISTENT_DATA_DIR, "support_log.jsonl")
     DIGEST_STATE_PATH = os.path.join(PERSISTENT_DATA_DIR, "digest_state.json")
-    print(f"[support_portal_v2] persistent disk OK at {PERSISTENT_DATA_DIR} -- conversation log will survive restarts", flush=True)
+    HISTORY_FILE_PATH = os.path.join(PERSISTENT_DATA_DIR, "chat_history.json")  # v2.18.0
+    print(f"[support_portal_v2] persistent disk OK at {PERSISTENT_DATA_DIR} -- conversation log and chat history will survive restarts", flush=True)
 else:
     LOG_FILE_PATH = None
     DIGEST_STATE_PATH = None
-    print(f"[support_portal_v2] WARNING: persistent disk NOT mounted at {PERSISTENT_DATA_DIR} -- conversation log will be LOST on restart. To enable persistence, attach a Render persistent disk at this mount path (Render dashboard -> Settings -> Disks -> Add Disk).", flush=True)
+    HISTORY_FILE_PATH = None  # v2.18.0
+    print(f"[support_portal_v2] WARNING: persistent disk NOT mounted at {PERSISTENT_DATA_DIR} -- conversation log AND chat history will be LOST on restart. To enable persistence, attach a Render persistent disk at this mount path (Render dashboard -> Settings -> Disks -> Add Disk).", flush=True)
 
 # Lock guarding ALL disk reads/writes for the log files. Concurrent
 # Streamlit reruns can call log_conversation / update_feedback at the
@@ -2967,10 +3304,85 @@ def _verify_admin_auth_token(token, password):
 
 @st.cache_resource
 def get_history_store():
-    """Per-(browser_id, product) chat history. Lives across sessions on the
-    same Render instance; lost on Render restart. Each entry:
-        {"messages": list[dict], "updated_at": datetime}"""
-    return {}
+    """Per-(browser_id, product) chat history. As of v2.18.0, persists
+    across Render restarts via a JSON file on the persistent disk
+    (chat_history.json), so a customer's previous thread is restored
+    on revisit even after a redeploy. Each entry:
+        {"messages": list[dict], "updated_at": datetime}
+    The @st.cache_resource decorator means the disk read happens once
+    per Render instance lifetime; subsequent reads are served from RAM."""
+    return _load_history_from_disk()
+
+# ── CHAT HISTORY DISK PERSISTENCE (v2.18.0) ──
+# Lock guarding chat_history.json reads/writes. Separate from
+# _log_disk_lock (which guards support_log.jsonl + digest_state.json)
+# so a chat-history rewrite doesn't block a conversation-log append.
+_history_disk_lock = threading.Lock()
+
+def _load_history_from_disk():
+    """Return the in-memory store dict, rehydrated from disk. Empty dict
+    on cold-start with no file, on parse failure, or if disk is not
+    mounted. Tuple keys (bid, product) are reconstructed from the bid +
+    product fields stored in each entry. Expired entries (older than
+    HISTORY_EXPIRY_DAYS) are dropped on load -- matches the eviction
+    policy of _purge_expired so we don't restore stale threads."""
+    if HISTORY_FILE_PATH is None or not os.path.exists(HISTORY_FILE_PATH):
+        return {}
+    try:
+        with _history_disk_lock:
+            with open(HISTORY_FILE_PATH, "r", encoding="utf-8") as f:
+                d = json.load(f)
+        out = {}
+        skipped = 0
+        evicted = 0
+        for entry in d.get("entries", []):
+            try:
+                bid = entry["bid"]
+                product = entry["product"]
+                updated_at = datetime.fromisoformat(entry["updated_at"])
+            except (KeyError, ValueError, TypeError):
+                skipped += 1
+                continue
+            if datetime.now() - updated_at >= timedelta(days=HISTORY_EXPIRY_DAYS):
+                evicted += 1
+                continue
+            out[(bid, product)] = {
+                "messages": entry.get("messages", []),
+                "updated_at": updated_at,
+            }
+        if skipped:
+            print(f"[support_portal_v2] WARNING: skipped {skipped} malformed chat history entry(s) on load", flush=True)
+        print(f"[support_portal_v2] loaded {len(out)} chat history entry(s) from {HISTORY_FILE_PATH} (evicted {evicted} expired)", flush=True)
+        return out
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: chat history file read failed: {e} -- starting with empty history", flush=True)
+        return {}
+
+def _save_history_to_disk(store):
+    """Persist the entire chat history store to disk (atomic full
+    rewrite via tmp + os.replace, under the lock). No-op if disk is
+    not mounted. Errors are logged but never raised -- the portal must
+    keep serving customers even if a disk write fails."""
+    if HISTORY_FILE_PATH is None:
+        return
+    try:
+        entries = []
+        for (bid, product), v in store.items():
+            updated_at = v.get("updated_at", datetime.now())
+            entries.append({
+                "bid": bid,
+                "product": product,
+                "messages": v.get("messages", []),
+                "updated_at": updated_at.isoformat() if hasattr(updated_at, "isoformat") else str(updated_at),
+            })
+        payload = {"entries": entries}
+        tmp_path = HISTORY_FILE_PATH + ".tmp"
+        with _history_disk_lock:
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False)
+            os.replace(tmp_path, HISTORY_FILE_PATH)
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: chat history disk save failed: {e}", flush=True)
 
 def _strip_images_for_history(messages):
     """Clone the message list with image payloads removed. If a message had
@@ -3003,7 +3415,8 @@ def _load_history(browser_id, product):
     return entry
 
 def _save_history(browser_id, product, messages):
-    """Persist the conversation. No-op for empty message lists."""
+    """Persist the conversation. No-op for empty message lists.
+    v2.18.0: also persists to disk so the thread survives Render restarts."""
     if not messages:
         return
     store = get_history_store()
@@ -3011,10 +3424,11 @@ def _save_history(browser_id, product, messages):
         "messages": _strip_images_for_history(messages),
         "updated_at": datetime.now(),
     }
+    _save_history_to_disk(store)
 
 def _clear_history(browser_id, product=None):
     """Drop history for one product (if `product` given) or for the entire
-    browser_id."""
+    browser_id. v2.18.0: also persists the cleared state to disk."""
     store = get_history_store()
     if product is None:
         for k in list(store.keys()):
@@ -3022,15 +3436,21 @@ def _clear_history(browser_id, product=None):
                 store.pop(k, None)
     else:
         store.pop((browser_id, product), None)
+    _save_history_to_disk(store)
 
 def _purge_expired():
     """Sweep expired entries from the store. Runs once per page load. Cheap
-    because the store is small (one entry per active (browser, product))."""
+    because the store is small (one entry per active (browser, product)).
+    v2.18.0: persists to disk only if something was actually evicted, so a
+    quiet page load does not cause a disk write."""
     store = get_history_store()
     cutoff = datetime.now() - timedelta(days=HISTORY_EXPIRY_DAYS)
     expired = [k for k, v in store.items() if v.get("updated_at", datetime.min) < cutoff]
+    if not expired:
+        return
     for k in expired:
         store.pop(k, None)
+    _save_history_to_disk(store)
 
 def _get_client_ip():
     """Best-effort client IP from request headers. Reads X-Forwarded-For from
@@ -3669,6 +4089,8 @@ Default to Gen 2 (current) unless customer signals otherwise (e.g. "no software 
 
 PLATFORM: Designed exclusively for Windows PC. NOT compatible with PlayStation, Xbox, Nintendo Switch or any console. No warranty for console use. Android via OTG works but is not covered under warranty.
 
+GYRO: NONE. The Ares Pro does NOT have gyro / motion sensor hardware. This is a HARDWARE FACT, not a platform limitation — there is no gyro chip in the controller, so gyro / motion-aim cannot be enabled on any platform (PC, iPad, iPhone, Android, anywhere). If a customer asks about gyro / motion control / aim-tilt for the Ares Pro, the answer is NO, full stop. Do NOT tell the customer "gyro only works on PC, not iPad" or any variation that implies gyro hardware exists — there is no gyro hardware. If gyro is important to the customer, recommend Lumora, Drakon, Stellaris, or Blitz Tri-Mode instead, all of which have 6-axis gyro hardware (and on-the-fly software gyro that can mimic joystick movement on non-Windows platforms — see ON-THE-FLY SOFTWARE GYRO POLICY in the system prompt).
+
 ═══════════════════════════════════════════════════════════════════════
 SECTION 1: CURRENT ARES PRO (Gen 2 — "App Support" label present)
 ═══════════════════════════════════════════════════════════════════════
@@ -3710,6 +4132,7 @@ COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
 - Do NOT tell a Gen 2 customer (with "App Support" label) to download a separate standalone firmware file. Their firmware is updated INSIDE the companion software, not as a separate file.
 - ALWAYS ask the customer to check the back label for "App Support" text before answering any software, RGB-via-software, or firmware question. This single check disambiguates the two generations.
 - Do NOT tell any Ares Pro customer that it works on PlayStation/Xbox/Switch. It is PC-only.
+- Do NOT claim the Ares Pro has gyro / motion control of any kind. It does NOT have gyro hardware. The catalogue listing was previously wrong (corrected in v2.19.0); the manual was correct by omission. If a customer asks about gyro / motion / tilt-aim for the Ares Pro, the answer is NO -- redirect them to Lumora / Drakon / Stellaris / Blitz Tri-Mode if gyro matters to them.
 
 ═══════════════════════════════════════════════════════════════════════
 
@@ -6101,6 +6524,93 @@ WHAT NOT TO SAY:
 
 (For mice and keyboards, see the per-product manuals — most CB mice work plug-and-play on Mac for basic mouse use with software-only features Windows-only; many CB keyboards have a dedicated Mac mode toggle for proper Cmd/Option key layout. Refer to the specific product's manual for those.)
 
+GAME-SPECIFIC GAMEPAD SUPPORT VERIFICATION POLICY — applies whenever a customer asks "will the [Controller] work for [specific game]?" or "can I play [specific game] on my [Controller]?". DO NOT make confident claims about a specific game's gamepad support without verifying. Many mobile games — especially touch-first titles — DO NOT natively support gamepad input, even though customers reasonably expect they do. Inventing a "yes it works" answer here directly costs Cosmic Byte sales and customer trust when the customer buys, finds out it doesn't work, and asks for a refund.
+
+THE RULE:
+  1. If the question is about a known-confirmed game (covered explicitly below or in the controller manuals), state confidently.
+  2. Otherwise, web_search the game's gamepad support status BEFORE answering. Useful queries: "[game name] gamepad support", "[game name] controller support [current year]", "[game name] [platform] controller native support".
+  3. If web search confirms native gamepad support: state it confidently, citing the source.
+  4. If web search confirms NO native gamepad support: state THAT clearly. Mention any third-party workarounds and their risks (cost, root requirement, ban risk).
+  5. If web search is inconclusive: don't fabricate. Tell the customer you can't confirm, recommend they check the game's official documentation, and offer to escalate to support.
+  6. NEVER invent gamepad compatibility from priors. The phrase "will recognize it as a standard gamepad" applied to a game without verification is a hallucination -- do not generate it.
+
+KNOWN-PROBLEMATIC TITLES -- BGMI / PUBG MOBILE (verified May 2026):
+
+  Native gamepad support: NONE. BGMI / PUBG Mobile does NOT natively support gamepads on iOS or on Android. Multiple sources confirm: Krafton's anti-cheat actively flags gamepad input. The game's own UI is touch-only.
+
+  Third-party workarounds (Android only):
+    - Mantis Gamepad Pro / Panda Gamepad Pro: map gamepad input to touch coordinates.
+    - Require ROOTED Android device (most users do not have this).
+    - Cost money (paid apps).
+    - RISK BGMI / PUBG Mobile account ban -- Krafton's anti-cheat may flag the input mapper. Mention this risk explicitly; do NOT recommend without disclosing.
+
+  iOS / iPad: NO working solution exists. iOS doesn't permit input-mapping apps. No CB controller (or any controller) can be used for BGMI on iPad / iPhone.
+
+  Legitimate path: PC via emulator (BlueStacks / GameLoop / LD Player / Gameloop). The emulator handles input mapping at the OS level, so the game itself doesn't need to support gamepads. Any CB Bluetooth or wired controller works through the emulator on PC. This is the path to recommend.
+
+  Honest answers to common BGMI questions:
+    - "Will [CB controller] work for BGMI on iPad?" -> NO. Recommend touch controls on iPad, or PC + emulator with the controller.
+    - "Will [CB controller] work for BGMI on Android?" -> Native: NO. Workaround possible (root + Mantis/Panda) but with ban risk and cost. Recommend PC + emulator instead.
+    - "Will [CB controller] work for BGMI on PC?" -> YES, via an emulator (BlueStacks / GameLoop). The emulator translates gamepad input to touch input.
+    - DO NOT claim BGMI works with the controller as a "standard gamepad" on any mobile platform. It does not.
+
+  PUBG Mobile (the global / non-India variant): same picture as BGMI. Same publisher, same game engine, same anti-cheat behaviour. Same answer.
+
+OTHER POTENTIALLY-PROBLEMATIC MOBILE TITLES (always web-search before answering):
+  - Free Fire: native gamepad support is variable; verify per platform.
+  - Call of Duty Mobile: limited native gamepad support; verify current status.
+  - Mobile Legends: touch-first; verify.
+  - Genshin Impact: HAS native gamepad support on PC; mobile varies; verify per platform.
+  - Asphalt series: typically supports gamepads natively; verify.
+  - Don't assume any mobile game supports gamepads natively without checking.
+
+ON-THE-FLY SOFTWARE GYRO ON NON-WINDOWS PLATFORMS POLICY — applies whenever a customer asks about gyro / motion control / aim-tilt on iOS / iPad / macOS / Android. DO NOT just say "gyro doesn't work on this platform" -- that's an unqualified denial that loses sales. The honest answer is more nuanced.
+
+NATIVE BLUETOOTH GYRO ON NON-WINDOWS PLATFORMS:
+  - iOS / iPad: native gyro data is generally NOT exposed to apps via the MFi gamepad protocol. Most apps cannot read raw gyro from a Bluetooth controller.
+  - macOS: similar -- limited native gyro support over Bluetooth.
+  - Android: varies by phone and Android version. Some phones expose gyro over Bluetooth, some don't.
+
+WORKAROUND -- ON-THE-FLY SOFTWARE GYRO (a real Cosmic Byte differentiator):
+
+  Cosmic Byte controllers WITH this feature (confirmed in their manuals):
+    - Lumora
+    - Drakon
+    - Stellaris (current Gen 2 with "App Support" label)
+    - Blitz Tri-Mode
+
+  Cosmic Byte controllers WITHOUT gyro hardware at all (this workaround does NOT apply -- there is no gyro to map):
+    - Ares Pro (NO gyro hardware -- this is a hardware fact, not a platform limitation)
+    - Ares (Tri-Mode), Ares Wired, Ares Wireless (basic Ares family -- NO gyro)
+    - Nexus (NO gyro)
+    - Eclipse, Starforge (verify per manual; if uncertain, offer to confirm with support rather than guess)
+
+  How the workaround works (for the four confirmed controllers above):
+    1. Connect the controller to a Windows PC via USB-C wired or 2.4GHz dongle.
+    2. Open the Cosmic Byte software (download from https://www.thecosmicbyte.com/downloaddrivers/).
+    3. Assign gyro to LEFT or RIGHT joystick. Pick an activation mode: Always On / Toggle / Press and Hold.
+    4. Save. The setting is stored in the controller's onboard memory and persists across platforms.
+    5. Disconnect from the PC. Pair the controller via Bluetooth to the customer's iPad / Mac / Android device.
+    6. The gyro now drives the assigned joystick. The destination platform sees this as ordinary joystick input.
+    7. Works in any game that supports a gamepad / joystick -- even games with no native gyro support, BECAUSE the platform sees joystick input, not gyro input.
+
+  Caveats to mention:
+    - Requires one-time access to a Windows PC for setup. Customers without Windows access cannot configure this. (Mac access alone is not enough -- the Cosmic Byte software is Windows-only.)
+    - The destination game must accept gamepad / joystick input. If the game itself doesn't support gamepads (e.g. BGMI on iPad -- see GAME-SPECIFIC GAMEPAD SUPPORT VERIFICATION POLICY above), the gyro workaround can't help -- the game won't read joystick input either way.
+    - Native gyro tilt (the kind iOS racing games use) is still unavailable on iPad / iOS via Bluetooth -- this workaround substitutes joystick-driven motion for gyro-driven motion. Functionally similar for FPS aim and racing tilt; not a 1:1 replacement for every gyro use case.
+
+  WHAT TO SAY TO A CUSTOMER ASKING ABOUT GYRO ON IPAD / IOS / MAC / ANDROID:
+    - First check: does the controller have gyro hardware? (Use the list above.)
+    - If NO (Ares Pro, basic Ares family, Nexus): tell them this controller has no gyro hardware, recommend Lumora / Drakon / Stellaris / Blitz Tri-Mode instead.
+    - If YES and on the confirmed-workaround list: explain that native Bluetooth gyro is limited on this platform, but the on-the-fly software gyro workaround configured on Windows gives them gyro-as-joystick on iPad / Mac / Android -- with the caveats above.
+    - If gyro hardware exists but on-the-fly feature is unconfirmed (Eclipse, Starforge): say so honestly, offer to confirm with support.
+
+  WHAT NOT TO SAY:
+    - "Gyro is NOT supported on iPad" without checking whether the controller has gyro hardware AND has on-the-fly software gyro -- this unqualified denial loses sales when the workaround would have helped.
+    - "The gyro only works on PC, not iOS devices. This is an Apple limitation" applied to a controller that has no gyro hardware -- that misleads the customer into thinking gyro hardware exists.
+    - Promise the workaround works for a controller that's not on the confirmed list. If unsure, offer to confirm with support.
+    - Claim the workaround makes BGMI / PUBG Mobile / Free Fire / etc. playable on iPad -- the limit there is the GAME, not the gyro. See GAME-SPECIFIC GAMEPAD SUPPORT VERIFICATION POLICY.
+
 WARRANTY OVERVIEW — all Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period.
 
 LIVE PRICES: If the customer asks for the current price, let them know you can check the live price and direct them to the product page for the most up-to-date pricing. Mention the ONLINEPAY coupon for 10% off.
@@ -6876,7 +7386,7 @@ WIRELESS/TRI-MODE (mid range):
 - Blitz Wireless: 2.4GHz + Bluetooth, Hall Effect, RGB, 600mAh. Wireless upgrade over Ares.
 
 TRI-MODE WITH ADVANCED FEATURES:
-- Ares Pro: Tri-mode (2.4GHz/BT/Wired), Hall Effect joysticks, Hall Effect analog/digital switchable triggers, gyro, software customisation. Best all-rounder.
+- Ares Pro: Tri-mode (2.4GHz/BT/Wired), Hall Effect joysticks, Hall Effect analog/digital switchable triggers, software customisation (Gen 2 with "App Support" label). NO gyro — for gyro/motion control, recommend Lumora, Drakon, Stellaris, or Blitz Tri-Mode instead.
 - Blitz Tri-Mode: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, robust gyro, 1000Hz polling, 600mAh. NO RGB, NO dedicated macro buttons. Precision-focused choice.
 
 PREMIUM / FLAGSHIP:
