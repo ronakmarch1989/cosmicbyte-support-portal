@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.13.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.14.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,127 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.14.0 (2026-05-08) -- Claude
+  - Y-bump: Stellaris knowledge-base restructure + universal
+    firmware-update rule + duplicate-key bug fix. Three things
+    bundled because they were discovered together while addressing
+    a customer interaction where the AI invented a fictional
+    "Stellaris 2nd Gen Firmware Updater" tool with a /downloaddrivers/
+    URL.
+
+  Trigger:
+     A real Stellaris 2nd Gen support session in which the AI
+     fabricated a non-existent firmware updater download and walked
+     the customer through using it. Same failure pattern as v2.12.1
+     (Raptor "available software" -> AI invented download URL) and
+     v2.12.2 (Blitz dock "sold separately" -> AI invented coupon
+     codes and accessory product URL). KB silence on a specific
+     mechanism -> AI fills the gap with plausible-but-fictional
+     detail.
+
+  ──────────────────────────────────────────────────────────────
+  FIX 1 -- KNOWLEDGE_BASE["Stellaris"] DUPLICATE-KEY BUG
+  ──────────────────────────────────────────────────────────────
+  The KNOWLEDGE_BASE dict had TWO "Stellaris" entries: the full
+  manual at line 2065 (~95 lines) and a near-empty stub a few
+  hundred lines later containing only "[Already defined above]"
+  plus a single Bluetooth-polling-rate paragraph. Python dict-
+  literal "last wins" semantics meant the stub silently
+  overwrote the full manual. For however long this duplicate
+  has existed, live customers have been getting an almost-empty
+  Stellaris KB injected into the system prompt. Discovered by
+  Claude Code during code review of the v2.14.0 prep work.
+
+  Fix:
+     Stub deleted. The stub's only unique content (Bluetooth
+     polling rate detail) was already present at lines 2090-2094
+     of the full manual, so the deletion is purely subtractive.
+     KNOWLEDGE_BASE["Stellaris"] now resolves to the single
+     restructured full manual entry described in FIX 2.
+
+  ──────────────────────────────────────────────────────────────
+  FIX 2 -- STELLARIS MANUAL ENTRY: Gen 1/Gen 2/transparent variant
+  ──────────────────────────────────────────────────────────────
+  The previous Stellaris entry was effectively Gen-2-only and did
+  not document Gen 1 (discontinued but still under warranty for
+  some customers) or the transparent variant (which has an
+  additional outer RGB ring around the body that the black variant
+  does not have). The entry was also organized as one flat block,
+  which made it impossible for the AI to know when to ask
+  clarifying questions vs. when to answer directly.
+
+  New structure of KNOWLEDGE_BASE["Stellaris"]:
+    - VARIANT/GENERATION ASK-FIRST guidance at the top
+    - CURRENT STELLARIS (was "Gen 2") -- default; the AI assumes
+      this unless customer signals otherwise. TMR joysticks,
+      magnetic triggers, Gyro (Bluetooth-only), Analog/Digital
+      trigger switch, 1000Hz wired/2.4G + 125Hz BT, multi-platform
+      PC/Android/iOS/macOS, companion software, all the existing
+      Gen 2 detail reorganized into a clean section.
+    - LEGACY STELLARIS GEN 1 -- discontinued; warranty support
+      only. Magnetic joysticks + magnetic triggers, NO Gyro, NO
+      companion software (firmware via "Key Linker" mobile app
+      over Bluetooth), 3 RGB modes only (vs Gen 2's 4), physical
+      mode switch on back (Android/WIN PC/iOS positions),
+      different RGB shortcut combos (Select+D-pad rather than
+      Turbo+Select), pairing names per Gen 1 user manual:
+      "Pro Controller" on PC, "CB Stellaris Controller" on
+      Android, "Xbox Wireless Controller" on iOS.
+    - TRANSPARENT VARIANT -- applies to both gens. Has an extra
+      outer RGB ring around the controller body, controlled by
+      the same shortcuts as the gen's other RGB zones. Black
+      variant does not have this ring. AI is instructed to ask
+      about variant when answering RGB-related questions only.
+    - COMMON FAILURE MODES TO AVOID (AI-facing notes) telling
+      the AI:
+        * Don't say Gen 1 has no RGB. Both gens have RGB.
+        * Don't say Gen 2 RGB is software-only. Gen 2 RGB has
+          gamepad shortcuts AND software.
+        * Don't forget the transparent variant's outer ring.
+        * Don't confuse the two gens' shortcut combos.
+        * Default to Gen 2; switch to Gen 1 only on customer
+          signal. Don't proactively ask "Gen 1 or Gen 2?" on
+          every query.
+
+  Why default to Gen 2: Gen 1 is discontinued. New sales are all
+  Gen 2. The signal-driven Gen-1-fallback approach lets the AI
+  serve the common case fluently while still helping legacy
+  warranty customers when their questions reveal an older unit.
+
+  ──────────────────────────────────────────────────────────────
+  FIX 3 -- SYSTEM_PROMPT: UNIVERSAL FIRMWARE-UPDATE RULE
+  ──────────────────────────────────────────────────────────────
+  Added a global block to SYSTEM_PROMPT (placed after the Hall
+  Effect quick-reference matrix, similar shape -- a cross-product
+  factual rule that overrides per-product manual assumptions).
+
+  The rule:
+    - For ANY Cosmic Byte product with software support, firmware
+      updates are done THROUGH the companion software, NOT through
+      a separate firmware-updater tool.
+    - The process is always: download companion software from
+      thecosmicbyte.com -> connect device in WIRED USB mode ->
+      open the software -> use the firmware update option inside
+      it.
+    - There is NEVER a separate "Firmware Updater" download.
+      Never a separate firmware file.
+    - EXCEPTION: Stellaris Gen 1 (discontinued) used the
+      "Key Linker" mobile app over Bluetooth.
+    - Products without software support do not have user firmware
+      updates.
+
+  Why the global rule (rather than only Stellaris-specific): the
+  same failure mode would have hit Helios, Umbra, Ignis, Phantom
+  TKL, Lumora, Aether, and every other software-supported product
+  the next time anyone asked about firmware. One global rule is
+  cheaper and more robust than per-product KB notes.
+
+  Verification:
+     ast.parse on Python 3 confirms file parses (no syntax errors
+     introduced by the dict-literal deletion or the SYSTEM_PROMPT
+     append). Streamlit components untouched -- this is a pure
+     content/data fix, no UI changes.
 
 v2.13.1 (2026-05-07) -- Claude
   - Z-bump: fix StreamlitDuplicateElementKey regression introduced
@@ -1528,7 +1649,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.13.1"
+__version__ = "2.14.0"
 
 import streamlit as st
 import anthropic
@@ -2063,18 +2184,41 @@ TROUBLESHOOTING:
 WARRANTY: 1 year manufacturing defects only. Physical damage, water damage, tampered products NOT covered.
 """,
     "Stellaris": """
-COSMIC BYTE STELLARIS 2ND GEN - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
+COSMIC BYTE STELLARIS - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
 
-PC primary platform. Not supported on any gaming console. No warranty for console use.
+═══════════════════════════════════════════════════════════════════════
+ASK-FIRST GUIDANCE (READ BEFORE ANSWERING ANY STELLARIS QUESTION):
+═══════════════════════════════════════════════════════════════════════
 
-KEY UPGRADES vs OLD STELLARIS:
-- TMR (Tunnel Magnetoresistance) Joysticks — higher precision, lower drift, longer lifespan than older Hall Effect joysticks. Only the 2nd Gen Stellaris has TMR joysticks. Check back label for "APP Support" to confirm 2nd Gen.
-- 1000Hz polling rate (Wired & 2.4GHz) — old Stellaris had lower polling rate.
-- Software support (Windows app) — old Stellaris does NOT support the software.
+VARIANTS: The Stellaris is sold in BLACK and TRANSPARENT variants. The transparent variant has an additional outer RGB ring around the controller body that the black variant does NOT have. When customer asks about RGB / lighting and the answer would differ between variants (e.g. "how do I turn off all the lights"), ASK which variant they have. For non-RGB questions or RGB questions where the answer is the same regardless of variant, do NOT ask.
 
-JOYSTICK TYPE: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision, replaceable.
+GENERATIONS: There are two physical generations of Stellaris. The CURRENT (Gen 2) is the default — assume the customer has the current Stellaris unless they signal otherwise. Gen 1 is DISCONTINUED but some units are still under warranty. Switch to the LEGACY GEN 1 section ONLY if the customer signals one of:
+  - References "magnetic joysticks" (Gen 1 has magnetic, current has TMR)
+  - Says "no software for my Stellaris" or "can't find software"
+  - Reports a button shortcut not working that you just gave them (their gen probably has different shortcuts)
+  - Explicitly says "1st gen", "older one", "old version", "the previous Stellaris"
 
-CONNECTIVITY TABLE:
+Do NOT proactively ask "Gen 1 or Gen 2?" on every Stellaris query. Default to current. Only ask when a customer signal indicates legacy.
+
+PC primary platform. Not supported on any gaming console. No warranty for console use. Both gens are PC-primary; both have the same console compatibility disclaimer.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 1: CURRENT STELLARIS (default — was sold as "Gen 2")
+═══════════════════════════════════════════════════════════════════════
+
+This is the version sold currently. Assume this unless customer signals otherwise (see guidance above).
+
+KEY FEATURES:
+- TMR (Tunnel Magnetoresistance) joysticks — drift-resistant, high precision, replaceable. Higher quality than older Hall Effect joysticks.
+- Magnetic analog triggers with physical Analog/Digital mode switch (on back of controller).
+- Gyro / motion sensing — BLUETOOTH MODE ONLY natively. Also available in Wired/2.4GHz via the companion software.
+- 1000Hz polling rate (Wired and 2.4GHz). 125Hz on Bluetooth.
+- Multi-platform: PC, Android, iOS, macOS.
+- 2 programmable macro buttons on back (ML/MR), up to 22 inputs each.
+- Companion software (Windows) for RGB, macros, button mapping, deadzones, firmware updates.
+- 1000mAh battery.
+
+CONNECTIVITY TABLE (no physical mode switch — set by button combo during pairing):
 Mode | Platform | How to Connect (hold 3 sec) | LED
 Wired XInput | PC | Plug in + press HOME | LED2 on
 Wired DInput | PC | Long-press HOME under XInput | LED3 on
@@ -2085,77 +2229,201 @@ Wired DInput | Android | Plug in + press HOME | LED3 on
 Bluetooth DInput | PC/Android | Press A + HOME | LED3 on
 Bluetooth XInput | PC/Android | Press B + HOME | LED2 on
 Bluetooth Gyro | PC/Android/iOS | Press Y + HOME | LED4 on
-Bluetooth DualShock | iOS | Press Turbo + HOME | LED1 on
-Polling: Wired/2.4GHz up to 1000Hz. Bluetooth = 125Hz.
+Bluetooth DualShock | iOS/Android | Press Turbo + HOME | LED1 on
+
 BLUETOOTH POLLING RATE:
 - Bluetooth mode supports up to 500Hz polling rate.
-- Actual Bluetooth polling rate can range between 125Hz–500Hz depending on the system, OS, and Bluetooth chip of the connected device.
-- For the most stable and consistent polling rate, use Wired (USB-C) or 2.4GHz Wireless mode.
+- Actual Bluetooth polling rate ranges 125Hz–500Hz depending on system, OS, and Bluetooth chip of the connected device.
+- For most stable polling, use Wired (USB-C) or 2.4GHz Wireless mode.
 - 1000Hz polling rate is only available in Wired and 2.4GHz Wireless modes.
 
+GYRO (current Stellaris):
+- Native: Bluetooth mode only (Press Y + HOME for 3 sec, LED4 on).
+- Via companion software (works in Wired/2.4GHz, AND works in ANY game even without native gyro support):
+  * Connect Wired or 2.4GHz. Open Cosmic Byte software (https://www.thecosmicbyte.com/downloaddrivers/).
+  * Assign gyro to any button.
+  * Activation modes: Always On / Toggle / Press and Hold.
+  * Gyro output mimics joystick movement, so it works with any game that supports a joystick.
 
-GYRO: Bluetooth mode ONLY natively (press Y + HOME for 3 sec, LED4 on).
-Via Cosmic Byte software (wired/2.4GHz):
-ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
-- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from https://www.thecosmicbyte.com/downloaddrivers/).
-- Assign gyro to any button of your choice.
-- Three activation modes:
-  * Always On - Gyro is always active (good for racing/flight games).
-  * Toggle - Press the assigned button once to enable, press again to disable.
-  * Press and Hold - Gyro only active while the button is held down (best for aiming in FPS).
-- Gyro output mimics left or right joystick movement, so it works in ANY game that supports a joystick - even games with no native gyro support.
-- Note: Native Bluetooth Gyro Mode is also available (press Y + HOME for 3 seconds) but software method works over wired/2.4GHz and gives full activation control.
-STEAM MODE (wired only): Power OFF. Hold R3. While holding R3, plug USB-C cable. Boots into Steam mode. Restart Steam.
-AUDIO: 3.5mm jack works in 2.4GHz and wired only. NOT functional in Bluetooth mode.
+STEAM MODE (wired only):
+- Power OFF the controller. Hold R3. While holding R3, plug in the USB-C cable. Release R3 once connected. Boots into Steam mode automatically. Restart Steam if needed.
 
-TRIGGER MODE SWITCH (physical, on back): Analog = longer travel, gradual input (racing). Digital = instant response (FPS).
+AUDIO: 3.5mm jack works in 2.4GHz and wired modes only on PC. NOT functional in Bluetooth mode or on consoles/mobile.
 
-LED BATTERY CHECK: Press CAPTURE + START (shows 3 seconds). LED1=1-25%, LED2=26-50%, LED3=51-75%, LED4=76-100%.
+TRIGGER MODE SWITCH (physical switch on back of controller):
+- Flip INWARD = Analog mode (longer travel, pressure-sensitive — racing/driving/sims).
+- Flip OUTWARD = Digital mode (instant button-like input — FPS/action games).
 
-TRIGGER MODE SWITCH (physical switch on controller):
-- Flip INWARD = Analog mode (pressure-sensitive, gradual — good for racing games).
-- Flip OUTWARD = Digital mode (instant button-like input — good for FPS/action games).
+LED BATTERY CHECK: Press CAPTURE + START (shows for 3 seconds). LED1=1-25%, LED2=26-50%, LED3=51-75%, LED4=76-100%.
 
 BUTTON LAYOUT SWAP SHORTCUTS (PC mode only):
-- Swap A/B and X/Y buttons: Hold TURBO + R3 for 3 seconds. Both pairs swap simultaneously. Motor vibration confirms. Repeat to revert.
+- Swap A/B and X/Y buttons: Hold TURBO + R3 for 3 seconds. Both pairs swap simultaneously. Motor vibration confirms. Repeat to revert. (Cannot swap one pair independently.)
 - Swap D-Pad and Left Stick: Hold START + L3 for 3 seconds. Motor vibration confirms. Repeat to revert.
-- BOTH swaps are cleared by Factory Reset (SELECT + L3 + R3 held for 5 seconds).
-- Note: A/B X/Y swap applies to both pairs simultaneously — you cannot swap just one pair independently.
+- Both swaps cleared by Factory Reset (SELECT + L3 + R3 held for 5 seconds).
 
-ANDROID / MOBILE VIBRATION TIP:
-Standard Android/DInput Bluetooth mode may not send vibration. If vibration is not working on Android or iOS:
-→ You can try switching to DualShock mode: Hold TURBO + HOME for 3 seconds → LED1 ON.
-⚠ DualShock mode is a Bluetooth protocol for MOBILE and PC use only — NOT for PS4/console use. This controller CANNOT be used on PlayStation.
-Vibration in DualShock mode on Android is NOT guaranteed — depends on the game and Android device.
-This is an Android OS/game limitation, NOT a hardware defect, and is NOT covered under warranty.
-PC is the primary platform for full reliable vibration support.
-Vibration adjust: TURBO + Right Stick UP (increase) / DOWN (decrease). Multiple levels available.
+ANDROID / MOBILE VIBRATION:
+- Standard Bluetooth DInput on Android may not send vibration.
+- Try DualShock mode: hold TURBO + HOME for 3 seconds (LED1 on). DualShock mode is for MOBILE/PC use only — NOT for PS4/console. This controller does NOT work on PlayStation.
+- Vibration in DualShock mode on Android is not guaranteed; depends on game/device. Android limitation, not a hardware defect, not covered under warranty.
 
-TURBO SPEED ADJUSTMENT:
-- Increase Turbo speed: Hold TURBO + Right Stick (push right).
-- Decrease Turbo speed: Hold TURBO + Right Stick (push left).
-- Three speed levels: 5, 12, and 20 presses per second.
+TURBO:
+- Set Turbo: Hold TURBO + (any of A/B/X/Y/L1/L2/R1/R2). Cycle Manual Turbo -> Auto Turbo -> Off.
+- Clear all Turbo: Hold TURBO for 5 seconds.
+- Turbo speed: Hold TURBO + Right Stick Right (faster) or Left (slower). Levels: 5, 12 (default), 20 presses/sec.
 
-TURBO: Hold TURBO + A/B/X/Y/L1/L2/R1/R2. Cycle: Manual Turbo -> Auto Turbo -> Off. Hold TURBO for 5 seconds to clear all.
-Speed: Level 1=5/sec, Level 2=12/sec (default), Level 3=20/sec. Adjust: TURBO + Right Stick Right (up), Left (down).
+MACRO PROGRAMMING (ML/MR back buttons):
+- Hold TURBO + ML/MR for 2 seconds. Record up to 22 inputs. Press ML/MR again to save.
 
-MACRO (ML/MR): Hold TURBO + ML/MR for 2 seconds. Record up to 22 inputs. Press ML/MR to save. TURBO + RIGHT (D-pad) cycles to next colour in fixed mode.
-VIBRATION: TURBO + Right Stick Up (increase), Down (decrease). Levels: 100% > 70% > 40% > Off (default 70%).
-D-PAD 4-WAY/8-WAY: Hold SELECT + Right D-pad for 3 seconds. Short vibration=4-way, Continuous=8-way.
-A/B/X/Y SWAP: Hold TURBO + R3 for 3 seconds. Vibration confirms.
-D-PAD LEFT STICK SWAP: Hold START + L3 for 3 seconds.
-STICK CIRCLE/SQUARE: Hold L3 + TURBO for 3 seconds. Circle=default, Square=45 degree for tighter angles.
+VIBRATION:
+- Hold TURBO + Right Stick Up (stronger) / Down (weaker). Levels: 100% / 70% (default) / 40% / Off.
 
-LIGHTING: Toggle all: Hold LB + RB for 5 seconds. TURBO + SELECT to cycle RGB modes (Rainbow default, Color Cycle, Breathing, Fixed). TURBO + UP D-pad (increase brightness), DOWN (decrease). Levels: 100%, 80% default, 25%, 0%. ABXY/HOME lighting independent from RGB joystick lighting. Hold LB + RB for 5 seconds to toggle all lighting.
+D-PAD MODES:
+- 4-way / 8-way: Hold SELECT + D-pad Right for 3 seconds. Single vibration = 4-way, continuous vibration = 8-way (default).
 
-CALIBRATION: Power off. Hold CAPTURE + HOME. Rotate both sticks 3 times. Press triggers 3 times. Press A to confirm.
-HARDWARE RESET: Press RESET button next to USB-C port for 1 second. Does NOT delete user settings.
-FACTORY RESET: Hold SELECT + L3 + R3 simultaneously for 5 seconds. Clears ALL settings.
-AUTO SLEEP: 30 seconds not connected, 5 minutes inactive.
+STICK CIRCLE/SQUARE 45°:
+- Hold L3 + TURBO for 3 seconds. Default = Circle. Square = 45° mode for tighter diagonal angles.
+
+LIGHTING (CURRENT STELLARIS):
+
+RGB ZONES:
+- ABXY + HOME button lights: white, 5 LEDs total, always on with controller (no color/mode change — these stay steadily lit).
+- Joystick RGB: 3 LEDs under each joystick, 6 RGB LEDs total — full color/mode control.
+- OUTER side RGB ring (TRANSPARENT VARIANT ONLY): same color/mode control as joystick RGB. Black variant does not have this ring.
+
+RGB MODES (4): Rainbow (default on power-up), Color Cycle, Single Color Breathing, Fixed Color Manual.
+
+RGB BRIGHTNESS LEVELS: 100%, 80% (default), 25%, 0% (OFF).
+
+RGB SHORTCUTS:
+- Toggle ALL lighting on/off: Hold LB + RB for 5 seconds.
+- Cycle RGB main modes: TURBO + SELECT.
+- Switch fixed colors manually (in Fixed Color mode): TURBO + D-pad Right.
+- Brightness up: Hold TURBO + D-pad Up.
+- Brightness down: Hold TURBO + D-pad Down.
+
+ABXY/HOME white lighting and joystick RGB are independent groups but the LB+RB master toggle controls both. Lighting settings are cleared by Factory Reset.
+
+CALIBRATION: Power off. Hold CAPTURE + HOME. Rotate both sticks 3 times. Press triggers fully 3 times. Press A to confirm.
+
+HARDWARE RESET (current Stellaris): Press the physical RESET button next to the USB-C port for 1 second. Does NOT delete user settings — just recovers from unresponsive state.
+
+FACTORY RESET (current Stellaris): Hold SELECT + L3 + R3 simultaneously for 5 seconds. Clears ALL custom settings.
+
+AUTO SLEEP: 30 seconds if not connected, 5 minutes if connected but inactive. Wake by pressing HOME. Manual sleep: hold HOME for 5 seconds.
+
+FIRMWARE UPDATE (current Stellaris):
+- Done THROUGH the Cosmic Byte companion software (same software used for RGB/macro/mapping config). There is NO separate firmware updater tool.
+- Process: download the Cosmic Byte software from https://www.thecosmicbyte.com/downloaddrivers/ → connect Stellaris via USB-C in WIRED mode → power on the controller → open the software → it should detect the controller automatically → use the firmware update option inside the software → do not disconnect during update.
 
 CHARGING: 5V charger or PC USB ONLY. Fast chargers damage battery and void warranty. Battery: 1000mAh.
 
-WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered. Battery wear NOT covered.
+═══════════════════════════════════════════════════════════════════════
+SECTION 2: LEGACY STELLARIS GEN 1 (DISCONTINUED — warranty support only)
+═══════════════════════════════════════════════════════════════════════
+
+Gen 1 is no longer sold. Only switch to this section if the customer signals they have an older unit (see ASK-FIRST GUIDANCE above). Some Gen 1 units are still under their 1-year warranty.
+
+DIFFERENCES FROM CURRENT STELLARIS:
+- Joysticks: MAGNETIC (not TMR).
+- Triggers: MAGNETIC (no Analog/Digital mode switch).
+- NO Gyro support.
+- NO companion software — configured entirely via gamepad button shortcuts.
+- 3 RGB modes only (vs. current's 4): Mixed Color Wave (default), Color Breathing, Single Color.
+- Has a PHYSICAL mode switch on the back (Android / WIN PC / iOS positions). Current Stellaris does not have this — connection mode is set by button combo.
+- Different RGB shortcut combinations (see below).
+
+GEN 1 CONNECTION (uses physical mode switch + sync button on top):
+- Step 1: Move the mode switch on the back to Android / WIN PC / iOS as needed.
+- Step 2: Make sure controller is OFF. Short-press the sync button on top to power off if needed.
+- Step 3: Press and hold the sync button for 1 second to enter Bluetooth pairing mode. LEDs flash.
+- Step 4: On the device, enable Bluetooth and select the controller.
+
+GEN 1 BLUETOOTH PAIRING NAMES (from Gen 1 user manual):
+- PC mode (WIN PC switch position): pairs as "Pro Controller".
+- Android mode: pairs as "CB Stellaris Controller".
+- iOS mode: pairs as "Xbox Wireless Controller".
+
+GEN 1 LED INDICATORS:
+- PC mode: LED 1 steady on connection.
+- Android mode: LEDs 2 and 3 steady on connection.
+- iOS mode: LEDs 1 and 2 steady on connection.
+
+GEN 1 WIRED:
+- Set mode switch to PC / Android / iOS as desired. Connect via USB-C cable.
+- Android wired: LEDs 1 and 4 flash, then steady on connection.
+- iOS / PC wired: LEDs 1 and 3 flash, then steady on connection.
+
+GEN 1 RGB ZONES:
+- ABXY button lights.
+- Joystick lights.
+- Side RGB lights (TRANSPARENT VARIANT ONLY).
+
+GEN 1 RGB SHORTCUTS (DIFFERENT from current Stellaris):
+- ABXY lights on/off: Hold LB + RB for 6 seconds.
+- Joystick lights on/off: Hold LT + RT for 6 seconds.
+- Side lights on/off (transparent variant only): Hold LB + RT for 6 seconds.
+- Cycle RGB modes: Hold SELECT + D-pad Left.
+- Switch single colors (in Single Color mode): Hold SELECT + D-pad Right.
+- Brightness up: Hold BACK + D-pad Up.
+- Brightness down: Hold BACK + D-pad Down.
+- Joystick Operation RGB Mode (joystick lights only on stick movement): Hold BACK + D-pad Left. Note: joystick lights must be ON before activating this mode.
+
+GEN 1 TURBO / VIBRATION / MACRO: Same general patterns as current Stellaris (Turbo + face button to set, Turbo + Right Stick to adjust speed, Turbo + ML/MR for 2 sec to enter macro mode), with these specific Gen-1-only behaviors:
+- Vibration levels: None / Weak / Medium / Strong (default).
+- D-pad and Joystick interchange: double-press the Vib/Capture button.
+- Audio function: 3.5mm port works ONLY in wired Pro Controller (PC) mode.
+
+GEN 1 CALIBRATION:
+- Move the trigger switches on the back to short-distance mode.
+- Press TURBO + HOME + SELECT to enter calibration.
+- Rotate both joysticks 2-3 cycles each.
+- Press LT and RT triggers fully 2-3 times each.
+- Press SELECT to exit. Joystick is reset to default calibration.
+
+GEN 1 FACTORY RESET (settings): Hold TURBO + BACK for 6 seconds. Resets ML/MR to default mapping (B / A), vibration to 70%, turbo speed to medium (15 shots/sec).
+
+GEN 1 HARDWARE RESET: Hold the HOME button for 10 seconds.
+
+GEN 1 BATTERY CHECK: Press TURBO + BACK once. LED indicators show battery level.
+
+GEN 1 FIRMWARE UPDATE:
+- Done via the "Key Linker" mobile app over Bluetooth (NOT via PC software — Gen 1 has no PC software).
+- Download "Key Linker" from your mobile app store (Android / iOS).
+- Press and hold the SYNC button on top of the controller until indicators flash quickly.
+- Pair the mobile device via Bluetooth with the controller named "Pro Controller".
+- Open Key Linker app, refresh, connect to "PRO CONTROLLER".
+- Select "Update Device" from menu. If a new version is available, click "Update Now" → "Yes".
+- Note from Gen 1 manual: firmware updates fix occasional bugs only. No need to update unless experiencing issues. No functional difference between firmware versions.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 3: TRANSPARENT VARIANT (applies to BOTH gens)
+═══════════════════════════════════════════════════════════════════════
+
+The Stellaris is sold in BLACK and TRANSPARENT color variants. Both color variants existed for Gen 1 and exist for the current Stellaris.
+
+The TRANSPARENT variant has an additional OUTER RGB ring around the body of the controller, visible through the clear shell (which exposes the gear / circuit-board aesthetic underneath). The BLACK variant does NOT have this outer ring.
+
+The outer ring follows the same color and mode as the gen's primary RGB zones:
+- On the current Stellaris: outer ring is part of the unified lighting controlled by LB+RB toggle and Turbo+Select mode cycling.
+- On Gen 1: outer side lights have their own toggle — Hold LB + RT for 6 seconds — and otherwise follow the same RGB modes as the rest of the lighting.
+
+Ask about variant ONLY if the customer's question is RGB-related AND the answer differs between variants. For all other questions, do not ask.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 4: COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
+═══════════════════════════════════════════════════════════════════════
+
+- Do NOT say Gen 1 has no RGB. Both gens have RGB. Gen 1 has fewer modes (3) and different shortcuts; that is the difference.
+- Do NOT say current Stellaris RGB is software-only. It has gamepad shortcuts AND software — both work, software is additional.
+- Do NOT confuse the two gens' button shortcuts. Gen 1 uses SELECT+D-pad and BACK+D-pad for RGB; current Stellaris uses TURBO+SELECT and TURBO+D-pad. Wrong shortcut combos will not work and will frustrate the customer.
+- Do NOT forget the transparent variant's outer RGB ring when answering "how do I turn off all the lights" — the master toggles cover it for current Stellaris, but Gen 1 has a separate side-lights shortcut for the transparent variant.
+- Do NOT proactively ask "Gen 1 or Gen 2?" on every query. Default to current Stellaris. Only switch to Gen 1 on a customer signal (magnetic joysticks reference, "no software," shortcut not working, explicit "1st gen / older").
+- Do NOT invent a "Stellaris Firmware Updater" tool — it does not exist. Current Stellaris firmware = Cosmic Byte software (PC, wired). Gen 1 firmware = Key Linker mobile app (Bluetooth). No third path.
+
+═══════════════════════════════════════════════════════════════════════
+WARRANTY (BOTH GENS): 1 year manufacturing defects only. Physical damage, water damage, tampered products NOT covered. Battery wear and tear NOT covered. Console use NOT covered.
+
+SUPPORT: cc@thecosmicbyte.com / +91 7351615161 (Mon-Sat 10am-6pm).
 """,
     "Drakon": """
 COSMIC BYTE DRAKON - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
@@ -2233,13 +2501,6 @@ TROUBLESHOOTING:
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 """,
-    "Stellaris": """
-[Already defined above]
-
-
-BLUETOOTH POLLING RATE: Up to 500Hz in Bluetooth mode. Actual rate can range 125Hz to 500Hz depending on the connected device and its Bluetooth chip. For the most stable and consistent polling rate, use Wired (USB-C) or 2.4GHz Wireless — both deliver the full 1000Hz.
-""",
-
     "Ares Pro": """
 COSMIC BYTE ARES PRO - TRI-MODE CONTROLLER - FULL MANUAL
 
@@ -4410,6 +4671,21 @@ Other CB controllers with Hall Effect (for reference):
 - Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
+
+UNIVERSAL FIRMWARE UPDATE RULE — applies to ALL Cosmic Byte products. There is NO separate "Firmware Updater" tool, NO separate firmware download file, and NO product-specific firmware utility. Do NOT invent one. The actual process for any Cosmic Byte product that supports firmware updates is:
+
+  1. The companion software handles BOTH configuration AND firmware updates. Same software, one download.
+  2. Customer downloads the companion software from https://www.thecosmicbyte.com/downloaddrivers/.
+  3. Connect the product to PC via USB cable in WIRED MODE (always wired for firmware updates, never wireless / 2.4GHz / Bluetooth).
+  4. Power on the product if applicable. Open the companion software.
+  5. Use the firmware update option inside the software (typically labeled "Firmware Update", "Update Firmware", or similar — exact wording depends on the software version).
+  6. Do NOT disconnect during the update process.
+
+Do NOT tell customers to "search for [Product] Firmware Updater" or "download the firmware tool" — neither exists. Do NOT invent a download URL for a separate firmware utility — there is only the companion software.
+
+EXCEPTION — Stellaris Gen 1 (discontinued legacy product, still under warranty for some customers): firmware updates for Stellaris Gen 1 are done via the "Key Linker" mobile app over Bluetooth, NOT via PC software. Pair the controller via Bluetooth with the mobile device (controller will appear as "Pro Controller"), open Key Linker app, refresh the device list, select "PRO CONTROLLER", choose "Update Device" from the menu. The current Stellaris (Gen 2) follows the standard rule above (PC companion software, wired USB).
+
+PRODUCTS WITHOUT SOFTWARE SUPPORT: If a customer asks about firmware update for a Cosmic Byte product that does not have companion software (e.g. Raptor Mouse, Ares basic wired controller, basic membrane keyboards), the correct answer is that the product does not support user firmware updates. Do not invent a workaround.
 
 LIVE PRICES: If the customer asks for the current price, let them know you can check the live price and direct them to the product page for the most up-to-date pricing. Mention the ONLINEPAY coupon for 10% off.
 
