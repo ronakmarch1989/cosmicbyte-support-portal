@@ -4,7 +4,7 @@ Cosmic Byte Discord Support Bot
 
 A Discord bot that runs alongside the Streamlit web portal
 (support_portal.py / support_portal_v2.py) and answers customer questions in
-the Cosmic Byte Discord server using the same AI + knowledge base.
+the Cosmic Byte Discord server using the same AI + knowledge base. 
 
 STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
 ----------------------------------------------------------------
