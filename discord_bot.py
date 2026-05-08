@@ -4,7 +4,7 @@ Cosmic Byte Discord Support Bot
 
 A Discord bot that runs alongside the Streamlit web portal
 (support_portal.py / support_portal_v2.py) and answers customer questions in
-the Cosmic Byte Discord server using the same AI + knowledge base. 
+the Cosmic Byte Discord server using the same AI + knowledge base.
 
 STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
 ----------------------------------------------------------------
@@ -15,8 +15,88 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
         `vX.Y.Z (YYYY-MM-DD) -- Claude` with descriptive bullet points.
     (3) Be verified to pass `ast.parse` before delivery.
 
+DEPLOYMENT (current as of v1.1.1, 2026-05-09)
+---------------------------------------------
+This file runs on a Hetzner Cloud Singapore VPS, NOT on Render.
+Render only runs support_portal.py + cb_kb.py.
+
+Where it runs:
+  Host          : Hetzner CPX12 VPS, IPv4 5.223.52.60, Singapore region
+  SSH access    : `ssh root@5.223.52.60` from Ronak's Mac (key-based,
+                  no password)
+  Process mgr   : systemd unit `cosmic-bot.service`, runs as user
+                  `cosmic` (unprivileged), Restart=on-failure with
+                  10s delay, starts at boot
+  Code path     : /home/cosmic/bot/  (git clone of the GitHub repo
+                  https://github.com/ronakmarch1989/cosmicbyte-support-portal)
+  Python venv   : /home/cosmic/bot/.venv/
+  Data dir      : /var/lib/cosmic-bot/  (CB_DATA_DIR env var)
+                  Holds support_log.jsonl + chat_history.json
+  Env file      : /etc/cosmic-bot.env  (mode 0600, owned by root,
+                  read by systemd before privilege drop)
+
+Required env vars in /etc/cosmic-bot.env:
+  DISCORD_BOT_TOKEN          -- Discord bot's auth token
+  ANTHROPIC_API_KEY          -- for AI responses
+  DISCORD_GUILD_ID           -- 1416742276322955296
+  DISCORD_SUPPORT_CHANNEL_ID -- 1502355643233730610
+  DISCORD_BOT_REPLY_TO_DMS   -- false (default)
+  CB_DATA_DIR                -- /var/lib/cosmic-bot
+  LOG_API_SECRET             -- shared secret for the v1.1.0 log API
+                                (must match BOT_API_SECRET on Render)
+  Optional:
+    LOG_API_PORT             -- default 8080
+    LOG_API_BIND             -- default 0.0.0.0
+    QUOTAGUARDSTATIC_URL or
+    HTTPS_PROXY etc.         -- not currently used (VPS has dedicated
+                                IP, no proxy needed). Leave unset.
+
+How Ronak deploys changes to this file:
+  Auto (preferred):
+    1. Push to GitHub main branch.
+    2. /etc/cron.d/cosmic-bot-deploy polls every 60 seconds. When
+       it finds new commits, it runs:
+         - sudo -u cosmic git pull
+         - sudo -u cosmic .venv/bin/pip install -r requirements.txt
+         - systemctl restart cosmic-bot
+    3. Wait ~60-90 seconds. Done.
+  Auto-deploy log: /var/log/cosmic-bot-deploy.log
+
+  Manual (faster, useful while iterating):
+    SSH to VPS as root, then:
+      sudo -u cosmic bash -c 'cd /home/cosmic/bot && git pull'
+      sudo -u cosmic /home/cosmic/bot/.venv/bin/pip install \
+        -r /home/cosmic/bot/requirements.txt
+      systemctl restart cosmic-bot
+      journalctl -u cosmic-bot -n 20
+
+Operator commands (all run as root via SSH):
+  systemctl status cosmic-bot           -- is it running?
+  systemctl restart cosmic-bot          -- restart now
+  journalctl -u cosmic-bot -f           -- tail logs in real time
+  journalctl -u cosmic-bot -n 100       -- last 100 log lines
+  cat /var/log/cosmic-bot-deploy.log    -- recent auto-deploy events
+  nano /etc/cosmic-bot.env              -- edit env vars
+                                          (then `systemctl restart cosmic-bot`)
+  curl -s http://localhost:8080/health  -- check log API liveness
+
+Companion service:
+  support_portal.py runs on Render and consumes this bot's log API
+  (GET /log/recent, Bearer-auth) starting at portal v2.24.0. See
+  support_portal.py's DEPLOYMENT section for the portal side.
+
 CHANGELOG
 ---------
+v1.1.1 (2026-05-09) -- Claude
+  * Z-bump: docs only -- added DEPLOYMENT section to the
+    file's top docstring so future Claude sessions
+    inherit context about where/how this file runs and
+    can give Ronak correct answers for SSH paths,
+    deploy commands, env-file location, etc. without
+    re-deriving them from scratch.
+
+  No code change. ast.parse before/after.
+
 v1.1.0 (2026-05-09) -- Claude
   * Y-bump: HTTP log API for portal-bot integration.
 
@@ -410,7 +490,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import os
 import sys

@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.1
 ==============================================================================
 
 What this file is:
@@ -24,6 +24,75 @@ Key dicts (search for these to navigate):
                                   fallback. Keys are bare brand names
                                   matching detect_third_party_brand output
                                   (Gateron, Kailh, Outemu, Moza, Cammus).
+
+------------------------------------------------------------------------------
+DEPLOYMENT (current as of v2.24.1, 2026-05-09)
+------------------------------------------------------------------------------
+This file runs on Render. The Discord bot (discord_bot.py) runs on a
+SEPARATE Hetzner VPS as of 2026-05-09 and writes its OWN log file there;
+the portal fetches new Discord conversations from the bot's HTTP API.
+
+Where it runs:
+  Host          : Render web service
+  Primary URL   : https://ai.thecosmicbyte.com
+  Process       : Streamlit on Render's $PORT, launched by run.py.
+                  run.py also patches Streamlit's X-Frame-Options for
+                  embedding and injects OG meta tags. As of 2026-05-09
+                  it no longer launches the Discord bot subprocess --
+                  the bot is on the VPS.
+  Persistent disk: /var/data on Render (CB_DATA_DIR env var, defaults
+                  here). Holds support_log.jsonl + chat_history.json
+                  + digest_state.json. Survives restarts/redeploys.
+
+Required env vars on Render:
+  ADMIN_PASSWORD       -- admin dashboard login
+  ANTHROPIC_API_KEY    -- AI responses on the web side
+  GMAIL_APP_PASSWORD   -- daily digest email auth
+  GMAIL_SENDER         -- daily digest email from-address
+  CB_DATA_DIR          -- /var/data (persistent disk mount path)
+  BOT_API_URL          -- e.g. http://5.223.52.60:8080
+                          (the VPS bot's log API URL).
+                          If unset, portal falls back to local-only
+                          and silently misses new Discord rows.
+  BOT_API_SECRET       -- shared secret matching VPS env var
+                          LOG_API_SECRET. Sent as Bearer header.
+
+Optional env vars (have sane defaults):
+  BOT_API_TIMEOUT_S    -- 10 (HTTP timeout for bot API fetch)
+  BOT_API_CACHE_TTL_S  -- 30 (how long portal caches a fetch result)
+  BOT_API_FETCH_LIMIT  -- 1000 (max rows per fetch)
+
+Vars that USED to be required but no longer are (delete from Render
+if still present):
+  DISCORD_BOT_TOKEN          -- bot moved to VPS
+  DISCORD_GUILD_ID           -- bot moved to VPS
+  DISCORD_SUPPORT_CHANNEL_ID -- bot moved to VPS
+  DISCORD_BOT_REPLY_TO_DMS   -- bot moved to VPS
+  QUOTAGUARDSTATIC_URL       -- proxy not needed; QuotaGuard cancelled
+
+How Ronak deploys changes to this file:
+  1. Push to GitHub main branch.
+  2. Render auto-deploys (~3-5 minutes).
+  3. Watch Render dashboard's Logs tab for build status. Look for
+     "Build successful" -> "Your service is live". The startup
+     banner ("[support_portal_v2] starting up - app version X.Y.Z",
+     "bot API merge enabled -> ..." etc.) appears the first time
+     someone visits the page after deploy, NOT during the deploy
+     itself, because of stdout buffering across os.execvp.
+
+There is no manual deploy. Everything goes through GitHub -> Render.
+
+How Ronak deploys env-var changes:
+  1. Render dashboard -> service -> Environment.
+  2. Add/edit/delete the variable.
+  3. Save Changes -- Render auto-redeploys with the new env.
+
+Companion service:
+  discord_bot.py runs on a Hetzner VPS at 5.223.52.60 (NOT here).
+  See discord_bot.py's DEPLOYMENT section for the bot side. As of
+  v2.24.0 the portal fetches new Discord conversation rows from the
+  bot's GET /log/recent endpoint (Bearer-auth, BOT_API_SECRET) and
+  merges them with the local log for admin dashboard / digest views.
 
 ------------------------------------------------------------------------------
 ASSISTANT EDIT PROTOCOL  (READ THIS BEFORE EDITING THE FILE)
@@ -69,6 +138,16 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.24.1 (2026-05-09) -- Claude
+  - Z-bump: docs only. Added DEPLOYMENT section to the
+    file's top docstring covering Render setup, current
+    env vars, vars that should be deleted post-migration,
+    and the GitHub-only deploy flow. Lets future Claude
+    sessions answer Ronak's deploy/env-var questions
+    without re-deriving the topology from scratch.
+
+  No code change. ast.parse before/after.
 
 v2.24.0 (2026-05-09) -- Claude
   - Y-bump: portal now fetches Discord conversation rows
@@ -3520,7 +3599,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.24.0"
+__version__ = "2.24.1"
 
 import streamlit as st
 import anthropic

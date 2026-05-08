@@ -17,8 +17,32 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py)
         `vX.Y.Z (YYYY-MM-DD) -- Claude` with descriptive bullet points.
     (3) Be verified to pass `ast.parse` before delivery.
 
+DEPLOYMENT NOTE (current as of v1.1.3, 2026-05-09)
+--------------------------------------------------
+This file is imported by BOTH:
+  - support_portal.py (runs on Render, auto-deploys from GitHub).
+  - discord_bot.py    (runs on a Hetzner VPS at 5.223.52.60,
+                       auto-deploys via /etc/cron.d/cosmic-bot-deploy
+                       which polls GitHub every 60 seconds).
+
+So a change to cb_kb.py reaches BOTH services from a single GitHub
+push. No SSH or manual VPS work required for cb_kb.py-only edits.
+
+For full deployment topology and operator commands, see the
+DEPLOYMENT sections at the top of the importing files.
+
 CHANGELOG
 ---------
+v1.1.3 (2026-05-09) -- Claude
+  * Z-bump: docs only -- added a DEPLOYMENT NOTE to the
+    file's top docstring so future Claude sessions know
+    that cb_kb.py is consumed by both the Render portal
+    and the Hetzner-hosted Discord bot, and that a
+    single GitHub push reaches both via their respective
+    auto-deploy paths.
+
+  No code change. ast.parse before/after.
+
 v1.1.2 (2026-05-09) -- Claude
   * Z-bump: data-integrity and detection-accuracy fixes found in
     a focused review of cb_kb.py (no SYSTEM_PROMPT or KB-content
@@ -237,7 +261,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.1.2"
+__version__ = "1.1.3"
 
 import re
 
