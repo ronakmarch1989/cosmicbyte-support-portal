@@ -19,6 +19,86 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py)
 
 CHANGELOG
 ---------
+v1.1.2 (2026-05-09) -- Claude
+  * Z-bump: data-integrity and detection-accuracy fixes found in
+    a focused review of cb_kb.py (no SYSTEM_PROMPT or KB-content
+    changes; only the helper functions and the brand URL dict).
+
+  Bug 1: detect_products_from_message double-matched on
+         "long-name then short-name" inputs.
+    The function iterated `checks` in the right order (longer
+    keywords first) and used a `seen` set to avoid duplicate
+    products, but did NOT consume the matched substring after a
+    hit. So a message containing a long-named product like
+    "Ares Pro" would match "ares pro" -> add "Ares Pro", then
+    later in the same loop also match "ares" (still a substring
+    of the message) -> add the SEPARATE "Ares" product.
+
+    User-visible effect: the portal injected KB for BOTH
+    products into the system prompt on a single-product query.
+    More tokens (-> higher API cost), and the model could mix
+    facts between the two product manuals when answering. The
+    Discord bot inherited the same bug.
+
+    Confirmed-affected user inputs:
+      "Ares Pro"          -> [Ares Pro, Ares]    (should be [Ares Pro])
+      "Ares Wireless"     -> [Ares Wireless, Ares]
+      "Phantom TKL Wired" -> [Phantom TKL Wired, Phantom TKL]
+      "Artemis Wireless"  -> [Artemis Wireless, Artemis]
+      "Blitz Wireless"    -> [Blitz Wireless, Blitz Tri-Mode]
+
+    Genuine multi-product comparison queries still work:
+      "Ares Pro vs Ares Wireless" -> [Ares Pro, Ares Wireless]
+      "CryoCore vs Proteus"       -> [CryoCore, Proteus]
+
+    Fix: after a keyword matches, replace it with a space in
+    the working copy of the message so shorter substrings of
+    the same name no longer hit. Comparison flow still works
+    because each product's keyword is consumed independently.
+
+  Bug 2: detect_products_from_message was missing two keywords
+         that match_product_from_title has.
+    The two `checks` lists (one per function) are documented as
+    parallel but had drifted: 'gkm-19' (a Dragonfly product
+    code variant) and 'phantom tkl wireless' (the wireless
+    Phantom TKL — distinct from "Phantom TKL Wired") existed
+    in match_product_from_title only. Net effect: a Discord
+    user or "All Products" web user typing those exact tokens
+    got no product detection, while a customer arriving via the
+    WooCommerce page-title path matched normally.
+
+    Fix: added both keywords to detect_products_from_message in
+    the same positions they occupy in match_product_from_title.
+
+  Bug 3: THIRD_PARTY_BRAND_URLS missing Fanatec and Thrustmaster.
+    Both brands are detectable via THIRD_PARTY_BRANDS keyword
+    map (so detect_third_party_brand returns the brand), but
+    THIRD_PARTY_BRAND_URLS only had 7 of the 9 distinct brands.
+    Currently no caller actually reads THIRD_PARTY_BRAND_URLS
+    at runtime (it's imported but never indexed), so this isn't
+    causing a crash today — but it's misleading dead inventory
+    and would bite a future caller that adds a brand-link to
+    the response. Added official homepages for both
+    (https://fanatec.com, https://www.thrustmaster.com).
+
+  Not fixed (flagged for Ronak):
+    * PRODUCT_URLS has an "Optical Switches" entry that has no
+      matching KNOWLEDGE_BASE entry, no PRODUCTS membership, no
+      detection keyword, and no caller reading it (the portal
+      only does PRODUCT_URLS.get(product, default) where product
+      comes from a list/detection that never produces "Optical
+      Switches"). It's dead inventory. Either add a small KB
+      entry + detection keywords (Y-bump), or remove the URL
+      (Z-bump). Left in place because removing might break an
+      integration outside this codebase that I can't see.
+    * The bare 'cherry' keyword in THIRD_PARTY_BRANDS triggers
+      a "Cherry MX" detection on any message containing the
+      substring "cherry" (cherry blossoms, cherry pie, etc).
+      Low-probability false positive in a gaming-peripherals
+      support context. The keyword is also legitimate shorthand
+      ("cherry switches", "cherry red") so removing it loses
+      real matches. Left as-is.
+
 v1.1.1 (2026-05-08) -- Claude
   * Z-bump: bugfix for an AI hallucination Ronak caught in real
     customer logs. Web user asked "Does the stellaris app on pc
@@ -157,7 +237,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 import re
 
@@ -4149,13 +4229,15 @@ THIRD_PARTY_BRANDS = {
 }
 
 THIRD_PARTY_BRAND_URLS = {
-    "Gateron":   "https://en.gateron.com",
-    "Kailh":     "https://www.kailhswitch.com",
-    "Outemu":    "https://www.outemu.com",
-    "Cherry MX": "https://www.cherrymx.de/en",
-    "Moza":      "https://mozaracing.com",
-    "Cammus":    "https://www.cammus.com",
-    "Brook":     "https://www.brookaccessory.com",
+    "Gateron":      "https://en.gateron.com",
+    "Kailh":        "https://www.kailhswitch.com",
+    "Outemu":       "https://www.outemu.com",
+    "Cherry MX":    "https://www.cherrymx.de/en",
+    "Moza":         "https://mozaracing.com",
+    "Cammus":       "https://www.cammus.com",
+    "Brook":        "https://www.brookaccessory.com",
+    "Fanatec":      "https://fanatec.com",            # v1.1.2: was missing
+    "Thrustmaster": "https://www.thrustmaster.com",   # v1.1.2: was missing
 }
 
 
@@ -4176,6 +4258,20 @@ def detect_products_from_message(messages: list) -> tuple:
     Returns (matched_products: list, is_recommendation_query: bool).
     - matched_products: list of product names found (may be multiple for comparisons)
     - is_recommendation_query: True if the customer seems to want a suggestion
+
+    v1.1.2: previously, after a long-name match like "ares pro" -> "Ares Pro",
+    the loop continued and the shorter "ares" keyword still hit the same input
+    text, adding the SEPARATE "Ares" product. So a single-product question
+    came back as a multi-product list and the portal injected two product
+    manuals. The fix is to consume each matched keyword from the working
+    string before checking the next one. Genuine multi-product comparisons
+    (e.g. "Ares Pro vs Ares Wireless") still match both because each
+    keyword's text region is consumed independently and the other keyword
+    still survives in the remainder.
+
+    Note: the `checks` list MUST be ordered longer/more-specific first
+    (e.g. "ares pro" before "ares") so the consume step takes the most
+    specific available match. Same ordering rule as match_product_from_title.
     """
     combined = " ".join(
         m["content"].lower() for m in messages if m["role"] == "user"
@@ -4192,8 +4288,13 @@ def detect_products_from_message(messages: list) -> tuple:
     ]
     is_recommendation = any(kw in combined for kw in rec_keywords)
 
-    # Detect specific products mentioned (collect ALL, not just first)
+    # Detect specific products mentioned (collect ALL, not just first).
+    # IMPORTANT: keep this list in sync with match_product_from_title's
+    # `checks` list. Whenever a new keyword/product is added there, mirror
+    # it here. v1.1.2 added "phantom tkl wireless" and "gkm-19" to close a
+    # drift gap.
     checks = [
+        ("phantom tkl wireless", "Phantom TKL"),       # v1.1.2: was missing here
         ("phantom tkl wired",    "Phantom TKL Wired"),
         ("cb-gk-42",             "Phantom TKL Wired"),
         ("phantom tkl",          "Phantom TKL"),
@@ -4248,14 +4349,25 @@ def detect_products_from_message(messages: list) -> tuple:
         ("cyclone",              "Cyclone RGB"),
         ("dragonfly",            "Dragonfly"),
         ("cb-gkm-19",            "Dragonfly"),
+        ("gkm-19",               "Dragonfly"),         # v1.1.2: was missing here
         ("cb-gk-33",             "Astra"),
     ]
     found = []
     seen = set()
+    # v1.1.2: consume matched keywords from `working` so a long-name hit
+    # (e.g. "ares pro") doesn't leave the substring "ares" available for the
+    # next, broader keyword to also match. Genuine multi-product comparison
+    # queries still work because each named product's text occurs in a
+    # different region of the message and gets consumed independently.
+    working = combined
     for keyword, product in checks:
-        if keyword in combined and product not in seen and product in PRODUCTS:
+        if keyword in working and product not in seen and product in PRODUCTS:
             found.append(product)
             seen.add(product)
+            # Replace the matched span with a space rather than empty string,
+            # so we don't accidentally fuse two adjacent words into a new
+            # token that then matches a different keyword.
+            working = working.replace(keyword, " ")
 
     return found, is_recommendation
 
