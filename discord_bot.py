@@ -17,6 +17,28 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
 
 CHANGELOG
 ---------
+v1.0.1 (2026-05-09) -- Claude
+  * Z-bump alongside support_portal_v2 v2.23.2.
+
+  Bug: _split_for_discord could emit empty chunks
+    If a long AI response had a run of whitespace right around
+    the DISCORD_MSG_LIMIT cut point, `remaining[:cut].rstrip()`
+    could evaluate to "" -- and then we'd append an empty
+    string to `chunks`. Discord's API rejects empty messages
+    with a 400, so the surrounding HTTPException handler would
+    log the failure and the user would see a partial reply
+    (or no reply for the affected chunk). Edge case in
+    practice -- AI responses rarely have 1900 leading spaces
+    -- but worth closing.
+
+    Fix: skip the chunk when rstrip'd to empty, and fall back
+    to a single "(no response)" placeholder if -- by some
+    pathological run of whitespace -- we built no chunks at
+    all. Discord still gets a non-empty message either way.
+
+  No behaviour change for normal AI responses (which are well-
+  formed prose with no rogue whitespace at the cut points).
+
 v1.0.0 (2026-05-08) -- Claude
   * Initial implementation alongside support_portal_v2.py v2.22.0.
 
@@ -84,7 +106,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import os
 import sys
@@ -292,7 +314,13 @@ async def _walk_reply_chain(message, bot_user_id):
 def _split_for_discord(text):
     """Split a long string into chunks that each fit in one Discord message
     (<=DISCORD_MSG_LIMIT chars). Prefer splitting on \\n\\n, then \\n, then
-    hard-cut. Never returns an empty list."""
+    hard-cut. Never returns an empty list, and never returns an empty
+    string in the list -- Discord 400s on empty messages.
+
+    v1.0.1: skip empty chunks produced when the cut lands inside a run of
+    whitespace and rstrip() empties the slice. Fall back to a single
+    "(no response)" placeholder if every chunk turns out to be empty.
+    """
     if not text:
         return ["(no response)"]
     if len(text) <= DISCORD_MSG_LIMIT:
@@ -309,10 +337,17 @@ def _split_for_discord(text):
         if cut < DISCORD_MSG_LIMIT // 2:
             # Still no good break -- hard-cut at the limit.
             cut = DISCORD_MSG_LIMIT
-        chunks.append(remaining[:cut].rstrip())
+        candidate = remaining[:cut].rstrip()
+        if candidate:
+            chunks.append(candidate)
         remaining = remaining[cut:].lstrip()
     if remaining:
         chunks.append(remaining)
+    # Defensive: if every slice rstrip'd to empty (pathological all-whitespace
+    # input larger than DISCORD_MSG_LIMIT), return a placeholder so the
+    # caller has something non-empty to send.
+    if not chunks:
+        return ["(no response)"]
     return chunks
 
 

@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.23.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.23.2
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,104 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.23.2 (2026-05-09) -- Claude
+  - Z-bump: fixes for several issues found in a code review
+    after the v2.23.0/.1 deploy.
+
+  Bug 1: AUTO-DAILY-DIGEST STILL MISSING DISCORD ROWS
+    The v2.23.0 fix to make the daily digest see Discord
+    conversations set `st.session_state.log = _load_log_from_disk()`
+    but then iterated `get_log()`. Those are different objects:
+    `get_log()` returns the cache_resource shared list, which the
+    Discord bot (separate process) never touches. Net result: the
+    digest emails Ronak gets at the end of each day were silently
+    dropping every Discord conversation, exactly the symptom
+    v2.23.0 claimed to fix.
+
+    Fix: refactored the disk-refresh pattern into a single helper
+    `_refresh_cached_log_from_disk()` that mutates the
+    cache_resource shared list IN PLACE (clear + extend) so
+    every reader of `get_log()` sees the fresh data, and
+    iterate that list directly instead of calling `get_log()`
+    after the refresh.
+
+  Bug 2: IN-CHAT FEEDBACK COULD LAND ON THE WRONG ROW
+    `log_conversation()` returns `len(get_log()) - 1` as the
+    row_num, which is then stored on the assistant message as
+    `log_idx` and used by the in-chat 👍/👎 buttons. But
+    `get_log()` is the stale cache_resource shared list. If any
+    Discord row had landed since the portal cold-started, the
+    cache was short by N rows relative to disk, so the row_num
+    pointed N rows too low. A user clicking 👍 on their own
+    answer would actually file feedback against a Discord
+    conversation N rows back. Worst case for Ronak: feedback
+    analytics would be quietly miscredited.
+
+    Fix: `log_conversation()` now performs the full cycle
+    (read disk -> sync cache to disk truth -> append new row to
+    cache + disk) under a single `_log_disk_lock` acquisition.
+    Two effects:
+      (a) Discord rows that arrived since the last sync are
+          picked up before we compute this row's index, so the
+          row_num always reflects the row's true on-disk
+          position.
+      (b) Two concurrent web log_conversation calls can no
+          longer interleave cache and disk in different orders.
+          Previously the cache append was unlocked while the
+          disk append was locked, so a different thread
+          ordering between the two could leave cache positions
+          and disk positions disagreeing -- and a feedback
+          click would land on whichever row happened to share
+          the cache index. (This race existed in v2.23.1 and
+          earlier too, just rare enough to go unreported.)
+
+    Implementation note: factored out a new
+    `_load_log_from_disk_unlocked()` helper that does the read
+    work without taking the lock, so callers that already hold
+    the lock can use it directly. `_load_log_from_disk()` now
+    just wraps it with the lock and the load-summary print --
+    public API is unchanged.
+
+  Bug 3: CONVERSATION-HISTORY TRIM COULD VIOLATE ROLE ALTERNATION
+    The trim `all_msgs[:1] + all_msgs[-(MAX_HISTORY - 1):]` keeps
+    msg 0 (always user, holds the KB) and the last 7 messages.
+    Conversations always end on a user message (we just appended
+    one before sending), so `len(all_msgs)` is always odd at the
+    API call. For lengths 9, 11, 13, ... the slice produces two
+    consecutive user messages at the head→tail seam, and Anthropic's
+    API rejects the call with "messages: roles must alternate".
+    Latent bug -- only triggers once a single conversation passes
+    8 messages.
+
+    Fix: when trimming, check the role at the head→tail seam and
+    drop one message off the front of the tail if it would create
+    a same-role adjacency. The trimmed conversation is now at most
+    MAX_HISTORY messages and is guaranteed to alternate.
+
+  Bug 4: `_save_history_to_disk` ITERATES STORE OUTSIDE THE LOCK
+    The function builds the entries-list from `store.items()`
+    BEFORE acquiring `_history_disk_lock`. A concurrent request
+    mutating the store (any normal chat turn) trips
+    "RuntimeError: dictionary changed size during iteration".
+    The broad except swallows it, so customers don't see the
+    error -- they just get an occasional silent save failure
+    and lose history persistence for that turn.
+
+    Fix: build the entries list inside the `with` block so the
+    iteration is protected by the same lock that guards the disk
+    write.
+
+  Files changed in this release:
+    * support_portal_v2.py (this file)
+    * discord_bot.py (small empty-chunk guard in
+      `_split_for_discord`; bumped to v1.0.1)
+
+  No behaviour change for the customer-facing chat flow on
+  the happy path. Affected paths are the daily digest email,
+  in-chat feedback button accuracy, long conversations
+  (>8 msgs) hitting the API, and chat history persistence
+  under concurrent load.
 
 v2.23.1 (2026-05-08) -- Claude
   - Z-bump: cosmetic fix. The hardcoded human-readable banner on
@@ -3327,7 +3425,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.23.1"
+__version__ = "2.23.2"
 
 import streamlit as st
 import anthropic
@@ -3542,11 +3640,21 @@ else:
 # could be split across an interleaved append.
 _log_disk_lock = threading.Lock()
 
-def _load_log_from_disk():
-    """Read the full log file into a list of dicts. Skip corrupted
-    lines with a warning rather than failing module import. Returns
-    [] if the file doesn't exist (cold start with new disk) or if
-    disk persistence is off."""
+def _load_log_from_disk_unlocked():
+    """Read the full log file into a list of dicts WITHOUT acquiring
+    _log_disk_lock. The caller is responsible for holding the lock.
+
+    v2.23.2: factored out so log_conversation can do an atomic
+    read-modify-write cycle (load → sync cache → append new row to cache
+    and disk) under a single lock acquisition. Without this, two
+    concurrent log_conversation calls could refresh-then-append in
+    interleaved order and produce a cache vs disk row-position mismatch
+    -- which would point the in-chat 👍/👎 buttons at the wrong row.
+
+    Returns [] for missing/unmounted/unreadable file. Backfills missing
+    Source="web" on pre-v2.22.0 rows. Does NOT print a load summary --
+    that's _load_log_from_disk's job (and would spam the logs if printed
+    on every log_conversation call)."""
     if LOG_FILE_PATH is None:
         return []
     if not os.path.exists(LOG_FILE_PATH):
@@ -3554,30 +3662,43 @@ def _load_log_from_disk():
     rows = []
     skipped = 0
     try:
-        with _log_disk_lock:
-            with open(LOG_FILE_PATH, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        rows.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        skipped += 1
-                        continue
-        # v2.22.0: backfill Source on pre-v2.22.0 rows. Anything written
-        # before the Discord bot existed was a web conversation. Old rows
-        # are missing the key entirely; fill in "web" so downstream code
-        # (admin filters, CSV export) doesn't have to special-case them.
+        with open(LOG_FILE_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    skipped += 1
+                    continue
+        # v2.22.0: backfill Source on pre-v2.22.0 rows.
         for r in rows:
             if "Source" not in r:
                 r["Source"] = "web"
         if skipped:
             print(f"[support_portal_v2] WARNING: skipped {skipped} corrupted line(s) while loading log from {LOG_FILE_PATH}", flush=True)
-        print(f"[support_portal_v2] loaded {len(rows)} conversation row(s) from {LOG_FILE_PATH}", flush=True)
     except Exception as e:
         print(f"[support_portal_v2] WARNING: log file read failed: {e} -- starting with empty log", flush=True)
         return []
+    return rows
+
+def _load_log_from_disk():
+    """Read the full log file into a list of dicts. Skip corrupted
+    lines with a warning rather than failing module import. Returns
+    [] if the file doesn't exist (cold start with new disk) or if
+    disk persistence is off.
+
+    v2.23.2: now wraps _load_log_from_disk_unlocked() with the disk
+    lock and the load-summary print. Behaviour is identical to the
+    pre-v2.23.2 version from the caller's perspective."""
+    if LOG_FILE_PATH is None:
+        return []
+    if not os.path.exists(LOG_FILE_PATH):
+        return []
+    with _log_disk_lock:
+        rows = _load_log_from_disk_unlocked()
+    print(f"[support_portal_v2] loaded {len(rows)} conversation row(s) from {LOG_FILE_PATH}", flush=True)
     return rows
 
 def _append_log_to_disk(row):
@@ -3657,6 +3778,32 @@ def get_shared_store():
 
 def get_log():
     return get_shared_store()["log"]
+
+def _refresh_cached_log_from_disk():
+    """v2.23.2: Rehydrate the cache_resource shared log from disk in place
+    so all in-memory readers (callers of get_log()) see Discord-bot-written
+    rows that arrived after the portal cold-started.
+
+    Atomic: load + cache-sync happen under a single _log_disk_lock
+    acquisition so a concurrent disk write can't slip in between the read
+    and the cache update.
+
+    The cached list is mutated in place (clear + extend) rather than
+    rebound, so any concurrent caller that already grabbed a reference to
+    the list still appends into the shared object instead of an orphaned
+    copy.
+
+    Returns the refreshed cached list, or None if disk persistence is off
+    (caller should fall back to get_log()).
+    """
+    if LOG_FILE_PATH is None:
+        return None
+    cached = get_shared_store()["log"]
+    with _log_disk_lock:
+        fresh = _load_log_from_disk_unlocked()
+        cached.clear()
+        cached.extend(fresh)
+    return cached
 
 # ── BROWSER-PERSISTENT CHAT HISTORY (v2.12.0) ──
 # Server-ephemeral; per-product; 7-day expiry. See the v2.12.0 changelog
@@ -3762,22 +3909,31 @@ def _save_history_to_disk(store):
     """Persist the entire chat history store to disk (atomic full
     rewrite via tmp + os.replace, under the lock). No-op if disk is
     not mounted. Errors are logged but never raised -- the portal must
-    keep serving customers even if a disk write fails."""
+    keep serving customers even if a disk write fails.
+
+    v2.23.2: build the entries list INSIDE the lock. Previously the
+    `for (bid, product), v in store.items()` iteration happened before
+    the `with _history_disk_lock:` block, which meant a concurrent
+    request mutating the store mid-iteration could trip
+    `RuntimeError: dictionary changed size during iteration`. The
+    broad except below caught it, so customers never saw the error,
+    but every such race silently dropped a chat-history save.
+    """
     if HISTORY_FILE_PATH is None:
         return
     try:
-        entries = []
-        for (bid, product), v in store.items():
-            updated_at = v.get("updated_at", datetime.now())
-            entries.append({
-                "bid": bid,
-                "product": product,
-                "messages": v.get("messages", []),
-                "updated_at": updated_at.isoformat() if hasattr(updated_at, "isoformat") else str(updated_at),
-            })
-        payload = {"entries": entries}
         tmp_path = HISTORY_FILE_PATH + ".tmp"
         with _history_disk_lock:
+            entries = []
+            for (bid, product), v in store.items():
+                updated_at = v.get("updated_at", datetime.now())
+                entries.append({
+                    "bid": bid,
+                    "product": product,
+                    "messages": v.get("messages", []),
+                    "updated_at": updated_at.isoformat() if hasattr(updated_at, "isoformat") else str(updated_at),
+                })
+            payload = {"entries": entries}
             with open(tmp_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f, ensure_ascii=False)
             os.replace(tmp_path, HISTORY_FILE_PATH)
@@ -3927,10 +4083,41 @@ def log_conversation(session_id, product, user_msg, ai_response, images=None, cl
         "Image Thumbnails": _make_thumbnails_for_log(images),
         "Client IP": client_ip,
     }
-    get_log().append(row)
-    # v2.17.0: also persist to disk so the row survives Render restarts.
-    # No-op if the persistent disk isn't mounted (with a startup warning).
-    _append_log_to_disk(row)
+    # v2.23.2: do the full read-modify-write cycle under a single
+    # _log_disk_lock acquisition so:
+    #   (a) any Discord rows that arrived since cache cold-start are
+    #       picked up before we compute this row's index, and
+    #   (b) two concurrent web log_conversation calls can't interleave
+    #       cache and disk in different orders, which would mis-point
+    #       the row_num returned to the in-chat 👍/👎 button (stored on
+    #       the assistant message as msg["log_idx"], passed to
+    #       update_feedback as row_idx).
+    # The lock is contended for microseconds at our row volume, so the
+    # serialization cost is invisible.
+    if LOG_FILE_PATH is not None:
+        try:
+            line = json.dumps(row, ensure_ascii=False) + "\n"
+            cached = get_shared_store()["log"]
+            with _log_disk_lock:
+                # 1) Pick up anything Discord wrote since our last sync.
+                disk_rows = _load_log_from_disk_unlocked()
+                cached.clear()
+                cached.extend(disk_rows)
+                # 2) Append the new row to cache and disk. Order: cache
+                #    first (cheap, in-memory), then disk (the durable record).
+                cached.append(row)
+                with open(LOG_FILE_PATH, "a", encoding="utf-8") as f:
+                    f.write(line)
+        except Exception as e:
+            # Mirror the pre-v2.23.2 behaviour: never raise from the
+            # logging path. The portal must keep serving customers even
+            # if the disk write fails. The cache still got the row, so
+            # the assistant response renders correctly; the row is just
+            # not durably persisted for this turn.
+            print(f"[support_portal_v2] WARNING: log append failed: {e}", flush=True)
+    else:
+        # Dev fallback: no persistent disk. Same as pre-v2.23.2.
+        get_log().append(row)
     return len(get_log()) - 1
 
 def update_feedback(row_idx, feedback, note=""):
@@ -3946,13 +4133,23 @@ def update_feedback(row_idx, feedback, note=""):
     # The disk-truth read here picks up any new appends and preserves them
     # through the rewrite.
     #
+    # v2.23.2: use _refresh_cached_log_from_disk() so the cache_resource
+    # shared list (returned by get_log()) is also updated. The previous
+    # `st.session_state.log = log` only updated per-session state; readers
+    # of get_log() -- in particular log_conversation's row_num computation --
+    # were left looking at a stale list. Mutating the cached list in place
+    # also means the feedback we apply below lands on the SAME object the
+    # cache exposes, so subsequent get_log() reads see it without another
+    # disk roundtrip.
+    #
     # No-op fallback: if disk persistence is off (LOG_FILE_PATH is None,
-    # e.g. dev environment without /var/data), _load_log_from_disk returns
-    # an empty list -- in that case fall back to the in-memory log so we
+    # e.g. dev environment without /var/data), _refresh_cached_log_from_disk
+    # returns None -- in that case fall back to the in-memory log so we
     # don't silently drop the feedback.
-    if LOG_FILE_PATH is not None:
-        log = _load_log_from_disk()
-        st.session_state.log = log  # refresh cache too
+    refreshed = _refresh_cached_log_from_disk()
+    if refreshed is not None:
+        log = refreshed
+        st.session_state.log = log
     else:
         log = get_log()
     if row_idx is not None and 0 <= row_idx < len(log):
@@ -4043,11 +4240,23 @@ def auto_daily_digest():
     # the daily digest email. Without this, the digest would only contain
     # web conversations -- the Discord bot writes to disk only and never
     # touches the in-memory log.
-    if LOG_FILE_PATH is not None:
-        st.session_state.log = _load_log_from_disk()
-    if today > get_shared_store()["last_digest_date"] and get_log():
+    #
+    # v2.23.2: the v2.23.0 fix was incomplete -- it set
+    # `st.session_state.log = _load_log_from_disk()` but then iterated
+    # `get_log()`, which returns the cache_resource shared list (a
+    # different object). The shared list still didn't contain Discord
+    # rows, so digest emails were dropping every Discord conversation.
+    # Switch to the helper that mutates the cached list in place, and
+    # iterate that list directly.
+    refreshed = _refresh_cached_log_from_disk()
+    if refreshed is not None:
+        st.session_state.log = refreshed
+        rows_source = refreshed
+    else:
+        rows_source = get_log()
+    if today > get_shared_store()["last_digest_date"] and rows_source:
         yesterday = get_shared_store()["last_digest_date"].strftime("%d %b %Y")
-        rows = [r for r in get_log() if r["Date"] == yesterday]
+        rows = [r for r in rows_source if r["Date"] == yesterday]
         if rows:
             csv_bytes = build_csv_bytes(rows)
             send_email_with_csv(csv_bytes, f"Cosmic Byte Support Log - {yesterday}")
@@ -5042,10 +5251,31 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
         try:
             # Trim history to last 8 messages (4 turns) to control token costs.
             # KB stays in first message; middle history is pruned on long chats.
+            #
+            # v2.23.2: the previous trim `all_msgs[:1] + all_msgs[-(MAX_HISTORY-1):]`
+            # could produce two consecutive user messages at the head→tail seam.
+            # We always reach this code with the last message being the user's
+            # just-appended question, so len(all_msgs) is always odd. For odd
+            # lengths > MAX_HISTORY (9, 11, 13, ...) the index `-(MAX_HISTORY-1)`
+            # lands on a user message, giving us [user(msg0), user(msg-7), asst, ...]
+            # and a 400 from Anthropic's API ("messages: roles must alternate").
+            #
+            # Fix: check the role at the head→tail seam and shave one message
+            # off the front of the tail if it would create a same-role adjacency.
+            # Trimmed length is therefore <= MAX_HISTORY (sometimes MAX_HISTORY-1
+            # in the alternation-fix case), and alternation is guaranteed.
             MAX_HISTORY = 8
             all_msgs = st.session_state.messages
             if len(all_msgs) > MAX_HISTORY:
-                trimmed = all_msgs[:1] + all_msgs[-(MAX_HISTORY - 1):]
+                head = all_msgs[:1]
+                tail_size = MAX_HISTORY - 1
+                # If the tail would start with the same role as the head's last
+                # message, drop one to shift parity. Loop defensively in case
+                # the messages list is ever non-strictly-alternating for some
+                # other reason.
+                while tail_size > 0 and all_msgs[-tail_size]["role"] == head[-1]["role"]:
+                    tail_size -= 1
+                trimmed = head + all_msgs[-tail_size:] if tail_size > 0 else head
             else:
                 trimmed = all_msgs
 
