@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.21.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.23.1
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,24 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.23.1 (2026-05-08) -- Claude
+  - Z-bump: cosmetic fix. The hardcoded human-readable banner on
+    line 3 of this file's top docstring still read "app version:
+    2.21.0" even though __version__ had been bumped to 2.22.0 and
+    then 2.23.0. The startup print at module load (line ~3325)
+    uses an f-string with {__version__} so the actual reported
+    version was always correct, but anyone opening the file in an
+    editor saw "2.21.0" at the very top -- which is exactly what
+    Ronak caught.
+
+    The file already has a checklist item at line 46 saying
+    "Update 'app version: X.Y.Z' on the title line of this
+    docstring." -- I missed that step in both v2.22.0 and v2.23.0.
+
+    Fix: line 3 now reads "app version: 2.23.1" matching
+    __version__. No code or behaviour change. Future edits should
+    follow the line-46 checklist or this drift will recur.
 
 v2.23.0 (2026-05-08) -- Claude
   - Y-bump because cb_kb v1.1.0 (which we now require) added a new
@@ -3309,7 +3327,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.23.0"
+__version__ = "2.23.1"
 
 import streamlit as st
 import anthropic
