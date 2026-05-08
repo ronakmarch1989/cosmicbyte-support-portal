@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.1
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,82 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.15.1 (2026-05-08) -- Claude
+  - Z-bump: correct an incorrect claim shipped in v2.15.0
+    affecting Eclipse and Starforge.
+
+  Trigger:
+     Customer asked how to update Eclipse firmware. The portal
+     (with v2.15.0 just deployed) walked the customer through
+     downloading "the Cosmic Byte companion software" and
+     using its firmware-update option. WRONG — Eclipse and
+     Starforge do not have any PC companion software at all.
+
+  Root cause (my fault, not the AI's):
+     When Ronak originally clarified Eclipse and Starforge in
+     the v2.15.0 prep, he said: "Eclipse and Starforge also
+     support Keylinker app for mobile for button mapping. No
+     firmware update for these using keylinker." That was
+     accurate. I assumed the unstated half ("if not Key Linker,
+     then it must be the standard PC-software path") instead
+     of asking. Same failure mode I keep flagging in the AI
+     itself: filling a gap with a plausible synthesis instead
+     of confirming.
+
+  Reality (Ronak confirmed):
+     - Eclipse and Starforge have NO PC companion software at
+       all. Single-generation products. No "App Support" back
+       label distinction. All controller configuration (RGB,
+       turbo, vibration, macros, calibration) is done via
+       gamepad button shortcuts on the controller itself.
+     - Key Linker mobile app (iOS/Android) on these two
+       controllers handles BUTTON REMAPPING ONLY. No firmware
+       updates via Key Linker either.
+     - Firmware updates: MANUAL file path. If/when a firmware
+       update exists for these products, it is posted on
+       thecosmicbyte.com (downloaddrivers section or the
+       product page) along with instructions. Customer
+       downloads the file and applies it manually following
+       the on-page instructions. There may not always be a
+       firmware update available — customer should check the
+       website periodically if needed.
+
+  Fixes:
+
+  1. Eclipse manual: removed the false "firmware via companion
+     software" block. Replaced with accurate statement: no PC
+     software exists; firmware updates are manual via website
+     when available. Key Linker scope (iOS/Android, button
+     remapping only) preserved.
+
+  2. Starforge manual: same fix as Eclipse.
+
+  3. SYSTEM_PROMPT firmware rule: restructured to recognise
+     four product categories rather than one rule with two
+     exceptions:
+       - Category A: Products with companion PC software
+         ("App Support" generations) → firmware via software,
+         wired USB.
+       - Category B: Products with manual-file firmware path
+         → customer goes to website, downloads file when
+         available, follows on-page instructions. Examples:
+         Eclipse, Starforge, Ares Pro Gen 1, older Ares
+         family models.
+       - Category C: Products with mobile-app firmware path
+         → Stellaris Gen 1 only (Key Linker via Bluetooth).
+       - Category D: Products without any user firmware
+         updates → most basic / passive products.
+     This makes the actual product taxonomy explicit instead
+     of the AI inferring it from scattered exception phrasing.
+
+  4. Stellaris failure-modes block: bullet about Key Linker
+     scope updated again to be precise — Eclipse and
+     Starforge use Key Linker for BUTTON REMAPPING ONLY (NOT
+     firmware), Stellaris Gen 1 uses Key Linker for both,
+     and the platform is iOS/Android (mobile-only).
+
+  Verification: ast.parse OK on Python 3.
 
 v2.15.0 (2026-05-08) -- Claude
   - Y-bump: KB sweep across all 36 product manual entries to find
@@ -1927,7 +2003,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.15.0"
+__version__ = "2.15.1"
 
 import streamlit as st
 import anthropic
@@ -2727,7 +2803,7 @@ SECTION 4: COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
 - Do NOT proactively ask "Gen 1 or Gen 2?" on every query. Default to current Stellaris. Only switch to Gen 1 on a customer signal (magnetic joysticks reference, "no software," shortcut not working, explicit "1st gen / older").
 - Do NOT invent a "Stellaris Firmware Updater" tool — it does not exist. Current Stellaris firmware = Cosmic Byte software (PC, wired). Gen 1 firmware = Key Linker mobile app (Bluetooth). No third path.
 - Do NOT tell Gen 1 customers to use Key Linker for RGB / LED color / lighting changes. Key Linker on Gen 1 covers ONLY firmware updates and button remapping. RGB on Gen 1 is gamepad shortcuts ONLY. This is a real bug that has happened — when a Gen 1 customer asks about LED color, walk them through gamepad shortcuts (SELECT + D-pad Left to cycle modes, SELECT + D-pad Right to switch single colors), NOT Key Linker.
-- Do NOT tell current-Stellaris (Gen 2) customers to use Key Linker for anything. Current Stellaris uses the PC companion software for RGB, macros, button mapping, and firmware. Note: Key Linker IS used by some other Cosmic Byte controllers (Eclipse and Starforge for button remapping, Stellaris Gen 1 for both button remap + firmware) — but NOT by current Stellaris.
+- Do NOT tell current-Stellaris (Gen 2) customers to use Key Linker for anything. Current Stellaris uses the PC companion software for RGB, macros, button mapping, and firmware. Note: Key Linker IS used by some other Cosmic Byte controllers but with different scope — Eclipse and Starforge use Key Linker for BUTTON REMAPPING ONLY (not firmware; Eclipse and Starforge have no PC software at all and their firmware is a manual-file path from the website). Stellaris Gen 1 uses Key Linker for both button remap AND firmware. Key Linker is iOS/Android only — no PC version.
 - ALWAYS ask the customer if they have the BLACK or TRANSPARENT variant before answering ANY RGB / lighting question on Stellaris (either gen). The transparent variant has the extra outer RGB ring; the black variant does not. This affects almost every RGB answer. Do not skip the variant ask — answer fully only after the customer tells you the variant.
 
 ═══════════════════════════════════════════════════════════════════════
@@ -3350,7 +3426,23 @@ ABXY LED BRIGHTNESS:
 BATTERY & CHARGING:
 - 1200mAh, 11-13 hours. Charge time: 3-4 hours. Use 5V 500mA charger or PC USB port.
 - Wireless charging contacts on back for compatible charging dock.
-- KeyLinker mobile app (Google Play / Apple App Store) for advanced BUTTON REMAPPING ONLY. Pair the controller via Bluetooth with a mobile device, open the Key Linker app, and use it to customize button assignments. Note: Key Linker on the Eclipse is for button remapping only — it does NOT update firmware. Firmware updates for the Eclipse follow the standard Cosmic Byte rule: connect via USB-C in wired mode, open the Cosmic Byte companion software (download from https://www.thecosmicbyte.com/downloaddrivers/), and use the firmware update option inside the software. Do NOT direct customers to Key Linker for firmware on the Eclipse.
+
+KEY LINKER MOBILE APP (Eclipse — BUTTON REMAPPING ONLY):
+- Available on iOS and Android only (Google Play / Apple App Store). NO PC version.
+- Pair the Eclipse via Bluetooth with a mobile device, open Key Linker, and use it for advanced button remapping.
+- IMPORTANT — scope: Key Linker on the Eclipse handles BUTTON REMAPPING ONLY. It does NOT update firmware on the Eclipse.
+
+CONFIGURATION (Eclipse — IMPORTANT):
+- The Eclipse has NO PC companion software. None exists.
+- ALL controller configuration on the Eclipse — RGB, turbo, vibration, macros, calibration, dead zone, joystick range — is done via gamepad button shortcuts on the controller itself (see shortcuts above).
+- Mobile button remapping is via Key Linker only (iOS/Android).
+- Do NOT direct Eclipse customers to download "Cosmic Byte software" or any PC software — there is no PC software for this product.
+
+FIRMWARE UPDATE (Eclipse — manual file path when available):
+- The Eclipse has no PC software, so firmware updates are NOT done through any software.
+- If a firmware update for the Eclipse is currently available, it is posted on https://www.thecosmicbyte.com/downloaddrivers/ or on the Eclipse product page on thecosmicbyte.com, along with the instructions for applying it. Customer downloads the file and follows the on-page instructions.
+- If no firmware update is currently posted on the website for the Eclipse, the controller is on the latest available firmware — there is nothing to install. Suggest checking the website periodically.
+- If the customer cannot locate firmware information and believes an update is needed, direct them to support (cc@thecosmicbyte.com) — do NOT invent a URL or filename.
 
 RESET & POWER:
 - Power off: hold Home 5 seconds. Auto-off: 10 minutes.
@@ -3406,11 +3498,21 @@ CONTROLLER RESET: Power OFF. Hold LS + RS + Home for 1 second -> red light 1 sec
 BATTERY: 1200mAh, 10-12 hours. Charge: 3-4 hours.
 
 KEY LINKER MOBILE APP (Starforge — BUTTON REMAPPING ONLY):
-- Available on Google Play and Apple App Store.
+- Available on iOS and Android only (Google Play / Apple App Store). NO PC version.
 - Pair the Starforge via Bluetooth with a mobile device, open Key Linker, and use it for advanced button remapping.
 - IMPORTANT — scope: Key Linker on the Starforge handles BUTTON REMAPPING ONLY. It does NOT update firmware on the Starforge.
-- Firmware updates for the Starforge follow the standard Cosmic Byte rule: connect via USB-C in wired mode, open the Cosmic Byte companion software (https://www.thecosmicbyte.com/downloaddrivers/), use the firmware update option inside the software.
-- Do NOT direct customers to Key Linker for firmware on the Starforge.
+
+CONFIGURATION (Starforge — IMPORTANT):
+- The Starforge has NO PC companion software. None exists.
+- ALL controller configuration on the Starforge — RGB, turbo, vibration, macros, calibration, ABXY layout, joystick swap — is done via gamepad button shortcuts on the controller itself (see shortcuts above).
+- Mobile button remapping is via Key Linker only (iOS/Android).
+- Do NOT direct Starforge customers to download "Cosmic Byte software" or any PC software — there is no PC software for this product.
+
+FIRMWARE UPDATE (Starforge — manual file path when available):
+- The Starforge has no PC software, so firmware updates are NOT done through any software.
+- If a firmware update for the Starforge is currently available, it is posted on https://www.thecosmicbyte.com/downloaddrivers/ or on the Starforge product page on thecosmicbyte.com, along with the instructions for applying it. Customer downloads the file and follows the on-page instructions.
+- If no firmware update is currently posted on the website for the Starforge, the controller is on the latest available firmware — there is nothing to install. Suggest checking the website periodically.
+- If the customer cannot locate firmware information and believes an update is needed, direct them to support (cc@thecosmicbyte.com) — do NOT invent a URL or filename.
 
 PACKAGE: Controller, magnetic cover, 2.4G receiver, USB-C cable (1.5m), manual, 3 extra joystick sets, puller, screwdriver.
 
@@ -5068,36 +5170,69 @@ Other CB controllers with Hall Effect (for reference):
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
 
-UNIVERSAL FIRMWARE UPDATE RULE — applies to MOST Cosmic Byte products. There is generally NO separate "Firmware Updater" tool — the companion software handles BOTH configuration AND firmware updates for products that have software support. The standard process is:
+UNIVERSAL FIRMWARE UPDATE RULE — applies to ALL Cosmic Byte products. Different products handle firmware in DIFFERENT ways. Do NOT apply one path universally. There are FOUR distinct categories. Identify which category a product belongs to BEFORE answering a firmware question.
 
-  1. The companion software handles BOTH configuration AND firmware updates. Same software, one download.
-  2. Customer downloads the companion software from https://www.thecosmicbyte.com/downloaddrivers/.
-  3. Connect the product to PC via USB cable in WIRED MODE (always wired for firmware updates, never wireless / 2.4GHz / Bluetooth).
-  4. Power on the product if applicable. Open the companion software.
-  5. Use the firmware update option inside the software (typically labeled "Firmware Update", "Update Firmware", or similar — exact wording depends on the software version).
-  6. Do NOT disconnect during the update process.
+──────────────────────────────────────────────────────────────────────
+CATEGORY A — Products with companion PC software (most current-gen products)
+──────────────────────────────────────────────────────────────────────
+Products: Current Stellaris (Gen 2 with "App Support" label), Current Ares Pro (Gen 2 with "App Support" label), Blitz Tri-Mode (with "App Support" label), Lumora, Drakon, Helios Mouse, Atlas Mouse, Aether Mouse, Umbra Mouse, Firestorm Mouse, Ignis Mouse, Velox, Phantom TKL, Phantom TKL Wired, Pandora, Vanth, Artemis, Artemis Wireless, Firefly TKL, Trinity, Astra, Dragonfly.
 
-Do NOT tell customers to "search for [Product] Firmware Updater" or "download the firmware tool" — there is generally no such standalone tool. Do NOT invent a download URL.
+Firmware path: THROUGH the companion software. Same software handles BOTH configuration and firmware updates.
+Process:
+  1. Download the Cosmic Byte companion software from https://www.thecosmicbyte.com/downloaddrivers/
+  2. Connect the product via USB cable in WIRED MODE (always wired for firmware, never wireless / 2.4GHz / Bluetooth)
+  3. Power on the product. Open the software.
+  4. Use the firmware update option inside the software (typically labeled "Firmware Update" or "Update Firmware")
+  5. Do NOT disconnect during update.
 
-EXCEPTIONS — three product situations where the standard rule does NOT apply:
+Do NOT tell Category A customers there is a separate "Firmware Updater" tool — there is no such standalone tool for these products.
 
-  EXCEPTION 1 — Stellaris Gen 1 (discontinued legacy product, still under warranty for some customers): firmware updates are done via the "Key Linker" mobile app over Bluetooth, NOT via PC software. Pair the controller via Bluetooth with a mobile device (controller appears as "Pro Controller"), open Key Linker app, refresh the device list, select "PRO CONTROLLER", choose "Update Device" from the menu. The current Stellaris (Gen 2, "App Support" label) follows the standard rule above (PC companion software, wired USB).
+──────────────────────────────────────────────────────────────────────
+CATEGORY B — Products with MANUAL firmware-file path (no PC software)
+──────────────────────────────────────────────────────────────────────
+Products: Eclipse, Starforge, Ares Pro Gen 1 (no "App Support" label), older Ares basic / Ares Wired / Ares Wireless models, older Blitz models without "App Support" label.
 
-  EXCEPTION 2 — Ares Pro Gen 1 (older model WITHOUT "App Support" back label): there is no companion software for this generation, so firmware is updated MANUALLY via a separate standalone firmware file from thecosmicbyte.com. Customer downloads the firmware file and applies it manually following the instructions on the support page. If the customer cannot locate the right file for their model, direct them to support (cc@thecosmicbyte.com) — do NOT invent a URL or filename. The current Ares Pro (Gen 2, "App Support" label) follows the standard rule above (companion software handles firmware).
+Firmware path: MANUAL file from website. There is NO companion PC software for these products. If/when a firmware update is published, it is posted on thecosmicbyte.com (downloaddrivers section or the specific product page) along with the instructions for applying it.
 
-  EXCEPTION 3 — Older Blitz models (Blitz Wireless, discontinued, no "App Support" label): no software support, no user firmware updates available through normal channels. Direct to support if the customer has firmware-related issues. The current Blitz Tri-Mode (with "App Support" label) follows the standard rule.
+What to tell the customer:
+  - Visit https://www.thecosmicbyte.com/downloaddrivers/ or the product page for their specific product.
+  - If a firmware update is currently posted, they will see the firmware file along with on-page instructions for applying it. Follow those instructions exactly.
+  - If no firmware update is currently posted, there is nothing to install — the controller is already on the latest available firmware. Suggest checking the website periodically.
+  - If they cannot find anything and believe a firmware update is needed, direct them to support (cc@thecosmicbyte.com) — do NOT invent a URL or filename.
 
-"APP SUPPORT" BACK-LABEL CHECK — three product lines (Ares Pro, Stellaris, Blitz Tri-Mode) have a current generation WITH companion software and an older generation WITHOUT software. The newer ones have "App Support" printed in the top-left corner of the back label. ALWAYS ask the customer to check the back label for "App Support" text when answering software, RGB software, button-mapping-via-software, or firmware questions for any of these three products. If "App Support" text is present → newer generation, use software path. If absent → older generation, use the appropriate exception above.
+Do NOT tell Category B customers to download "the Cosmic Byte companion software" — there is no companion software for these products. Do NOT invent a software path.
 
-PRODUCTS WITHOUT ANY USER FIRMWARE UPDATES: If a customer asks about firmware update for a Cosmic Byte product that does not have companion software AND is not covered by the exceptions above (e.g. Raptor Mouse, Ares basic wired controller, Nexus, basic membrane keyboards, Cyclone RGB cooling pad), the correct answer is that the product does not support user firmware updates. Do not invent a workaround.
+──────────────────────────────────────────────────────────────────────
+CATEGORY C — Products with MOBILE-APP firmware path (Stellaris Gen 1 only)
+──────────────────────────────────────────────────────────────────────
+Product: Stellaris Gen 1 (legacy/discontinued, no "App Support" label) — ONLY product in this category.
 
+Firmware path: "Key Linker" mobile app over Bluetooth (NOT PC software, NOT a manual file).
+Process: Pair the controller via Bluetooth with a mobile device (controller appears as "Pro Controller"), open Key Linker app, refresh, select "PRO CONTROLLER", choose "Update Device" from the menu.
+
+Stellaris Gen 1 is the ONLY Cosmic Byte product whose firmware updates go through Key Linker. Do NOT generalize this to other products.
+
+──────────────────────────────────────────────────────────────────────
+CATEGORY D — Products with NO user firmware updates
+──────────────────────────────────────────────────────────────────────
+Products: Raptor Mouse, Nexus, Ares basic wired-only, CryoCore, Proteus, CosmoBuds X220, Cyclone RGB, membrane keyboards.
+
+These products do not support user firmware updates at all. If a customer asks how to update firmware on one of these, the correct answer is: "This product does not support user firmware updates." Do not invent a workaround or direct them to a non-existent tool.
+
+──────────────────────────────────────────────────────────────────────
+"APP SUPPORT" BACK-LABEL CHECK — the disambiguator for Categories A vs B
+──────────────────────────────────────────────────────────────────────
+Three product lines (Ares Pro, Stellaris, Blitz Tri-Mode) have a current generation that is in Category A and an older generation that is in Category B (or C for Stellaris Gen 1). The newer ones have "App Support" printed in the top-left corner of the back label. ALWAYS ask the customer to check the back label for "App Support" text when answering software, RGB-via-software, button-mapping-via-software, or firmware questions for any of these three products. If "App Support" is present → Category A. If absent → Category B (or C for Stellaris).
+
+──────────────────────────────────────────────────────────────────────
 "PRO CONTROLLER" BLUETOOTH NAME — multiple Cosmic Byte controllers pair as "Pro Controller" via Bluetooth in their Nintendo Switch-compatible Gyro / NS modes (Stellaris Gen 1 in WIN PC mode, Lumora in PC Gyro mode, and others). This is intentional — the controller replicates the Nintendo Switch Pro Controller Bluetooth protocol so that Gyro works the same way as on a Switch. IMPORTANT: in this mode, the analog triggers (LT/RT) are NOT pressure-sensitive — they act as digital buttons (on/off) only. If a customer mentions "Pro Controller" appearing in their Bluetooth list without specifying which Cosmic Byte product they own, ASK which controller they have before answering — multiple Cosmic Byte products use this Bluetooth name.
 
 KEY LINKER MOBILE APP — used by THREE Cosmic Byte products, each with different scope. Do not generalize across them:
-  - Stellaris Gen 1: Key Linker = button remapping AND firmware updates.
-  - Eclipse: Key Linker = button remapping ONLY (firmware updates use companion PC software via wired USB, standard rule).
-  - Starforge: Key Linker = button remapping ONLY (firmware updates use companion PC software via wired USB, standard rule).
-  - All other Cosmic Byte products do NOT use Key Linker at all. Do not direct customers of any other product to Key Linker.
+  - Stellaris Gen 1: Key Linker = button remapping AND firmware updates (Category C).
+  - Eclipse: Key Linker = button remapping ONLY (firmware uses Category B path — manual file from website).
+  - Starforge: Key Linker = button remapping ONLY (firmware uses Category B path — manual file from website).
+  - All other Cosmic Byte products do NOT use Key Linker at all.
+  - Platform: Key Linker is iOS / Android only. There is no PC version.
 
 WARRANTY OVERVIEW — all Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period.
 
