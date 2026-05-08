@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.23.2
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,101 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.24.0 (2026-05-09) -- Claude
+  - Y-bump: portal now fetches Discord conversation rows
+    from the bot's HTTP API and merges them with the
+    local log for admin dashboard / digest views.
+
+  Why:
+    Today's migration moved the Discord bot off Render
+    onto a Hetzner VPS to escape Render's per-IP rate
+    limits with Discord. The portal stayed on Render. Side
+    effect: the two services no longer share a filesystem,
+    so any new Discord row the bot writes to its own log
+    file (/var/lib/cosmic-bot/support_log.jsonl) is
+    invisible to the portal's admin dashboard, daily
+    digest emails, CSV export, and bulk photo export.
+
+    discord_bot.py v1.1.0 added a small read-only HTTP
+    API (GET /log/recent, Bearer-auth) for exactly this.
+    This bump consumes it on the portal side.
+
+  What's new:
+    * Two new env vars (both optional):
+        BOT_API_URL    -- e.g. http://5.223.52.60:8080
+        BOT_API_SECRET -- shared secret matching the bot's
+                          LOG_API_SECRET. Sent as
+                          Authorization: Bearer <secret>.
+      If either is unset, the merge layer is a no-op and
+      v2.24 behaves exactly like v2.23 (local rows only).
+
+    * `_fetch_remote_discord_rows(force=False, ttl=30)` --
+      hits the bot's /log/recent endpoint, caches the
+      result for `ttl` seconds. Cached at module level
+      via @st.cache_resource, so all Streamlit sessions
+      on the same Render instance share one cached fetch.
+      Returns the last successful fetch on transient
+      failures (network blip, bot restart) -- avoids
+      blanking out the admin view on every retry-able
+      error.
+
+    * `get_merged_log()` -- returns local rows + remote
+      Discord rows, deduplicated and sorted by
+      Date+Time. The local row wins on overlap (so any
+      pre-migration Discord rows that exist in BOTH
+      logs keep whatever feedback the admin set on the
+      local copy).
+
+    * Each remote row carries a "_remote": True marker
+      so the UI / write-side code can identify rows that
+      live on the VPS rather than the local filesystem.
+
+  Where it's used:
+    * render_admin() -- iterates get_merged_log() instead
+      of get_log() so the admin sees new Discord rows.
+    * auto_daily_digest() -- aggregates over the merged
+      view so Discord conversations make it into the
+      daily emails, CSV, and digest stats.
+    * Bulk photo export uses get_merged_log() too, but
+      since Discord rows in this codebase don't carry
+      attached images (Image Thumbnails always ""), this
+      is mostly cosmetic correctness.
+
+  Where it's NOT used:
+    * log_conversation() and update_feedback() still use
+      get_log() (local cache only). They only ever
+      mutate Web rows -- log_conversation appends a new
+      Web row, update_feedback updates an existing Web
+      row by index. Both correct against local rows.
+      Discord rows are read-only on the portal side
+      because the in-chat 👍/👎 feedback widgets only
+      exist in the Streamlit chat UI (Web channel),
+      never on Discord.
+
+  Failure modes:
+    * Bot down / unreachable: get_merged_log returns
+      local rows + last cached remote rows (which may
+      be empty if cold-start). Admin sees a stale view
+      until the bot comes back. No crash.
+    * Bot returns garbage / wrong schema: rows that
+      don't parse get skipped silently; the rest merge
+      normally.
+    * Wrong / missing secret: bot returns 401, fetcher
+      logs a WARNING, returns last cached rows. Admin
+      eventually notices missing recent Discord rows;
+      operator fixes the secret on either side.
+
+  Security note:
+    BOT_API_SECRET is the only thing protecting access
+    to your customers' Discord conversations over the
+    public internet. Generate a long random value
+    (`openssl rand -hex 32`) and never put it in git or
+    in chat. The endpoint serves plain HTTP -- the data
+    in transit is theoretically eavesdroppable. Putting
+    Caddy + Let's Encrypt in front of the bot's port
+    8080 is the recommended follow-up; it's an ops
+    change with no code change.
 
 v2.23.2 (2026-05-09) -- Claude
   - Z-bump: fixes for several issues found in a code review
@@ -3425,7 +3520,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.23.2"
+__version__ = "2.24.0"
 
 import streamlit as st
 import anthropic
@@ -3448,6 +3543,8 @@ import base64
 import io
 import zipfile
 import smtplib
+import time          # v2.24.0: cache TTL on bot API fetch
+import requests      # v2.24.0: bot API fetch (already a transitive dep)
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -3634,6 +3731,29 @@ else:
     HISTORY_FILE_PATH = None  # v2.18.0
     print(f"[support_portal_v2] WARNING: persistent disk NOT mounted at {PERSISTENT_DATA_DIR} -- conversation log AND chat history will be LOST on restart. To enable persistence, attach a Render persistent disk at this mount path (Render dashboard -> Settings -> Disks -> Add Disk).", flush=True)
 
+# v2.24.0: optional fetch of new Discord rows from the bot's HTTP API.
+# Set both to enable; leave either unset to fall back to local-only
+# behaviour (identical to v2.23.x).
+BOT_API_URL = (os.environ.get("BOT_API_URL", "") or "").rstrip("/")
+BOT_API_SECRET = os.environ.get("BOT_API_SECRET", "") or ""
+BOT_API_TIMEOUT_S = float(os.environ.get("BOT_API_TIMEOUT_S", "10") or "10")
+BOT_API_CACHE_TTL_S = float(os.environ.get("BOT_API_CACHE_TTL_S", "30") or "30")
+BOT_API_FETCH_LIMIT = int(os.environ.get("BOT_API_FETCH_LIMIT", "1000") or "1000")
+if BOT_API_URL and BOT_API_SECRET:
+    print(f"[support_portal_v2] bot API merge enabled -> {BOT_API_URL}", flush=True)
+elif BOT_API_URL or BOT_API_SECRET:
+    # Half-configured: log loudly because partial config silently disables
+    # the merge layer and is easy to miss.
+    print(
+        "[support_portal_v2] WARNING: bot API merge is HALF-CONFIGURED. "
+        "Set BOTH BOT_API_URL and BOT_API_SECRET, or NEITHER. "
+        "Discord rows from the VPS bot will NOT be visible in the admin "
+        "dashboard until this is fixed.",
+        flush=True,
+    )
+else:
+    print("[support_portal_v2] bot API merge disabled (BOT_API_URL/BOT_API_SECRET not set)", flush=True)
+
 # Lock guarding ALL disk reads/writes for the log files. Concurrent
 # Streamlit reruns can call log_conversation / update_feedback at the
 # same time; without this lock, a row with image thumbnails (>4KB)
@@ -3804,6 +3924,164 @@ def _refresh_cached_log_from_disk():
         cached.clear()
         cached.extend(fresh)
     return cached
+
+
+# ── v2.24.0: REMOTE DISCORD-ROW FETCH FROM THE BOT ─────────────────
+# After the discord bot moved off Render onto a Hetzner VPS, the
+# portal can no longer read the bot's log file directly. The bot
+# exposes GET /log/recent (Bearer auth) and we fetch from it whenever
+# admin / digest code wants the unified view. Cached for ~30s to
+# avoid hammering the bot per-rerun (Streamlit reruns the script on
+# every interaction).
+#
+# Caching strategy: single-entry @st.cache_resource holder. Stores
+# (rows, fetched_at, last_error). On expiry, attempts a re-fetch; on
+# failure, returns the previously cached rows (potentially stale)
+# with the error logged. This avoids blanking out the admin view on
+# every transient hiccup.
+@st.cache_resource
+def _bot_api_fetch_cache():
+    """Single-instance cache holder for the bot API fetch.
+    Lives for the Render container's lifetime."""
+    return {"rows": [], "fetched_at": 0.0, "last_error": None}
+
+
+def _fetch_remote_discord_rows(force=False):
+    """Fetch recent rows from the bot's /log/recent endpoint.
+
+    Returns a list of row dicts (each with `_remote: True` set so
+    callers can distinguish them from local rows). Returns the
+    previously-cached rows on transient errors -- a single bot blip
+    shouldn't blank out the admin dashboard.
+
+    No-op (returns []) when BOT_API_URL or BOT_API_SECRET is unset:
+    portal behaves identically to v2.23.x.
+
+    Cached: refreshed at most once per BOT_API_CACHE_TTL_S seconds
+    unless `force=True`.
+    """
+    if not BOT_API_URL or not BOT_API_SECRET:
+        return []
+    cache = _bot_api_fetch_cache()
+    now = time.time()
+    if not force and (now - cache["fetched_at"]) < BOT_API_CACHE_TTL_S:
+        return cache["rows"]
+    try:
+        resp = requests.get(
+            f"{BOT_API_URL}/log/recent",
+            params={"limit": BOT_API_FETCH_LIMIT},
+            headers={"Authorization": f"Bearer {BOT_API_SECRET}"},
+            timeout=BOT_API_TIMEOUT_S,
+        )
+        if resp.status_code == 401:
+            # Wrong secret -- log and bail. Don't update the cache so
+            # the operator's misconfiguration is visible (admin view
+            # silently misses Discord rows until fixed).
+            print(
+                "[support_portal_v2] WARNING: bot API returned 401 -- "
+                "BOT_API_SECRET on portal does not match LOG_API_SECRET on bot. "
+                "Discord rows from VPS will not appear until this is fixed.",
+                flush=True,
+            )
+            cache["last_error"] = "auth"
+            cache["fetched_at"] = now  # back off retries to TTL cadence
+            return cache["rows"]
+        resp.raise_for_status()
+        data = resp.json() or {}
+        raw_rows = data.get("rows", [])
+        if not isinstance(raw_rows, list):
+            raise ValueError(f"bot returned non-list rows ({type(raw_rows).__name__})")
+        # Mark each row as remote so write-side code can identify it.
+        # Mutating the dicts here is safe: we just decoded them from
+        # JSON; nothing else holds a reference.
+        for r in raw_rows:
+            if isinstance(r, dict):
+                r["_remote"] = True
+        # Keep only valid dict rows. Anything else is bot bug or schema
+        # mismatch; skip silently rather than crashing the admin view.
+        rows = [r for r in raw_rows if isinstance(r, dict)]
+        cache["rows"] = rows
+        cache["fetched_at"] = now
+        cache["last_error"] = None
+        return rows
+    except Exception as e:
+        # Network/parse error. Log and return whatever we had cached
+        # (could be empty on cold start). DON'T overwrite cache["rows"]
+        # so a brief outage doesn't drop us back to no-Discord-data.
+        print(
+            f"[support_portal_v2] WARNING: bot API fetch failed: {type(e).__name__}: {e} "
+            f"(returning {len(cache['rows'])} cached row(s))",
+            flush=True,
+        )
+        cache["last_error"] = str(e)
+        cache["fetched_at"] = now  # back off retries to TTL cadence
+        return cache["rows"]
+
+
+def _row_dedup_key(row):
+    """Stable identity for a conversation row, used to deduplicate
+    when local + remote logs overlap (e.g. pre-migration Discord rows
+    that exist in BOTH the portal's local /var/data file AND the
+    bot's VPS log if the bot was started with carried-over history).
+
+    Session ID + Date + Time + first 50 chars of customer message.
+    Different rows could in theory hash the same if the same session
+    sent two identical messages in the same minute -- vanishingly
+    rare, and the merge gracefully drops the duplicate either way."""
+    return (
+        row.get("Session ID", ""),
+        row.get("Date", ""),
+        row.get("Time", ""),
+        (row.get("Customer Message", "") or "")[:50],
+    )
+
+
+def _row_sort_key(row):
+    """Key for chronological sort. Date format is `dd Mon YYYY`,
+    Time is `HH:MM`. Falls back to datetime.min on any parse error
+    so a malformed row sorts to the top instead of crashing the sort."""
+    try:
+        return datetime.strptime(
+            f"{row.get('Date','')} {row.get('Time','')}",
+            "%d %b %Y %H:%M",
+        )
+    except Exception:
+        return datetime.min
+
+
+def get_merged_log(force_remote=False):
+    """Return local rows + remote Discord rows from the VPS bot,
+    deduplicated and sorted chronologically. Used by the admin
+    dashboard, daily digest, CSV export, and bulk photo export
+    starting in v2.24.0.
+
+    Local rows win on overlap (so pre-migration Discord rows keep
+    whatever feedback Ronak set on them via the chat-side 👍/👎).
+
+    Note: this is for READ paths. WRITE paths (log_conversation
+    appending a Web row, update_feedback updating a Web row by
+    index) continue to use get_log() against the local cache --
+    they only ever mutate local rows, so they don't need remote
+    data. Never pass an index from get_merged_log() into
+    update_feedback() -- the local-cache index won't match.
+    """
+    local = list(get_log())
+    remote = _fetch_remote_discord_rows(force=force_remote)
+    if not remote:
+        return local  # no merge needed; preserves identity
+    seen_keys = set()
+    merged = []
+    for r in local:
+        key = _row_dedup_key(r)
+        seen_keys.add(key)
+        merged.append(r)
+    for r in remote:
+        if _row_dedup_key(r) in seen_keys:
+            continue
+        merged.append(r)
+    merged.sort(key=_row_sort_key)
+    return merged
+
 
 # ── BROWSER-PERSISTENT CHAT HISTORY (v2.12.0) ──
 # Server-ephemeral; per-product; 7-day expiry. See the v2.12.0 changelog
@@ -4162,8 +4440,13 @@ def update_feedback(row_idx, feedback, note=""):
 
 # ── EMAIL HELPERS ──
 def build_csv_bytes(rows):
+    # v2.24.0: extrasaction='ignore' so v2.24.0+ rows tagged with the
+    # internal _remote marker (added by _fetch_remote_discord_rows) don't
+    # break CSV export with a ValueError. Default 'raise' would crash on
+    # any extra key. CSV_COLUMNS is explicit, so future internal markers
+    # also stay out of the CSV without further changes here.
     buf = io.StringIO()
-    writer = csv.DictWriter(buf, fieldnames=CSV_COLUMNS)
+    writer = csv.DictWriter(buf, fieldnames=CSV_COLUMNS, extrasaction='ignore')
     writer.writeheader()
     writer.writerows(rows)
     return buf.getvalue().encode("utf-8")
@@ -4248,15 +4531,24 @@ def auto_daily_digest():
     # rows, so digest emails were dropping every Discord conversation.
     # Switch to the helper that mutates the cached list in place, and
     # iterate that list directly.
+    #
+    # v2.24.0: the local refresh is still needed (it picks up
+    # historical Discord rows from /var/data on Render and any Web
+    # rows the portal wrote), but the new Discord rows now live on
+    # the VPS bot. Use get_merged_log() to combine local + remote.
+    # When BOT_API_URL is unset, get_merged_log() degrades to local-
+    # only and behaviour is identical to v2.23.2. We keep the local
+    # cache refresh because (a) it makes st.session_state.log
+    # accurate for any same-render Web feedback path, and (b)
+    # get_merged_log() reads from the cache so the cache must be
+    # current.
     refreshed = _refresh_cached_log_from_disk()
     if refreshed is not None:
         st.session_state.log = refreshed
-        rows_source = refreshed
-    else:
-        rows_source = get_log()
+    rows_source = get_merged_log()
     if today > get_shared_store()["last_digest_date"] and rows_source:
         yesterday = get_shared_store()["last_digest_date"].strftime("%d %b %Y")
-        rows = [r for r in rows_source if r["Date"] == yesterday]
+        rows = [r for r in rows_source if r.get("Date") == yesterday]
         if rows:
             csv_bytes = build_csv_bytes(rows)
             send_email_with_csv(csv_bytes, f"Cosmic Byte Support Log - {yesterday}")
@@ -4769,12 +5061,21 @@ def render_admin():
     #
     # Fallback for dev environments without /var/data mounted: if disk
     # persistence is off, fall back to whatever's in-memory.
+    #
+    # v2.24.0: also merge in remote Discord rows from the bot's HTTP
+    # API. The local refresh + remote fetch is wrapped in
+    # get_merged_log(), which gracefully degrades to local-only when
+    # BOT_API_URL/BOT_API_SECRET are unset (no behaviour change vs
+    # v2.23 in that case). The merged list is for VIEW only; we keep
+    # the unmerged local cache in st.session_state.log so any
+    # update_feedback() call in this render (there shouldn't be one
+    # from the admin path -- feedback widgets are chat-side -- but
+    # belt-and-suspenders) targets a row index that's valid against
+    # the local cache.
     if LOG_FILE_PATH is not None:
         fresh_log = _load_log_from_disk()
         st.session_state.log = fresh_log
-        log = list(fresh_log)
-    else:
-        log = list(get_log())
+    log = list(get_merged_log())
 
     if not log:
         st.info("No conversations logged yet.")
