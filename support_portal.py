@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.3
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.16.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,296 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.16.0 (2026-05-08) -- Claude
+  - Y-bump: substantive multi-item correction bundle covering
+    Drakon joystick tech, Drakon package contents, and a new
+    cross-product Mac compatibility policy. Triggered by
+    Ronak's direct feedback after reviewing an AI Mac
+    compatibility response that incorrectly told a customer
+    the Cosmic Byte Ares is "not officially supported on
+    Mac".
+
+  Triggers (three issues bundled per Ronak's message):
+    (1) AI told a customer "the Cosmic Byte Ares is primarily
+        designed for Windows PC and Android -- unfortunately,
+        native Mac support is not officially supported by
+        Cosmic Byte". Per Ronak: ALL CB Bluetooth controllers
+        DO work with Mac for basic gamepad use (just no
+        Cosmic Byte software / drivers for Mac). The AI's
+        answer was a worse version of the truth -- pessimistic
+        and likely to lose a sale. The KB had no centralised
+        Mac compatibility policy for controllers, only
+        per-mouse / per-keyboard mentions, so the AI
+        defaulted to "not supported".
+    (2) Ronak confirmed Drakon has TMR joysticks, NOT Hall
+        Effect. This resolves the contradiction flagged in
+        v2.15.4's followup notes (the Drakon manual's
+        "JOYSTICK CALIBRATION (TMR)" header was correct all
+        along; the Hall Effect matrix and several
+        cross-references were wrong). The product page URL
+        itself contains "tmr-joysticks" -- confirming the
+        manual was right and the matrix was wrong.
+    (3) Ronak indicated Drakon comes with more accessories
+        than the existing PACKAGE line listed. Per the
+        official product images: 6 swappable joystick tops
+        in 3 styles (short ridged concave, tall ridged
+        concave, smooth dome) -- not "2 extra" as the manual
+        had it. Two pre-installed plus four spare in the
+        case = six total in three style pairs.
+
+  Fixes shipped in v2.16.0:
+
+  1. Drakon now correctly classified as TMR joysticks across
+     ALL references in the file:
+     - Hall Effect / TMR matrix line: "Drakon: Hall Effect
+       joysticks (older, pre-TMR generation)" rewritten to
+       "Drakon: TMR joysticks (confirmed by Cosmic Byte;
+       product page URL contains 'tmr-joysticks'). Trigger
+       sensor type not specified in the Drakon manual --
+       Drakon has a 3-position physical trigger lock for
+       digital / mid-analog / full-analog modes; if a
+       customer asks specifically about trigger sensor tech,
+       offer to confirm with support."
+     - Blitz Tri-Mode KEY FEATURES JOYSTICKS line: removed
+       Drakon from "main advantage over Lumora / Drakon
+       (both Hall Effect)". TMR is no longer an advantage
+       over Drakon -- both Blitz and Drakon have TMR.
+       Updated to "main advantage over Lumora (which has
+       Hall Effect joysticks, not TMR)".
+     - PRODUCT COMPARISON GUIDANCE Drakon vs Lumora line:
+       updated. Drakon now wins on TMR joystick precision
+       AND RGB granularity (7 zones with up to 8 keyframes
+       vs Lumora's 5 zones with preset animations) AND
+       dragon artwork. Lumora wins on macro count (4 vs 2),
+       button mapping flexibility (gamepad/keyboard/mouse
+       vs gamepad-only), replaceable accessories scope
+       (joystick tops + D-pad covers vs Drakon's joystick
+       tops + D-pads + face plates -- different set), and
+       trigger flexibility (analog/digital switchable
+       triggers vs Drakon's 3-position physical lock).
+     - CATALOGUE_CONTROLLERS Drakon line: "Hall Effect
+       joysticks" -> "TMR joysticks". Description expanded
+       to surface package contents (carrying case, charging
+       dock, swappable face plates / joystick tops / D-pads).
+     - CATALOGUE_CONTROLLERS BUYING GUIDE: "Best joystick
+       precision (TMR)" list now includes Drakon alongside
+       Blitz Tri-Mode and Stellaris 2nd Gen. "Distinctive
+       RGB design" line kept Drakon (it already won there).
+
+  2. Drakon manual updated:
+     - PACKAGE line corrected: "2 extra joystick tops" ->
+       "6 swappable joystick tops in 3 styles (short ridged
+       concave / tall ridged concave / smooth dome) -- 2
+       pre-installed on the controller, 4 spare in the
+       case". Magnetic top covers / face plates clarified
+       as "3 magnetic face plates (plain black / doodle
+       artwork / dragon artwork)".
+     - NEW KEY FEATURES summary block added near the top
+       of the Drakon manual (mirroring Lumora and Blitz
+       structure). Surfaces: TMR joysticks; 3-position
+       physical trigger lock; 2 dedicated macro buttons
+       (ML / MR -- note: software displays them as L4 / R4,
+       still flagged as a future cleanup); 7-zone RGB with
+       up to 8 keyframe animations; 6-axis gyro with native
+       Bluetooth gyro mode plus on-the-fly software gyro;
+       6 swappable joystick tops + 2 D-pads + 3 face
+       plates; charging dock + carrying case included;
+       1000Hz polling on wired/2.4GHz; tri-mode connectivity;
+       600mAh battery 8-20 hours. Helps the AI answer
+       "what's special about Drakon?" and surface Drakon
+       in cross-product comparisons.
+
+  3. NEW: MAC COMPATIBILITY POLICY block added to
+     SYSTEM_PROMPT (placed near the INVOICE POLICY /
+     WARRANTY OVERVIEW area since it is a cross-product
+     policy block, not per-product manual content). The
+     block states:
+       - All Cosmic Byte Bluetooth controllers work on Mac
+         for basic gamepad use. Pair via Bluetooth from
+         macOS Bluetooth settings; controller appears as
+         a standard gamepad in any game that supports
+         standard gamepad input.
+       - There is NO Cosmic Byte software / driver for
+         macOS. Software-only features (custom button
+         mapping, software RGB customisation, firmware
+         updates via the Cosmic Byte software, software
+         deadzone / anti-deadzone configuration) are
+         WINDOWS-ONLY.
+       - DO NOT tell a customer "this CB Bluetooth
+         controller does not work with Mac". It does --
+         just without advanced configuration.
+       - Wired-only or older 2.4GHz-dongle-only models
+         (older Ares wired-only batch, Nexus, etc.) --
+         most work plug-and-play via USB on Mac for basic
+         gamepad input but software is Windows-only;
+         direct customers to test plug-and-play first.
+       - Specifically called out as Mac-via-Bluetooth-OK:
+         Lumora, Drakon, Stellaris (Gen 1 + Gen 2), Blitz
+         Tri-Mode, Ares (Tri-Mode), Ares Pro, Ares
+         Wireless, Eclipse, Starforge, Nexus (wired,
+         plug-and-play), Quantum, Stratos Xenon. Anything
+         with Bluetooth in this catalog works for basic
+         gamepad use on Mac.
+       - Closing: "If the customer's primary need is
+         software-driven configuration on Mac, recommend
+         they use the controller in basic gamepad mode and
+         configure on a Windows machine first if possible
+         -- onboard profiles persist between platforms."
+
+  Followup notes:
+    - Resolved: the v2.15.4 followup flag about the Drakon
+      manual saying "JOYSTICK CALIBRATION (TMR)" while the
+      matrix said Hall Effect. Matrix is now updated to
+      TMR; manual was always correct.
+    - Still open: the v2.15.4 followup about the Drakon
+      manual MACRO section saying "ML/MR" while the Drakon
+      software shows the buttons labeled "L4/R4". Likely a
+      software display label vs button label mismatch;
+      worth Ronak's confirmation before touching. Noted in
+      the new Drakon KEY FEATURES block as a flag.
+    - Still open: the v2.15.2 followup gap (no general
+      ORDER & SHIPPING POLICIES section). Separate sweep.
+    - Still open: Drakon trigger sensor tech is not
+      specified anywhere in the file. The Drakon manual
+      describes only the 3-position physical trigger lock,
+      not the underlying sensor type. The new TMR matrix
+      entry for Drakon explicitly says trigger sensor type
+      is unspecified; if Ronak confirms (Hall Effect?
+      TMR? Standard?), a Z-bump can patch it.
+
+  Verification: ast.parse OK on Python 3.
+
+v2.15.4 (2026-05-08) -- Claude
+  - Y-bump pretending to be a Z (substantial KB fix bundling
+    multiple manual updates and a new SYSTEM_PROMPT block).
+    Triggered by two real customer interactions:
+    (1) Customer with Blitz Tri-Mode asked if Lumora would be a
+        better future upgrade. AI made TWO factual errors:
+        (a) Falsely claimed Ares Pro has TMR joysticks.
+        (b) Mis-positioned Lumora as a downgrade from Blitz
+            Tri-Mode, only comparing joystick tech and missing
+            all of Lumora's actual differentiating features.
+    (2) Earlier customer interactions had surfaced AI confusion
+        about Lumora's joystick tech, which traced back to a
+        bug in the Hall Effect matrix.
+
+  Root causes:
+    - Hall Effect matrix line for Lumora was WRONG: it stated
+      "Lumora: standard joysticks (no Hall Effect on Lumora)"
+      while the Lumora product manual itself correctly listed
+      Hall Effect joysticks + Hall Effect analog/digital
+      switchable triggers. The matrix and the manual contradicted
+      each other, and the AI was getting confused. Per Ronak's
+      direct confirmation and the actual Lumora software /
+      hardware: Lumora has Hall Effect joysticks (NOT TMR) and
+      Hall Effect analog/digital switchable triggers.
+    - Blitz Tri-Mode manual incorrectly listed "Macro programming"
+      as a key feature. Per Ronak's confirmation: Blitz Tri-Mode
+      has NO dedicated macro buttons. The existing "MACRO" section
+      in the manual described a Turbo-button-based sequence
+      recording feature, which is real but should not be called
+      "macro" since Blitz has no dedicated macro buttons.
+    - Blitz Tri-Mode also was implicitly assumed to have RGB and
+      replaceable joystick tops / D-pad covers in cross-product
+      comparisons. Per Ronak: Blitz has NONE of these.
+    - The AI was inferring "newer / App Support label / current
+      generation = TMR joysticks" — a synthesis error. Sensor tech
+      varies across current-gen products (Lumora and Ares Pro
+      are current-gen with App Support but have Hall Effect, not
+      TMR; Stellaris 2nd Gen and Blitz Tri-Mode have TMR).
+    - The AI was performing single-dimension product comparisons
+      ("Blitz has TMR therefore Blitz is better than Lumora")
+      instead of multi-dimensional comparisons that would surface
+      Lumora's actual strengths.
+
+  Fixes shipped in v2.15.4:
+
+  1. Hall Effect matrix corrected. Lumora line updated to:
+     "Lumora: Hall Effect joysticks + Hall Effect analog/digital
+      switchable triggers (confirmed by Cosmic Byte). Lumora is
+      NOT TMR despite being a current-generation product with
+      software / 'App Support' — do not infer TMR from generation
+      or positioning."
+
+  2. Lumora manual KEY FEATURES section rewritten as a
+     comprehensive accurate feature list. Now surfaces:
+     - 4 dedicated macro buttons (ML/MR/LK/RK, 32 inputs each)
+       — explicitly contrasted with Stellaris/Drakon (2 macros)
+       and Blitz Tri-Mode (0 macros).
+     - Full button mapping flexibility — gamepad, keyboard, OR
+       mouse mapping. Lumora-exclusive among current CB
+       controllers.
+     - 6 replaceable joystick tops (3 styles) and 2 replaceable
+       D-pad covers (square/diamond + faceted disc).
+     - Cloak RGB design — controller appears solid black when
+       RGB is OFF, reveals skull/gear artwork when RGB is ON.
+       Distinct from Stellaris transparent variant.
+     - 5 individually-colorable RGB zones with 5 animations,
+       brightness/speed sliders, granular toggles.
+     - 4 onboard profiles, switchable on the controller via
+       M + Right Joystick Up/Down.
+     - Independent per-grip vibration intensity.
+     - Per-stick deadzone, anti-deadzone, Radial Trace.
+     - Per-trigger deadzone, anti-deadzone.
+     - 6-axis gyro with on-the-fly software customisation.
+
+  3. Blitz Tri-Mode manual KEY FEATURES section rewritten:
+     - Removed "Macro programming" claim. Replaced with
+       explicit "MACRO BUTTONS: NONE" with recommendation to
+       point macro-needing customers at Lumora/Drakon.
+     - Added "RGB LIGHTING: NONE" with same redirect.
+     - Added "REPLACEABLE JOYSTICK TOPS / D-PAD COVERS: NONE"
+       with same redirect.
+     - Clarified TRIGGERS as Hall Effect ANALOG only (not
+       analog/digital switchable like Lumora).
+     - Clarified BUTTON MAPPING as gamepad-to-gamepad ONLY
+       (no keyboard/mouse mapping like Lumora).
+     - Listed full software customisation surface: Initial/Max
+       range sliders for sticks/triggers, Raw mode, Swap, etc.
+     - Surfaced gyro robustness as a real Blitz strength.
+     The existing MACRO section in the Blitz manual was renamed
+     to TURBO SEQUENCE RECORDING and now explicitly states this
+     is a Turbo-button feature, not dedicated macro buttons.
+
+  4. PRODUCT COMPARISON GUIDANCE block added to SYSTEM_PROMPT
+     (placed after the HALL EFFECT / TMR VERIFICATION GUIDE).
+     Five rules:
+     (1) Always consult the Hall Effect / TMR matrix.
+         Do NOT infer joystick tech from generation /
+         positioning / "App Support" label / software
+         availability. Newer doesn't mean TMR. Examples
+         called out: Lumora and Ares Pro are current-gen
+         with software but Hall Effect (not TMR);
+         Stellaris 2nd Gen and Blitz Tri-Mode have TMR.
+     (2) Compare across MULTIPLE dimensions: joystick tech,
+         trigger tech, macros, RGB, button mapping, replaceable
+         accessories, gyro, vibration, profiles, design,
+         polling, connectivity. Single-axis comparisons miss
+         actual customer-relevant tradeoffs.
+     (3) Do NOT default to "newer = better". Many CB
+         cross-product comparisons are SIDE-GRADES with
+         different strengths. Specific guidance for
+         Lumora vs Blitz Tri-Mode and Drakon vs Lumora.
+     (4) When asked "what's the best CB controller?",
+         do NOT pick. Ask what the customer values, then
+         recommend based on stated priorities.
+     (5) Do NOT invent feature comparisons. If unsure, say
+         so and offer to look up — do NOT guess.
+
+  Verification: ast.parse OK on Python 3.
+
+  Followup notes:
+    - The Drakon manual still says "JOYSTICK CALIBRATION (TMR)"
+      while the Hall Effect matrix says Drakon has Hall Effect
+      joysticks. This contradiction was NOT touched in this
+      version — flagged for a future cleanup version once
+      Ronak confirms which is correct.
+    - The Drakon manual MACRO section says "ML/MR" while the
+      Drakon software shows the macro buttons labeled "L4/R4".
+      Likely just a software display label vs button label
+      mismatch; not touched in this version. Worth confirming
+      with Ronak.
 
 v2.15.3 (2026-05-08) -- Claude
   - Z-bump: add HALL EFFECT / TMR VERIFICATION GUIDE block to
@@ -2132,7 +2422,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.15.3"
+__version__ = "2.16.0"
 
 import streamlit as st
 import anthropic
@@ -2612,7 +2902,23 @@ COSMIC BYTE LUMORA - TRI-MODE CONTROLLER - FULL MANUAL
 
 PC ONLY. Not compatible with PlayStation, Xbox, Nintendo Switch. No warranty for console use. Android limited, not covered.
 
-KEY FEATURES: Hall Effect joysticks (no drift), Hall Effect triggers (analog/digital switchable), Mechanical ABXY and D-Pad, 6-axis gyroscope, 1300mAh battery, 1000Hz polling, 3.5mm audio jack, Dual vibration motors, RGB lighting, Windows software support.
+KEY FEATURES (full list — surface these accurately when comparing Lumora to other CB controllers):
+- JOYSTICKS: Hall Effect (drift-resistant, NOT TMR — refer to Hall Effect matrix for confirmation).
+- TRIGGERS: Hall Effect, analog/digital SWITCHABLE via software (not just physical switch). Per-trigger deadzone and anti-deadzone configurable.
+- MACRO BUTTONS: 4 dedicated programmable macro buttons (ML, MR, LK, RK), 32 inputs each. This is more than most CB controllers — Stellaris/Drakon have 2, Blitz Tri-Mode has 0.
+- BUTTON MAPPING (via software): Any gamepad button can be remapped to (a) another gamepad button, (b) any keyboard key (full keyboard layout including F-keys, modifiers, media controls, arrows), or (c) mouse actions. This means Lumora can be used with games or applications that don't natively support gamepad input — a Lumora-exclusive capability among current CB controllers.
+- REPLACEABLE JOYSTICK TOPS: 6 stick tops included (3 styles — short flat textured / tall domed / medium domed knurled), giving 3 height-and-grip preference options for left+right stick pairs. Customers can swap depending on game genre or personal preference.
+- REPLACEABLE D-PAD COVERS: 2 D-pad covers included (square/diamond style + faceted disc style). Different game-genre preferences (e.g. fighting games vs. platformers).
+- CLOAK RGB DESIGN: Distinctive design feature — controller appears solid black when RGB is OFF, then reveals the underlying skull/gear artwork when RGB is ON. Gives a stealth-when-off / artwork-when-on aesthetic. Different from the Stellaris transparent variant (which is always-clear plastic).
+- RGB CUSTOMISATION (via software): 5 individually-colorable RGB zones (Left Grip, Right Grip, Left Stick, Right Stick, Home). 5 animation modes (Static, Breathing, Colorful, Rainbow, Off). Brightness and speed sliders. "Show joystick lighting only" and "Home Lighting" toggles for granular control.
+- ONBOARD PROFILES: 4 profiles switchable on the controller via M + Right Joystick Up/Down (Home LED flashes 1/2/3/4 to indicate which profile is active). Each profile stores its own mappings, RGB, vibration, etc.
+- VIBRATION: Dual motors with INDEPENDENT per-grip intensity control (Left Grip and Right Grip configured separately via software).
+- STICK CUSTOMISATION (via software): Per-stick deadzone, anti-deadzone, and Radial Trace toggle.
+- GYRO: 6-axis. On-the-fly gyro customisation through Cosmic Byte software, same capability tier as Stellaris / Blitz Tri-Mode / Drakon. Native Bluetooth gyro mode also available.
+- BATTERY: 1300mAh. Configurable auto-sleep (default 5 minutes).
+- POLLING: 1000Hz on Wired and 2.4GHz.
+- CONNECTIVITY: Tri-Mode (USB Wired / 2.4GHz / Bluetooth).
+- MECHANICAL ABXY and D-Pad. 3.5mm audio jack (works in Wired and 2.4GHz only, not Bluetooth).
 
 CONNECTIVITY:
 - 2.4GHz (recommended for PC): Insert USB dongle. Press HOME to power on. Hold PAIRING (P) 3 seconds until LED flashes purple - vibrates once. Dongle LED stays solid yellow when connected. Keep within 7-10m. Software works in 2.4GHz only (NOT Bluetooth).
@@ -2945,7 +3251,22 @@ COSMIC BYTE DRAKON - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
 
 PC ONLY. Not supported on any gaming console. No warranty for console use.
 
-PACKAGE: Controller, 2.4G dongle, USB cable (2m), Charging Dock, Carrying Case, 3 magnetic top covers, 2 D-pads (Precision + Disc), 2 extra joystick tops, User Manual.
+PACKAGE: Controller, 2.4G USB dongle (stored in magnetic dongle slot under top cover), USB-C cable (2m, braided), Charging Dock with magnetic contacts, Carrying Case (zip-up EVA hard case), 3 magnetic face plates (plain black / doodle artwork / dragon artwork — swappable top covers), 2 D-pads (Precision cross + Faceted Disc), 6 swappable joystick tops in 3 styles (short ridged concave / tall ridged concave / smooth dome — 2 pre-installed on the controller, 4 spare in the case), User Manual.
+
+KEY FEATURES (full list — surface these accurately when comparing Drakon to other CB controllers):
+- JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Confirmed by Cosmic Byte; the product page URL itself contains "tmr-joysticks". Same joystick tech tier as Blitz Tri-Mode and Stellaris 2nd Gen. (Lumora, Ares Pro, and current Ares Tri-Mode have Hall Effect joysticks — different sensor tech.)
+- TRIGGERS: 3-position physical trigger lock (Position 1 = shortest, digital on/off; Position 2 = medium analog ~50%; Position 3 = full analog 100%), independent for LT and RT. Trigger sensor type is not specified in the manual — if a customer asks specifically about Hall Effect / TMR triggers on the Drakon, offer to confirm with support rather than guess.
+- MACRO BUTTONS: 2 dedicated programmable macro buttons (ML / MR), each records up to 22 inputs with delays. (NOTE: Cosmic Byte software displays these buttons as "L4 / R4" — same physical buttons, different label in software vs on the controller. This is a known display-label mismatch; do not tell the customer their controller is wrong.) Lumora has 4 macros; Blitz Tri-Mode has 0.
+- RGB LIGHTING: 7 customisable zones, up to 8 keyframe animations per zone via Cosmic Byte software. Plus on-controller modes: Rainbow / 7-colour gradient / Breathing / Fixed (cycle with FNL + SELECT). Brightness adjustable. RGB can be turned off entirely (Hold LT + RT 5 seconds). More granular than Lumora's 5-zone preset-animation RGB.
+- GYRO: 6-axis. Native Bluetooth Gyro Mode (press Y + HOME for 3 seconds, LED4 on) appears as "Pro Controller". Plus on-the-fly software gyro (via Cosmic Byte software, works in wired or 2.4GHz mode) — assignable to any button, with three activation modes (Always On / Toggle / Press and Hold). Output mimics joystick movement so it works in any game with joystick support.
+- MAGNETIC TOP COVER / FACE PLATE: 3 face plates included (plain black / doodle artwork / dragon artwork). Swap by lifting from the front edge gap. Dongle storage slot inside the cover.
+- VIBRATION: Dual motors, 4 levels (Off / Low / Medium / High) adjustable via FNL + Right Joystick Up/Down.
+- TURBO: 5/15/25 shots-per-second, semi-auto and full-auto modes. Speed adjustable.
+- BATTERY: 600mAh, 8-20 hours depending on RGB usage. RGB auto-disables at low battery to extend playtime.
+- POLLING: 1000Hz on Wired and 2.4GHz.
+- CONNECTIVITY: Tri-Mode (USB-C Wired / 2.4GHz dongle / Bluetooth). Multi-platform via Bluetooth: PC (XInput + DInput), Android (XInput + DInput), iOS (XInput).
+- 3.5mm AUDIO JACK: Works in 2.4GHz wireless and wired modes only. NOT in Bluetooth or mobile modes.
+- SOFTWARE: Cosmic Byte software supports button remapping, RGB keyframe customisation, software gyro assignment, polling rate, and firmware updates. Software is WINDOWS-ONLY — Drakon still works on Mac via Bluetooth for basic gamepad use, but no Mac software exists. (See cross-product MAC COMPATIBILITY POLICY in the system prompt.)
 
 CONNECTIVITY:
 - Wired PC XInput: Plug in, press HOME. LED2 on.
@@ -3373,7 +3694,20 @@ Do NOT apply ONLINEPAY or any other coupon code to the charging dock — there i
 
 If a customer asks where to find or buy the Blitz Tri-Mode charging dock, the correct response is: "The charging dock for the Blitz Tri-Mode is launching soon and will be available on thecosmicbyte.com on its own product page when released. In the meantime, you can charge your Blitz Tri-Mode using the included USB-C cable — plug it into a 5V/1A adapter or a PC USB port. Avoid fast chargers as they can damage the battery and void your warranty. A full charge takes 2.5–3 hours."
 
-KEY FEATURES: Tri-Mode (USB Wired/2.4GHz/Bluetooth), TMR joysticks (drift-resistant), Hall Effect analog triggers, 1000Hz polling (PC wired & 2.4GHz), Turbo & Auto Fire, Macro programming, Adjustable dual-motor vibration, Charging dock support (dock launching soon — see CHARGING DOCK STATUS section above), Gyro support.
+KEY FEATURES (full list — surface these accurately when comparing Blitz Tri-Mode to other CB controllers):
+- JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Newer/more precise than Hall Effect. Same joystick tech tier as Drakon and Stellaris 2nd Gen. The TMR joysticks are a primary selling point of the Blitz Tri-Mode and a real advantage over Lumora (which has Hall Effect joysticks, not TMR) — but NOT an advantage over Drakon, which also has TMR joysticks.
+- TRIGGERS: Hall Effect ANALOG only. Range adjustable via software (Initial / Max sliders). NOT analog/digital switchable like Lumora's triggers.
+- MACRO BUTTONS: NONE. The Blitz Tri-Mode has NO dedicated macro buttons (no ML/MR/LK/RK or M1/M2). It has Turbo with sequence recording (see TURBO & AUTO FIRE / TURBO SEQUENCE sections below), which is a Turbo-button-based feature, not dedicated macro buttons. If a customer needs dedicated macro buttons, recommend Lumora (4 macros) or Drakon (2 macros) — do NOT tell customers Blitz Tri-Mode has macro buttons.
+- RGB LIGHTING: NONE. The Blitz Tri-Mode does NOT have RGB lighting. The controller is solid black with no RGB customisation in the software. If a customer wants RGB, recommend Lumora (5 zones, Cloak design) or Drakon (7 zones, keyframe animations) — do NOT tell customers Blitz Tri-Mode has RGB.
+- REPLACEABLE JOYSTICK TOPS / D-PAD COVERS: NONE. Blitz Tri-Mode does NOT come with replaceable stick tops or D-pad covers. If the customer wants these, recommend Lumora (6 stick tops + 2 D-pad covers).
+- BUTTON MAPPING (via software): Gamepad-to-gamepad remapping ONLY. Cannot map to keyboard keys or mouse actions like Lumora can.
+- ONBOARD PROFILES: 3 customisable profiles (Profile 1 / 2 / 3) plus a Default profile in the software.
+- STICK CUSTOMISATION (via software): Initial / Max range sliders only (no separate deadzone / anti-deadzone / radial trace). Has "Raw" mode toggle, "Swap Left Joystick and D-Pad", and "D-Pad Diagonal Lock".
+- VIBRATION: Dual motors, adjustable in 4 levels (100% / 70% default / 40% / 0%). No independent per-grip control like Lumora.
+- GYRO: 6-axis with robust software customisation — Response Curve options (Aggressive / Default / Smooth / Custom), Anti-Deadzone, Activate Method, Activate Button, Motion Axis, Active Axis, Invert X/Y, Steer/Aim toggle. This is a real Blitz strength comparable to Lumora's gyro.
+- BATTERY: 600mAh, 7-15 hours.
+- POLLING: 1000Hz on Wired and 2.4GHz. Up to 500Hz on Bluetooth.
+- CONNECTIVITY: Tri-Mode (USB Wired / 2.4GHz / Bluetooth).
 
 POWER & RESET:
 - Power ON: Press HOME for 0.5-1 second.
@@ -3429,7 +3763,8 @@ TURBO & AUTO FIRE:
 - Adjust: Hold TURBO, Right Stick Right=increase, Left=decrease.
 - Supported: A, B, X, Y, LB, RB, LT, RT.
 
-MACRO: Record: Hold TURBO for 3 seconds -> perform sequence (up to 22 inputs) -> press TURBO to save. Execute: Double-press TURBO. Clear: Enter macro mode (hold TURBO 3s) -> press TURBO immediately without recording.
+TURBO SEQUENCE RECORDING (Blitz Tri-Mode does NOT have dedicated macro buttons — this records a sequence onto the Turbo button):
+Record: Hold TURBO for 3 seconds -> perform sequence (up to 22 inputs) -> press TURBO to save. Execute: Double-press TURBO. Clear: Enter sequence mode (hold TURBO 3s) -> press TURBO immediately without recording.
 
 VIBRATION: Hold TURBO + Right Stick Up (increase) or Down (decrease). Levels: 100%, 70% (default), 40%, 0%.
 BATTERY CHECK: Press TURBO + START. LED1=1-25%, LED1+2=26-50%, LED1+2+3=51-75%, all 4=76-100%.
@@ -5293,8 +5628,8 @@ Other CB controllers with Hall Effect (for reference):
 - Stratos Xenon: Hall Effect joystick + Hall Effect triggers (confirmed in product manual).
 - Stellaris 2nd Gen: TMR joysticks (Tunnel Magnetoresistance — different and superior tech to Hall Effect for joysticks specifically) + Hall Effect analog triggers.
 - Blitz Tri-Mode: TMR joysticks + Hall Effect analog triggers.
-- Drakon: Hall Effect joysticks (older, pre-TMR generation).
-- Lumora: standard joysticks (no Hall Effect on Lumora — be honest about this).
+- Drakon: TMR joysticks (confirmed by Cosmic Byte; the Drakon product page URL contains "tmr-joysticks", and the Drakon manual's joystick calibration shortcut is labeled "JOYSTICK CALIBRATION (TMR)"). Same joystick tech tier as Blitz Tri-Mode and Stellaris 2nd Gen. Trigger sensor type is NOT specified in the Drakon manual — the manual describes a 3-position physical trigger lock for digital / mid-analog / full-analog modes, but does not state Hall Effect / TMR / standard for the trigger sensor itself. If a customer asks specifically about Drakon trigger sensor tech, do NOT guess — offer to confirm with support (cc@thecosmicbyte.com).
+- Lumora: Hall Effect joysticks + Hall Effect analog/digital switchable triggers (confirmed by Cosmic Byte). Lumora is NOT TMR despite being a current-generation product with software / "App Support" — do not infer TMR from generation or positioning.
 - Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
@@ -5330,6 +5665,20 @@ HALL EFFECT / TMR VERIFICATION GUIDE — when a customer asks "how do I confirm 
     - Do NOT tell customers to open the controller to check the joystick mechanism. This voids the warranty and risks damaging the unit.
     - Do NOT direct customers to disassembly videos or guides for verification purposes.
     - If the customer is uncertain after Step 1 + Step 2, suggest they contact support (cc@thecosmicbyte.com) with their order details — support can verify based on the SKU and manufacturing date.
+
+PRODUCT COMPARISON GUIDANCE — when a customer asks "should I upgrade from X to Y?", "is X better than Y?", or any cross-product comparison, follow these rules:
+
+  1. ALWAYS consult the Hall Effect / TMR matrix above for joystick and trigger sensor tech. DO NOT infer joystick technology from generation, marketing positioning, "App Support" label, software availability, or release recency. Newer or software-supported does NOT automatically mean TMR — for example, Lumora and Ares Pro are current-generation with software support, but they have Hall Effect joysticks (not TMR). Stellaris 2nd Gen and Blitz Tri-Mode have TMR. The matrix is authoritative; trust it over inference.
+
+  2. Compare across MULTIPLE dimensions, not just one. CB controllers have different feature strengths and a single-axis comparison (e.g. "TMR vs Hall Effect" alone) misses the actual customer-relevant tradeoffs. Relevant dimensions to consider when comparing: joystick sensor tech (TMR vs HE), trigger tech (HE analog vs HE switchable analog/digital), macro buttons (count and capacity), RGB customisation (zones, animations, software depth), button mapping flexibility (gamepad-only vs gamepad+keyboard+mouse), replaceable accessories (joystick tops, D-pad covers), gyro capability, vibration granularity (single vs per-grip), onboard profile count, design aesthetic, polling rate, connectivity (Tri-Mode vs Dual-Mode).
+
+  3. Do NOT default to a "newer = better" or "different = upgrade" framing. Many CB cross-product comparisons are SIDE-GRADES with different strengths, not hierarchical upgrades. Specifically:
+     - Lumora vs Blitz Tri-Mode is a SIDE-GRADE. Blitz wins on TMR joystick precision; Lumora wins on macro count (4 vs 0), RGB customisation (Cloak design + 5 zones vs no RGB), button mapping flexibility (gamepad/keyboard/mouse vs gamepad-only), replaceable accessories (6 stick tops + 2 D-pad covers vs none), and onboard profiles (4 vs 3). Both have comparable gyro capability. Recommend based on what the customer values: precision-focused gaming = Blitz; customisation/macros/RGB = Lumora.
+     - Drakon vs Lumora is a SIDE-GRADE with different strengths. Drakon wins on TMR joysticks (Lumora has Hall Effect — different sensor tech, both drift-resistant but TMR is newer and more precise), RGB granularity (7 zones with up to 8 keyframe animations vs Lumora's 5 zones with preset animations), and the dragon artwork design + 3 swappable face plates. Lumora wins on macro count (4 vs 2), button mapping flexibility (gamepad/keyboard/mouse mapping vs gamepad-only), trigger flexibility (analog/digital software-switchable Hall Effect triggers vs Drakon's 3-position physical trigger lock), and battery (1300mAh vs 600mAh). Both have TMR or HE drift-resistant joysticks, both are Tri-Mode, both have 6-axis gyro with software customisation. Recommend based on customer priority: TMR + RGB granularity + dragon design = Drakon; macros + keyboard/mouse mapping + bigger battery = Lumora.
+
+  4. When asked "what's the best CB controller?", do NOT pick one. Ask the customer what they're looking for (precision / macros / RGB / mobile / console / budget) and recommend based on their stated priorities. Different controllers win in different categories.
+
+  5. Do NOT invent feature comparisons you haven't verified from the product manuals loaded in your context or from this guidance block. If you don't know whether a controller has a specific feature, say so and offer to look it up — DO NOT guess.
 
 UNIVERSAL FIRMWARE UPDATE RULE — applies to ALL Cosmic Byte products. Different products handle firmware in DIFFERENT ways. Do NOT apply one path universally. There are FOUR distinct categories. Identify which category a product belongs to BEFORE answering a firmware question.
 
@@ -5407,6 +5756,35 @@ If a customer asks how to download or get their invoice, the answer is:
   - If they cannot find either copy, they should contact support (cc@thecosmicbyte.com / +91 7351615161, Mon-Sat 10am-6pm) and request the invoice be resent. Support can email a fresh copy.
 
 Do NOT direct customers to any URL purporting to download invoices. Do NOT invent a "track.thecosmicbyte.com" or similar self-service portal — these do not exist for invoices.
+
+MAC COMPATIBILITY POLICY (controllers) — applies to ALL Cosmic Byte controllers. Do NOT tell a Mac customer "this controller is not supported on Mac" or "Cosmic Byte does not support Mac". The accurate answer is more nuanced and is more likely to help the customer.
+
+THE CORE FACTS:
+  1. ALL Cosmic Byte Bluetooth controllers WORK on Mac for basic gamepad use. The customer pairs the controller via macOS Bluetooth settings (System Settings → Bluetooth → pair "Cosmic Byte [Model]" or whichever name the controller broadcasts in its current mode), and the controller appears as a standard gamepad. It will work in any game on Mac that supports standard gamepad input — including Steam games (Steam Input handles most CB controllers automatically), most native macOS games, and cloud gaming apps that accept gamepad input.
+  2. There is NO Cosmic Byte software / driver / companion app for macOS. The Cosmic Byte software is WINDOWS-ONLY. This means software-only features are NOT available on Mac:
+       - Software-based custom button remapping (gamepad-to-keyboard, gamepad-to-mouse, deeper macros via the software).
+       - Software RGB customisation (zone-by-zone colours, keyframe animations, brightness sliders set in the software).
+       - Software firmware updates via the Cosmic Byte software (Category A products from the firmware policy above).
+       - Software deadzone / anti-deadzone / radial trace / response curve adjustment.
+  3. ON-CONTROLLER features still work on Mac. Anything configured via button shortcuts on the controller itself (turbo, vibration intensity via shortcut, on-controller RGB mode cycling, on-controller macro recording where supported, factory reset, joystick calibration) works regardless of platform. The controller's onboard memory persists those settings across platforms — so the customer can configure on Windows once and the settings carry to Mac use.
+  4. Wired-only / dongle-only models without Bluetooth (e.g. older Ares wired-only batch, Nexus, the older 125Hz Ares variant): plug-and-play USB on Mac usually works for basic gamepad input but there is no software on Mac. Direct the customer to test plug-and-play first; if their Mac doesn't recognise the controller on USB, that's a USB / driver layer issue, not a Cosmic Byte support gap.
+
+EXPLICITLY MAC-VIA-BLUETOOTH-OK (do not hedge on these — the answer is "yes, works for basic gamepad use on Mac"):
+  - Lumora, Drakon, Stellaris (Gen 1 + Gen 2), Blitz Tri-Mode, Ares (current Tri-Mode), Ares Pro, Ares Wireless, Eclipse, Starforge, Quantum, Stratos Xenon, and any other CB controller in the catalog with a Bluetooth mode.
+  - For these, the customer pairs via Bluetooth and uses the controller as a standard gamepad. No Cosmic Byte software is needed for basic use; none exists for Mac anyway.
+
+WHAT TO SAY TO A MAC CUSTOMER:
+  - Lead with the YES: "Yes, the [Model] works on Mac for basic gamepad use — pair it via Bluetooth from your Mac's Bluetooth settings and it'll show up as a gamepad in Steam and most games."
+  - Then state the limitation: "The Cosmic Byte software (which handles things like custom RGB zones, button remapping via software, and firmware updates) is Windows-only — there's no Mac version. So advanced configuration via software isn't available on Mac, but everything you can configure via on-controller button shortcuts works on Mac the same as on Windows."
+  - If software-only configuration is the customer's primary need: suggest configuring on a Windows machine first if they have access to one. Onboard profiles / RGB / mappings persist between platforms — the controller carries settings into Mac use.
+
+WHAT NOT TO SAY:
+  - DO NOT tell the customer "the [Model] is not officially supported on Mac" — incorrect. Basic gamepad use is supported via Bluetooth on every Bluetooth CB controller.
+  - DO NOT tell the customer "you'll need Parallels / Boot Camp to use this controller on Mac" — incorrect. Bluetooth pairing on macOS works directly.
+  - DO NOT recommend competitor Mac-compatible controllers ("you may want a different gaming controller for Mac") — Cosmic Byte's controllers DO work on Mac for basic gamepad use, just without the Windows software. Recommending a competitor here is both incorrect and unnecessary.
+  - DO NOT invent a "Mac version" of the Cosmic Byte software or direct customers to a "macOS download page" — none exists.
+
+(For mice and keyboards, see the per-product manuals — most CB mice work plug-and-play on Mac for basic mouse use with software-only features Windows-only; many CB keyboards have a dedicated Mac mode toggle for proper Cmd/Option key layout. Refer to the specific product's manual for those.)
 
 WARRANTY OVERVIEW — all Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period.
 
@@ -6183,13 +6561,13 @@ WIRELESS/TRI-MODE (mid range):
 - Blitz Wireless: 2.4GHz + Bluetooth, Hall Effect, RGB, 600mAh. Wireless upgrade over Ares.
 
 TRI-MODE WITH ADVANCED FEATURES:
-- Ares Pro: Tri-mode (2.4GHz/BT/Wired), Hall Effect, gyro, software customisation, 600mAh. Best all-rounder.
-- Blitz Tri-Mode: Tri-mode, Hall Effect, gyro, RGB, macro, 1000Hz polling, 600mAh. Premium choice.
+- Ares Pro: Tri-mode (2.4GHz/BT/Wired), Hall Effect joysticks, Hall Effect analog/digital switchable triggers, gyro, software customisation. Best all-rounder.
+- Blitz Tri-Mode: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, robust gyro, 1000Hz polling, 600mAh. NO RGB, NO dedicated macro buttons. Precision-focused choice.
 
 PREMIUM / FLAGSHIP:
-- Lumora: Tri-mode, 6-axis gyro, touchpad, Hall Effect, 1000mAh. Console-style layout.
-- Stellaris: Tri-mode, touchpad, gyro, Hall Effect, RGB, 1000mAh. Premium build.
-- Drakon: Tri-mode, Hall Effect, gyro, RGB, 600mAh. Aggressive gaming design.
+- Lumora: Tri-mode, Hall Effect joysticks, Hall Effect analog/digital switchable triggers, 6-axis gyro, 4 macro buttons, 5-zone Cloak RGB, full keyboard/mouse mapping, replaceable joystick tops + D-pad covers, 1300mAh. Most feature-rich CB controller.
+- Stellaris: Tri-mode, TMR joysticks, Hall Effect analog triggers, gyro, RGB, 1000mAh. Premium build (transparent variant has additional outer RGB ring).
+- Drakon: Tri-mode, TMR joysticks (drift-resistant precision), 3-position physical trigger lock, gyro, 7-zone RGB with up to 8 keyframe animations, 2 macros (ML/MR), dragon artwork design with 3 swappable magnetic face plates (plain black / doodle / dragon), 6 swappable joystick tops in 3 styles, 2 D-pads, charging dock + carrying case included, 600mAh.
 - Starforge: Tri-mode, Hall Effect, gyro, 600mAh. Budget flagship.
 - Stratos Xenon: Tri-mode, Hall Effect, large grip. Comfort-focused.
 - Quantum: Tri-mode, Hall Effect, gyro. Mid-premium.
@@ -6197,8 +6575,10 @@ PREMIUM / FLAGSHIP:
 
 BUYING GUIDE:
 - Just PC gaming, budget-friendly → Nexus (Hall Effect, wired)
-- Wireless PC + mobile → Ares Pro (software) or Blitz Tri-Mode (RGB/macro)
-- Console-style feel → Lumora or Stellaris
+- Wireless PC + mobile, software-customisable → Ares Pro (Hall Effect) or Blitz Tri-Mode (TMR, no macros/RGB) — recommend based on whether customer wants TMR precision (Blitz) or HE switchable triggers + balance (Ares Pro)
+- Maximum customisation (macros, RGB, mappings, replaceable parts) → Lumora
+- Best joystick precision (TMR) → Blitz Tri-Mode, Stellaris 2nd Gen, or Drakon
+- Distinctive RGB design → Lumora (Cloak) or Drakon (dragon artwork + 7-zone keyframes)
 - Best value wireless → Blitz Wireless or Ares Pro
 """
 
