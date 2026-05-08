@@ -17,6 +17,71 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
 
 CHANGELOG
 ---------
+v1.0.4 (2026-05-09) -- Claude
+  * Z-bump: SOCKS5 proxy support (in addition to HTTP/HTTPS).
+
+  Why:
+    v1.0.3 added HTTP proxy support, which lets the bot's
+    initial Discord login go out through a static-IP proxy
+    and bypass the rate-limit problem on /users/@me. Tested
+    on Render with QuotaGuard: login succeeded, bot showed
+    online in Discord. BUT no messages were being delivered
+    -- the gateway WebSocket established its TLS handshake
+    through the HTTP proxy's CONNECT tunnel, then sat there
+    silent. HTTP proxies are notoriously flaky at carrying
+    long-lived WebSocket connections; the bot looked
+    "connected" while actually getting zero MESSAGE_CREATE
+    events from Discord.
+
+    SOCKS5 proxies tunnel at the TCP layer rather than
+    speaking HTTP, so a WebSocket inside a SOCKS5 tunnel is
+    just a TCP connection -- the proxy doesn't need to know
+    or care that it's a WebSocket. Long-lived connections
+    work cleanly. QuotaGuard provides both protocols on the
+    same plan; we just point at a different port.
+
+  Behaviour:
+    * Detects the proxy URL's scheme:
+        - socks5://, socks5h://, socks4://, socks4a://
+              -> build aiohttp_socks.ProxyConnector and
+                 pass to discord.Client(connector=...).
+                 Both REST and gateway WebSocket flow
+                 through the SOCKS tunnel.
+        - http://, https://
+              -> existing v1.0.3 behaviour: pass
+                 proxy=/proxy_auth= to discord.Client.
+        - anything else -> warn, no proxy.
+    * Same env var names and priority as v1.0.3
+      (QUOTAGUARDSTATIC_URL, FIXIE_URL, HTTPS_PROXY,
+      HTTP_PROXY).
+    * If aiohttp_socks is not importable but the URL is
+      SOCKS, we WARN and fall back to no proxy rather than
+      crash -- so a missing requirements.txt update is a
+      visible operator problem, not a silent rate-limit
+      regression.
+
+  Implementation note:
+    aiohttp_socks.ProxyConnector instances are single-use
+    -- once the aiohttp session that owns them is closed,
+    the connector cannot be reused. The v1.0.2 retry loop
+    creates a fresh discord.Client on each attempt, and now
+    each retry also creates a fresh ProxyConnector inside
+    _build_bot() for the same reason. The full SOCKS URL
+    (including credentials) is held in PROXY_URL_FOR_SOCKS
+    at module level so each rebuild can reconstruct the
+    connector cleanly.
+
+  Operator action needed:
+    1. Add `aiohttp-socks` to requirements.txt.
+    2. Update QUOTAGUARDSTATIC_URL on Render to the SOCKS5
+       URL from QuotaGuard's Connection Information page
+       (port 1080, scheme socks5://, same username/password
+       as the HTTP URL).
+    3. Redeploy.
+
+  No behaviour change when the proxy URL is HTTP/HTTPS or
+  unset -- v1.0.3 paths are preserved unchanged.
+
 v1.0.3 (2026-05-09) -- Claude
   * Z-bump: optional outbound HTTP proxy for the Discord
     connection, gated on env var. Lets the bot route its
@@ -221,7 +286,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 import os
 import sys
@@ -234,6 +299,19 @@ from urllib.parse import urlparse, unquote
 import aiohttp  # already a transitive dep via discord.py; we use it for BasicAuth
 import discord
 import anthropic
+
+# v1.0.4: aiohttp_socks is required only when the configured proxy URL is
+# SOCKS (scheme socks5://, socks5h://, socks4://, socks4a://). HTTP/HTTPS
+# proxies don't need it. We import it lazily so that running the bot
+# without a SOCKS proxy doesn't require the package to be installed -- a
+# missing dep at SOCKS-config time becomes a visible warning, not an
+# import-time crash.
+try:
+    from aiohttp_socks import ProxyConnector as _SocksProxyConnector
+    _HAS_AIOHTTP_SOCKS = True
+except ImportError:
+    _SocksProxyConnector = None
+    _HAS_AIOHTTP_SOCKS = False
 
 # Shared knowledge base. cb_kb.py has zero Streamlit/discord.py deps,
 # so this import is cheap and side-effect-free.
@@ -278,7 +356,7 @@ MAX_TOKENS = 600
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Optional outbound HTTP proxy for the Discord connection (v1.0.3)
+# Optional outbound HTTP/SOCKS proxy for the Discord connection
 # ─────────────────────────────────────────────────────────────────────
 # When set, all of discord.py's traffic (REST calls + gateway WebSocket)
 # is routed through this proxy. We set it on Render to bypass the shared
@@ -292,10 +370,16 @@ MAX_TOKENS = 600
 #   HTTPS_PROXY           -- generic Unix convention; useful for local testing
 #   HTTP_PROXY            -- generic Unix convention; useful for local testing
 #
-# Expected URL format: http://user:pass@host:port
-# Username and password are percent-decoded and passed to discord.py via
-# aiohttp.BasicAuth. The proxy URL stripped of credentials goes to
-# discord.Client's `proxy=` kwarg.
+# Supported schemes (v1.0.4):
+#   http://, https://             -- HTTP CONNECT-style proxy. Works for
+#                                    REST. Often unreliable for the
+#                                    gateway WebSocket (silent message
+#                                    drop) -- see v1.0.4 changelog.
+#   socks5://, socks5h://,        -- SOCKS proxy. Tunnels at TCP layer,
+#   socks4://, socks4a://            handles long-lived WebSockets cleanly.
+#                                    Recommended for Discord bots.
+#
+# Expected URL format: scheme://user:pass@host:port
 PROXY_URL_RAW = (
     os.environ.get("QUOTAGUARDSTATIC_URL")
     or os.environ.get("FIXIE_URL")
@@ -303,11 +387,19 @@ PROXY_URL_RAW = (
     or os.environ.get("HTTP_PROXY")
 )
 
-# These three are the parsed-and-ready values consumed by _build_bot.
-# They stay None when no proxy is configured (or when parsing fails).
-PROXY_NETLOC = None        # str: "http://host:port"  (no credentials)
-PROXY_AUTH = None          # aiohttp.BasicAuth or None
-PROXY_HOST_DISPLAY = "(none)"  # logged on startup; never includes password
+# Parsed-and-ready values consumed by _build_bot. Exactly one of
+# PROXY_URL_FOR_SOCKS or PROXY_NETLOC is set when a proxy is configured;
+# both are None when no proxy / parse failed.
+PROXY_NETLOC = None              # str: "http(s)://host:port" (HTTP path)
+PROXY_AUTH = None                # aiohttp.BasicAuth or None (HTTP path)
+PROXY_URL_FOR_SOCKS = None       # full URL incl. creds (SOCKS path).
+                                 # Stored as URL rather than connector
+                                 # because aiohttp_socks ProxyConnector
+                                 # instances are single-use; the retry
+                                 # loop rebuilds the connector each time.
+PROXY_HOST_DISPLAY = "(none)"    # logged on startup; never includes password
+
+_SOCKS_SCHEMES = {"socks5", "socks5h", "socks4", "socks4a"}
 
 if PROXY_URL_RAW:
     try:
@@ -320,22 +412,37 @@ if PROXY_URL_RAW:
             )
             PROXY_HOST_DISPLAY = "(parse failed)"
         else:
-            # Display "host:port" for the operator. Never include creds.
-            PROXY_HOST_DISPLAY = (
-                f"{_parsed.hostname}:{_parsed.port}"
-                if _parsed.port
-                else _parsed.hostname
-            )
-            # Strip credentials from the URL we hand to discord.py --
-            # auth goes via the separate proxy_auth kwarg.
-            PROXY_NETLOC = f"{_parsed.scheme}://{_parsed.hostname}"
-            if _parsed.port:
-                PROXY_NETLOC += f":{_parsed.port}"
-            if _parsed.username and _parsed.password:
-                PROXY_AUTH = aiohttp.BasicAuth(
-                    unquote(_parsed.username),
-                    unquote(_parsed.password),
-                )
+            _scheme = _parsed.scheme.lower()
+            _port_part = f":{_parsed.port}" if _parsed.port else ""
+            PROXY_HOST_DISPLAY = f"{_scheme}://{_parsed.hostname}{_port_part}"
+
+            if _scheme in _SOCKS_SCHEMES:
+                # SOCKS path. Need aiohttp_socks for the connector.
+                if not _HAS_AIOHTTP_SOCKS:
+                    print(
+                        "[discord_bot] WARNING: proxy URL is SOCKS but "
+                        "aiohttp_socks is not installed. Add 'aiohttp-socks' "
+                        "to requirements.txt and redeploy. Proceeding "
+                        "WITHOUT a proxy.",
+                        flush=True,
+                    )
+                    PROXY_HOST_DISPLAY = "(socks dep missing)"
+                else:
+                    # Store the full URL; ProxyConnector is built lazily
+                    # in _build_bot() because the connector is consumed
+                    # when its owning aiohttp session closes (which
+                    # happens at the end of each bot.run() call).
+                    PROXY_URL_FOR_SOCKS = PROXY_URL_RAW
+            else:
+                # HTTP/HTTPS path (v1.0.3 behaviour). Strip credentials
+                # from the URL we hand to discord.py -- auth goes via the
+                # separate proxy_auth kwarg.
+                PROXY_NETLOC = f"{_scheme}://{_parsed.hostname}{_port_part}"
+                if _parsed.username and _parsed.password:
+                    PROXY_AUTH = aiohttp.BasicAuth(
+                        unquote(_parsed.username),
+                        unquote(_parsed.password),
+                    )
     except Exception as e:
         # Don't crash on a misconfigured env var -- warn and fall back to
         # no-proxy behaviour. The v1.0.2 retry would otherwise mask the
@@ -347,6 +454,7 @@ if PROXY_URL_RAW:
         )
         PROXY_NETLOC = None
         PROXY_AUTH = None
+        PROXY_URL_FOR_SOCKS = None
         PROXY_HOST_DISPLAY = "(parse failed)"
 
 
@@ -592,17 +700,28 @@ def _build_bot():
     coroutines (which look up `bot` at call time) see the new instance.
     Used at module load and on each retry inside __main__.
 
-    v1.0.3: when PROXY_NETLOC is set, pass it (with optional PROXY_AUTH)
-    to discord.Client so all REST and gateway traffic routes through the
-    configured outbound proxy. This is the mechanism by which the bot's
-    Discord traffic comes from the proxy provider's IPs instead of the
-    host's default egress IP. When PROXY_NETLOC is None (no env var or
-    parse failure), Client is constructed without the proxy kwargs and
-    the bot uses the host's default outbound IP -- identical to v1.0.2.
+    v1.0.3: when PROXY_NETLOC is set (HTTP/HTTPS proxy), pass it (with
+    optional PROXY_AUTH) to discord.Client so all REST and gateway
+    traffic routes through the configured outbound proxy.
+
+    v1.0.4: when PROXY_URL_FOR_SOCKS is set (SOCKS proxy), build a fresh
+    aiohttp_socks.ProxyConnector and pass it via the `connector=` kwarg
+    instead. ProxyConnector is single-use -- once the aiohttp session
+    that owns it closes (which happens at the end of each bot.run()
+    call), it cannot be reused. The retry loop calls _build_bot() again
+    on each attempt, so each retry gets a fresh connector built from
+    the stored URL.
+
+    When neither is set, Client is constructed with no proxy at all and
+    the bot uses the host's default outbound IP (v1.0.2 behaviour).
     """
     global bot
     client_kwargs = {"intents": intents}
-    if PROXY_NETLOC:
+    if PROXY_URL_FOR_SOCKS is not None:
+        # SOCKS path. Build a fresh connector for each Client instance.
+        client_kwargs["connector"] = _SocksProxyConnector.from_url(PROXY_URL_FOR_SOCKS)
+    elif PROXY_NETLOC:
+        # HTTP/HTTPS path.
         client_kwargs["proxy"] = PROXY_NETLOC
         if PROXY_AUTH is not None:
             client_kwargs["proxy_auth"] = PROXY_AUTH
