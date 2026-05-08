@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.14.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,221 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.15.0 (2026-05-08) -- Claude
+  - Y-bump: KB sweep across all 36 product manual entries to find
+    and fix the same hallucination patterns that produced
+    v2.12.1 (Raptor), v2.12.2 (Blitz dock), v2.14.0 (Stellaris
+    rewrite + universal firmware rule), and v2.14.1 (Stellaris
+    Key Linker scope). Sweep was triggered after the v2.14.1
+    Gen 1 LED-via-Key-Linker bug demonstrated that the same
+    failure pattern was likely present elsewhere.
+
+  Sweep methodology:
+     Scanned every manual entry for four patterns -- "sold
+     separately" without confirming current availability,
+     "check website" without confirming the page exists,
+     app/tool name references without scope boundaries, and
+     multi-generation products without explicit ASK-FIRST
+     guidance. Produced a triage report with answers
+     requested from Ronak. Ronak responded with definitive
+     answers, which this changelog entry implements.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 1 -- SYSTEM_PROMPT: UNIVERSAL FIRMWARE RULE updated
+  ──────────────────────────────────────────────────────────────
+  Discovered (per real customer interaction history): the v2.14.1
+  rule "no separate firmware updater tool ever exists" is too
+  sweeping. There is one more legitimate exception:
+
+  - Ares Pro Gen 1 (no "App Support" back label, older model
+    without companion software) -- firmware is updated MANUALLY
+    via a separate standalone firmware file from
+    thecosmicbyte.com. The customer downloads the file and
+    applies it manually. This is the only currently-sold
+    product line where this manual-firmware-file path applies.
+
+  The rule is updated to explicitly include this as a second
+  exception alongside Stellaris Gen 1 (Key Linker mobile app).
+
+  Also added: "App Support" back-label check guidance. Three
+  product lines (Ares Pro, Stellaris, Blitz) have current-gen
+  models with companion software vs older models without.
+  AI is now instructed to ask the customer to check the back
+  label for "App Support" text when firmware/software questions
+  involve any of these three products.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 2 -- Stellaris failure-modes block: Key Linker scope updated
+  ──────────────────────────────────────────────────────────────
+  v2.14.1 said "Key Linker is Stellaris Gen 1 only." That is
+  incorrect. Eclipse and Starforge ALSO use the Key Linker
+  mobile app -- but only for button remapping, NOT for firmware
+  updates. (Stellaris Gen 1 uses Key Linker for both button
+  remap AND firmware updates -- that's unique to Gen 1.)
+
+  Updated the Stellaris failure-modes bullet covering Gen 2 and
+  Key Linker to read accurately: Key Linker is used by Stellaris
+  Gen 1 (button remap + firmware), Eclipse (button remap only),
+  and Starforge (button remap only). It is NOT used by current
+  Stellaris (Gen 2), Ares family, Blitz family, mice, or
+  keyboards.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 3 -- ARES PRO entry: ASK-FIRST + firmware contradiction fix
+  ──────────────────────────────────────────────────────────────
+  The Ares Pro entry contained a direct contradiction: line 2614
+  said "do NOT use any other firmware files" while lines 2617-2619
+  said older non-App-Support models DO use a separate standalone
+  firmware file. Ronak confirmed: older models DO use a separate
+  manual firmware file path. The contradiction was on the
+  "current/Gen 2" side -- that line was correctly absolute for
+  Gen 2 only.
+
+  Restructured Ares Pro entry similar to the Stellaris v2.14.0
+  treatment:
+    - ASK-FIRST guidance at top (current Ares Pro vs Gen 1 older
+      model, distinguished by "App Support" back label).
+    - Section for current Ares Pro (App Support label) -- software
+      handles config and firmware. The firmware update is done
+      THROUGH the software, not as a separate file.
+    - Section for Ares Pro Gen 1 (no App Support label) -- no
+      software; firmware update is a manual file download from
+      thecosmicbyte.com; customer should contact support if they
+      cannot find the right file for their model.
+    - Common failure modes block: do not tell Gen 1 customers to
+      use software (it does not work for them); do not tell
+      Gen 2 customers to download a separate firmware file
+      (their firmware is in the software).
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 4 -- Eclipse and Starforge entries: KeyLinker scope clarified
+  ──────────────────────────────────────────────────────────────
+  Eclipse line 3081 and Starforge line 3134 said "KeyLinker app
+  available for advanced customisation" without specifying scope.
+  Customer asking about firmware update on Eclipse/Starforge
+  could be told to use Key Linker (wrong -- Key Linker on these
+  controllers does NOT update firmware; it only handles button
+  remapping).
+
+  Updated both entries to clarify:
+    - Key Linker mobile app on Eclipse and Starforge handles
+      BUTTON MAPPING ONLY.
+    - Firmware updates on Eclipse and Starforge follow the
+      universal rule (companion PC software, wired USB).
+    - Do NOT direct customers to Key Linker for firmware on
+      these products.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 5 -- STRATOS XENON + QUANTUM: dongle URL added
+  ──────────────────────────────────────────────────────────────
+  Stratos Xenon manual mentioned "wireless dongle (sold
+  separately)" without a URL. Same exact phrase pattern as the
+  Blitz dock bug pre-fix. Confirmed by Ronak: the dongle IS
+  currently sold and the URL is
+  https://www.thecosmicbyte.com/product/cosmic-byte-stratos-xenon-gamepad-dongle-for-pc-gamepad-not-included-black/.
+  ALSO confirmed: the SAME dongle works for the Quantum
+  controller -- so the Quantum manual now documents this as
+  well.
+
+  ONLINEPAY (10% off online payments) applies to the dongle
+  the same as any other purchase. AI is told this explicitly so
+  it does not invent a separate coupon.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 6 -- MICE: macOS support stated explicitly
+  ──────────────────────────────────────────────────────────────
+  Several mouse entries (Velox, Aether) said "check website for
+  macOS" or "Windows-primary, check website" -- the exact
+  "check website" pattern that triggered the Raptor download
+  hallucination. Per Ronak: ALL Cosmic Byte mice work on macOS
+  for basic plug-and-play use, but there is NO dedicated macOS
+  software for any mouse. Software-only features (custom DPI
+  beyond presets, button remapping, macros, polling rate
+  adjustment, custom RGB) are Windows-only.
+
+  Updated affected entries (Velox, Aether, and any others with
+  ambiguous phrasing) to state this explicitly. AI is told not
+  to direct macOS users to any "macOS software page" -- it does
+  not exist.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 7 -- ASTRA: switch compatibility stated precisely
+  ──────────────────────────────────────────────────────────────
+  Astra entry's "Confirm on thecosmicbyte.com before purchasing"
+  guidance for switch compatibility was vague. Per Ronak: Astra
+  works with 3-pin AND 5-pin mechanical switches (Cherry MX,
+  Gateron, Kailh, Outemu in either pin format). It does NOT work
+  with Optical switches (Trinity uses optical -- different
+  socket). It does NOT work with Magnetic switches.
+
+  Replaced the "confirm on website" wording with this explicit
+  list.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 8 -- DRAGONFLY: separate software clarified
+  ──────────────────────────────────────────────────────────────
+  Dragonfly manual mentioned "(separate software for keyboard
+  and mouse)" without explaining where to find each. Updated to
+  state explicitly: the Dragonfly downloads page on
+  thecosmicbyte.com lists Dragonfly Keyboard software and
+  Dragonfly Mouse software as two separate entries; download
+  both if the customer wants to configure both peripherals.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 9 -- ARES (basic), ARES WIRED, ARES WIRELESS: ASK-FIRST
+  ──────────────────────────────────────────────────────────────
+  These three Ares-family products all have a 2026 batch (Hall
+  Effect joysticks + analog triggers, possibly with newer
+  features) and an older batch (standard joysticks, 125Hz on
+  basic Ares). The manuals describe both batches but do not
+  formally tell the AI to ask the customer which batch they
+  have before answering. Added ASK-FIRST guidance at the top
+  of each entry.
+
+  Hint to identify: 2026 batch generally has 1000Hz polling and
+  Hall Effect; older batch has 125Hz and standard sensors.
+  Customer can also check the back label or product page for
+  "Hall Effect" mention.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 10 -- ARES WIRELESS: missing warranty section restored
+  ──────────────────────────────────────────────────────────────
+  The Ares Wireless entry ended without a warranty section
+  (the entry just stopped after the disconnections
+  troubleshooting). Added a warranty section consistent with the
+  rest of the Ares family.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 11 -- SYSTEM_PROMPT: "Pro Controller" Bluetooth name guidance
+  ──────────────────────────────────────────────────────────────
+  Multiple Cosmic Byte controllers pair as "Pro Controller" via
+  Bluetooth in their respective Gyro / Switch-protocol modes
+  (Stellaris Gen 1 in PC mode, Lumora in PC Gyro mode, possibly
+  others). If a customer asks about "Pro Controller" appearing
+  in their Bluetooth list without context, the AI previously had
+  to guess or ask vaguely.
+
+  Added explicit guidance: "Pro Controller" is the Bluetooth
+  name used by multiple Cosmic Byte controllers in Nintendo
+  Switch-compatible (Gyro / NS) Bluetooth mode. Replicates the
+  Switch Pro Controller protocol so Gyro works like a Switch
+  controller. NOTE: triggers are NOT pressure-sensitive in this
+  mode (analog triggers act as digital). If a customer mentions
+  "Pro Controller" without specifying which product they own,
+  ask which Cosmic Byte controller they have before answering.
+
+  ──────────────────────────────────────────────────────────────
+  CHANGE 12 -- SYSTEM_PROMPT: WARRANTY GUIDANCE
+  ──────────────────────────────────────────────────────────────
+  Confirmed by Ronak: all Cosmic Byte products carry 1-year
+  warranty against manufacturing defects. The warranty period
+  for an individual product is printed on the MRP label on the
+  product packaging. AI is told this explicitly so it can guide
+  customers who ask about warranty periods generally.
+
+  ──────────────────────────────────────────────────────────────
+  Verification: ast.parse confirms the file parses on Python 3.
 
 v2.14.1 (2026-05-08) -- Claude
   - Z-bump: tighten the Stellaris Gen 1 / Gen 2 boundary in
@@ -1712,7 +1927,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.14.1"
+__version__ = "2.15.0"
 
 import streamlit as st
 import anthropic
@@ -2512,7 +2727,7 @@ SECTION 4: COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
 - Do NOT proactively ask "Gen 1 or Gen 2?" on every query. Default to current Stellaris. Only switch to Gen 1 on a customer signal (magnetic joysticks reference, "no software," shortcut not working, explicit "1st gen / older").
 - Do NOT invent a "Stellaris Firmware Updater" tool — it does not exist. Current Stellaris firmware = Cosmic Byte software (PC, wired). Gen 1 firmware = Key Linker mobile app (Bluetooth). No third path.
 - Do NOT tell Gen 1 customers to use Key Linker for RGB / LED color / lighting changes. Key Linker on Gen 1 covers ONLY firmware updates and button remapping. RGB on Gen 1 is gamepad shortcuts ONLY. This is a real bug that has happened — when a Gen 1 customer asks about LED color, walk them through gamepad shortcuts (SELECT + D-pad Left to cycle modes, SELECT + D-pad Right to switch single colors), NOT Key Linker.
-- Do NOT tell current-Stellaris (Gen 2) customers to use Key Linker for anything. Key Linker is Gen 1 only. Gen 2 uses the PC companion software for RGB, macros, button mapping, and firmware. Gen 2 does not pair with Key Linker.
+- Do NOT tell current-Stellaris (Gen 2) customers to use Key Linker for anything. Current Stellaris uses the PC companion software for RGB, macros, button mapping, and firmware. Note: Key Linker IS used by some other Cosmic Byte controllers (Eclipse and Starforge for button remapping, Stellaris Gen 1 for both button remap + firmware) — but NOT by current Stellaris.
 - ALWAYS ask the customer if they have the BLACK or TRANSPARENT variant before answering ANY RGB / lighting question on Stellaris (either gen). The transparent variant has the extra outer RGB ring; the black variant does not. This affects almost every RGB answer. Do not skip the variant ask — answer fully only after the customer tells you the variant.
 
 ═══════════════════════════════════════════════════════════════════════
@@ -2599,26 +2814,63 @@ WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
     "Ares Pro": """
 COSMIC BYTE ARES PRO - TRI-MODE CONTROLLER - FULL MANUAL
 
-IMPORTANT - SOFTWARE SUPPORT MODEL CHECK:
-- Software support is ONLY available on newer Ares Pro models.
-- Check the back label of the controller - if it says "App Support" in the top left corner, the model supports software.
-- If "App Support" text is NOT present on back label, the model does NOT support the software.
-- Older models work fine as controllers but cannot use software customization features.
+═══════════════════════════════════════════════════════════════════════
+ASK-FIRST GUIDANCE (READ BEFORE ANSWERING SOFTWARE / FIRMWARE / RGB QUESTIONS):
+═══════════════════════════════════════════════════════════════════════
 
-FIRMWARE UPDATE - CRITICAL WARNING:
-LATEST FIRMWARE FEATURES (2026 update):
+GENERATIONS: There are TWO generations of Ares Pro currently in customer hands. They differ in software support and firmware-update mechanism. ALWAYS ask the customer to check the back label of their controller (or the back of the original packaging) for "App Support" text in the top-left corner — that single check distinguishes the two generations:
+
+  - "App Support" text PRESENT on back label → CURRENT Ares Pro (Gen 2). Has companion PC software. Software handles RGB customization, button mapping, firmware updates, auto-shutdown adjustment, and other advanced features.
+
+  - "App Support" text ABSENT on back label → ARES PRO Gen 1 (older model). NO companion software. Works fully as a controller but cannot be configured via software. Firmware updates use a manual standalone-file path (see SECTION 2 below).
+
+Default to Gen 2 (current) unless customer signals otherwise (e.g. "no software for my Ares Pro," "back label has no App Support text," explicitly "older model"). Don't proactively ask "Gen 1 or Gen 2?" on every query — only when the answer materially differs (software questions, firmware questions, software-only feature questions).
+
+PLATFORM: Designed exclusively for Windows PC. NOT compatible with PlayStation, Xbox, Nintendo Switch or any console. No warranty for console use. Android via OTG works but is not covered under warranty.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 1: CURRENT ARES PRO (Gen 2 — "App Support" label present)
+═══════════════════════════════════════════════════════════════════════
+
+This is the version sold currently. Has companion software that handles all advanced features.
+
+SOFTWARE: Download the Cosmic Byte software from https://www.thecosmicbyte.com/downloaddrivers/. Same software handles RGB customization, button mapping, macros, polling rate adjustment, auto-shutdown adjustment, and firmware updates. Software v1.2.11 (released Jan 2026) added auto-shutdown adjustment and updated the vibration shortcut.
+
+FIRMWARE UPDATE (current Ares Pro): Done THROUGH the companion software. Connect Ares Pro via USB-C in WIRED mode → power on the controller → open the software → use the firmware update option inside the software → do NOT disconnect during update. There is NO separate firmware-updater tool for the current Ares Pro — the same software handles both configuration and firmware.
+
+LATEST FIRMWARE FEATURES (recent updates):
 - New joystick calibration shortcut: Power OFF controller → Press and hold Back + X + Home for 1 second → LEDs flash green and blue + controller vibrates once → Follow on-screen steps → Press Start to confirm → Green LED + vibration = done.
 - Joystick mode switching now has clear vibration cues.
 - Auto shutdown time can now be adjusted via the software.
 - Controller vibration strength shortcut updated to prevent unintended changes during gameplay.
-- To update firmware: Connect in WIRED mode via software, then click Firmware Update. Do NOT use any other firmware files.
 
+═══════════════════════════════════════════════════════════════════════
+SECTION 2: ARES PRO GEN 1 (no "App Support" label — older model)
+═══════════════════════════════════════════════════════════════════════
 
-- TWO different firmware versions exist.
-- Models WITH "App Support" label: update firmware ONLY through the Cosmic Byte software (connect wired, press firmware update in software). NEVER use the standalone firmware file.
-- Models WITHOUT "App Support" label: use the separate standalone firmware file from thecosmicbyte.com.
-- Mixing these up can cause serious issues.
-- Software v1.2.11 (released Jan 2026) added auto shutdown adjustment and updated vibration shortcut.
+This is the older Ares Pro without companion software support. Works fully as a controller but cannot be configured via software. Some Gen 1 units are still in customer hands under warranty.
+
+DIFFERENCES FROM CURRENT ARES PRO:
+- NO companion software. All configuration via gamepad button shortcuts (turbo, vibration, macro, RGB) only.
+- NO software-only features (no software-based button remapping, no custom DPI/polling adjustment via software, no auto-shutdown time adjustment).
+- 1000Hz polling rate is NOT available on Gen 1 — that's a 2026 manufacturing batch feature only. Older models have lower polling rate; this is a hardware limitation and cannot be upgraded.
+
+GEN 1 FIRMWARE UPDATE — MANUAL FILE PATH:
+- There is NO companion software for Gen 1, so the standard "update through the software" path does NOT apply.
+- Firmware updates for Gen 1 are done MANUALLY via a separate standalone firmware file from thecosmicbyte.com. Customer downloads the firmware file and applies it manually following the instructions on the support page.
+- If the customer cannot locate the right firmware file for their model, direct them to support (cc@thecosmicbyte.com or +91 7351615161) — do NOT invent a URL or filename. Support will provide the correct file.
+- Do NOT direct Gen 1 customers to the companion software — it does not work for their generation.
+
+═══════════════════════════════════════════════════════════════════════
+COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
+═══════════════════════════════════════════════════════════════════════
+
+- Do NOT tell a Gen 1 customer (no "App Support" label) to download the companion software. It does not detect or work with their controller.
+- Do NOT tell a Gen 2 customer (with "App Support" label) to download a separate standalone firmware file. Their firmware is updated INSIDE the companion software, not as a separate file.
+- ALWAYS ask the customer to check the back label for "App Support" text before answering any software, RGB-via-software, or firmware question. This single check disambiguates the two generations.
+- Do NOT tell any Ares Pro customer that it works on PlayStation/Xbox/Switch. It is PC-only.
+
+═══════════════════════════════════════════════════════════════════════
 
 LED COLOR INDICATORS:
 - Orange LED = X-Input mode (PC).
@@ -2637,11 +2889,6 @@ CONNECTIVITY:
 - Windows defaults to X-Input mode.
 - Android requires OTG support. Android compatibility not covered under warranty.
 - Turn off controller: Hold Back + B for 3 seconds.
-
-PLATFORM COMPATIBILITY:
-- Designed EXCLUSIVELY for Windows PC.
-- NOT compatible with PlayStation, Xbox, Nintendo Switch or any console.
-- No warranty or support for console use.
 
 TURBO:
 - Enable: Press desired button + Turbo.
@@ -2684,11 +2931,11 @@ JOYSTICK CALIBRATION:
 - Press both triggers fully 3 times.
 - Press Start to finish. Green LED lights up, vibrates once to confirm.
 
-VIBRATION CONTROL (v1.2.11 update):
+VIBRATION CONTROL (current/Gen 2 with v1.2.11+ software):
 - Increase: HOLD R3 + Left Joystick Up for 3 seconds (must hold - not just tap).
 - Decrease: HOLD R3 + Left Joystick Down for 3 seconds.
 - Updated to prevent accidental changes during gameplay.
-- Auto shutdown time can be adjusted via software on supported models.
+- Auto shutdown time can be adjusted via software on Gen 2 only.
 
 HEADSET JACK:
 - Works in wireless dongle and wired modes only.
@@ -2700,8 +2947,8 @@ BATTERY:
 - Charging: LED flashes slowly. Fully charged: LED turns off.
 
 POLLING RATE:
-- 1000Hz polling rate available on 2026 manufacturing batch only.
-- Older models cannot be upgraded to 1000Hz.
+- 1000Hz polling rate available on 2026 manufacturing batch (current Ares Pro / Gen 2) only.
+- Older Gen 1 models cannot be upgraded to 1000Hz — hardware limitation.
 
 WARRANTY:
 - 1 year against manufacturing defects only.
@@ -2760,6 +3007,14 @@ WARRANTY:
     "Ares Wired": """
 COSMIC BYTE ARES WIRED - USB WIRED CONTROLLER - FULL MANUAL
 
+═══════════════════════════════════════════════════════════════════════
+ASK-FIRST GUIDANCE: TWO batches exist — current 2026 and older.
+═══════════════════════════════════════════════════════════════════════
+- 2026 BATCH (current): Hall Effect joysticks AND Hall Effect analog triggers. Drift-resistant by design.
+- OLDER BATCH: Standard joysticks and standard triggers (not Hall Effect). Drift from wear is NOT covered under warranty for older batch.
+
+How to identify: 2026 batch back label / packaging mentions "Hall Effect". Older batch does not. If a customer reports joystick drift, ask which batch they have BEFORE answering — drift on 2026 batch may be a manufacturing defect (covered), drift on older batch is wear and tear (not covered). Do not promise warranty coverage without identifying the batch.
+
 CONNECTIVITY:
 - USB wired only. No wireless or Bluetooth support.
 - Plug into PC USB port - recommend rear USB port on desktop for stable power.
@@ -2815,6 +3070,14 @@ WARRANTY:
     "Ares Wireless": """
 COSMIC BYTE ARES WIRELESS - 2.4GHz WIRELESS CONTROLLER - FULL MANUAL
 
+═══════════════════════════════════════════════════════════════════════
+ASK-FIRST GUIDANCE: TWO batches exist — current 2026 and older.
+═══════════════════════════════════════════════════════════════════════
+- 2026 BATCH (current): Hall Effect joysticks AND Hall Effect analog triggers. Drift-resistant.
+- OLDER BATCH: Standard joysticks and standard triggers (not Hall Effect). Drift from wear is NOT covered under warranty for older batch.
+
+How to identify: 2026 batch back label / packaging mentions "Hall Effect". If a customer reports joystick drift, ask which batch they have BEFORE answering — drift on 2026 batch may be a manufacturing defect (covered), drift on older batch is wear and tear (not covered). Do not promise warranty coverage without identifying the batch.
+
 CONNECTIVITY:
 - 2.4GHz wireless via USB dongle. PC only. No Bluetooth.
 - Insert USB receiver into PC. Press HOME button to power on - auto-connects in XInput mode (Blue LED solid).
@@ -2868,6 +3131,15 @@ DISCONNECTIONS:
 - Keep away from Wi-Fi routers and USB 3.0 devices (2.4GHz interference).
 - Replace/charge battery even if LEDs appear lit.
 - Double-press HOME to re-pair if disconnected.
+
+WARRANTY:
+- 1 year against manufacturing defects only.
+- Physical damage, water damage, tampered or modified products NOT covered.
+- Battery wear and tear NOT covered.
+- Joystick drift on older batch (no Hall Effect) is wear and tear, NOT covered. Drift on 2026 Hall Effect batch may be a manufacturing defect — depends on circumstances.
+- Console use NOT covered.
+- To claim warranty: visit thecosmicbyte.com/raise-a-ticket/ or email cc@thecosmicbyte.com with proof of purchase and description of the issue.
+- Support: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm.
 """,
 
     "Blitz Tri-Mode": """
@@ -3078,7 +3350,7 @@ ABXY LED BRIGHTNESS:
 BATTERY & CHARGING:
 - 1200mAh, 11-13 hours. Charge time: 3-4 hours. Use 5V 500mA charger or PC USB port.
 - Wireless charging contacts on back for compatible charging dock.
-- KeyLinker app available (Google Play/Apple App Store) for advanced customisation.
+- KeyLinker mobile app (Google Play / Apple App Store) for advanced BUTTON REMAPPING ONLY. Pair the controller via Bluetooth with a mobile device, open the Key Linker app, and use it to customize button assignments. Note: Key Linker on the Eclipse is for button remapping only — it does NOT update firmware. Firmware updates for the Eclipse follow the standard Cosmic Byte rule: connect via USB-C in wired mode, open the Cosmic Byte companion software (download from https://www.thecosmicbyte.com/downloaddrivers/), and use the firmware update option inside the software. Do NOT direct customers to Key Linker for firmware on the Eclipse.
 
 RESET & POWER:
 - Power off: hold Home 5 seconds. Auto-off: 10 minutes.
@@ -3131,7 +3403,15 @@ TRIGGER MOTOR VIBRATION: Press BOTH triggers + Fn for 1 second to cycle: Mode 1=
 ABXY LAYOUT SCREW SWITCH: Use included screwdriver to rotate centre screw. Vibration confirms change. Restart controller after.
 
 CONTROLLER RESET: Power OFF. Hold LS + RS + Home for 1 second -> red light 1 sec -> controller powers off = reset. Re-pair and recalibrate after.
-BATTERY: 1200mAh, 10-12 hours. Charge: 3-4 hours. KeyLinker app (Google Play/Apple App Store) for advanced customisation.
+BATTERY: 1200mAh, 10-12 hours. Charge: 3-4 hours.
+
+KEY LINKER MOBILE APP (Starforge — BUTTON REMAPPING ONLY):
+- Available on Google Play and Apple App Store.
+- Pair the Starforge via Bluetooth with a mobile device, open Key Linker, and use it for advanced button remapping.
+- IMPORTANT — scope: Key Linker on the Starforge handles BUTTON REMAPPING ONLY. It does NOT update firmware on the Starforge.
+- Firmware updates for the Starforge follow the standard Cosmic Byte rule: connect via USB-C in wired mode, open the Cosmic Byte companion software (https://www.thecosmicbyte.com/downloaddrivers/), use the firmware update option inside the software.
+- Do NOT direct customers to Key Linker for firmware on the Starforge.
+
 PACKAGE: Controller, magnetic cover, 2.4G receiver, USB-C cable (1.5m), manual, 3 extra joystick sets, puller, screwdriver.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
@@ -3156,6 +3436,7 @@ CONNECTIVITY:
 - PC wired (PS4 mode default): Connect USB -> "Wireless Controller" (blue LED). Works with Steam.
 - PC wired XInput: Long-press Share + Options for 3 seconds (wired only, NOT available via Bluetooth).
 - PC Bluetooth: Press Share + Home when OFF until LED blinks -> find "Dualshock 4 controller" in Bluetooth.
+- PC 2.4GHz wireless: requires the Stratos Xenon Wireless Dongle (sold separately) — the same dongle works for both Quantum and Stratos Xenon. Product page: https://www.thecosmicbyte.com/product/cosmic-byte-stratos-xenon-gamepad-dongle-for-pc-gamepad-not-included-black/. ONLINEPAY (10% off) applies.
 - Nintendo Switch wired: USB-C to Switch, press Home/PS. Supports headphone jack.
 - Nintendo Switch Bluetooth Method 1: Complete wired pairing first, then disconnect cable.
 - Nintendo Switch Bluetooth Method 2: Go to Controllers > Change Grip/Order. Hold Options + PS until 4 LEDs flash quickly. Wait for connection. Up to 2 players supported.
@@ -3193,17 +3474,23 @@ the Stratos Xenon genuinely works on PS4 hardware with full button and vibration
 PLATFORM COMPATIBILITY:
 - PS4: primary platform, full wireless Bluetooth support.
 - PS5: LIMITED - connect via USB, hold Home 2+ seconds -> LED flashes white -> wait 5+ seconds = connected. PS5 native games NOT supported. PS4 games on PS5 work.
-- PC: wired (USB) as PS4-style controller. For all Windows games use Steam (PS4 type) or DS4Windows. Wireless on PC requires separate Stratos Xenon Wireless Dongle (sold separately, not in box).
+- PC: wired (USB) as PS4-style controller. For all Windows games use Steam (PS4 type) or DS4Windows. Wireless on PC requires the Stratos Xenon Wireless Dongle (sold separately, not in box).
 - iOS 13+: Bluetooth.
 - Android: Bluetooth.
 - NOT designed as a primary PS5 controller.
+
+STRATOS XENON WIRELESS DONGLE — WHERE TO BUY:
+- The dongle IS currently sold as a separate accessory. Product page: https://www.thecosmicbyte.com/product/cosmic-byte-stratos-xenon-gamepad-dongle-for-pc-gamepad-not-included-black/
+- IMPORTANT: this same dongle ALSO works with the Cosmic Byte Quantum controller. If a customer has a Quantum and wants PC wireless, this is the correct dongle.
+- ONLINEPAY (10% off online payments) applies to the dongle the same as any other Cosmic Byte purchase.
+- If a customer asks where to find the dongle, give them the URL above. Do NOT invent a different URL or coupon code.
 
 CONNECTIVITY:
 - PS4 (first-time): connect USB cable -> controller registers with PS4 -> disconnect for wireless.
 - PS4 (reconnect): short-press Home button. Range: up to 8 metres.
 - PS5: USB cable -> hold Home 2+ seconds -> wait for LED colour change = connected.
 - Android/iOS Bluetooth: hold PS + Share until LED flashes -> select 'Wireless Controller' in Bluetooth settings -> tap OK.
-- PC wireless: requires separate wireless dongle (sold separately).
+- PC wireless: requires the Stratos Xenon Wireless Dongle (URL above — same dongle as Quantum).
 
 UNIQUE HARDWARE FEATURES:
 - Upgraded Hall Effect joysticks - magnetic, drift-resistant.
@@ -3279,9 +3566,9 @@ TROUBLESHOOTING:
 - Buttons unresponsive: test in wired mode first. If wired OK = wireless issue. If wired also fails = contact support.
 
 SOFTWARE:
-- Cosmic Byte Velox software available at https://www.thecosmicbyte.com/downloaddrivers/.
+- Cosmic Byte Velox software available at https://www.thecosmicbyte.com/downloaddrivers/. Windows ONLY.
 - Allows custom DPI up to 26000, button remapping, polling rate adjustment.
-- macOS: basic plug-and-play on all 3 modes. Software may be Windows-primary - check website.
+- macOS: the Velox works as a plug-and-play mouse on macOS in all 3 modes (wired, 2.4GHz, Bluetooth) for normal mouse use. However, there is NO dedicated macOS software — software-only features (custom DPI levels beyond presets, button remapping, polling rate adjustment) are Windows-only. Do NOT direct macOS users to a "macOS version" of the software — none exists.
 
 BUTTONS: Left Click (Huano, 100M clicks), Right Click, Scroll Click, Side Button 1 (Forward), Side Button 2 (Backward).
 
@@ -3360,7 +3647,8 @@ TROUBLESHOOTING:
 - Bluetooth not pairing: device must support BLE. Remove old pairing first. Hold L+M+R 3s for pairing mode.
 - Cursor erratic: use mousepad, lower DPI, check for interference.
 
-SOFTWARE: All 6 buttons programmable. Windows-primary (check website for macOS). Download from https://www.thecosmicbyte.com/downloaddrivers/.
+SOFTWARE: All 6 buttons programmable via Cosmic Byte software (Windows ONLY). Download from https://www.thecosmicbyte.com/downloaddrivers/.
+macOS NOTE: The Aether works as a plug-and-play mouse on macOS for normal use. However, there is NO dedicated macOS software — software-only features (custom DPI beyond presets, button remapping, RGB customization) are Windows-only. Do NOT direct macOS users to a "macOS version" — none exists.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
@@ -4178,7 +4466,7 @@ TROUBLESHOOTING:
 - Backlight not working: FN + backslash to toggle. FN + Up to increase brightness. Factory reset: FN + Del for 3s.
 - Wrong key output on Mac: Press FN + O to switch to Mac mode.
 - Key not registering: Remove and re-insert switch using switch puller. Replace if faulty.
-- Cherry MX switch I bought not fitting: Ensure it's a standard Cherry MX compatible 5-pin or 3-pin switch. Confirm on thecosmicbyte.com before purchasing.
+- Cherry MX switch I bought not fitting: The Astra works with 3-pin AND 5-pin MECHANICAL switches. Confirmed compatible brands: Cherry MX, Gateron, Kailh, Outemu — in either 3-pin or 5-pin format. The Astra does NOT work with Optical switches (those have a different socket design — Trinity uses optical and the two are not interchangeable). The Astra does NOT work with Magnetic switches. If a customer asks about a specific switch, verify it is mechanical (not optical, not magnetic) and 3-pin or 5-pin.
 - Charging LED bug (older units): Some units show red LED in wired mode even when charged. Firmware update fixes this — download latest software from product page.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage, battery wear NOT covered.
@@ -4188,6 +4476,19 @@ SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
 
     "Ares": """
 COSMIC BYTE ARES - WIRED GAMEPAD - FULL MANUAL
+
+═══════════════════════════════════════════════════════════════════════
+ASK-FIRST GUIDANCE: There are TWO generations of Ares in customer hands.
+═══════════════════════════════════════════════════════════════════════
+- CURRENT 2026 model: Tri-Mode (USB Wired / 2.4GHz dongle / Bluetooth), Hall Effect joysticks AND Hall Effect analog triggers, 1000Hz polling rate.
+- PREVIOUS model: USB-wired only (no dongle, no Bluetooth), 125Hz polling rate, standard joysticks (not Hall Effect).
+
+How to identify which one the customer has:
+- If the customer's Ares connects via dongle or Bluetooth → current 2026 tri-mode.
+- If wired-only with no dongle in the box → older model.
+- If unsure, ask "does your Ares have a USB dongle or just a USB cable?"
+
+When answering connectivity / polling rate / Hall Effect questions, default to current 2026 if customer is silent on which they have. Switch to "previous model" answers only when customer signals (no dongle, says it's an older purchase, etc.). Don't ask proactively on every query — only when the answer materially differs.
 
 CONNECTIVITY:
 - Wired USB only. Plug the USB cable into PC or Android device.
@@ -4492,7 +4793,7 @@ FN+5=7 Colour Switch | FN+6=Light 1 | FN+7=Light 2 | FN+8=LED Off
 FN+9=Custom (FN + ←/→ to choose colour, FN+9 again to save)
 FN + ←/→ = direction control | FN + PgUp/PgDn = brightness up/down
 
-SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/ for macro assignment, DPI tuning, RGB customisation (separate software for keyboard and mouse)
+SOFTWARE: The Dragonfly has TWO separate software downloads — one for the keyboard, one for the mouse. Both are listed on the Cosmic Byte downloads page (https://www.thecosmicbyte.com/downloaddrivers/) as separate entries: "Dragonfly Keyboard" and "Dragonfly Mouse". If the customer wants to configure both peripherals (keyboard macros + mouse DPI/macros/RGB), they need to download BOTH softwares. The keyboard software handles RGB modes and key remapping; the mouse software handles DPI tuning, macro assignment, and RGB customisation. Do NOT tell the customer there is a single combined Dragonfly software — there isn't.
 
 TROUBLESHOOTING:
 Q: Keyboard keys not registering?
@@ -4767,7 +5068,7 @@ Other CB controllers with Hall Effect (for reference):
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
 
-UNIVERSAL FIRMWARE UPDATE RULE — applies to ALL Cosmic Byte products. There is NO separate "Firmware Updater" tool, NO separate firmware download file, and NO product-specific firmware utility. Do NOT invent one. The actual process for any Cosmic Byte product that supports firmware updates is:
+UNIVERSAL FIRMWARE UPDATE RULE — applies to MOST Cosmic Byte products. There is generally NO separate "Firmware Updater" tool — the companion software handles BOTH configuration AND firmware updates for products that have software support. The standard process is:
 
   1. The companion software handles BOTH configuration AND firmware updates. Same software, one download.
   2. Customer downloads the companion software from https://www.thecosmicbyte.com/downloaddrivers/.
@@ -4776,11 +5077,29 @@ UNIVERSAL FIRMWARE UPDATE RULE — applies to ALL Cosmic Byte products. There is
   5. Use the firmware update option inside the software (typically labeled "Firmware Update", "Update Firmware", or similar — exact wording depends on the software version).
   6. Do NOT disconnect during the update process.
 
-Do NOT tell customers to "search for [Product] Firmware Updater" or "download the firmware tool" — neither exists. Do NOT invent a download URL for a separate firmware utility — there is only the companion software.
+Do NOT tell customers to "search for [Product] Firmware Updater" or "download the firmware tool" — there is generally no such standalone tool. Do NOT invent a download URL.
 
-EXCEPTION — Stellaris Gen 1 (discontinued legacy product, still under warranty for some customers): firmware updates for Stellaris Gen 1 are done via the "Key Linker" mobile app over Bluetooth, NOT via PC software. Pair the controller via Bluetooth with the mobile device (controller will appear as "Pro Controller"), open Key Linker app, refresh the device list, select "PRO CONTROLLER", choose "Update Device" from the menu. The current Stellaris (Gen 2) follows the standard rule above (PC companion software, wired USB).
+EXCEPTIONS — three product situations where the standard rule does NOT apply:
 
-PRODUCTS WITHOUT SOFTWARE SUPPORT: If a customer asks about firmware update for a Cosmic Byte product that does not have companion software (e.g. Raptor Mouse, Ares basic wired controller, basic membrane keyboards), the correct answer is that the product does not support user firmware updates. Do not invent a workaround.
+  EXCEPTION 1 — Stellaris Gen 1 (discontinued legacy product, still under warranty for some customers): firmware updates are done via the "Key Linker" mobile app over Bluetooth, NOT via PC software. Pair the controller via Bluetooth with a mobile device (controller appears as "Pro Controller"), open Key Linker app, refresh the device list, select "PRO CONTROLLER", choose "Update Device" from the menu. The current Stellaris (Gen 2, "App Support" label) follows the standard rule above (PC companion software, wired USB).
+
+  EXCEPTION 2 — Ares Pro Gen 1 (older model WITHOUT "App Support" back label): there is no companion software for this generation, so firmware is updated MANUALLY via a separate standalone firmware file from thecosmicbyte.com. Customer downloads the firmware file and applies it manually following the instructions on the support page. If the customer cannot locate the right file for their model, direct them to support (cc@thecosmicbyte.com) — do NOT invent a URL or filename. The current Ares Pro (Gen 2, "App Support" label) follows the standard rule above (companion software handles firmware).
+
+  EXCEPTION 3 — Older Blitz models (Blitz Wireless, discontinued, no "App Support" label): no software support, no user firmware updates available through normal channels. Direct to support if the customer has firmware-related issues. The current Blitz Tri-Mode (with "App Support" label) follows the standard rule.
+
+"APP SUPPORT" BACK-LABEL CHECK — three product lines (Ares Pro, Stellaris, Blitz Tri-Mode) have a current generation WITH companion software and an older generation WITHOUT software. The newer ones have "App Support" printed in the top-left corner of the back label. ALWAYS ask the customer to check the back label for "App Support" text when answering software, RGB software, button-mapping-via-software, or firmware questions for any of these three products. If "App Support" text is present → newer generation, use software path. If absent → older generation, use the appropriate exception above.
+
+PRODUCTS WITHOUT ANY USER FIRMWARE UPDATES: If a customer asks about firmware update for a Cosmic Byte product that does not have companion software AND is not covered by the exceptions above (e.g. Raptor Mouse, Ares basic wired controller, Nexus, basic membrane keyboards, Cyclone RGB cooling pad), the correct answer is that the product does not support user firmware updates. Do not invent a workaround.
+
+"PRO CONTROLLER" BLUETOOTH NAME — multiple Cosmic Byte controllers pair as "Pro Controller" via Bluetooth in their Nintendo Switch-compatible Gyro / NS modes (Stellaris Gen 1 in WIN PC mode, Lumora in PC Gyro mode, and others). This is intentional — the controller replicates the Nintendo Switch Pro Controller Bluetooth protocol so that Gyro works the same way as on a Switch. IMPORTANT: in this mode, the analog triggers (LT/RT) are NOT pressure-sensitive — they act as digital buttons (on/off) only. If a customer mentions "Pro Controller" appearing in their Bluetooth list without specifying which Cosmic Byte product they own, ASK which controller they have before answering — multiple Cosmic Byte products use this Bluetooth name.
+
+KEY LINKER MOBILE APP — used by THREE Cosmic Byte products, each with different scope. Do not generalize across them:
+  - Stellaris Gen 1: Key Linker = button remapping AND firmware updates.
+  - Eclipse: Key Linker = button remapping ONLY (firmware updates use companion PC software via wired USB, standard rule).
+  - Starforge: Key Linker = button remapping ONLY (firmware updates use companion PC software via wired USB, standard rule).
+  - All other Cosmic Byte products do NOT use Key Linker at all. Do not direct customers of any other product to Key Linker.
+
+WARRANTY OVERVIEW — all Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period.
 
 LIVE PRICES: If the customer asks for the current price, let them know you can check the live price and direct them to the product page for the most up-to-date pricing. Mention the ONLINEPAY coupon for 10% off.
 
