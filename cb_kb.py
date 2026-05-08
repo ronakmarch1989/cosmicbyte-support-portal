@@ -19,6 +19,119 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py)
 
 CHANGELOG
 ---------
+v1.1.1 (2026-05-08) -- Claude
+  * Z-bump: bugfix for an AI hallucination Ronak caught in real
+    customer logs. Web user asked "Does the stellaris app on pc
+    only work in wireless mode?" and the AI answered with a
+    checkmark list saying the software works in:
+        ✅ Wired (USB-C)
+        ✅ 2.4GHz Wireless (dongle)
+        ✅ Bluetooth         <-- WRONG
+    The Bluetooth checkmark is incorrect for every CB controller
+    with PC software. The software cannot detect or configure
+    a controller over Bluetooth — only over Wired or 2.4GHz.
+
+  Root cause: the Stellaris (and Lumora, and other tri-mode
+  controller) KB entries had the rule scattered across multiple
+  bullet points, e.g. Lumora L192 reads "Software works in 2.4GHz
+  only (NOT Bluetooth)" (which is itself misleading because it
+  omits Wired) and L196 reads "Software works in wired mode" as a
+  separate line. The AI plausibly read fragments and confabulated
+  a "supports all three modes" answer to fit the customer's
+  framing. There was no single global policy block telling the AI
+  the rule once, plainly.
+
+  Fix: added a new global policy block to SYSTEM_PROMPT titled
+  "PC COMPANION SOFTWARE — MODE COMPATIBILITY POLICY", placed
+  immediately before the existing MAC COMPATIBILITY POLICY block
+  so the two related cross-product rules sit together. The new
+  block:
+    - States the rule unambiguously: software works in Wired and
+      2.4GHz only; Bluetooth is NOT supported.
+    - Explains *why* (Bluetooth audio/HID profiles don't expose
+      the vendor channels the software uses), so the AI doesn't
+      treat it as a fixable bug to "try anyway".
+    - Gives a "WHAT TO SAY TO A CUSTOMER" template that handles
+      the common follow-up ("I'm on Bluetooth and want to use the
+      software") — switch to Wired/2.4GHz, configure, settings
+      persist on onboard memory and carry back to Bluetooth play.
+    - Gives a "WHAT NOT TO SAY" list with the exact failure mode
+      v2.22.0 produced ("the software works in all three modes" /
+      a checkmarked Bluetooth entry) so the AI doesn't repeat it.
+    - Spells out adjacent cases: Stellaris Gen 1 (no PC software,
+      uses Key Linker mobile app over Bluetooth — different rule),
+      Quantum / Stratos Xenon (no PC software at all), Mac (see
+      MAC POLICY, software is Windows-only regardless of mode).
+    - Explicitly notes this is a CONTROLLER rule, not a keyboard /
+      mouse rule. Phantom TKL software does work over Bluetooth;
+      the rule must not bleed across product classes.
+
+  No code or KB entry changes -- the fix is a single new policy
+  block in SYSTEM_PROMPT. Both the web portal and the Discord bot
+  pick it up automatically because both import SYSTEM_PROMPT from
+  here.
+
+v1.1.0 (2026-05-08) -- Claude
+  * Y-bump: added Cosmic Byte Immortal headset (tri-mode wireless)
+    as a new product, and corrected a v2.22.0 extraction omission.
+
+  Immortal headset additions:
+    - PRODUCT_URLS["Immortal"] -> the official product page URL
+      (cosmic-byte-immortal-2-4ghz-wireless-bluetooth-wired-...)
+    - PRODUCTS list -> appended "Immortal" so the dropdown picks it up
+    - KNOWLEDGE_BASE["Immortal"] -> full ~9.1KB manual entry built
+      from the user manual: 3 connection modes, 50mm driver, ENC mic,
+      40h battery, RGB LED, USB-A dongle (manual labels it both ways
+      in different places — flagged in the KB so the AI doesn't
+      confidently misanswer), platform-specific compat (PC / Mac /
+      mobile / PS4-PS5 / Xbox / Switch), LED indication table,
+      button reference, pairing workflows, troubleshooting, warranty.
+    - CATALOGUE_HEADSETS -> added a "WIRELESS HEADSETS" section with
+      Immortal at the top, plus a buying-guide line for "wireless
+      multi-platform gaming". Pre-existing Wired Headsets and
+      Earbuds sections are unchanged.
+    - Keyword aliases added in BOTH match_product_from_title's table
+      and detect_products_from_message's table:
+        ("immortal", "Immortal")
+      Detection regression tests pass:
+        "pair my Immortal headset" -> ["Immortal"]
+        "Immortal vs Proteus"       -> ["Proteus", "Immortal"]
+
+  KNOWN MANUAL AMBIGUITIES (deliberately surfaced in the KB so the
+  AI flags uncertainty instead of confabulating):
+    * USB-A vs USB-C dongle: the spec page (page 2) and the unboxing
+      photo (page 4) clearly show a USB-A dongle, but one connection
+      diagram on the same page labels it "USB-C Dongle" via text.
+      KB tells the AI to treat it as USB-A and escalate if the
+      customer reports otherwise.
+    * Mode button gestures: the manual lists two functions for each
+      of the 2x and 3x press gestures (e.g. "next song" AND
+      "switch Wi-Fi/Bluetooth pairing mode" both for 2x). KB tells
+      the AI to acknowledge ambiguity and escalate to support
+      rather than invent rules.
+
+  v2.22.0 EXTRACTION FIX (bonus):
+    During v2.22.0 the move of KB definitions out of
+    support_portal_v2.py into this module missed six dict-mutation
+    statements that lived AFTER the literal `KNOWLEDGE_BASE = {...}`
+    block in the original file:
+      - KNOWLEDGE_BASE["CryoCore"]       (~2.0 KB)
+      - KNOWLEDGE_BASE["Proteus"]        (~2.0 KB)
+      - KNOWLEDGE_BASE["CosmoBuds X220"] (~2.5 KB)
+      - KNOWLEDGE_BASE["Cyclone RGB"]    (~1.3 KB)
+      - KNOWLEDGE_BASE["Dragonfly"]      (~2.5 KB)
+      - KNOWLEDGE_BASE["All Products"] = "" placeholder
+    These mutated the dict at portal-load time, so the WEB portal
+    saw all six entries — but the DISCORD bot, which imports
+    KNOWLEDGE_BASE at its own startup before the portal runs and
+    from a different process anyway, did NOT see them. A Discord
+    user asking about CryoCore / Proteus / CosmoBuds X220 / Cyclone
+    RGB / Dragonfly would have hit an empty KB string and gotten a
+    generic-knowledge answer.
+    Fixed in this version by moving all six statements into cb_kb.py
+    immediately after the KNOWLEDGE_BASE literal. KB is now a single
+    source of truth for both processes.
+
 v1.0.0 (2026-05-08) -- Claude
   * Initial extraction from support_portal_v2.py v2.21.0.
   * Moved here (in original order):
@@ -44,7 +157,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 import re
 
@@ -73,6 +186,7 @@ PRODUCT_URLS = {
     "Astra": "https://www.thecosmicbyte.com/product/cosmic-byte-cb-gk-33-astra-hot-swappable-mechanical-wired-bluetooth-keyboard-with-per-key-rgb-and-software-2/",
     "CryoCore":       "https://www.thecosmicbyte.com/product/cryocore/",
     "Proteus":        "https://www.thecosmicbyte.com/product/proteus/",
+    "Immortal":       "https://www.thecosmicbyte.com/product/cosmic-byte-immortal-2-4ghz-wireless-bluetooth-wired-headphone-black/",
     "CosmoBuds X220": "https://www.thecosmicbyte.com/product/cosmobuds-x220/",
     "Cyclone RGB":    "https://www.thecosmicbyte.com/product/cyclone-rgb/",
     "Dragonfly":      "https://www.thecosmicbyte.com/product/dragonfly-cb-gkm-19/",
@@ -2325,11 +2439,473 @@ WARRANTY:
     "All Products": ""  # Filled dynamically
 }
 
+# =============================================================================
+# KNOWLEDGE_BASE additions (moved here from support_portal_v2.py in cb_kb v1.1.0)
+# Mutating the KNOWLEDGE_BASE dict at module scope keeps the discord_bot's
+# imported reference in sync (dicts are shared by reference). These were
+# accidentally left in support_portal_v2.py during the v2.22.0 extraction;
+# fixed in v2.23.0 / cb_kb v1.1.0 so the Discord bot also sees them.
+# =============================================================================
+
+# ── HEADSETS ──────────────────────────────────────────────────────────────────
+KNOWLEDGE_BASE["CryoCore"] = """
+PRODUCT: Cosmic Byte CryoCore — 7.1 USB Wired Gaming Headset
+
+SPECS:
+- Connection: USB 2.0 only (no 3.5mm)
+- Cable length: 2.0m
+- Driver: 50mm | Sensitivity: 110dB ±5dB | Impedance: 32Ω | Freq: 20Hz–20kHz
+- Rated power: 20mW | Max power: 50mW
+- Weight: 277g | Dimensions: 195×95×165mm
+- Mic: Electret condenser, omnidirectional, 6.0×5.0mm, -42dB ±3dB sensitivity
+- Mic SNR: 58dB | Mic output impedance: ≤2.2kΩ
+
+WHAT'S IN THE BOX: CryoCore headset, detachable microphone, user manual
+
+CONTROLS:
+- Volume dial on earcup — rotate to adjust volume
+- Mic switch on earcup — slide UP = mic ON, slide DOWN = mic MUTED
+- Detachable microphone — plug into the port on the left earcup
+
+SETUP — PC/LAPTOP:
+1. Connect USB to PC
+2. Download driver from https://www.thecosmicbyte.com/downloaddrivers/
+3. Extract and run setup.exe
+4. Enable 7.1 Surround Sound in the software
+5. In Windows Sound Settings, select "CB CryoCore" as both output AND input device
+
+SETUP — PS4/PS5:
+- Plug USB directly into console. No driver or software needed.
+- Adjust volume from PlayStation Audio Settings
+
+NOTE: Xbox is NOT officially supported via USB.
+
+TROUBLESHOOTING:
+Q: Headset not detected on PC?
+A: Check USB connection → reinstall driver → try different USB port → set "CB CryoCore" as default audio device in Windows Sound Settings
+
+Q: No 7.1 surround sound?
+A: Install the driver software → enable 7.1 in software settings → confirm "CB CryoCore" is default output in Windows Sound Settings
+
+Q: Microphone not working?
+A: Check mic is firmly plugged in → ensure mic switch is slid UP (ON position) → select "CB CryoCore" as microphone input in Windows Sound Settings
+
+Q: No audio from headset?
+A: Rotate the volume dial → set "CB CryoCore" as default output in Windows Sound Settings
+
+CARE: Keep away from moisture. Store in cool dry place. Avoid bending cable. Do not disassemble.
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
+KNOWLEDGE_BASE["Proteus"] = """
+PRODUCT: Cosmic Byte Proteus — Gaming Headset (Dual Input USB + 3.5mm)
+
+SPECS:
+- Connection: Dual input — USB (7.1 surround) AND 3.5mm jack
+- Driver: 50mm | Sensitivity: 111 ±3dB | Impedance: 32Ω±15% | Freq: 20Hz–20,000Hz
+- Cable: Headset cable 0.7m + 3.5mm audio jack 1.5m + USB cable 1.5m (braided)
+- Power: 20mW rated, 30mW input
+- Weight: 280g (without cable), 336g (with cable) | Dims: 190×90×220mm
+- Mic: ENC detachable, uni-directional, ø6.0×2.7mm, sensitivity -50±3dB
+- RGB LED lights, on-cable controller
+
+WHAT'S IN THE BOX: Proteus headset, detachable ENC microphone, USB-C to USB-A connector, 3.5mm audio cable, user manual
+
+ON-CABLE CONTROLLER:
+- Volume wheel: scroll up = volume +, scroll down = volume −
+- Mic mute button: tap once = microphone on/off
+- LED button: tap once = RGB lights on/off
+- Volume mute button: tap once = volume mute/unmute
+
+COMPATIBILITY:
+- PC/Mac/Laptop: USB (7.1 surround + software) OR 3.5mm jack
+- PS4/PS5: USB OR 3.5mm via controller jack. Volume from PlayStation Audio Settings.
+- Xbox One S/X: 3.5mm jack on controller ONLY. USB does NOT work on Xbox.
+- Mobile/Tablet: 3.5mm jack only
+- Nintendo Switch: 3.5mm jack only
+- LED tip for mobile: plug USB into a power bank/charger while using 3.5mm for audio — this powers the RGB lights
+
+7.1 SURROUND: Download software from https://www.thecosmicbyte.com/downloaddrivers/ (USB mode only)
+
+TROUBLESHOOTING:
+Q: Xbox not working?
+A: Xbox only supports 3.5mm on the controller. USB connection will not work on Xbox.
+
+Q: Mic not working?
+A: Ensure mic is firmly attached → check mic mute button (not muted) → select Proteus as input device in your system sound settings
+
+Q: No RGB lights when using with mobile?
+A: Plug the USB cable into a USB power source (power bank, charger) while using 3.5mm for audio
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
+# ── WIRELESS HEADSETS ─────────────────────────────────────────────────────────
+KNOWLEDGE_BASE["Immortal"] = """
+PRODUCT: Cosmic Byte Immortal — Tri-Mode (Wi-Fi 2.4GHz / Bluetooth 5.3 / Wired) Wireless Gaming Headset
+
+CONNECTION MODES (3 modes, one device):
+- 2.4GHz Wi-Fi USB dongle (low-latency wireless)
+- Bluetooth 5.3 (wireless)
+- Wired 3.5mm via included USB-C-to-3.5mm aux cable
+
+KEY FEATURES:
+- 40 hours battery life on a single charge (1000mAh battery)
+- ENC (Environmental Noise Cancellation) microphone, detachable
+- 50mm high-fidelity driver
+- RGB LED on the earcups (toggleable)
+- Ultra low latency 20ms (in 2.4GHz mode)
+- 2 EQ modes: Game / Music (toggleable on the headset)
+- Breathable headband cushion + breathable ear cushions
+- USB-C charging port
+- Wireless range: up to 20m without obstacles
+- Compatible with PC, Mac, Mobile, PS4, PS5, Xbox One/S/X, Nintendo Switch (with caveats below)
+
+WHAT'S IN THE BOX:
+1. Headset
+2. Detachable ENC microphone
+3. USB dongle (the spec page and unboxing photo show a USB-A dongle; one connection
+   diagram on the manual labels it "USB-C Dongle" — this is a manual labelling
+   inconsistency. Customers should treat it as USB-A based on the actual product.
+   If a customer reports their dongle is USB-C, ask them to share a photo and
+   escalate to support.)
+4. Aux cable (USB-C on the headset end → 3.5mm TRRS on the device end)
+5. Charging cable (0.5m, USB-A to USB-C)
+6. User Manual
+
+SPEAKER SPECIFICATIONS:
+- Driver Unit: Ø50mm
+- Impedance: 16±15% Ω
+- Sensitivity: 112±3 dB at 1KHz
+- Frequency Response: 20Hz – 20KHz
+- Rated Power: 20mW
+- Plug Type: USB Dongle / Bluetooth 5.3
+
+DETACHABLE MIC SPECIFICATIONS:
+- Mic Unit: Ø6mm
+- Directivity: Omni-directional
+- Impedance: ≤2.2KΩ
+- Sensitivity: -42±3 dB at 1KHz
+- Frequency Response: 100Hz – 10KHz
+
+BATTERY & CHARGING:
+- Battery capacity: 1000mAh
+- Battery life: up to 40 hours
+- Charging time: 3 hours (full charge)
+- Charging port: USB-C (on the headset)
+- Charging cable: 0.5m USB-A to USB-C (included)
+
+PLATFORM COMPATIBILITY:
+
+PC / Mac / Laptop:
+- USB dongle: plug dongle into USB-A port; headset auto-pairs in Wi-Fi mode.
+- Bluetooth: switch the headset to Bluetooth pairing mode (Mode button x2 short-press toggles between Wi-Fi and Bluetooth pairing — see Mode button notes), then pair from your OS.
+- Wired: use the USB-C-to-3.5mm aux cable into the 3.5mm headphone jack.
+
+Mobile (Android / iPhone):
+- Bluetooth (RECOMMENDED): pair as a normal Bluetooth headset.
+- USB dongle: technically possible with a USB-A-to-USB-C/Lightning adapter, but the manual explicitly does NOT recommend it on mobile — can cause low volume and unstable connection on some phones. Use Bluetooth instead.
+- 3.5mm wired: works on any phone with a 3.5mm jack (or via the phone's 3.5mm adapter).
+
+PlayStation 4 / PlayStation 5:
+- USB dongle (RECOMMENDED): plug into USB-A port on the console.
+- 3.5mm wired: plug the aux cable into the controller's 3.5mm jack.
+- IMPORTANT: in PS4/PS5 audio settings, set "Output to Headphones" → "All Audio" (or the console-equivalent setting "All audio to Headset or controller"). Volume is controlled from the PlayStation audio settings, NOT the headset's volume roller, when using the dongle.
+
+Xbox One / Series S / Series X:
+- 3.5mm wired ONLY (via controller's 3.5mm jack).
+- USB dongle does NOT work on Xbox. This is a Microsoft-side restriction (Xbox does not support generic 2.4GHz USB audio dongles); not a defect with the headset.
+
+Nintendo Switch:
+- Bluetooth: works on Switch OLED and Switch with current firmware (Bluetooth audio added in firmware 13.0.0).
+- 3.5mm wired: works in handheld and docked-with-controller modes via the 3.5mm jack.
+- USB dongle: not officially supported by Switch; manual diagram shows Bluetooth/wired only for Switch.
+
+LED INDICATION (on the right earcup, beside the mode area):
+- USB Dongle Disconnected = White LED flashing
+- USB Dongle Connected     = White LED solid
+- Bluetooth Disconnected   = Blue LED flashing
+- Bluetooth Connected      = Blue LED solid
+- Charging                 = Red LED solid
+- Fully Charged            = LED off
+
+CONTROLS (button reference):
+
+Power button:
+- 1× short press = toggle the RGB LED on/off
+- Long press 3 seconds = power the headset on/off
+
+Mic button:
+- 1× short press = toggle microphone mute on/off
+
+Mode button (this button has multiple functions — note ambiguity below):
+- 1× short press = play/pause music; or answer/hang up an incoming call
+- 2× short press = next song; the manual ALSO lists this gesture as "switch between Wi-Fi and Bluetooth pairing mode"
+- 3× short press = previous song; the manual ALSO lists this gesture as "switch between Game and Music EQ mode"
+- Long press 2 seconds = reject incoming call
+
+KNOWN AMBIGUITY ON THE MODE BUTTON: the manual shows two different functions for the
+double-press and triple-press gestures. The most likely interpretation is that the
+gesture's effect depends on context (whether music is playing, whether a call is
+incoming, etc.), but the manual does NOT make this explicit. If a customer is
+confused or reports unexpected behaviour from the Mode button, acknowledge that the
+documentation is ambiguous on this point and forward the question to support
+(cc@thecosmicbyte.com / 07969273222) — do NOT invent rules that aren't in the manual.
+
+Volume control wheel (volume roller on the right earcup):
+- Scroll upward = volume up
+- Scroll downward = volume down
+- Note: when connected to PS4/PS5 via dongle, the console controls master volume — the roller may not behave as expected in that mode.
+
+PAIRING WORKFLOWS:
+
+Wi-Fi (USB Dongle) pairing:
+1. Power on the headset (long-press Power for 3 seconds).
+2. Plug the included USB dongle into a USB-A port on the device.
+3. The dongle auto-pairs with the headset; white LED on the headset goes solid when connected.
+4. If it doesn't auto-pair: switch the headset to Wi-Fi mode using the Mode button (2× press, see ambiguity note above), and re-plug the dongle.
+
+Bluetooth pairing:
+1. Power on the headset.
+2. Switch the headset to Bluetooth mode using the Mode button (2× press toggles between Wi-Fi and Bluetooth pairing mode).
+3. The blue LED will flash, indicating the headset is discoverable.
+4. On your device: open Bluetooth settings, search for new devices, and select "Cosmic Byte Immortal".
+5. Once paired, the blue LED will go solid.
+
+Wired (3.5mm) connection:
+1. Plug the USB-C end of the included aux cable into the headset's USB-C port.
+2. Plug the 3.5mm end into the device's 3.5mm jack (or into a controller's jack for PS4/PS5/Xbox).
+3. No pairing needed — works immediately. Battery is not required for wired audio (the headset gets passive audio through the cable), but the mic and RGB LED need the headset to be powered on.
+
+GAME / MUSIC EQ MODES:
+The headset has two EQ presets:
+- Game Mode — emphasises footsteps, gunshots, directional cues; flatter response in the bass.
+- Music Mode — boosted bass and treble for music listening.
+Switch between them using the Mode button (3× press, per manual — same gesture also listed as "Previous Song", see ambiguity note).
+
+TROUBLESHOOTING:
+
+No sound from the headset:
+- Verify the headset is powered on (long-press Power 3 seconds, RGB should light up).
+- Check the connection mode matches what the device is using (Wi-Fi LED white solid for dongle / Blue solid for Bluetooth).
+- For PS4/PS5 dongle: verify "All Audio to Headset" is set in console audio settings.
+- For mobile dongle: the manual recommends Bluetooth instead — try Bluetooth.
+- For wired: check the aux cable is fully seated at both ends.
+
+Mic not working:
+- Ensure the detachable mic is fully plugged into the boom port on the left earcup.
+- Check the mic mute button on the headset (1× press toggles).
+- On PC: check the OS recording device is set to "Cosmic Byte Immortal" (or the dongle's name).
+- On PS4/PS5: check audio settings → Input device → headset / controller chat audio routing.
+
+Headset won't pair via Bluetooth:
+- Forget any previous "Cosmic Byte Immortal" entry on the device's Bluetooth list.
+- Power-cycle the headset.
+- Switch to Bluetooth mode using the Mode button (see ambiguity note).
+- Stay within 1m of the device during initial pairing.
+
+Headset disconnects randomly:
+- 2.4GHz dongle: keep the dongle within line-of-sight of the headset; avoid placing it near USB 3.0 devices or Wi-Fi routers (USB 3.0 emits 2.4GHz interference).
+- Bluetooth: stay within ~10m; thick walls cut range significantly.
+
+Charging issues:
+- Use the included 0.5m USB-A-to-USB-C cable; connect to a 5V USB port (PC USB / 5V/1A wall charger). Avoid fast chargers above 10W — overdriving the input can shorten battery lifespan.
+- Red LED solid = charging. LED off after Red = fully charged.
+
+LED won't turn off:
+- 1× short press of the Power button toggles the RGB LED on/off independently of the headset's power state.
+
+WARRANTY:
+- 1 year warranty against manufacturing defects only.
+- Physical damage NOT covered.
+- Water damage NOT covered.
+- Tampered products NOT covered.
+- Regular wear and tear from battery usage (gradual capacity reduction over time) is NOT covered under warranty.
+
+SUPPORT:
+- Phone: 07969273222 (Mon–Sat, 10:00 AM to 6:00 PM)
+- Email: cc@thecosmicbyte.com
+- FAQ portal: support.thecosmicbyte.com
+"""
+
+# ── EARBUDS ────────────────────────────────────────────────────────────────────
+KNOWLEDGE_BASE["CosmoBuds X220"] = """
+PRODUCT: Cosmic Byte CosmoBuds X220 — True Wireless Gaming Earbuds
+
+SPECS:
+- Bluetooth: 5.3
+- Low latency: 40ms in GOD Mode
+- Driver: 13mm | Frequency: 20Hz–20kHz
+- Earbud battery: 40mAh | Case battery: 400mAh
+- Music playtime: up to 10 hours per charge
+- Total battery life with case: 40 hours
+- Talk time: up to 7 hours
+- Standby: 100 days
+- Charging: USB-C, ~1.5 hours full charge
+- Fast charge: 15 minutes = 100 minutes playtime
+- Range: 10m
+- Water resistance: IPX5 (sweat and water resistant)
+- Mic: ENC/DNS, omnidirectional
+- Codecs: AAC + SBC
+
+⚠️ CHARGER WARNING: Use ONLY 5V/1A chargers. Fast chargers WILL damage the battery — not covered under warranty.
+
+TOUCH CONTROLS:
+Music playback:
+- Double tap either earbud = pause/resume
+- Long press RIGHT (1.5s) = volume up
+- Long press LEFT (1.5s) = volume down
+
+Calls:
+- Double tap either earbud = answer/hang up
+- Long press either earbud (2s) = reject incoming call
+- Triple tap RIGHT earbud = voice assistant
+
+Mode switching:
+- Triple tap LEFT earbud = toggle GOD Mode ↔ Music Mode
+  • GOD Mode = 40ms low latency (best for gaming)
+  • Music Mode = high-fidelity audio + bass (best for music)
+
+PAIRING — FIRST TIME:
+1. Remove earbuds from case → they auto-enter pairing mode
+2. Go to phone Bluetooth settings → connect to "CosmoBuds X220"
+After pairing once, earbuds auto-reconnect when removed from case (IOP™ instant pairing)
+
+SINGLE EARBUD USE: Remove one earbud, it pairs solo in mono mode. Return the other — stereo resumes automatically.
+
+VOLUME LIMIT REMOVAL:
+- iOS: Settings → Music → turn off Sound Check
+- Android: Bluetooth settings → tap CosmoBuds X220 → disable "Sync volume with phone"
+- Spotify/Amazon Music: Turn off Audio Normalisation in app settings
+
+FACTORY RESET:
+1. Forget "CosmoBuds X220" from phone Bluetooth settings
+2. Remove both earbuds from case
+3. Tap each earbud 7 times — LED turns off
+4. Place back in case for 5 seconds
+5. Re-pair normally
+
+TROUBLESHOOTING:
+Q: One earbud not working?
+A: Place both in case → take out again. If still failing, perform factory reset.
+
+Q: Earbuds won't connect?
+A: Forget device from phone Bluetooth → perform factory reset → re-pair
+
+Q: Disconnecting during calls?
+A: Charge the earbuds. If persists, perform factory reset.
+
+Q: Low volume?
+A: Remove volume limit (see above)
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage, tampered products, and battery wear and tear not covered.
+SUPPORT: cc@thecosmicbyte.com | 07969273222 | Mon–Sat 10am–6pm
+"""
+
+# ── ACCESSORIES / COMBOS ───────────────────────────────────────────────────────
+KNOWLEDGE_BASE["Cyclone RGB"] = """
+PRODUCT: Cosmic Byte Cyclone RGB — Laptop Cooling Pad
+
+SPECS:
+- Dimensions: 405×290×43mm | Weight: 1123g
+- Fans: 1× 140mm (centre, RGB) + 4× 60mm (corners, blue)
+- Fan speed: 1600–2500 RPM ±10%
+- USB ports: 2× USB 2.0 HUB
+- Power: DC 5V, 1A, 5W (USB powered)
+- Material: ABS + Metal
+- Laptop compatibility: up to 17-inch laptops
+
+FEATURES:
+- 12 RGB lighting effects on the centre fan and edge strip
+- 7-level adjustable height/angle (fold-out legs) for optimal viewing and typing
+- 3 fan modes — control which fans are on/off
+- 3-level adjustable fan speed
+- 2 USB ports to connect other devices while cooling
+
+SETUP:
+1. Connect the USB cable from the cooling pad to a USB port on your laptop
+2. Place your laptop on the pad
+3. Use the control panel to adjust fan speed, fan mode, and RGB effects
+
+TROUBLESHOOTING:
+Q: Fans not spinning?
+A: Ensure USB is properly connected to the laptop. Try a different USB port.
+
+Q: RGB not working?
+A: Check USB connection. Cycle through RGB modes using the control button.
+
+Q: Laptop still overheating?
+A: Increase fan speed to max. Ensure laptop vents are not blocked. Clean laptop vents if dusty.
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
+KNOWLEDGE_BASE["Dragonfly"] = """
+PRODUCT: Cosmic Byte Dragonfly — RGB Membrane Keyboard + Mouse Combo (CB-GKM-19)
+
+KEYBOARD SPECS:
+- Type: Full-size RGB membrane keyboard
+- Anti-ghosting: 19-key
+- Key life: 10 million keystrokes
+- Weight: 637g ±10g | Dimensions: 458×170×32mm | Cable: 1.5m braided
+- Features: Windows lock key, mobile phone holder, multimedia hotkeys, fold-out legs
+
+MOUSE SPECS:
+- Buttons: 7
+- DPI: 200–12,800 (adjustable)
+- Polling rate: up to 1000Hz
+- Sensor: Instant 825 | Acceleration: 20G | Tracking: 60 IPS
+- Switches: Huano 5M (L/R buttons)
+- Weight: 80g (without cable) | Dimensions: 122×66×40.5mm
+- RGB effects customisable via software
+
+KEYBOARD SHORTCUTS (FN combinations):
+FN + F1 = Media Select | FN + F2 = Volume − | FN + F3 = Volume + | FN + F4 = Mute
+FN + F5 = Stop | FN + F6 = Previous Track | FN + F7 = Play/Pause | FN + F8 = Next Track
+FN + F9 = Email | FN + F10 = Web/Home | FN + F11 = My Computer | FN + F12 = Calculator
+FN + WIN-L = Lock/unlock Windows key
+
+RGB MODES (keyboard):
+FN+1=RGB | FN+2=RGB2 | FN+3=Colours Cycle | FN+4=7 Colour Breathing
+FN+5=7 Colour Switch | FN+6=Light 1 | FN+7=Light 2 | FN+8=LED Off
+FN+9=Custom (FN + ←/→ to choose colour, FN+9 again to save)
+FN + ←/→ = direction control | FN + PgUp/PgDn = brightness up/down
+
+SOFTWARE: The Dragonfly has TWO separate software downloads — one for the keyboard, one for the mouse. Both are listed on the Cosmic Byte downloads page (https://www.thecosmicbyte.com/downloaddrivers/) as separate entries: "Dragonfly Keyboard" and "Dragonfly Mouse". If the customer wants to configure both peripherals (keyboard macros + mouse DPI/macros/RGB), they need to download BOTH softwares. The keyboard software handles RGB modes and key remapping; the mouse software handles DPI tuning, macro assignment, and RGB customisation. Do NOT tell the customer there is a single combined Dragonfly software — there isn't.
+
+TROUBLESHOOTING:
+Q: Keyboard keys not registering?
+A: 19-key anti-ghosting — some key combinations may not be supported simultaneously. Check Windows key is not locked (FN + WIN-L).
+
+Q: Mouse DPI not changing?
+A: Use the DPI button on the mouse or adjust via software.
+
+Q: RGB not working?
+A: Press FN+1 to cycle RGB modes. Ensure USB is fully connected. Reinstall software from thecosmicbyte.com.
+
+Q: Multimedia keys not working?
+A: Use FN + function key combinations (e.g., FN+F7 for Play/Pause).
+
+WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+"""
+
+# "All Products" is intentionally lean — only the matched product KB is injected
+# at query time via detect_product_from_message(). Sending 27K tokens every call
+# was 8x more expensive and unnecessary since the system prompt already instructs
+# the bot to ask which product the customer has.
+KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
+
+
 
 # =============================================================================
 # PRODUCTS
 # =============================================================================
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
 
 
 # =============================================================================
@@ -2483,6 +3059,33 @@ If a customer asks how to download or get their invoice, the answer is:
   - If they cannot find either copy, they should contact support (cc@thecosmicbyte.com / +91 7351615161, Mon-Sat 10am-6pm) and request the invoice be resent. Support can email a fresh copy.
 
 Do NOT direct customers to any URL purporting to download invoices. Do NOT invent a "track.thecosmicbyte.com" or similar self-service portal — these do not exist for invoices.
+
+PC COMPANION SOFTWARE — MODE COMPATIBILITY POLICY (gamepads / controllers) — applies to ALL Cosmic Byte controllers that ship with a Windows companion software (Lumora, Stellaris current Gen 2, Drakon, Blitz Tri-Mode, Eclipse, Starforge, Ares Pro, and any other current-generation tri-mode CB controller).
+
+THE CORE FACT (this is what the bug fix v2.23.1 addresses — surface this clearly any time a customer asks whether the software works in <some specific mode>):
+
+  The Cosmic Byte PC companion software detects and configures the controller in TWO connection modes only:
+    ✅ Wired (USB-C cable to PC)
+    ✅ 2.4GHz Wireless (USB dongle plugged into PC)
+    ❌ Bluetooth — NOT supported. The software cannot detect or configure a controller paired via Bluetooth.
+
+  This is a hard, protocol-level limitation across the entire Cosmic Byte controller line — not a temporary bug, not a "future update will fix it", not specific to one product. Bluetooth audio/HID profiles do not expose the vendor-specific channels the software uses for RGB, macros, button mapping, deadzones, polling rate, or firmware updates. Wired and 2.4GHz dongle modes do expose those channels, which is why software detection works in those modes.
+
+WHAT TO SAY TO A CUSTOMER ASKING ABOUT SOFTWARE + MODES:
+  - "The Cosmic Byte software works with your [Model] in Wired (USB-C) and 2.4GHz Wireless (dongle) modes. It does NOT work in Bluetooth mode — Bluetooth doesn't expose the channels the software needs for configuration. So for RGB / button mapping / macros / firmware updates, connect the controller via cable or via the 2.4GHz dongle."
+  - If the customer is currently on Bluetooth and wants to use the software: tell them to switch to Wired or 2.4GHz mode (give the specific button shortcut for their controller from that controller's KB), open the software, and it will detect the controller. Once configured, settings persist on the controller's onboard memory and carry back to Bluetooth mode for actual use — they can configure once on Wired/2.4GHz and then play wirelessly.
+
+WHAT NOT TO SAY:
+  - DO NOT say "the software works in all three modes" or "the software works in Wired, 2.4GHz, AND Bluetooth" — this is the exact hallucination v2.23.1 is fixing. It is incorrect for every CB controller with PC software.
+  - DO NOT list Bluetooth as a checkmarked / supported software mode in any comparison or guide.
+  - DO NOT tell the customer to "try connecting via Bluetooth and opening the software" — the software will not detect the controller in that mode and the customer will be frustrated.
+  - DO NOT confuse this with the gyro feature: native Bluetooth gyro mode (e.g. Y + HOME → "Pro Controller") is a SEPARATE thing the controller does WITHOUT the software. That works in Bluetooth. The software's on-the-fly gyro feature is different and only works in Wired / 2.4GHz.
+  - DO NOT generalise this rule to other product classes. Keyboards (e.g. Phantom TKL) and mice may have software that DOES work in Bluetooth mode — refer to the specific product's KB for those. This rule is for GAMEPADS / CONTROLLERS only.
+
+EXCEPTIONS / ADJACENT CASES (be precise):
+  - Stellaris GEN 1 (LEGACY, DISCONTINUED) does NOT use PC software at all — it uses the "Key Linker" mobile app over Bluetooth for its limited remap/firmware operations. So for Gen 1 the question "does the software work in Bluetooth?" is malformed: there is no PC software for Gen 1, and the mobile app uses Bluetooth specifically. If the customer signals Gen 1 (per the Stellaris Gen 1 vs Gen 2 ask-first guidance), correct the framing rather than answering yes/no on PC software.
+  - Quantum and Stratos Xenon do NOT have PC software (no software-based RGB/macros/mapping). For these, the question doesn't apply — they're configured entirely via on-controller button shortcuts. If the customer asks about software for these, tell them no PC software exists for that model and list the on-controller shortcuts instead.
+  - Mac users: see the MAC COMPATIBILITY POLICY block below — the software is Windows-only entirely, so Mac users can't run it in any mode regardless.
 
 MAC COMPATIBILITY POLICY (controllers) — applies to ALL Cosmic Byte controllers. Do NOT tell a Mac customer "this controller is not supported on Mac" or "Cosmic Byte does not support Mac". The accurate answer is more nuanced and is more likely to help the customer.
 
@@ -3034,6 +3637,7 @@ def match_product_from_title(title: str) -> str:
         ("cryocore",              "CryoCore"),
         ("cryo core",             "CryoCore"),
         ("proteus",               "Proteus"),
+        ("immortal",              "Immortal"),
         ("cosmobuds x220",        "CosmoBuds X220"),
         ("cosmobuds",             "CosmoBuds X220"),
         ("x220",                  "CosmoBuds X220"),
@@ -3498,6 +4102,9 @@ BUYING GUIDE:
 CATALOGUE_HEADSETS = """
 COSMIC BYTE HEADSETS & EARBUDS — Quick Comparison Guide
 
+WIRELESS HEADSETS:
+- Immortal: Tri-mode (2.4GHz Wi-Fi USB dongle / Bluetooth 5.3 / Wired 3.5mm), 50mm driver, ENC detachable mic, 40hr battery, RGB LED, 20m range, 20ms low-latency. Game/Music modes. PC, mobile (Bluetooth recommended), PS4/PS5 (dongle or 3.5mm), Switch (Bluetooth or 3.5mm), Xbox (3.5mm only). USB-A dongle.
+
 WIRED HEADSETS:
 - CryoCore: USB only, 7.1 surround (needs driver), 50mm driver, detachable mic, PS4/PS5 compatible. No 3.5mm option.
 - Proteus: Dual input (USB + 3.5mm), 7.1 surround via USB, ENC detachable mic, RGB LED, on-cable controller. Xbox = 3.5mm only.
@@ -3506,8 +4113,9 @@ EARBUDS:
 - CosmoBuds X220: True wireless TWS, Bluetooth 5.3, 40ms GOD Mode gaming latency, 40hr total battery, IPX5 waterproof, ENC mic, fast charge.
 
 BUYING GUIDE:
-- PC gaming headset (7.1 surround) → CryoCore (USB only) or Proteus (USB + 3.5mm flexibility)
-- Multi-platform (PC/console/mobile) → Proteus (dual input)
+- Wireless multi-platform gaming → Immortal (only tri-mode headset; works wired/dongle/Bluetooth, Xbox via 3.5mm)
+- PC gaming headset (7.1 surround, wired) → CryoCore (USB only) or Proteus (USB + 3.5mm flexibility)
+- Multi-platform wired (PC/console/mobile) → Proteus (dual input)
 - Wireless earbuds for gaming + music → CosmoBuds X220
 """
 
@@ -3630,6 +4238,7 @@ def detect_products_from_message(messages: list) -> tuple:
         ("cryocore",             "CryoCore"),
         ("cryo core",            "CryoCore"),
         ("proteus",              "Proteus"),
+        ("immortal",             "Immortal"),
         # Earbuds
         ("cosmobuds x220",       "CosmoBuds X220"),
         ("cosmobuds",            "CosmoBuds X220"),
@@ -3655,4 +4264,3 @@ def detect_products_from_message(messages: list) -> tuple:
 def detect_product_from_message(messages: list) -> str:
     products, _ = detect_products_from_message(messages)
     return products[0] if products else ""
-
