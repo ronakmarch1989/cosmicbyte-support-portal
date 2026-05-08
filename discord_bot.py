@@ -17,6 +17,65 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
 
 CHANGELOG
 ---------
+v1.0.5 (2026-05-09) -- Claude
+  * Z-bump: hotfix for a v1.0.4 bug that crashed the bot at
+    module-load time when QUOTAGUARDSTATIC_URL was a SOCKS5
+    URL.
+
+  Bug:
+    `aiohttp_socks.ProxyConnector.from_url(...)` ultimately
+    calls `asyncio.get_running_loop()` inside aiohttp's
+    TCPConnector __init__. That function raises RuntimeError
+    when there's no running event loop -- which is the case
+    at module-load time, before bot.run() has set one up.
+    v1.0.4 created the connector inside _build_bot() at
+    module level (and also on each retry), so the bot
+    crashed immediately on import:
+
+        RuntimeError: no running event loop
+
+    HTTP/HTTPS proxy was unaffected because that path uses
+    `proxy=` / `proxy_auth=` kwargs (no connector).
+
+  Fix:
+    Moved bot construction from a sync _build_bot() called at
+    module load to an async _run_bot_async() called via
+    asyncio.run() inside the retry loop. Both the connector
+    (for SOCKS) and the discord.Client are now built inside
+    the running event loop where aiohttp's loop lookup
+    works. The module no longer pre-creates a placeholder
+    bot instance; `bot` starts as None and is set on the
+    first iteration of the retry loop.
+
+  Behaviour:
+    * SOCKS5/SOCKS4 proxy (via aiohttp_socks): now works.
+    * HTTP/HTTPS proxy: identical to v1.0.3/v1.0.4.
+    * No proxy: identical to v1.0.2.
+    * Retry-on-startup loop: identical -- still 12 attempts
+      with exponential backoff up to ~3.7 hours, still
+      LoginFailure-terminal, still rebuilds the Client from
+      scratch on each retry. Just runs through asyncio.run()
+      instead of bot.run() so we control connector creation
+      timing.
+
+  Also broadened:
+    The retry path now catches `aiohttp.ClientError` and
+    `asyncio.TimeoutError` in addition to
+    `discord.HTTPException`. The "Server disconnected" error
+    we saw on the v1.0.3-with-SOCKS-URL misconfiguration was
+    `aiohttp.ServerDisconnectedError`, which is a ClientError
+    subclass and was falling through to the generic Exception
+    fatal-exit. With v1.0.5, transient network blips (proxy
+    hiccups, brief Discord gateway disconnects during login)
+    get retried instead of killed.
+
+  Implementation note:
+    bot.run() is itself a thin wrapper around
+    asyncio.run(client.start()) with signal-handling glue,
+    so dropping it costs nothing -- KeyboardInterrupt is
+    handled by asyncio.run + discord.Client's async context
+    manager (__aexit__ closes the client cleanly).
+
 v1.0.4 (2026-05-09) -- Claude
   * Z-bump: SOCKS5 proxy support (in addition to HTTP/HTTPS).
 
@@ -286,7 +345,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 import os
 import sys
@@ -679,56 +738,71 @@ def _should_respond(message, bot_user_id):
 # ─────────────────────────────────────────────────────────────────────
 # Discord client + event handlers
 # ─────────────────────────────────────────────────────────────────────
-# v1.0.2: bot creation is now a function so the startup-retry loop in
-# __main__ can rebuild the Client on each retry. discord.py's Client
-# can't be reused after bot.run() raises -- its event loop and HTTP
-# session are torn down. The on_ready / on_message coroutines stay at
-# module level (they reference `bot` via global lookup at call time,
-# so they always see the currently-live instance) and are registered
-# onto the fresh Client via bot.event() inside _build_bot.
+# v1.0.2: bot creation was extracted into a function so the startup-retry
+# loop in __main__ could rebuild the Client on each retry (discord.py's
+# Client can't be reused once bot.run() returns/raises).
+#
+# v1.0.5: bot creation moved INSIDE an async function (`_run_bot_async`)
+# rather than the previous synchronous `_build_bot`. Reason: the SOCKS
+# code path constructs an aiohttp_socks.ProxyConnector, whose parent
+# class (aiohttp.TCPConnector) calls asyncio.get_running_loop() in its
+# __init__. That raises `RuntimeError: no running event loop` when
+# called outside an asyncio context. v1.0.4 hit this on Render at
+# module-load time; v1.0.5 defers the construction until inside
+# asyncio.run(), where the loop exists.
+#
+# The on_ready / on_message coroutines stay at module level (they
+# reference `bot` via global lookup at call time, so they always see
+# whichever instance is currently bound to that name) and are
+# registered onto the fresh Client via bot.event() inside
+# _run_bot_async.
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message text. Already
                                 # enabled in the Discord Developer Portal.
 
-bot = None  # Set by _build_bot() below; declared here so the event
-            # handlers' module-global `bot` references resolve.
+bot = None  # Set by _run_bot_async() on the first iteration of the
+            # retry loop in __main__. Declared here so the event handlers'
+            # module-global `bot` references resolve at function-definition
+            # time (Python doesn't evaluate the lookup until call time, so
+            # leaving it None pre-connection is fine).
 
 
-def _build_bot():
-    """Create a fresh discord.Client and register our event handlers on it.
-    Replaces the module-level `bot` global so the on_ready / on_message
-    coroutines (which look up `bot` at call time) see the new instance.
-    Used at module load and on each retry inside __main__.
+async def _run_bot_async():
+    """Build a fresh discord.Client + (optional) connector inside the
+    running asyncio event loop, register handlers, and run the bot until
+    disconnect or error. Caller is responsible for the retry loop.
 
-    v1.0.3: when PROXY_NETLOC is set (HTTP/HTTPS proxy), pass it (with
-    optional PROXY_AUTH) to discord.Client so all REST and gateway
-    traffic routes through the configured outbound proxy.
+    Why async: aiohttp_socks.ProxyConnector calls
+    asyncio.get_running_loop() in its constructor, so it must be built
+    inside a coroutine. Doing all of bot construction here keeps the
+    SOCKS path and HTTP path symmetric.
 
-    v1.0.4: when PROXY_URL_FOR_SOCKS is set (SOCKS proxy), build a fresh
-    aiohttp_socks.ProxyConnector and pass it via the `connector=` kwarg
-    instead. ProxyConnector is single-use -- once the aiohttp session
-    that owns it closes (which happens at the end of each bot.run()
-    call), it cannot be reused. The retry loop calls _build_bot() again
-    on each attempt, so each retry gets a fresh connector built from
-    the stored URL.
-
-    When neither is set, Client is constructed with no proxy at all and
-    the bot uses the host's default outbound IP (v1.0.2 behaviour).
+    Re-builds `bot` (module-level) each call so the v1.0.2 retry-on-
+    HTTPException pattern still works -- discord.py's Client cannot be
+    reused after its session closes, and aiohttp_socks.ProxyConnector
+    cannot be reused after its session closes either, so each retry
+    gets entirely fresh objects.
     """
     global bot
     client_kwargs = {"intents": intents}
     if PROXY_URL_FOR_SOCKS is not None:
-        # SOCKS path. Build a fresh connector for each Client instance.
+        # SOCKS path. Connector built inside the loop -- this is the
+        # specific bug v1.0.5 fixes vs v1.0.4.
         client_kwargs["connector"] = _SocksProxyConnector.from_url(PROXY_URL_FOR_SOCKS)
     elif PROXY_NETLOC:
-        # HTTP/HTTPS path.
+        # HTTP/HTTPS path. No connector needed; aiohttp uses default.
         client_kwargs["proxy"] = PROXY_NETLOC
         if PROXY_AUTH is not None:
             client_kwargs["proxy_auth"] = PROXY_AUTH
     bot = discord.Client(**client_kwargs)
     bot.event(on_ready)
     bot.event(on_message)
-    return bot
+    # discord.Client is an async context manager that handles session
+    # setup/teardown. bot.start() does login + gateway connection.
+    # Together this is exactly what bot.run() does internally, minus
+    # the wrapping asyncio.run() which our caller already provides.
+    async with bot:
+        await bot.start(TOKEN)
 
 
 async def on_ready():
@@ -906,9 +980,11 @@ async def on_message(message: discord.Message):
         print(f"[discord_bot] unhandled error in on_message: {e}", flush=True)
 
 
-# Initial bot creation at module load. Subsequent retries inside __main__
-# call _build_bot() again to get a fresh Client.
-_build_bot()
+# Module-level: no eager bot construction. _run_bot_async builds the
+# Client (and its connector, when SOCKS) inside the running asyncio
+# event loop on each retry. Until then `bot` is None -- the event
+# handlers reference it by global lookup at call time, so they only
+# need it bound by the time discord.py actually fires events.
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -916,6 +992,7 @@ _build_bot()
 # ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import time
+    import asyncio
 
     # v1.0.2: retry on HTTPException at startup so a Discord rate-limit
     # (most commonly a 429 on GET /users/@me from a noisy shared egress IP)
@@ -925,6 +1002,12 @@ if __name__ == "__main__":
     # redeploy -- which often hit the same rate limit again. The retry
     # converts "permanently dead" into "offline for a while, then
     # auto-recovers when Discord lifts the rate limit."
+    #
+    # v1.0.5: also catch aiohttp.ClientError and asyncio.TimeoutError as
+    # retryable. Proxy hiccups, transient gateway disconnects during
+    # login, and SOCKS server momentary unreachability all manifest as
+    # one of those rather than as discord.HTTPException, and we'd
+    # rather retry them than fatal-exit.
     #
     # Backoff: 60s, 2m, 4m, 8m, 16m, 30m (capped). 12 attempts total.
     # Wall-clock budget ~3.7 hours, which matches the typical duration of
@@ -938,11 +1021,16 @@ if __name__ == "__main__":
 
     for attempt in range(1, MAX_STARTUP_RETRIES + 1):
         try:
-            bot.run(TOKEN)
-            # bot.run only returns on a clean shutdown (SIGTERM,
-            # KeyboardInterrupt that discord.py handled, etc). Anything
-            # bad raises.
-            print("[discord_bot] bot.run returned -- shutting down cleanly.", flush=True)
+            # asyncio.run sets up a fresh event loop, runs the coroutine
+            # to completion, and tears the loop down. Each retry gets a
+            # completely fresh asyncio context -- which is what we want,
+            # because both discord.Client and aiohttp_socks.ProxyConnector
+            # are tied to the loop they were created in and can't outlive
+            # it.
+            asyncio.run(_run_bot_async())
+            # Coroutine returned cleanly (graceful shutdown, e.g. SIGTERM
+            # that discord.py handled). Anything bad raises.
+            print("[discord_bot] _run_bot_async returned -- shutting down cleanly.", flush=True)
             break
         except discord.LoginFailure:
             # Token problem -- retrying won't help, this needs a human.
@@ -950,38 +1038,43 @@ if __name__ == "__main__":
                 "Discord login failed -- token is invalid or expired. "
                 "Regenerate it in the Developer Portal and update the env var."
             )
-        except discord.HTTPException as e:
+        except (
+            discord.HTTPException,    # Discord-level errors incl. 429s
+            aiohttp.ClientError,      # network/proxy errors (e.g. ServerDisconnectedError)
+            asyncio.TimeoutError,     # network timeouts during login or gateway connect
+            ConnectionError,          # OS-level connection refused, etc.
+        ) as e:
             # Most common case: 429 rate-limited (sometimes with error
-            # code 40062, "Service resource is being rate limited").
+            # code 40062, "Service resource is being rate limited"), or
+            # an aiohttp ServerDisconnectedError from a flaky proxy.
             # discord.py's internal retry-after backoff gives up after a
-            # few attempts and raises HTTPException to here; we catch it
-            # and retry the whole bot.run() with our own (longer) backoff.
+            # few attempts and raises HTTPException here; we catch it
+            # and retry the whole runner with our own (longer) backoff.
             status = getattr(e, "status", "?")
+            err_type = type(e).__name__
             if attempt >= MAX_STARTUP_RETRIES:
                 _fatal(
                     f"bot crashed after {MAX_STARTUP_RETRIES} startup retries "
-                    f"(last error: status={status} {e}). The host's egress IP "
-                    f"is likely persistently rate-limited by Discord. Move the "
-                    f"bot to a host with a different egress IP, or use a "
-                    f"static-IP proxy."
+                    f"(last error: {err_type} status={status} {e}). The host's "
+                    f"egress IP may be persistently rate-limited by Discord, or "
+                    f"there's a problem with the proxy. Move the bot to a host "
+                    f"with a different egress IP, switch to a different proxy, "
+                    f"or check QuotaGuard/Fixie's status page."
                 )
             backoff = min(BASE_BACKOFF_S * (2 ** (attempt - 1)), MAX_BACKOFF_S)
             print(
-                f"[discord_bot] HTTPException on startup "
+                f"[discord_bot] {err_type} on startup "
                 f"(attempt {attempt}/{MAX_STARTUP_RETRIES}, status={status}): {e}",
                 flush=True,
             )
             print(
                 f"[discord_bot] Sleeping {backoff}s before next attempt. "
-                f"This is usually a Discord per-IP rate limit; the bot will "
-                f"come back online automatically once the window clears.",
+                f"This is usually a Discord per-IP rate limit or a transient "
+                f"network hiccup; the bot will come back online automatically "
+                f"once the window clears.",
                 flush=True,
             )
             time.sleep(backoff)
-            # discord.Client can't be reused across .run() calls -- its
-            # event loop and HTTP session are torn down inside .run() when
-            # it raises. Build a fresh one for the next attempt.
-            _build_bot()
         except Exception as e:
             # Anything else (OOM, programmer error, etc) -- not a retry case.
             _fatal(f"bot crashed: {e}")
