@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.16.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.17.0
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,171 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.17.0 (2026-05-08) -- Claude
+  - Y-bump: persist the conversation log to disk so it
+    survives Render restarts and redeploys. Triggered by
+    Ronak: "Lets add disk to render so we can store all
+    reponses. Else with every start it disappears."
+
+  Background:
+    Until now, the conversation log lived only in the
+    in-memory shared store (@st.cache_resource). Across
+    Render redeploys (which happen on every code push) and
+    Render's periodic restarts, the log was wiped. The
+    daily email-digest CSV partially compensated -- emails
+    persist -- but anything logged today and not yet
+    digested was lost on the next deploy. The v2.10.x
+    decision to keep the log server-ephemeral was made
+    when Cosmic Byte wasn't yet on a Render plan that
+    supports persistent disks. That has now changed.
+
+  What's persisted in v2.17.0:
+    - Conversation log (every row from log_conversation):
+      Date, Time, Session ID, Product, Customer Message,
+      AI Response, Feedback, Feedback Note, Image
+      Thumbnails (base64), Client IP.
+    - Daily digest "last sent date" -- so a redeploy
+      mid-day doesn't trigger a duplicate digest send.
+
+  What's NOT persisted (still ephemeral, by design):
+    - Per-(browser_id, product) chat history. This
+      remains intentionally server-ephemeral as decided
+      in v2.10.x -- it's a UX nicety for in-session
+      rehydration, not a record of customer interactions.
+      Could be migrated to disk in a future version if
+      desired; not in scope for v2.17.0.
+    - Streamlit session state for the current request.
+    - Admin auth (already restart-safe via signed cookie
+      from v2.13.0; no disk needed).
+
+  Code changes:
+
+  1. Import threading (added). Used for a module-level
+     Lock that guards all disk reads/writes so concurrent
+     Streamlit reruns can't interleave writes (an issue
+     mainly for rows with image thumbnails > 4KB, where
+     POSIX append-mode atomicity is no longer guaranteed).
+
+  2. New constants and helpers placed just above
+     get_shared_store():
+
+       PERSISTENT_DATA_DIR -- env var CB_DATA_DIR with
+         default "/var/data" (Render's standard mount
+         path for persistent disks). Can be overridden
+         for local dev or alternative mount points.
+
+       _disk_persistence_enabled() -- checks that the
+         data dir exists and is writable. If both true,
+         disk persistence is on. Else, the portal runs
+         with in-memory-only logging and prints a LOUD
+         startup warning so the operator knows the disk
+         isn't mounted.
+
+       LOG_FILE_PATH -- {data_dir}/support_log.jsonl
+         (None if disk not mounted).
+       DIGEST_STATE_PATH -- {data_dir}/digest_state.json
+         (None if disk not mounted).
+
+       _load_log_from_disk() -- reads the JSONL log file
+         line by line. Skips corrupted lines with a
+         warning rather than failing the whole startup.
+         Returns [] if the file doesn't exist (cold
+         start with new disk).
+
+       _append_log_to_disk(row) -- atomically appends a
+         single row as one JSON line, under the lock.
+         No-op if disk not mounted.
+
+       _rewrite_log_to_disk(all_rows) -- writes the full
+         log to a tmp file then os.replace()s it onto
+         the real path. Used when an existing row is
+         updated (feedback). Atomic on POSIX. No-op if
+         disk not mounted.
+
+       _load_digest_state() / _save_digest_state(date)
+         -- small JSON file that holds last_digest_date
+         so a same-day redeploy doesn't re-send the
+         digest.
+
+  3. get_shared_store() now rehydrates from disk on
+     cold start. The @st.cache_resource decorator means
+     this runs once per Render instance lifetime --
+     loaded into memory, then served from RAM for all
+     subsequent reads. Disk reads happen ONLY on cold
+     start; runtime reads stay fast.
+
+  4. log_conversation() now also calls
+     _append_log_to_disk(row) right after appending in
+     memory. The on-disk log and in-memory log stay in
+     lockstep.
+
+  5. update_feedback() now calls _rewrite_log_to_disk(log)
+     after mutating the in-memory row. Feedback is
+     comparatively rare (one event per conversation),
+     so the full-rewrite cost is negligible at our
+     volume (<10K rows ~ <50MB rewrite, milliseconds).
+
+  6. auto_daily_digest() now calls _save_digest_state()
+     after sending the digest, so the timestamp survives
+     restarts.
+
+  7. Startup print now states whether disk persistence
+     is on or off, so the Render deploy log shows
+     immediately whether the disk is mounted correctly.
+
+  Render dashboard side (NOT a code change -- Ronak
+  does this in the Render UI):
+
+    a) Open the Render service for the support portal.
+    b) Settings -> Disks -> Add Disk.
+    c) Configure:
+         Name: cb-support-data (or anything descriptive)
+         Mount Path: /var/data
+         Size: 1 GB (more than enough for years of logs
+                even with image thumbnails; can grow
+                later if needed)
+    d) Save. Render will restart the service with the
+       disk mounted.
+    e) Verify: check the Render deploy log for the
+       "[support_portal_v2] persistent disk OK at
+       /var/data" line on next startup. If you see
+       "WARNING: persistent disk NOT mounted" instead,
+       the disk wasn't picked up and persistence is
+       still off -- check the mount path matches.
+
+  Caveats / things to know:
+    - Render persistent disks lock the service to a
+      single instance (no horizontal scaling). The
+      portal already runs single-instance, so this
+      changes nothing in practice.
+    - Persistent disks require a paid Render plan
+      (Starter or higher) -- not free tier.
+    - Render does NOT auto-backup persistent disks.
+      The daily email digest already provides a
+      partial backup (yesterday's CSV emailed daily);
+      that's still in place. For deeper backup, a
+      future version could rsync the JSONL to S3 or
+      similar -- not in scope for v2.17.0.
+    - Existing in-memory log on the deploy that adds
+      this IS NOT migrated. v2.17.0's first startup
+      with disk = empty log on disk; from there
+      forward, logs persist. This is fine because the
+      pre-v2.17.0 log was already going to be lost on
+      this deploy anyway.
+
+  Followup notes:
+    - Open: chat history persistence (separate scope,
+      not done here).
+    - Open: backup strategy beyond daily email digest
+      (e.g. periodic rsync of /var/data to S3).
+    - Open from v2.16.0: Drakon trigger sensor tech
+      still unspecified; Drakon ML/MR vs software's
+      L4/R4 label mismatch.
+    - Open from v2.15.2: no general ORDER & SHIPPING
+      POLICIES section in the KB.
+
+  Verification: ast.parse OK on Python 3.
 
 v2.16.0 (2026-05-08) -- Claude
   - Y-bump: substantive multi-item correction bundle covering
@@ -2422,13 +2587,14 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.16.0"
+__version__ = "2.17.0"
 
 import streamlit as st
 import anthropic
 import os
 import hmac
 import hashlib
+import threading
 import extra_streamlit_components as stx
 from datetime import datetime, timedelta
 
@@ -2604,14 +2770,152 @@ client = anthropic.Anthropic(api_key=get_secret("ANTHROPIC_API_KEY"))
 CSV_COLUMNS = ["Date", "Time", "Session ID", "Product", "Customer Message", "AI Response", "Feedback", "Feedback Note", "Image Thumbnails", "Client IP"]
 DIGEST_EMAIL = "thecosmicbyte2017@gmail.com"
 
+# ── DISK PERSISTENCE (v2.17.0) ──────────────────────────────────────────
+# Conversation log persists across Render restarts/redeploys via a
+# Render persistent disk mounted at PERSISTENT_DATA_DIR (default
+# /var/data). If the disk isn't mounted, the portal still runs but
+# logs only in memory and prints a loud startup warning.
+#
+# File layout on disk:
+#   {PERSISTENT_DATA_DIR}/support_log.jsonl   -- one JSON row per line
+#   {PERSISTENT_DATA_DIR}/digest_state.json   -- last digest send date
+#
+# JSONL was chosen over CSV/SQLite because:
+#   - Append-only writes are simple and atomic under a lock.
+#   - Each line is a self-contained JSON record (easy to inspect/grep).
+#   - The Image Thumbnails column already stores JSON, so no double
+#     encoding gymnastics.
+#   - Schema changes don't require migration (new fields = new keys
+#     on new rows; missing keys = .get() with default on read).
+PERSISTENT_DATA_DIR = os.environ.get("CB_DATA_DIR", "/var/data")
+
+def _disk_persistence_enabled():
+    """True iff the persistent data dir exists and is writable.
+    Checked once at module load to set LOG_FILE_PATH / DIGEST_STATE_PATH."""
+    try:
+        return os.path.isdir(PERSISTENT_DATA_DIR) and os.access(PERSISTENT_DATA_DIR, os.W_OK)
+    except Exception:
+        return False
+
+if _disk_persistence_enabled():
+    LOG_FILE_PATH = os.path.join(PERSISTENT_DATA_DIR, "support_log.jsonl")
+    DIGEST_STATE_PATH = os.path.join(PERSISTENT_DATA_DIR, "digest_state.json")
+    print(f"[support_portal_v2] persistent disk OK at {PERSISTENT_DATA_DIR} -- conversation log will survive restarts", flush=True)
+else:
+    LOG_FILE_PATH = None
+    DIGEST_STATE_PATH = None
+    print(f"[support_portal_v2] WARNING: persistent disk NOT mounted at {PERSISTENT_DATA_DIR} -- conversation log will be LOST on restart. To enable persistence, attach a Render persistent disk at this mount path (Render dashboard -> Settings -> Disks -> Add Disk).", flush=True)
+
+# Lock guarding ALL disk reads/writes for the log files. Concurrent
+# Streamlit reruns can call log_conversation / update_feedback at the
+# same time; without this lock, a row with image thumbnails (>4KB)
+# could be split across an interleaved append.
+_log_disk_lock = threading.Lock()
+
+def _load_log_from_disk():
+    """Read the full log file into a list of dicts. Skip corrupted
+    lines with a warning rather than failing module import. Returns
+    [] if the file doesn't exist (cold start with new disk) or if
+    disk persistence is off."""
+    if LOG_FILE_PATH is None:
+        return []
+    if not os.path.exists(LOG_FILE_PATH):
+        return []
+    rows = []
+    skipped = 0
+    try:
+        with _log_disk_lock:
+            with open(LOG_FILE_PATH, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        rows.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        skipped += 1
+                        continue
+        if skipped:
+            print(f"[support_portal_v2] WARNING: skipped {skipped} corrupted line(s) while loading log from {LOG_FILE_PATH}", flush=True)
+        print(f"[support_portal_v2] loaded {len(rows)} conversation row(s) from {LOG_FILE_PATH}", flush=True)
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: log file read failed: {e} -- starting with empty log", flush=True)
+        return []
+    return rows
+
+def _append_log_to_disk(row):
+    """Append a single row as one JSON line. No-op if disk persistence
+    is off. Errors are logged but never raised -- the portal must keep
+    serving customers even if the disk write fails."""
+    if LOG_FILE_PATH is None:
+        return
+    try:
+        line = json.dumps(row, ensure_ascii=False) + "\n"
+        with _log_disk_lock:
+            with open(LOG_FILE_PATH, "a", encoding="utf-8") as f:
+                f.write(line)
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: log append failed: {e}", flush=True)
+
+def _rewrite_log_to_disk(all_rows):
+    """Rewrite the full log file (used when an existing row is updated
+    in place, e.g. for feedback). Writes to a tmp file then os.replace
+    onto the real path -- atomic on POSIX."""
+    if LOG_FILE_PATH is None:
+        return
+    try:
+        tmp_path = LOG_FILE_PATH + ".tmp"
+        with _log_disk_lock:
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                for r in all_rows:
+                    f.write(json.dumps(r, ensure_ascii=False) + "\n")
+            os.replace(tmp_path, LOG_FILE_PATH)
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: log rewrite failed: {e}", flush=True)
+
+def _load_digest_state():
+    """Return the last digest-sent date as a date object, or today's
+    date if the state file doesn't exist or can't be parsed."""
+    if DIGEST_STATE_PATH is None or not os.path.exists(DIGEST_STATE_PATH):
+        return datetime.now().date()
+    try:
+        with _log_disk_lock:
+            with open(DIGEST_STATE_PATH, "r", encoding="utf-8") as f:
+                d = json.load(f)
+        iso = d.get("last_digest_date")
+        if iso:
+            return datetime.fromisoformat(iso).date()
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: digest state read failed: {e}", flush=True)
+    return datetime.now().date()
+
+def _save_digest_state(date):
+    """Persist the last-digest-sent date so a same-day Render restart
+    doesn't trigger a duplicate digest send."""
+    if DIGEST_STATE_PATH is None:
+        return
+    try:
+        tmp_path = DIGEST_STATE_PATH + ".tmp"
+        with _log_disk_lock:
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump({"last_digest_date": date.isoformat()}, f)
+            os.replace(tmp_path, DIGEST_STATE_PATH)
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: digest state save failed: {e}", flush=True)
+
 # ── SHARED LOG (cache_resource = shared across ALL sessions/iframes) ──
 
 @st.cache_resource
 def get_shared_store():
-    """Single shared store — survives across all sessions on the same Render instance."""
+    """Single shared store — survives across all sessions on the same
+    Render instance. As of v2.17.0, also rehydrates from disk on cold
+    start so the log survives Render restarts/redeploys.
+
+    The @st.cache_resource decorator means this runs ONCE per Render
+    instance lifetime. Subsequent reads are served from RAM."""
     return {
-        "log": [],
-        "last_digest_date": datetime.now().date(),
+        "log": _load_log_from_disk(),
+        "last_digest_date": _load_digest_state(),
     }
 
 def get_log():
@@ -2803,6 +3107,9 @@ def log_conversation(session_id, product, user_msg, ai_response, images=None, cl
         "Client IP": client_ip,
     }
     get_log().append(row)
+    # v2.17.0: also persist to disk so the row survives Render restarts.
+    # No-op if the persistent disk isn't mounted (with a startup warning).
+    _append_log_to_disk(row)
     return len(get_log()) - 1
 
 def update_feedback(row_idx, feedback, note=""):
@@ -2810,6 +3117,10 @@ def update_feedback(row_idx, feedback, note=""):
     if row_idx is not None and 0 <= row_idx < len(log):
         log[row_idx]["Feedback"] = feedback
         log[row_idx]["Feedback Note"] = note
+        # v2.17.0: rewrite the on-disk log so the feedback persists too.
+        # Full rewrite is fine at our volume (<10K rows = milliseconds).
+        # No-op if persistent disk isn't mounted.
+        _rewrite_log_to_disk(log)
 
 # ── EMAIL HELPERS ──
 def build_csv_bytes(rows):
@@ -2894,6 +3205,10 @@ def auto_daily_digest():
             csv_bytes = build_csv_bytes(rows)
             send_email_with_csv(csv_bytes, f"Cosmic Byte Support Log - {yesterday}")
         get_shared_store()["last_digest_date"] = today
+        # v2.17.0: persist the new digest date so a Render restart
+        # later today doesn't trigger a duplicate digest send.
+        # No-op if persistent disk isn't mounted.
+        _save_digest_state(today)
 
 KNOWLEDGE_BASE = {
 
