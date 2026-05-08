@@ -17,6 +17,71 @@ STANDING EDIT PROTOCOL (same as support_portal_v2.py + cb_kb.py)
 
 CHANGELOG
 ---------
+v1.1.0 (2026-05-09) -- Claude
+  * Y-bump: HTTP log API for portal-bot integration.
+
+  Why:
+    After today's migration, the bot lives on a Hetzner VPS
+    while the Streamlit portal stays on Render. They no
+    longer share a filesystem, so the portal's admin
+    dashboard can't see new Discord conversations -- they're
+    written to /var/lib/cosmic-bot/support_log.jsonl on the
+    VPS, not /var/data/support_log.jsonl on Render. This
+    bump exposes the bot's log over HTTP so the portal can
+    fetch it.
+
+  What's new:
+    * GET /log/recent?limit=N -- returns the last N rows
+      from the bot's log file as a JSON array. Default 1000,
+      max 10000. Read-only.
+    * Auth: Authorization: Bearer <LOG_API_SECRET> header.
+      Constant-time comparison via hmac.compare_digest.
+      If the env var is empty, the API is disabled
+      entirely (the listener doesn't start).
+    * Listens on $LOG_API_BIND:$LOG_API_PORT
+      (default 0.0.0.0:8080).
+    * Runs in the same asyncio event loop as the Discord
+      client. No threads. The aiohttp web app is spun up
+      from inside _run_bot_async() before bot.start(), and
+      cleaned up in the finally block when bot.start
+      returns/raises.
+    * The endpoint reads the log file under fcntl.LOCK_SH
+      (shared/read lock) to coordinate with the writer's
+      LOCK_EX -- the read won't tear a partially-written
+      append, and the write won't block on long reads.
+
+  Behaviour:
+    * If LOG_API_SECRET is unset -- API disabled, bot runs
+      exactly like v1.0.5.
+    * If LOG_API_SECRET is set -- API binds and serves; if
+      bind fails (port in use, etc.), bot logs the error
+      and continues without the API rather than crashing
+      the Discord bot. The Discord bot is the priority;
+      the API is an add-on.
+
+  Operator action needed (on Hetzner VPS):
+    1. Generate a long random secret (any string >= 32
+       chars). Easy way: `openssl rand -hex 32`.
+    2. Add to /etc/cosmic-bot.env:
+          LOG_API_SECRET=<the secret>
+    3. Open inbound TCP 8080 in Hetzner Cloud Firewall
+       (or leave the network open as-is; default Hetzner
+       Cloud servers have no firewall).
+    4. systemctl restart cosmic-bot
+    5. Verify: `curl -H "Authorization: Bearer <secret>"
+       http://localhost:8080/log/recent?limit=5`
+       Should return JSON.
+
+  Note on TLS:
+    The endpoint serves plain HTTP. The data IS sensitive
+    (customer conversations). For tonight we're shipping
+    HTTP+secret as MVP; the threat model is "someone on
+    the network path between Hetzner Singapore and Render
+    eavesdropping", which is narrow but real. A follow-up
+    bump should put Caddy or nginx in front with
+    Let's Encrypt for proper TLS. That's a Z-bump-able
+    operations change, no portal/bot code change required.
+
 v1.0.5 (2026-05-09) -- Claude
   * Z-bump: hotfix for a v1.0.4 bug that crashed the bot at
     module-load time when QUOTAGUARDSTATIC_URL was a SOCKS5
@@ -345,7 +410,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.0.5"
+__version__ = "1.1.0"
 
 import os
 import sys
@@ -356,6 +421,7 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote
 
 import aiohttp  # already a transitive dep via discord.py; we use it for BasicAuth
+from aiohttp import web  # v1.1.0: aiohttp.web hosts the read-only log API.
 import discord
 import anthropic
 
@@ -518,6 +584,33 @@ if PROXY_URL_RAW:
 
 
 # ─────────────────────────────────────────────────────────────────────
+# v1.1.0: Read-only log API config
+# ─────────────────────────────────────────────────────────────────────
+# After the bot moved off Render onto a VPS, the Streamlit portal can no
+# longer share a filesystem with the bot. This API exposes the bot's log
+# file over HTTP so the portal's admin dashboard / digest can fetch new
+# Discord conversation rows. The portal-side counterpart lives in
+# support_portal_v2.py v2.24.0+ (look for BOT_API_URL / BOT_API_SECRET
+# and get_merged_log()).
+#
+# Auth: a single shared secret in the Authorization: Bearer header.
+# Compared in constant time. If LOG_API_SECRET is unset/empty, the API
+# is disabled entirely (no listener bound) -- this is the safe default
+# so the API doesn't accidentally serve unauthenticated reads in dev.
+#
+# Bind: 0.0.0.0:8080 by default. The bind interface and port are both
+# overridable via env vars, primarily for running multiple bots on one
+# host or for binding to localhost-only when fronted by a reverse proxy
+# (Caddy/nginx with TLS termination -- recommended follow-up).
+LOG_API_SECRET = os.environ.get("LOG_API_SECRET", "") or ""
+try:
+    LOG_API_PORT = int(os.environ.get("LOG_API_PORT", "8080") or "8080")
+except ValueError:
+    LOG_API_PORT = 8080
+LOG_API_BIND = os.environ.get("LOG_API_BIND", "0.0.0.0") or "0.0.0.0"
+
+
+# ─────────────────────────────────────────────────────────────────────
 # Startup validation
 # ─────────────────────────────────────────────────────────────────────
 def _fatal(msg):
@@ -542,6 +635,11 @@ print(f"[discord_bot]   guild id           : {GUILD_ID or '(not set)'}", flush=T
 print(f"[discord_bot]   reply to DMs       : {REPLY_TO_DMS}", flush=True)
 print(f"[discord_bot]   log file           : {LOG_FILE_PATH or '(disk persistence off)'}", flush=True)
 print(f"[discord_bot]   proxy              : {PROXY_HOST_DISPLAY}", flush=True)
+print(
+    f"[discord_bot]   log API            : "
+    f"{LOG_API_BIND}:{LOG_API_PORT} (auth: {'enabled' if LOG_API_SECRET else 'DISABLED -- API will not start'})",
+    flush=True,
+)
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -606,6 +704,146 @@ def log_discord_conversation(session_id, product, user_msg, ai_response, user_ta
         "Client IP": user_tag,
     }
     _append_log_to_disk_locked(row)
+
+
+# ─────────────────────────────────────────────────────────────────────
+# v1.1.0: Read-only log API
+# ─────────────────────────────────────────────────────────────────────
+# A small aiohttp web app that exposes the bot's log file to the
+# Streamlit portal over HTTP. Runs in the same asyncio event loop as
+# the Discord client.
+#
+# This module-level definition only declares the handlers. The aiohttp
+# AppRunner / TCPSite are started inside _run_bot_async() and torn
+# down in its finally block, so the API's lifetime is tied to the
+# bot's. The retry loop in __main__ rebuilds both on each retry,
+# which is fine -- aiohttp.web.Application is stateless from our
+# perspective.
+import hmac as _hmac  # for constant-time secret comparison
+
+
+def _read_recent_log_lines(limit):
+    """Synchronously read the last `limit` valid JSON-line rows from the
+    log file. Called from asyncio.to_thread inside the API handler so
+    we don't block the event loop on disk I/O.
+
+    Coordinates with _append_log_to_disk_locked via fcntl: the writer
+    holds LOCK_EX while appending, and we hold LOCK_SH while reading,
+    so a read won't catch a half-written line and a write won't block
+    on long reads. If fcntl is unavailable (non-Linux dev env) we fall
+    back to lock-free reads -- the JSONDecodeError-skip path in the
+    parser already tolerates a torn last line.
+    """
+    if LOG_FILE_PATH is None:
+        return []
+    if not os.path.exists(LOG_FILE_PATH):
+        return []
+    try:
+        import fcntl
+        _has_fcntl = True
+    except ImportError:
+        _has_fcntl = False
+    try:
+        with open(LOG_FILE_PATH, "r", encoding="utf-8") as f:
+            if _has_fcntl:
+                try:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+                except Exception:
+                    # Lock failed -- proceed unlocked. Worst case is a
+                    # torn last line which the parser will skip.
+                    pass
+            try:
+                lines = f.readlines()
+            finally:
+                if _has_fcntl:
+                    try:
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    except Exception:
+                        pass
+    except Exception as e:
+        print(f"[discord_bot] log API: read failed: {e}", flush=True)
+        return []
+    rows = []
+    for line in lines[-limit:]:
+        s = line.strip()
+        if not s:
+            continue
+        try:
+            rows.append(json.loads(s))
+        except json.JSONDecodeError:
+            continue
+    return rows
+
+
+async def _api_handle_log_recent(request):
+    """GET /log/recent?limit=N -- return the last N rows as JSON.
+    Auth: Authorization: Bearer <LOG_API_SECRET>. Constant-time compare."""
+    expected = f"Bearer {LOG_API_SECRET}" if LOG_API_SECRET else ""
+    provided = request.headers.get("Authorization", "")
+    if not expected or not _hmac.compare_digest(provided, expected):
+        return web.json_response({"error": "unauthorized"}, status=401)
+    try:
+        limit = int(request.query.get("limit", "1000"))
+    except (TypeError, ValueError):
+        limit = 1000
+    limit = max(1, min(limit, 10000))
+    try:
+        rows = await asyncio.to_thread(_read_recent_log_lines, limit)
+    except Exception as e:
+        print(f"[discord_bot] log API: handler crashed: {e}", flush=True)
+        return web.json_response({"error": "internal"}, status=500)
+    return web.json_response({
+        "rows": rows,
+        "count": len(rows),
+        "version": __version__,
+    })
+
+
+async def _api_handle_health(request):
+    """GET /health -- liveness probe. No auth required so monitoring
+    tools can ping it without sharing the secret. Returns minimal info
+    to avoid leaking anything sensitive."""
+    return web.json_response({
+        "ok": True,
+        "version": __version__,
+        "log_api_enabled": bool(LOG_API_SECRET),
+    })
+
+
+async def _start_log_api_server():
+    """Build and start the aiohttp web app for the log API. Returns the
+    AppRunner so the caller can clean it up on shutdown. Returns None
+    if the API is disabled (no secret configured) or if the bind fails
+    -- in either case the bot continues running without the API rather
+    than crashing the Discord client."""
+    if not LOG_API_SECRET:
+        print(
+            "[discord_bot] log API disabled (LOG_API_SECRET not set)",
+            flush=True,
+        )
+        return None
+    try:
+        app = web.Application()
+        app.router.add_get("/log/recent", _api_handle_log_recent)
+        app.router.add_get("/health", _api_handle_health)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, LOG_API_BIND, LOG_API_PORT)
+        await site.start()
+        print(
+            f"[discord_bot] log API listening on http://{LOG_API_BIND}:{LOG_API_PORT}",
+            flush=True,
+        )
+        return runner
+    except Exception as e:
+        # Don't let an API bind failure kill the Discord bot. The bot
+        # is the priority; the API is an add-on.
+        print(
+            f"[discord_bot] WARNING: log API failed to start ({e}); "
+            f"Discord bot will continue without it.",
+            flush=True,
+        )
+        return None
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -797,12 +1035,26 @@ async def _run_bot_async():
     bot = discord.Client(**client_kwargs)
     bot.event(on_ready)
     bot.event(on_message)
-    # discord.Client is an async context manager that handles session
-    # setup/teardown. bot.start() does login + gateway connection.
-    # Together this is exactly what bot.run() does internally, minus
-    # the wrapping asyncio.run() which our caller already provides.
-    async with bot:
-        await bot.start(TOKEN)
+    # v1.1.0: start the read-only log API alongside the Discord bot.
+    # Returns None if disabled (no LOG_API_SECRET) or if bind fails;
+    # in either case the Discord bot still runs. We tear down the
+    # API runner in the finally block below so a retry rebuild gets
+    # a clean port.
+    api_runner = await _start_log_api_server()
+    try:
+        # discord.Client is an async context manager that handles session
+        # setup/teardown. bot.start() does login + gateway connection.
+        # Together this is exactly what bot.run() does internally, minus
+        # the wrapping asyncio.run() which our caller already provides.
+        async with bot:
+            await bot.start(TOKEN)
+    finally:
+        if api_runner is not None:
+            try:
+                await api_runner.cleanup()
+            except Exception as e:
+                # Cleanup failures shouldn't mask the real exit reason.
+                print(f"[discord_bot] log API cleanup failed: {e}", flush=True)
 
 
 async def on_ready():
