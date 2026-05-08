@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.2
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.15.3
 ==============================================================================
 
 What this file is:
@@ -69,6 +69,68 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.15.3 (2026-05-08) -- Claude
+  - Z-bump: add HALL EFFECT / TMR VERIFICATION GUIDE block to
+    SYSTEM_PROMPT after a real customer interaction where the
+    AI gave a workable but suboptimal answer to "how do I
+    confirm my Ares has Hall Effect joysticks?".
+
+  Trigger:
+     Customer wanted to verify Hall Effect status without
+     opening the controller and without waiting for support.
+     The AI proposed a "stress test then recheck for drift"
+     methodology, which is partially valid but has known
+     gaps (brand-new potentiometer joysticks pass the test,
+     producing false negatives). The AI also did not surface
+     the simpler back-label check, which is faster and more
+     reliable.
+
+  Reality (per Ronak, from Cosmic Byte's own testing):
+     - Hall Effect and TMR joysticks on Cosmic Byte
+       controllers show 0-2% circularity error on gamepad
+       testing tools (max for same-model units, tested by
+       the Cosmic Byte team).
+     - Potentiometer joysticks typically show 10-20% error,
+       especially after some use.
+     - 2026 batch back labels of Hall Effect / TMR products
+       mention "Hall Effect" or the relevant sensor type
+       directly, providing a 5-second physical check that
+       requires neither opening the controller nor running
+       any software.
+
+  Fix: New "HALL EFFECT / TMR VERIFICATION GUIDE" block
+  added to SYSTEM_PROMPT (placed immediately after the
+  existing Hall Effect quick-reference matrix since both
+  cover the same topic). The block tells the AI:
+
+    1. ALWAYS suggest the back-label / packaging check FIRST.
+       Fastest, no software needed, no risk to the unit.
+    2. If the customer wants software-based confirmation:
+       direct them to https://hardwaretester.com/gamepad and
+       describe the THREE specific tests:
+         (a) Resting drift — 0-2% for Hall Effect / TMR;
+             5-20% for potentiometer.
+         (b) Corner accuracy — Hall Effect / TMR consistently
+             hit close to 100% in all 4 corners; potentiometer
+             often falls short (95-98%) with corner-to-corner
+             variation.
+         (c) Smoothness — Hall Effect / TMR shows smooth
+             transitions on slow movement; potentiometer often
+             shows stepped or jittery values.
+    3. Caveats explicitly listed for the AI: brand-new
+       potentiometer joysticks may show low drift initially;
+       drift develops with use over weeks/months; resting
+       drift and corner accuracy are MORE diagnostic than
+       aggressive stress testing.
+    4. What NOT to suggest:
+       - DO NOT tell customers to open the controller — voids
+         warranty, risk of damage.
+       - DO NOT lead with the stress-test-then-recheck
+         methodology as the primary test (false negatives
+         on new units).
+
+  Verification: ast.parse OK on Python 3.
 
 v2.15.2 (2026-05-08) -- Claude
   - Z-bump: add INVOICE POLICY block to SYSTEM_PROMPT after a
@@ -2070,7 +2132,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.15.2"
+__version__ = "2.15.3"
 
 import streamlit as st
 import anthropic
@@ -5236,6 +5298,38 @@ Other CB controllers with Hall Effect (for reference):
 - Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
+
+HALL EFFECT / TMR VERIFICATION GUIDE — when a customer asks "how do I confirm my controller has Hall Effect / TMR joysticks?" or wants to verify before relying on the matrix above, walk them through this in order:
+
+  STEP 1 — Back label / packaging check (FASTEST, ALWAYS SUGGEST FIRST):
+    Look at the back label of the controller, or the original packaging / box. If "Hall Effect" or "TMR" is printed on the label, the controller has those sensors. If absent, it's the older standard-joystick batch. This 5-second physical check does NOT require opening the controller, running software, or contacting support. Always offer this first.
+
+  STEP 2 — Software verification at https://hardwaretester.com/gamepad (when customer wants software confirmation):
+    Connect the controller to PC via USB-C wired or 2.4GHz dongle, open the gamepad tester website, and check three things:
+
+    (a) RESTING DRIFT (most reliable test):
+        Power on, do NOT touch the joysticks, watch the X/Y values on the website.
+        - Hall Effect / TMR: 0-2% circularity error at rest (tested and confirmed by Cosmic Byte). Values stay essentially at center with negligible jitter.
+        - Potentiometer joysticks: typically 10-20% error, especially after some use. Values drift away from center and may jitter even at rest.
+
+    (b) CORNER ACCURACY:
+        Push each joystick fully into all 4 corners.
+        - Hall Effect / TMR: consistently hits close to 100% in every corner.
+        - Potentiometer: often falls short (95-98%) with noticeable variation between corners.
+
+    (c) SMOOTHNESS:
+        Move the joystick slowly in a circle.
+        - Hall Effect / TMR: smooth, continuous value transitions.
+        - Potentiometer: stepped or jittery values, especially in worn areas.
+
+  IMPORTANT CAVEATS to mention to the customer:
+    - Brand-new potentiometer joysticks may show low drift initially; drift develops with use over weeks/months. So a passing test on a new controller is not definitive proof — the back-label check (Step 1) is more reliable for brand-new units.
+    - Resting drift and corner accuracy (steps 2a and 2b) are more diagnostic than aggressive stress testing. Do NOT lead with "rotate the joysticks 10 times rapidly then recheck" as the primary test — this can give false negatives on new potentiometer units.
+
+  WHAT NOT TO SUGGEST:
+    - Do NOT tell customers to open the controller to check the joystick mechanism. This voids the warranty and risks damaging the unit.
+    - Do NOT direct customers to disassembly videos or guides for verification purposes.
+    - If the customer is uncertain after Step 1 + Step 2, suggest they contact support (cc@thecosmicbyte.com) with their order details — support can verify based on the SKU and manufacturing date.
 
 UNIVERSAL FIRMWARE UPDATE RULE — applies to ALL Cosmic Byte products. Different products handle firmware in DIFFERENT ways. Do NOT apply one path universally. There are FOUR distinct categories. Identify which category a product belongs to BEFORE answering a firmware question.
 
