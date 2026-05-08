@@ -70,6 +70,105 @@ CHANGELOG FORMAT:
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
 
+v2.23.0 (2026-05-08) -- Claude
+  - Y-bump because cb_kb v1.1.0 (which we now require) added a new
+    product (Immortal headset). Also fixes two bugs that surfaced
+    after v2.22.0 went live: the admin dashboard didn't show
+    Discord conversations, and the v2.22.0 KB extraction missed
+    six dict-mutation entries that the Discord bot couldn't see.
+
+  Bug 1: ADMIN DOESN'T SHOW DISCORD CONVERSATIONS
+    Symptom: Ronak filtered admin -> Source = "discord" and saw
+    nothing, even though @mentions and #support-channel messages
+    were getting AI replies in Discord.
+
+    Root cause: The admin renders from `st.session_state.log`,
+    which the portal loads ONCE per browser session via
+    _load_log_from_disk(). The Discord bot is a separate process;
+    it writes to /var/data/support_log.jsonl with fcntl-locked
+    appends but never touches our in-memory log. Result: web rows
+    appeared in admin (because log_conversation appends both
+    in-memory AND to disk), but Discord rows lived only on disk
+    and were invisible in admin.
+
+    Fix: in render_admin() and auto_daily_digest(), re-read the log
+    from disk at the top, and update st.session_state.log to match.
+    The admin dashboard is now fresh on every render.
+
+    Bonus: also fixed update_feedback() to re-read disk before its
+    full-rewrite step. Without that fix, giving feedback on a web
+    row would have BLOWN AWAY any Discord rows that landed between
+    page-render and feedback-click. (The rewrite reads in-memory ->
+    overwrites disk; if in-memory was stale, disk loses data.)
+
+    All three call sites (render_admin, update_feedback,
+    auto_daily_digest) now share the same defensive pattern:
+       if LOG_FILE_PATH is not None:
+           log = _load_log_from_disk()
+           st.session_state.log = log
+       else:
+           log = get_log()  # dev fallback when disk persistence is off
+
+  Bug 2: SIX KB ENTRIES MISSING FROM DISCORD BOT
+    Symptom: A Discord user asking about CryoCore / Proteus /
+    CosmoBuds X220 / Cyclone RGB / Dragonfly would have gotten a
+    generic-knowledge answer instead of the manual-grounded one
+    the web portal gives. (Wasn't directly observed yet, found
+    while diagnosing Bug 1.)
+
+    Root cause: In v2.22.0 we extracted KNOWLEDGE_BASE from this
+    file into cb_kb.py, but the original file had six dict
+    mutations AFTER the literal `KNOWLEDGE_BASE = {...}` block:
+        KNOWLEDGE_BASE["CryoCore"] = "..."
+        KNOWLEDGE_BASE["Proteus"] = "..."
+        KNOWLEDGE_BASE["CosmoBuds X220"] = "..."
+        KNOWLEDGE_BASE["Cyclone RGB"] = "..."
+        KNOWLEDGE_BASE["Dragonfly"] = "..."
+        KNOWLEDGE_BASE["All Products"] = ""
+    Those mutations stayed in support_portal_v2.py. The web portal
+    saw all six (it imports the dict and then mutates it before any
+    customer query), but the Discord bot, importing KNOWLEDGE_BASE
+    fresh in its own process at startup BEFORE the portal's mutation
+    code runs (and from a separate process where module-level state
+    is not shared anyway), saw an empty entry for those products.
+
+    Fix: cb_kb v1.1.0 absorbs all six entries into the canonical
+    KB definition. This file no longer mutates KNOWLEDGE_BASE — we
+    only import it.
+
+  New product (cb_kb side): Cosmic Byte Immortal headset
+    Tri-mode (Wi-Fi 2.4GHz / Bluetooth 5.3 / Wired 3.5mm),
+    50mm driver, ENC detachable mic, 40hr battery, RGB LED, 20m
+    range. URL added to PRODUCT_URLS, full ~9KB manual added to
+    KNOWLEDGE_BASE, catalogue updated with a new "Wireless
+    Headsets" section, keyword aliases wired up for product
+    detection. The KB explicitly flags two manual ambiguities
+    (USB-A vs USB-C dongle labelling, and Mode-button gesture
+    overloading) so the AI doesn't confabulate -- it tells the
+    customer the manual is unclear and to contact support, rather
+    than guessing.
+
+  Files changed in this release:
+    * support_portal_v2.py (this file)
+        - render_admin(): refresh log from disk
+        - update_feedback(): refresh log from disk before rewrite
+        - auto_daily_digest(): refresh log from disk
+        - removed the six KNOWLEDGE_BASE["..."] = "..." mutations
+          (now in cb_kb.py)
+        - changelog entry added
+    * cb_kb.py (cb_kb v1.1.0)
+        - PRODUCT_URLS["Immortal"]
+        - PRODUCTS list updated
+        - KNOWLEDGE_BASE["Immortal"] full manual entry
+        - CATALOGUE_HEADSETS updated with wireless section
+        - "immortal" keyword alias in both detection tables
+        - absorbed the six previously-orphan mutations
+    * discord_bot.py: NO CHANGES (no rebuild needed)
+    * run.py: NO CHANGES
+
+  No deployment changes needed beyond replacing the two affected
+  files. Same env vars, same requirements.txt, same Render config.
+
 v2.22.0 (2026-05-08) -- Claude
   - Y-bump: extracted the entire knowledge-base data layer into
     a new shared module `cb_kb.py` so the new Discord bot
@@ -3210,7 +3309,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.22.0"
+__version__ = "2.23.0"
 
 import streamlit as st
 import anthropic
@@ -3817,7 +3916,27 @@ def log_conversation(session_id, product, user_msg, ai_response, images=None, cl
     return len(get_log()) - 1
 
 def update_feedback(row_idx, feedback, note=""):
-    log = get_log()
+    # v2.23.0: re-read the log from disk before mutating, so we don't blow
+    # away Discord-bot-written rows that landed between the admin's last
+    # page render and this feedback click. Discord rows live on disk only
+    # (the bot is a separate process), and a naive _rewrite_log_to_disk()
+    # from our stale in-memory copy would delete them.
+    #
+    # Index stability: row_idx came from the last admin render. New rows
+    # (web or discord) are always appended to the END of the JSONL file,
+    # so existing indices still point to the same rows even after appends.
+    # The disk-truth read here picks up any new appends and preserves them
+    # through the rewrite.
+    #
+    # No-op fallback: if disk persistence is off (LOG_FILE_PATH is None,
+    # e.g. dev environment without /var/data), _load_log_from_disk returns
+    # an empty list -- in that case fall back to the in-memory log so we
+    # don't silently drop the feedback.
+    if LOG_FILE_PATH is not None:
+        log = _load_log_from_disk()
+        st.session_state.log = log  # refresh cache too
+    else:
+        log = get_log()
     if row_idx is not None and 0 <= row_idx < len(log):
         log[row_idx]["Feedback"] = feedback
         log[row_idx]["Feedback Note"] = note
@@ -3902,6 +4021,12 @@ def send_email_with_csv(csv_bytes, subject, recipient=DIGEST_EMAIL):
 
 def auto_daily_digest():
     today = datetime.now().date()
+    # v2.23.0: refresh log from disk so Discord conversations land in
+    # the daily digest email. Without this, the digest would only contain
+    # web conversations -- the Discord bot writes to disk only and never
+    # touches the in-memory log.
+    if LOG_FILE_PATH is not None:
+        st.session_state.log = _load_log_from_disk()
     if today > get_shared_store()["last_digest_date"] and get_log():
         yesterday = get_shared_store()["last_digest_date"].strftime("%d %b %Y")
         rows = [r for r in get_log() if r["Date"] == yesterday]
@@ -3916,272 +4041,6 @@ def auto_daily_digest():
 
 
 
-
-
-# ── HEADSETS ──────────────────────────────────────────────────────────────────
-KNOWLEDGE_BASE["CryoCore"] = """
-PRODUCT: Cosmic Byte CryoCore — 7.1 USB Wired Gaming Headset
-
-SPECS:
-- Connection: USB 2.0 only (no 3.5mm)
-- Cable length: 2.0m
-- Driver: 50mm | Sensitivity: 110dB ±5dB | Impedance: 32Ω | Freq: 20Hz–20kHz
-- Rated power: 20mW | Max power: 50mW
-- Weight: 277g | Dimensions: 195×95×165mm
-- Mic: Electret condenser, omnidirectional, 6.0×5.0mm, -42dB ±3dB sensitivity
-- Mic SNR: 58dB | Mic output impedance: ≤2.2kΩ
-
-WHAT'S IN THE BOX: CryoCore headset, detachable microphone, user manual
-
-CONTROLS:
-- Volume dial on earcup — rotate to adjust volume
-- Mic switch on earcup — slide UP = mic ON, slide DOWN = mic MUTED
-- Detachable microphone — plug into the port on the left earcup
-
-SETUP — PC/LAPTOP:
-1. Connect USB to PC
-2. Download driver from https://www.thecosmicbyte.com/downloaddrivers/
-3. Extract and run setup.exe
-4. Enable 7.1 Surround Sound in the software
-5. In Windows Sound Settings, select "CB CryoCore" as both output AND input device
-
-SETUP — PS4/PS5:
-- Plug USB directly into console. No driver or software needed.
-- Adjust volume from PlayStation Audio Settings
-
-NOTE: Xbox is NOT officially supported via USB.
-
-TROUBLESHOOTING:
-Q: Headset not detected on PC?
-A: Check USB connection → reinstall driver → try different USB port → set "CB CryoCore" as default audio device in Windows Sound Settings
-
-Q: No 7.1 surround sound?
-A: Install the driver software → enable 7.1 in software settings → confirm "CB CryoCore" is default output in Windows Sound Settings
-
-Q: Microphone not working?
-A: Check mic is firmly plugged in → ensure mic switch is slid UP (ON position) → select "CB CryoCore" as microphone input in Windows Sound Settings
-
-Q: No audio from headset?
-A: Rotate the volume dial → set "CB CryoCore" as default output in Windows Sound Settings
-
-CARE: Keep away from moisture. Store in cool dry place. Avoid bending cable. Do not disassemble.
-
-WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
-SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
-
-KNOWLEDGE_BASE["Proteus"] = """
-PRODUCT: Cosmic Byte Proteus — Gaming Headset (Dual Input USB + 3.5mm)
-
-SPECS:
-- Connection: Dual input — USB (7.1 surround) AND 3.5mm jack
-- Driver: 50mm | Sensitivity: 111 ±3dB | Impedance: 32Ω±15% | Freq: 20Hz–20,000Hz
-- Cable: Headset cable 0.7m + 3.5mm audio jack 1.5m + USB cable 1.5m (braided)
-- Power: 20mW rated, 30mW input
-- Weight: 280g (without cable), 336g (with cable) | Dims: 190×90×220mm
-- Mic: ENC detachable, uni-directional, ø6.0×2.7mm, sensitivity -50±3dB
-- RGB LED lights, on-cable controller
-
-WHAT'S IN THE BOX: Proteus headset, detachable ENC microphone, USB-C to USB-A connector, 3.5mm audio cable, user manual
-
-ON-CABLE CONTROLLER:
-- Volume wheel: scroll up = volume +, scroll down = volume −
-- Mic mute button: tap once = microphone on/off
-- LED button: tap once = RGB lights on/off
-- Volume mute button: tap once = volume mute/unmute
-
-COMPATIBILITY:
-- PC/Mac/Laptop: USB (7.1 surround + software) OR 3.5mm jack
-- PS4/PS5: USB OR 3.5mm via controller jack. Volume from PlayStation Audio Settings.
-- Xbox One S/X: 3.5mm jack on controller ONLY. USB does NOT work on Xbox.
-- Mobile/Tablet: 3.5mm jack only
-- Nintendo Switch: 3.5mm jack only
-- LED tip for mobile: plug USB into a power bank/charger while using 3.5mm for audio — this powers the RGB lights
-
-7.1 SURROUND: Download software from https://www.thecosmicbyte.com/downloaddrivers/ (USB mode only)
-
-TROUBLESHOOTING:
-Q: Xbox not working?
-A: Xbox only supports 3.5mm on the controller. USB connection will not work on Xbox.
-
-Q: Mic not working?
-A: Ensure mic is firmly attached → check mic mute button (not muted) → select Proteus as input device in your system sound settings
-
-Q: No RGB lights when using with mobile?
-A: Plug the USB cable into a USB power source (power bank, charger) while using 3.5mm for audio
-
-WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
-SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
-
-# ── EARBUDS ────────────────────────────────────────────────────────────────────
-KNOWLEDGE_BASE["CosmoBuds X220"] = """
-PRODUCT: Cosmic Byte CosmoBuds X220 — True Wireless Gaming Earbuds
-
-SPECS:
-- Bluetooth: 5.3
-- Low latency: 40ms in GOD Mode
-- Driver: 13mm | Frequency: 20Hz–20kHz
-- Earbud battery: 40mAh | Case battery: 400mAh
-- Music playtime: up to 10 hours per charge
-- Total battery life with case: 40 hours
-- Talk time: up to 7 hours
-- Standby: 100 days
-- Charging: USB-C, ~1.5 hours full charge
-- Fast charge: 15 minutes = 100 minutes playtime
-- Range: 10m
-- Water resistance: IPX5 (sweat and water resistant)
-- Mic: ENC/DNS, omnidirectional
-- Codecs: AAC + SBC
-
-⚠️ CHARGER WARNING: Use ONLY 5V/1A chargers. Fast chargers WILL damage the battery — not covered under warranty.
-
-TOUCH CONTROLS:
-Music playback:
-- Double tap either earbud = pause/resume
-- Long press RIGHT (1.5s) = volume up
-- Long press LEFT (1.5s) = volume down
-
-Calls:
-- Double tap either earbud = answer/hang up
-- Long press either earbud (2s) = reject incoming call
-- Triple tap RIGHT earbud = voice assistant
-
-Mode switching:
-- Triple tap LEFT earbud = toggle GOD Mode ↔ Music Mode
-  • GOD Mode = 40ms low latency (best for gaming)
-  • Music Mode = high-fidelity audio + bass (best for music)
-
-PAIRING — FIRST TIME:
-1. Remove earbuds from case → they auto-enter pairing mode
-2. Go to phone Bluetooth settings → connect to "CosmoBuds X220"
-After pairing once, earbuds auto-reconnect when removed from case (IOP™ instant pairing)
-
-SINGLE EARBUD USE: Remove one earbud, it pairs solo in mono mode. Return the other — stereo resumes automatically.
-
-VOLUME LIMIT REMOVAL:
-- iOS: Settings → Music → turn off Sound Check
-- Android: Bluetooth settings → tap CosmoBuds X220 → disable "Sync volume with phone"
-- Spotify/Amazon Music: Turn off Audio Normalisation in app settings
-
-FACTORY RESET:
-1. Forget "CosmoBuds X220" from phone Bluetooth settings
-2. Remove both earbuds from case
-3. Tap each earbud 7 times — LED turns off
-4. Place back in case for 5 seconds
-5. Re-pair normally
-
-TROUBLESHOOTING:
-Q: One earbud not working?
-A: Place both in case → take out again. If still failing, perform factory reset.
-
-Q: Earbuds won't connect?
-A: Forget device from phone Bluetooth → perform factory reset → re-pair
-
-Q: Disconnecting during calls?
-A: Charge the earbuds. If persists, perform factory reset.
-
-Q: Low volume?
-A: Remove volume limit (see above)
-
-WARRANTY: 1 year against manufacturing defects. Physical/water damage, tampered products, and battery wear and tear not covered.
-SUPPORT: cc@thecosmicbyte.com | 07969273222 | Mon–Sat 10am–6pm
-"""
-
-# ── ACCESSORIES / COMBOS ───────────────────────────────────────────────────────
-KNOWLEDGE_BASE["Cyclone RGB"] = """
-PRODUCT: Cosmic Byte Cyclone RGB — Laptop Cooling Pad
-
-SPECS:
-- Dimensions: 405×290×43mm | Weight: 1123g
-- Fans: 1× 140mm (centre, RGB) + 4× 60mm (corners, blue)
-- Fan speed: 1600–2500 RPM ±10%
-- USB ports: 2× USB 2.0 HUB
-- Power: DC 5V, 1A, 5W (USB powered)
-- Material: ABS + Metal
-- Laptop compatibility: up to 17-inch laptops
-
-FEATURES:
-- 12 RGB lighting effects on the centre fan and edge strip
-- 7-level adjustable height/angle (fold-out legs) for optimal viewing and typing
-- 3 fan modes — control which fans are on/off
-- 3-level adjustable fan speed
-- 2 USB ports to connect other devices while cooling
-
-SETUP:
-1. Connect the USB cable from the cooling pad to a USB port on your laptop
-2. Place your laptop on the pad
-3. Use the control panel to adjust fan speed, fan mode, and RGB effects
-
-TROUBLESHOOTING:
-Q: Fans not spinning?
-A: Ensure USB is properly connected to the laptop. Try a different USB port.
-
-Q: RGB not working?
-A: Check USB connection. Cycle through RGB modes using the control button.
-
-Q: Laptop still overheating?
-A: Increase fan speed to max. Ensure laptop vents are not blocked. Clean laptop vents if dusty.
-
-WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
-SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
-
-KNOWLEDGE_BASE["Dragonfly"] = """
-PRODUCT: Cosmic Byte Dragonfly — RGB Membrane Keyboard + Mouse Combo (CB-GKM-19)
-
-KEYBOARD SPECS:
-- Type: Full-size RGB membrane keyboard
-- Anti-ghosting: 19-key
-- Key life: 10 million keystrokes
-- Weight: 637g ±10g | Dimensions: 458×170×32mm | Cable: 1.5m braided
-- Features: Windows lock key, mobile phone holder, multimedia hotkeys, fold-out legs
-
-MOUSE SPECS:
-- Buttons: 7
-- DPI: 200–12,800 (adjustable)
-- Polling rate: up to 1000Hz
-- Sensor: Instant 825 | Acceleration: 20G | Tracking: 60 IPS
-- Switches: Huano 5M (L/R buttons)
-- Weight: 80g (without cable) | Dimensions: 122×66×40.5mm
-- RGB effects customisable via software
-
-KEYBOARD SHORTCUTS (FN combinations):
-FN + F1 = Media Select | FN + F2 = Volume − | FN + F3 = Volume + | FN + F4 = Mute
-FN + F5 = Stop | FN + F6 = Previous Track | FN + F7 = Play/Pause | FN + F8 = Next Track
-FN + F9 = Email | FN + F10 = Web/Home | FN + F11 = My Computer | FN + F12 = Calculator
-FN + WIN-L = Lock/unlock Windows key
-
-RGB MODES (keyboard):
-FN+1=RGB | FN+2=RGB2 | FN+3=Colours Cycle | FN+4=7 Colour Breathing
-FN+5=7 Colour Switch | FN+6=Light 1 | FN+7=Light 2 | FN+8=LED Off
-FN+9=Custom (FN + ←/→ to choose colour, FN+9 again to save)
-FN + ←/→ = direction control | FN + PgUp/PgDn = brightness up/down
-
-SOFTWARE: The Dragonfly has TWO separate software downloads — one for the keyboard, one for the mouse. Both are listed on the Cosmic Byte downloads page (https://www.thecosmicbyte.com/downloaddrivers/) as separate entries: "Dragonfly Keyboard" and "Dragonfly Mouse". If the customer wants to configure both peripherals (keyboard macros + mouse DPI/macros/RGB), they need to download BOTH softwares. The keyboard software handles RGB modes and key remapping; the mouse software handles DPI tuning, macro assignment, and RGB customisation. Do NOT tell the customer there is a single combined Dragonfly software — there isn't.
-
-TROUBLESHOOTING:
-Q: Keyboard keys not registering?
-A: 19-key anti-ghosting — some key combinations may not be supported simultaneously. Check Windows key is not locked (FN + WIN-L).
-
-Q: Mouse DPI not changing?
-A: Use the DPI button on the mouse or adjust via software.
-
-Q: RGB not working?
-A: Press FN+1 to cycle RGB modes. Ensure USB is fully connected. Reinstall software from thecosmicbyte.com.
-
-Q: Multimedia keys not working?
-A: Use FN + function key combinations (e.g., FN+F7 for Play/Pause).
-
-WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
-SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
-
-# "All Products" is intentionally lean — only the matched product KB is injected
-# at query time via detect_product_from_message(). Sending 27K tokens every call
-# was 8x more expensive and unnecessary since the system prompt already instructs
-# the bot to ask which product the customer has.
-KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 
 
 QUICK_QUESTIONS = {
@@ -4671,8 +4530,24 @@ def render_admin():
 
     st.divider()
 
-    # Snapshot the shared log to avoid race conditions during iteration
-    log = list(get_log())
+    # v2.23.0: refresh the log from disk before snapshotting. The Discord
+    # bot writes to /var/data/support_log.jsonl from a separate process and
+    # never touches our in-memory st.session_state.log. Without this
+    # refresh the admin dashboard would never show Discord conversations.
+    #
+    # We also overwrite st.session_state.log here so any subsequent
+    # update_feedback() call in the same render gets the fresh data
+    # (update_feedback also re-reads disk defensively, but keeping the
+    # session cache in sync avoids confusing intermediate states).
+    #
+    # Fallback for dev environments without /var/data mounted: if disk
+    # persistence is off, fall back to whatever's in-memory.
+    if LOG_FILE_PATH is not None:
+        fresh_log = _load_log_from_disk()
+        st.session_state.log = fresh_log
+        log = list(fresh_log)
+    else:
+        log = list(get_log())
 
     if not log:
         st.info("No conversations logged yet.")
