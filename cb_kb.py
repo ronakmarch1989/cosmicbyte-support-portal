@@ -33,6 +33,505 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.6.1 (2026-05-09) -- Claude
+  * Z-bump: firmware-update connection-mode
+    correction. Firmware updates work in WIRED
+    mode ONLY (not 2.4GHz, not Bluetooth). The
+    KB previously had two places where this was
+    either understated or stated incorrectly.
+
+  Bug:
+    A Lumora customer reporting RGB sync /
+    glitch issues got a 5-step troubleshooting
+    response from the AI which included:
+      "5. Firmware Check & Update: ... If yes,
+      install it (keep the controller connected
+      via Wired or 2.4GHz during the update,
+      do NOT disconnect)."
+    The "Wired or 2.4GHz" phrasing is wrong --
+    Cosmic Byte firmware updates require WIRED
+    USB-C connection only. 2.4GHz is fine for
+    the rest of the software (configuration,
+    button mapping, RGB, etc.) but not for
+    firmware update. Ronak flagged: "Firmware
+    Updates only works in Wired mode. We
+    discussed it before."
+
+  Root cause:
+    Two places in the KB had loose / inaccurate
+    wording about firmware-update connection
+    requirements:
+
+    (1) Lumora SOFTWARE block (added in v1.4.0):
+        the bullet describing the Firmware
+        Update tab said
+          "Requires Wired or 2.4GHz (NOT
+           Bluetooth)."
+        That was wrong -- 2.4GHz is fine for
+        general software access but firmware
+        update specifically requires wired
+        only.
+
+    (2) Stellaris SOFTWARE block (added in
+        v1.6.0): the Updates page description
+        I just added did not specify a
+        connection-mode requirement at all,
+        even though the existing FIRMWARE
+        UPDATE section above it (added in an
+        earlier KB version) already says
+        "connect via USB-C in WIRED mode".
+        The new block needed to align.
+
+  Fix:
+    (a) Lumora SOFTWARE block: changed the
+        Firmware Update tab description to
+        "Requires WIRED USB-C ONLY (NOT
+        2.4GHz, NOT Bluetooth)" with a brief
+        note that 2.4GHz works for everything
+        ELSE in the software but not firmware.
+    (b) Stellaris SOFTWARE block, Updates
+        page: added an explicit wired-only
+        requirement matching the existing
+        FIRMWARE UPDATE section above.
+    (c) Cross-product clarification: added a
+        general note in both blocks
+        distinguishing "software detection /
+        configuration" (works in Wired or
+        2.4GHz) from "firmware update"
+        (Wired ONLY).
+
+  Lesson logged: "the software works in Wired
+  or 2.4GHz" is true for normal configuration
+  but does NOT extend to firmware updates --
+  firmware always needs the USB-C cable. When
+  documenting a software's tabs, treat the
+  Firmware Update tab as a special case with a
+  stricter connection requirement than the
+  rest, even when the rest of the software is
+  fine over 2.4GHz. Always state firmware
+  connection mode explicitly per tab; do not
+  let the customer infer it from the
+  general-software connection rule.
+
+  No code change. ast.parse before/after.
+
+v1.6.0 (2026-05-09) -- Claude
+  * Y-bump: comprehensive companion-software
+    documentation added for the Ares Pro 2nd Gen
+    Windows software (v1.2.11) and the Stellaris
+    2nd Gen Windows software, modelled on the
+    same per-tab structure used for the Velox
+    docs in v1.3.0 and the Lumora docs in
+    v1.4.0.
+
+  Why:
+    Ronak provided 22 screenshots of the Ares
+    Pro 2nd Gen software (organised by tab) and
+    27 screenshots of the Stellaris 2nd Gen
+    software (also organised by tab) for review.
+    Previously the KB had only one-line
+    references to "the Cosmic Byte software"
+    for each product, which meant any customer
+    asking about a specific tab, slider, toggle,
+    or feature would get either a generic
+    refusal or fabricated content extrapolated
+    from the Lumora / Velox software docs (the
+    UIs are not identical -- Ares Pro and
+    Stellaris are different software families).
+
+  Two distinct software apps documented:
+
+  ARES PRO 2nd GEN SOFTWARE -- "Cosmic Byte Ares
+  Pro Software" v1.2.11. Sidebar navigation
+  layout (same family as Lumora's software).
+  Seven sidebar tabs documented:
+    - Mappings (button remap grid, source ->
+      destination columns: ML, MR, UP, UNDER,
+      LEFT, RIGHT, A, B, X, Y, LB, LT, LSB,
+      RB, etc.)
+    - Macro (2 slots: ML and MR back paddles,
+      32 events per slot)
+    - Sticks (Deadzone, Anti-Deadzone, Enable
+      Radial Trace toggle, Output dropdown,
+      Left/Right Stick selector at bottom)
+    - Triggers (Deadzone, Anti-Deadzone, Left/
+      Right Trigger selector at bottom)
+    - Vibration
+    - Extended Settings (Auto-sleep with options
+      Off / 5 / 10 / 20 minutes -- max is 20,
+      confirmed by Ronak)
+    - Firmware Update
+  Profile system: 4 profiles (1, 2, 3, 4),
+  switchable on the controller via Back +
+  Right Joystick Up/Down. Home LED flashes
+  1/2/3/4 to indicate active profile.
+
+  STELLARIS 2nd GEN SOFTWARE -- "STELLARIS
+  GAMEPAD" (different UI family from Ares Pro).
+  Splash screen with three top-level buttons
+  (Profiles, Vibrates, Updates), then in-profile
+  editor with top icon-tab bar. Six in-profile
+  tabs documented:
+    - Mappings (interactive controller diagram
+      with all buttons labelled; click any
+      button to remap)
+    - Joysticks (Left/Right Stick Range Initial-
+      Max sliders, Raw toggle each, Swap Left
+      Joystick and D-pad toggle, D-Pad Diagonal
+      Lock toggle, live X/Y readouts. Caveat
+      shown in-app: Initial value under 10%
+      makes stick very sensitive / drift-prone)
+    - Triggers (Left/Right Trigger Range
+      Initial-Max sliders + live trigger bars)
+    - Vibrations (Left/Right Grip Vibration
+      Level Off/1/2/3 each, Try Grip Vibration
+      toggle for live LT/RT testing)
+    - Lights (Animation slots I/II/III,
+      Presets: Spectrum / Rainbow / Breathing /
+      Static Color / Off, Speed slider,
+      Brightness slider, Pick up to wake
+      toggle, Auto sleep when inactive)
+    - Motion (gyro tab, more granular than
+      Lumora's): Response Curve presets
+      Aggressive / Default / Smooth / Custom,
+      Anti-Deadzone slider, Activate Method
+      on/off, Activate Button picker, Motion
+      Axis picker, Active Axis picker, Invert
+      X / Invert Y toggles, Steer/Aim toggle.
+      Steer/Aim is unique to Stellaris -- not
+      present on Lumora's Motion tab.
+
+  Profile system: 4 profiles total (Default +
+  Profile 1, 2, 3). Each non-Default profile
+  has its own description field and Configure
+  button.
+
+  Updates page: shows current firmware version
+  and offers update if available (e.g.
+  "Current firmware version: v1.0.9, Update to
+  v1.1.2").
+
+  Naming quirks captured (so the AI doesn't
+  treat them as customer mis-spellings):
+    - Stellaris software's splash screen reads
+      "Vibrates" -- this is a typo in the
+      software (confirmed by Ronak). The
+      in-profile tab is correctly labelled
+      "Vibrations". When a customer mentions
+      either, treat them as the same thing.
+
+  No code change. ast.parse before/after.
+
+v1.5.2 (2026-05-09) -- Claude
+  * Z-bump: warranty-neutrality fix. The AI was
+    acting as the customer's advocate against
+    Cosmic Byte's standard warranty terms,
+    rather than as Cosmic Byte's support agent.
+
+  Bug:
+    A customer reporting issues with a "Hades
+    headset" (not a documented CB product, but
+    that's a separate issue) said "that makes
+    3 defects -- including the microphone port
+    break off". The AI responded by:
+      (a) Pre-classifying all three reported
+          issues as "manufacturing defects"
+          with severity ratings (HIGH /
+          MEDIUM) and confident root cause
+          attribution ("inadequate solder
+          joint", "loose internal component"),
+          despite having performed no
+          inspection.
+      (b) Calling a microphone port that
+          "broke off" a manufacturing defect
+          ("Manufacturing defect (inadequate
+          solder joint)") -- when CB's
+          standard warranty explicitly
+          excludes physical damage. A port
+          that has come off the housing is
+          the textbook case of physical
+          damage.
+      (c) Drafting a complete warranty-claim
+          email for the customer with
+          framing engineered to overcome
+          warranty exclusions ("pattern of
+          manufacturing quality issues",
+          "two non-functional components").
+      (d) Coaching the customer on how to
+          argue against rejection grounds:
+          "This isn't just one bad component
+          -- it's multiple failure points,
+          which makes it much harder to argue
+          these are user-caused or normal
+          wear-and-tear." This is literally
+          teaching the customer how to defeat
+          CB's standard warranty exclusions.
+      (e) Promising warranty-coverage
+          outcomes by labelling severity and
+          asserting "manufacturing defect"
+          status, when only CB's actual
+          repair team can determine that.
+
+    Net effect: the AI was operating as the
+    customer's lawyer/advocate, building a
+    case against Cosmic Byte. This is a
+    serious misalignment: the AI is
+    Cosmic Byte's support agent, not the
+    customer's lawyer. It should be neutral,
+    factual about warranty terms (including
+    what's NOT covered), and route to the
+    actual support team for evaluation --
+    without pre-judging the outcome.
+
+  Root cause:
+    The existing STEP 3 - WARRANTY ESCALATION
+    section in the SYSTEM_PROMPT had the
+    right factual content (1 yr against
+    manufacturing defects only, physical
+    damage NOT covered, etc.) but lacked
+    explicit prohibitions against advocacy
+    behaviours: don't pre-classify defects,
+    don't draft claim emails, don't coach
+    customers on framing. The AI inferred
+    "be helpful" as "advocate for the
+    customer's preferred outcome".
+
+  Fix:
+    Expanded STEP 3 - WARRANTY ESCALATION with
+    a NEUTRALITY clause spelling out the AI's
+    role as Cosmic Byte's agent, plus an
+    explicit list of behaviours it must NEVER
+    perform on warranty / claim / escalation
+    questions:
+      - Don't classify reported issues as
+        "manufacturing defect" / "factory
+        defect" / "covered" / "not covered".
+        Only Cosmic Byte's repair team can
+        determine that after inspection.
+      - Don't assign severity ratings or
+        attribute root causes ("inadequate
+        solder joint", "loose component",
+        "capacitor failure") to issues the
+        AI has not inspected.
+      - Don't draft warranty-claim emails,
+        message templates, or escalation
+        scripts for the customer. Provide
+        the support contact info and let
+        them write their own message.
+      - Don't coach the customer on framing
+        or strategy designed to overcome
+        possible rejection grounds.
+      - Don't promise warranty-coverage
+        outcomes ("you'll be covered",
+        "this qualifies for replacement",
+        etc.).
+      - Don't argue against possible
+        rejection grounds (physical damage,
+        wear and tear, console use, water
+        damage). State the warranty terms
+        factually if relevant; do not work
+        around them.
+      - Specifically: a port that has come
+        off, snapped, broken, or detached is
+        physical damage. This is NOT covered
+        under standard CB warranty. State
+        that factually if asked; do not
+        re-frame it as a manufacturing
+        defect to favour the customer.
+
+    Also added a positive script: a "neutral
+    response template" the AI should use when
+    a customer asks for help with a warranty
+    case -- empathic acknowledgement, factual
+    statement of warranty terms (including
+    exclusions), routing to the support
+    channel, no advocacy.
+
+  Lesson logged: "be helpful" must not be
+  read as "advocate for the customer". For
+  warranty / refund / claim questions, the
+  AI should be neutral and factual,
+  protecting the customer's right to file a
+  claim while not pre-judging the company's
+  evaluation of it.
+
+  No code change. ast.parse before/after.
+
+v1.5.1 (2026-05-09) -- Claude
+  * Z-bump: two Ares Pro corrections after Ronak
+    flagged AI responses that were wrong on
+    polling rate (KB error) and on Hall Effect
+    back-label verification (AI hallucination).
+
+  Bug 1 — Ares Pro Gen 1 polling rate, KB ERROR:
+    Customer asked "ares pro polling rate" and
+    the AI said:
+      - Gen 2 (App Support) → 1000Hz available
+      - Gen 1 (no App Support) → "1000Hz NOT
+        available, this is a hardware limitation,
+        Gen 1 models have a lower polling rate
+        that cannot be upgraded"
+    Ronak corrected: "Even Gen 1 is 1000Hz. just
+    without App support."
+
+    Root cause: this was NOT a hallucination -- the
+    AI faithfully reproduced what the KB said.
+    Two places contained the wrong claim:
+      - Line 1503 (Gen 1 differences section):
+        "1000Hz polling rate is NOT available on
+        Gen 1 -- that's a 2026 manufacturing batch
+        feature only..."
+      - Lines 1597-1599 (POLLING RATE section):
+        "1000Hz polling rate available on 2026
+        manufacturing batch (current Ares Pro /
+        Gen 2) only. Older Gen 1 models cannot be
+        upgraded to 1000Hz -- hardware limitation."
+
+    These claims were always wrong. The actual
+    distinction between Gen 1 and Gen 2 is
+    SOFTWARE SUPPORT (companion app for RGB /
+    button mapping / firmware update), NOT
+    polling rate. Both generations are 1000Hz.
+
+    Fix: rewrote both sections to reflect the
+    correct picture -- both Gen 1 and Gen 2 are
+    1000Hz, the only difference is whether the
+    controller has companion software ("App
+    Support" label).
+
+  Bug 2 — Hall Effect back label, HALLUCINATION:
+    Customer asked "ares pro hall effect" and
+    the AI offered to verify by saying "check
+    the back label -- if it says 'Hall Effect'
+    or 'HE' printed there, you're all set".
+    Ronak corrected: "Back label does not
+    mention HE. It is only for App support."
+
+    Root cause: the general HALL EFFECT / TMR
+    VERIFICATION GUIDE in the SYSTEM_PROMPT
+    (line 3851 area) says "if 'Hall Effect' or
+    'TMR' is printed on the label, the
+    controller has those sensors" -- which is
+    accurate for some products (Ares Wired,
+    Ares Wireless, etc. per their per-product
+    notes) but is NOT accurate for Ares Pro,
+    whose back label carries ONLY the "App
+    Support" text and nothing about sensor
+    technology. The AI applied the general
+    rule indiscriminately and fabricated a
+    label feature Ares Pro doesn't have.
+
+    Fix:
+      (1) Added a clear product-specific note
+          to the Ares Pro entry: the back label
+          carries ONLY "App Support" text (or
+          its absence for Gen 1). It does NOT
+          mention Hall Effect, HE, or TMR. For
+          Hall Effect verification on Ares Pro,
+          the AI must rely on the HALL EFFECT
+          QUICK-REFERENCE MATRIX in the system
+          prompt (which confirms current 2026
+          batch Ares Pro has both HE joysticks
+          and HE analog triggers) or guide the
+          customer through a software test, NOT
+          claim the back label contains HE
+          markings.
+      (2) Tightened the general HALL EFFECT /
+          TMR VERIFICATION GUIDE in the
+          SYSTEM_PROMPT to explicitly note
+          which products have HE/TMR on their
+          back labels (Ares Wired, Ares
+          Wireless, etc. per their product
+          manuals) and which don't (Ares Pro
+          has ONLY App Support text). The
+          back-label step is now phrased as
+          "if the product manual says the back
+          label mentions HE/TMR" rather than a
+          blanket "every CB controller back
+          label has HE if it has HE" claim.
+      (3) Added an anti-hallucination block to
+          the Ares Pro entry calling out the
+          two specific fabrications by their
+          exact phrasing.
+
+  Lesson logged: when a general rule applies to
+  some products but not others, pin per-product
+  exceptions in each product's entry AND
+  tighten the general rule's wording. A blanket
+  rule with no exception list is exactly the
+  shape that invites cross-product
+  hallucination.
+
+  No code change. ast.parse before/after.
+
+v1.5.0 (2026-05-09) -- Claude
+  * Y-bump: added POLLING RATE TESTING TOOLS as
+    rule #13 in the SYSTEM_PROMPT. The KB
+    previously had no authoritative guidance on
+    which third-party tool the AI should
+    recommend for polling rate verification, so
+    when customers asked "polling rate kaha se
+    check kre" (and similar) the AI fell back to
+    its general training knowledge -- usually
+    suggesting hardwaretester.com/gamepad. That
+    is a fine fallback but it is not the most
+    accurate option for measuring polling rate
+    specifically.
+
+  Why:
+    Ronak provided https://github.com/cakama3a/Polling
+    as the authoritative recommendation: a free
+    open-source dedicated polling-rate + synthetic
+    latency tester for gamepads ("Polling by
+    Gamepadla"), Windows .exe + Python source,
+    223 stars, MIT licensed, latest release
+    v1.3.1.4 (Oct 2025), supports both DInput
+    and XInput gamepads. The maintainer also
+    runs https://gamepadla.com -- a community
+    catalogue of tested gamepads -- and a beta
+    successor "Polling 2" at
+    https://gamepadla.itch.io/polling.
+
+  What rule #13 covers:
+    (a) Primary recommendation: Polling by
+        Gamepadla (Windows-only, gamepad-specific,
+        free / open-source). GitHub URL +
+        download path included.
+    (b) Beta version: Polling 2 at
+        gamepadla.itch.io/polling for customers
+        who want the newer UI.
+    (c) Public catalogue / comparison: gamepadla.com
+        -- after running Polling, results
+        auto-upload there and customers can
+        compare their measured rate to other
+        tested gamepads (including competitors).
+    (d) Cross-platform fallback: hardwaretester.com/
+        gamepad for customers on macOS / Linux /
+        Chromebook or anyone who doesn't want to
+        download anything.
+    (e) Important caveat (mention only when
+        asked): Polling measures the latency
+        between successive analog stick position
+        changes, NOT button-press input latency.
+        These are different metrics. Polling is
+        best for verifying the controller reports
+        at its claimed polling rate (e.g. 1000Hz
+        on the new 2026 Tri-Mode Ares); it is
+        not a traditional input-latency tool.
+    (f) Routing guidance: lead with (a) for
+        Windows users who want the best result,
+        mention (d) as web alternative for any
+        OS / no-download cases. Don't dump all
+        four URLs unless the customer asks.
+
+  Verified against the upstream README at
+  https://github.com/cakama3a/Polling (fetched
+  2026-05-09): tool description, URL, supported
+  protocols, latency-measurement caveat, and the
+  Polling 2 beta link all match.
+
+  No code change. ast.parse before/after.
+
 v1.4.2 (2026-05-09) -- Claude
   * Z-bump: correct the COD-on-pre-order policy.
     Cash on Delivery IS available for pre-order
@@ -760,7 +1259,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.4.2"
+__version__ = "1.6.1"
 
 import re
 
@@ -975,7 +1474,7 @@ OTHER TABS (brief reference — when a customer asks about a feature not on the 
 - MOTION — (the section above).
 - LIGHTING — RGB customisation. (Lumora has 5-zone preset-animation RGB; not as granular as Stellaris.)
 - EXTENDED SETTINGS — miscellaneous: auto-shutdown timeout, polling rate, etc.
-- FIRMWARE UPDATE — check / install controller firmware from within the app. Requires Wired or 2.4GHz (NOT Bluetooth).
+- FIRMWARE UPDATE — check / install controller firmware from within the app. Requires WIRED USB-C ONLY (NOT 2.4GHz, NOT Bluetooth). The rest of the Cosmic Byte software (Mappings, Macro, Sticks, Triggers, Vibration, Motion, Lighting, Extended Settings) works fine over EITHER Wired OR 2.4GHz, but firmware update specifically requires the wired connection so the install can complete reliably without RF interference. If a customer reports the firmware update tab is greyed-out or refusing to start, first confirm they are connected via the USB-C cable, not the 2.4GHz dongle.
 
 GENERAL SOFTWARE NOTES:
 - All settings are stored on the CONTROLLER itself (not just in the software), so they persist across PCs and across power cycles. The customer doesn't need to keep the software running for the settings to take effect.
@@ -1084,6 +1583,88 @@ GYRO (current Stellaris):
   * Assign gyro to any button.
   * Activation modes: Always On / Toggle / Press and Hold.
   * Gyro output mimics joystick movement, so it works with any game that supports a joystick.
+  * For full controls including Response Curve presets and granular activation settings, see the SOFTWARE -> Motion tab section below.
+
+SOFTWARE (Cosmic Byte Stellaris software — Windows ONLY, current Stellaris / Gen 2 only):
+
+Download from https://www.thecosmicbyte.com/downloaddrivers/. The Stellaris is plug-and-play on Windows for normal gamepad use; the software is OPTIONAL and only needed for advanced customisation. There is no macOS / Linux / Android build. The software is for the current Gen 2 Stellaris ONLY -- Gen 1 (legacy) uses the Key Linker mobile app instead and is NOT compatible with this PC software (see the LEGACY GEN 1 section below).
+
+CONNECTION REQUIREMENT: software works in WIRED USB-C and 2.4GHz dongle modes. Bluetooth mode is for normal gamepad use only -- the software does NOT detect the controller over Bluetooth.
+
+APP LAYOUT (different UI family from the Ares Pro / Lumora software):
+- LANDING / SPLASH: full-screen splash titled "STELLARIS GAMEPAD" with the controller render, plus three menu buttons stacked vertically at the bottom centre:
+  * Profiles -- enters the profile picker, then the in-profile editor with the 6-tab bar.
+  * Vibrates -- direct access to vibration settings. NOTE: "Vibrates" on the splash is a software typo (confirmed -- the in-profile tab is correctly labelled "Vibrations"). Treat customer mentions of either spelling as the same feature.
+  * Updates -- direct access to the firmware update screen.
+- IN-PROFILE EDITOR: top icon-tab bar with 6 tabs (Mappings / Joysticks / Triggers / Vibrations / Lights / Motion), the controller render in the centre, and per-tab controls flanking it. The active profile name appears top-right next to a gear icon and a back arrow.
+
+PROFILES SYSTEM (4 profiles total: Default + 3 custom):
+- Default -- baseline configuration that cannot be deleted; selecting it is essentially "factory settings on a session-by-session basis".
+- Profile 1, Profile 2, Profile 3 -- each has a description field ("Click to add description...") and its own Configure button. Click Configure to enter the in-profile editor.
+- Profiles store independent settings for every tab: button mappings, joystick ranges, trigger ranges, vibration levels, lighting animations, motion settings.
+
+EDITOR TABS — what each tab does:
+
+(1) MAPPINGS — button remapping via interactive controller diagram. Every button on the controller is labelled with a callout line (LB, LT, LSB, ↑↓←→ D-pad, L4, RB, RT, X, Y, B, A, RSB, R4, SELECT, START). Click any button label to assign a different output to that button. L4 / R4 are the back paddle buttons; LSB / RSB are the stick clicks. "Reset to default" button at the bottom resets all mappings on this profile.
+
+(2) JOYSTICKS — per-stick range and behaviour:
+  - Left Stick Range -- Initial-to-Max slider. Initial sets the lower bound of stick travel that registers; Max sets the upper bound.
+  - Raw toggle -- bypasses the software's response curve and sends the stick's raw output.
+  - Right Stick Range -- same Initial-to-Max slider + Raw toggle, independently adjustable.
+  - Swap Left Joystick and D-pad (toggle) -- physically swaps the input role of the left stick and the D-pad. Default OFF.
+  - D-Pad Diagonal Lock (toggle) -- restricts D-pad to 4 cardinal directions (no diagonals). Useful for fighting games. Default OFF.
+  - Live X/Y % readout for each stick at the bottom corners of the controller render.
+  IMPORTANT IN-APP CAVEAT: the software displays "Initial value under 10% will make the stick very sensitive, which is prone to drifting. Please use with caution." If a customer reports drift after software adjustment, ask whether they set Initial below 10% before treating it as a hardware issue.
+
+(3) TRIGGERS — per-trigger range:
+  - Left Trigger Range -- Initial-to-Max slider.
+  - Right Trigger Range -- Initial-to-Max slider, independently adjustable.
+  - Live trigger intensity bars displayed in the centre, above the controller render.
+  Note: this software-side range works on top of the physical Trigger Mode Switch on the back of the controller (Analog/Digital). Software adjustments fine-tune the response within whichever physical mode is selected.
+
+(4) VIBRATIONS — per-grip vibration levels:
+  - Left Grip Vibration Level -- Off / 1 / 2 / 3 (slider with 4 stops).
+  - Right Grip Vibration Level -- Off / 1 / 2 / 3, independently adjustable.
+  - "Try Grip Vibration" toggle -- when enabled, pressing LT or RT briefly vibrates the corresponding grip so the customer can preview the level before saving.
+  Stellaris vibration is per-grip (left and right independent), more granular than products that have a single combined vibration intensity.
+
+(5) LIGHTS — RGB lighting customisation:
+  - Animations -- 3 slots labelled I, II, III. Customer can configure up to 3 simultaneous animation effects.
+  - Presets -- five options at the bottom-left: Spectrum (default, multi-colour cycling), Rainbow, Breathing, Static Color, Off.
+  - Speed slider -- animation speed.
+  - Brightness slider -- LED brightness.
+  - Pick up to wake (toggle) -- when enabled, motion sensor wakes the controller from sleep when picked up. Default OFF.
+  - Auto sleep when inactive for -- timeout dropdown (e.g. 10 Mins). Controller goes to sleep to save battery after this period of inactivity.
+  Note: this is for the BLACK Stellaris variant's RGB rings around the joysticks. For the TRANSPARENT variant (which has an additional outer RGB ring around the controller body), the same controls apply but also affect the outer ring -- always confirm the customer's variant when answering RGB questions per the ASK-FIRST GUIDANCE at the top of this entry.
+
+(6) MOTION — gyro / motion customisation. More granular than Lumora's Motion tab:
+  - Response Curve -- four presets:
+    * Aggressive -- fast response near extremes, slower near centre. Good for FPS aim where you want fine control near rest and quick flicks at the edges.
+    * Default -- linear curve.
+    * Smooth -- S-curve / sigmoid response. Gradual ease-in and ease-out.
+    * Custom -- user-editable curve graph.
+  - Anti-Deadzone slider -- compensates for in-game deadzones on the gyro output.
+  - Activate Method -- On/Off toggle. Default Off (gyro disabled on this profile).
+  - Activate Button -- which controller button activates gyro. Default "N" (none = always-on when Activate Method is On).
+  - Motion Axis -- which physical sensor axis maps to the joystick output (gamepad-icon picker).
+  - Active Axis -- which axes are live (X-only, Y-only, both -- arrow-direction picker).
+  - Invert X -- flip horizontal sensor direction. Default Off.
+  - Invert Y -- flip vertical sensor direction. Default Off.
+  - Steer / Aim toggle -- behaviour mode selector. "Steer" mode is racing-style (continuous angle = continuous output); "Aim" mode is FPS-style (gyro-as-stick, with the curve and deadzone applied). Default depends on what the customer last selected per profile. Steer/Aim is unique to the Stellaris software -- Lumora's Motion tab does not have this toggle.
+  - Reset to default -- bottom button.
+  Live preview: the right joystick on the controller render highlights orange and shows a "+" cross-hair indicator while gyro motion is being captured.
+
+UPDATES PAGE (accessed from the splash screen's Updates button):
+- Shows current firmware version (e.g. "Current firmware version: v1.0.9").
+- If a newer version is available, shows "Update to v1.1.2" with a NEW tag.
+- Click "Update" to apply. Do NOT disconnect during update.
+- CONNECTION REQUIREMENT: firmware update requires WIRED USB-C ONLY (NOT 2.4GHz, NOT Bluetooth). The rest of the Stellaris software (Mappings, Joysticks, Triggers, Vibrations, Lights, Motion) works in either Wired or 2.4GHz, but firmware update specifically needs the wired cable so the install can complete reliably without RF interference. This matches the existing FIRMWARE UPDATE section in this entry. If a customer says the Update button is greyed-out or refusing to start, first confirm they are connected via USB-C, not the 2.4GHz dongle.
+
+GENERAL SOFTWARE NOTES:
+- All settings are stored on the CONTROLLER itself, not just in the software. Settings persist across PCs and power cycles.
+- Profile switching is currently software-side -- to switch profiles on the fly without the software running, refer to any per-controller hardware shortcuts documented elsewhere in this entry.
+- Software is WINDOWS ONLY. No macOS / Linux / Android build.
+- Software does NOT detect the controller over Bluetooth -- use Wired or 2.4GHz to access any of the tabs above.
 
 STEAM MODE (wired only):
 - Power OFF the controller. Hold R3. While holding R3, plug in the USB-C cable. Release R3 once connected. Boots into Steam mode automatically. Restart Steam if needed.
@@ -1413,7 +1994,62 @@ SECTION 1: CURRENT ARES PRO (Gen 2 — "App Support" label present)
 
 This is the version sold currently. Has companion software that handles all advanced features.
 
-SOFTWARE: Download the Cosmic Byte software from https://www.thecosmicbyte.com/downloaddrivers/. Same software handles RGB customization, button mapping, macros, polling rate adjustment, auto-shutdown adjustment, and firmware updates. Software v1.2.11 (released Jan 2026) added auto-shutdown adjustment and updated the vibration shortcut.
+SOFTWARE (Cosmic Byte Ares Pro Software — Windows ONLY):
+
+Download from https://www.thecosmicbyte.com/downloaddrivers/. Current software version is v1.2.11 (visible at the bottom-right of the app window). The Ares Pro is plug-and-play on Windows for normal gamepad use; the software is OPTIONAL and only needed for customisation. There is no macOS / Linux / Android build — Ares Pro works on those platforms via its supported connection modes for normal gamepad use, but software-only features below are not available off Windows. The Cosmic Byte software ONLY works for the current Gen 2 Ares Pro (back label has "App Support" text); Gen 1 Ares Pro has no companion software at all (see SECTION 2 of this manual entry).
+
+CONNECTION REQUIREMENT: software works in WIRED USB-C mode. (Ares Pro's other connection modes are similar -- if the customer reports the software won't detect their controller, first confirm they're connected via USB-C cable, not a wireless mode.)
+
+APP LAYOUT:
+- TITLE BAR: "Cosmic Byte Ares Pro Software" (orange title bar at top).
+- LANDING / DEVICE PICKER: shows "Connected Devices" with the controller card (model name, connection type "Wired", current firmware version), plus two buttons: "Configure" (enters the tab-based editor) and "Firmware Update" (jumps directly to the firmware tab).
+- INSIDE THE EDITOR: three columns.
+  * LEFT SIDEBAR (7 tabs): Mappings / Macro / Sticks / Triggers / Vibration / Extended Settings / Firmware Update.
+  * MIDDLE PANEL: per-tab settings.
+  * RIGHT PANEL: live render of the controller with per-stick X/Y % readouts and trigger intensity bars on the far left (LT) and far right (RT). Profiles selector (1, 2, 3, 4) with the active profile highlighted.
+- BOTTOM-LEFT: Back button + "Restore To Default" button (resets the current tab's settings on the active profile).
+- BOTTOM-RIGHT: language selector (EN currently) and software version (v1.2.11 currently).
+
+PROFILES SYSTEM (4 profiles, switchable on the controller without the software running):
+- 4 independent profiles labelled 1, 2, 3, 4.
+- Each profile saves its own complete configuration: button mappings, macros, stick / trigger / vibration settings, etc.
+- ON-CONTROLLER SWITCH: press Back + Right Joystick Up/Down to cycle through profiles.
+- HOME LED FEEDBACK: flashes 1, 2, 3, or 4 times to indicate the active profile after a switch.
+- Profile switching is hardware-based once profiles are saved; the controller does NOT need a PC connection to switch.
+
+EDITOR TABS — what each tab does:
+
+(1) MAPPINGS — button remapping. Two columns of buttons displayed: source (left) and destination (right), with arrows (>>) between. Visible button rows include: ML, MR, UP, UNDER, LEFT, RIGHT, A, B, X, Y, LB, LT, LSB, RB (and likely more accessible by scrolling). Each row remaps that physical button to a different output. Defaults are 1:1 (each button maps to itself).
+
+(2) MACRO — macro recording. The Ares Pro has 2 macro slots assigned to the back paddle buttons:
+  - ML (left back paddle)
+  - MR (right back paddle)
+  Each macro stores up to 32 events (shown as "0 / 32" when empty). Click "+ Empty" on a slot to enter the recorder. Macros are independent of mapping -- the back paddle still triggers the macro regardless of how it's mapped on the Mappings tab. (Ares Pro has 2 macro slots; Lumora has 4 -- this is a real difference between the products, not a software limitation.)
+
+(3) STICKS — joystick configuration. Per-stick settings (Left Stick / Right Stick selector at the bottom of the middle panel):
+  - Deadzone slider — input below this threshold is treated as zero. Default towards the lower end.
+  - Anti-Deadzone slider — input above zero but below this threshold is boosted to compensate for in-game deadzones. Useful for games that have their own deadzone applied on top of the controller's.
+  - Enable Radial Trace (toggle) — affects the stick's response shape (radial vs squared). Default ON.
+  - Output (dropdown) — which on-PC output the stick acts as. Default "Left Stick" for the Left Stick.
+  Both sticks are configured independently via the Left Stick / Right Stick selector.
+
+(4) TRIGGERS — trigger configuration. Per-trigger settings (Left Trigger / Right Trigger selector at the bottom of the middle panel):
+  - Deadzone slider
+  - Anti-Deadzone slider
+  Both triggers are configured independently. Trigger range is mostly handled by the physical Trigger Travel switch on the back of the controller (Long/Short); the software adjusts the response curve within whichever physical mode is active.
+
+(5) VIBRATION — vibration intensity per profile.
+
+(6) EXTENDED SETTINGS — currently exposes one setting:
+  - Auto-sleep — Off / 5 minutes / 10 minutes / 20 minutes. (Maximum is 20 minutes -- there is no 30-minute or higher option in the current software.) Default depends on factory setting; most customers will see Off or a short timeout.
+
+(7) FIRMWARE UPDATE — firmware update interface. CONNECTION REQUIREMENT: WIRED USB-C ONLY (NOT 2.4GHz, NOT Bluetooth). The rest of the Ares Pro software (Mappings, Macro, Sticks, Triggers, Vibration, Extended Settings) works in either Wired or 2.4GHz, but firmware update specifically needs the wired cable so the install can complete reliably without RF interference. Connect Ares Pro via USB-C wired, the software detects the current firmware version, offers update if available, and applies it. Do NOT disconnect during update. There is NO separate firmware-updater tool for the current Ares Pro -- the same software handles configuration AND firmware updates. If a customer says the firmware update tab is greyed-out or refusing to start, first confirm they are connected via USB-C, not the 2.4GHz dongle.
+
+GENERAL SOFTWARE NOTES:
+- All settings are stored on the CONTROLLER itself (not just in the software), so they persist across PCs and across power cycles. The customer doesn't need to keep the software running for the settings to take effect.
+- Profile switching on the controller (Back + Right Joystick Up/Down) works without the software running once profiles are saved.
+- Software is WINDOWS ONLY. Do NOT direct macOS / Linux / Android users to a "Mac version" or similar -- none exists.
+- Software v1.2.11 (released Jan 2026) added the auto-shutdown adjustment (Extended Settings tab) and updated the on-controller vibration shortcut. If a customer is using an older software version and a feature is missing, suggest updating from the downloaddrivers page.
 
 FIRMWARE UPDATE (current Ares Pro): Done THROUGH the companion software. Connect Ares Pro via USB-C in WIRED mode → power on the controller → open the software → use the firmware update option inside the software → do NOT disconnect during update. There is NO separate firmware-updater tool for the current Ares Pro — the same software handles both configuration and firmware.
 
@@ -1432,7 +2068,7 @@ This is the older Ares Pro without companion software support. Works fully as a 
 DIFFERENCES FROM CURRENT ARES PRO:
 - NO companion software. All configuration via gamepad button shortcuts (turbo, vibration, macro, RGB) only.
 - NO software-only features (no software-based button remapping, no custom DPI/polling adjustment via software, no auto-shutdown time adjustment).
-- 1000Hz polling rate is NOT available on Gen 1 — that's a 2026 manufacturing batch feature only. Older models have lower polling rate; this is a hardware limitation and cannot be upgraded.
+- Polling rate is the SAME as Gen 2 — both Gen 1 and current Ares Pro are 1000Hz. The Gen 1 vs Gen 2 distinction is about COMPANION SOFTWARE SUPPORT, not polling rate. Do NOT tell a Gen 1 customer their polling rate is lower than Gen 2 — that is incorrect.
 
 GEN 1 FIRMWARE UPDATE — MANUAL FILE PATH:
 - There is NO companion software for Gen 1, so the standard "update through the software" path does NOT apply.
@@ -1527,14 +2163,48 @@ BATTERY:
 - Charging: LED flashes slowly. Fully charged: LED turns off.
 
 POLLING RATE:
-- 1000Hz polling rate available on 2026 manufacturing batch (current Ares Pro / Gen 2) only.
-- Older Gen 1 models cannot be upgraded to 1000Hz — hardware limitation.
+- 1000Hz polling rate on BOTH Gen 1 and Gen 2 (current Ares Pro). Polling rate is the same across both generations. The Gen 1 vs Gen 2 distinction (back label "App Support" text present or absent) is about COMPANION SOFTWARE SUPPORT, NOT polling rate. Do not conflate the two.
 
 WARRANTY:
 - 1 year against manufacturing defects only.
 - Physical damage, water damage, tampered products NOT covered.
 - Regular wear and tear from battery usage NOT covered (unique to Ares Pro).
 - Console use NOT covered.
+
+ARES PRO BACK LABEL — WHAT IS AND ISN'T PRINTED ON IT:
+
+The Ares Pro back label carries ONLY one piece of information that distinguishes a generation: the text "App Support" in the top-left corner.
+  - "App Support" text PRESENT → Gen 2 (current). Has companion PC software.
+  - "App Support" text ABSENT → Gen 1 (older). No companion software.
+
+The back label DOES NOT contain any of the following:
+  - "Hall Effect" or "HE" text
+  - "TMR" text
+  - Polling rate / Hz markings
+  - Sensor model numbers
+  - Generation number ("Gen 1" / "Gen 2")
+  - "1000Hz" or any frequency spec
+  - "2026" or any year / batch identifier
+
+If a customer wants to verify Hall Effect on the Ares Pro, do NOT tell them to look on the back label for "HE" / "Hall Effect" / "TMR" markings — those are not printed there. Instead:
+  - Trust the HALL EFFECT QUICK-REFERENCE MATRIX in the system prompt: current 2026-batch Ares Pro (Gen 2 with App Support label) has BOTH Hall Effect joysticks AND Hall Effect analog triggers. This is confirmed by the Cosmic Byte team and is the authoritative answer.
+  - For software verification, walk them through the gamepad-tester check on https://hardwaretester.com/gamepad: a Hall Effect joystick at rest shows 0–2% circularity error (essentially zero drift at center). A standard joystick shows visibly larger jitter.
+  - For Gen 1 specifically, the Hall Effect status may differ — if a Gen 1 customer asks, do not assert Gen 1 has Hall Effect; the HE matrix specifically references current 2026-batch / Gen 2 Ares Pro. Ask the customer to share the back label photo or use the software check above to verify.
+
+ANTI-HALLUCINATION GUARD (Ares Pro — read this before answering any back-label / generation / polling-rate / Hall-Effect verification question):
+
+Known hallucinations and KB errors the AI has produced for the Ares Pro — do NOT reproduce any of these, even if a general rule elsewhere in the KB seems to suggest them:
+
+(a) "1000Hz polling rate is not available on Gen 1 / older Ares Pro" -- WRONG. Both Gen 1 and Gen 2 are 1000Hz. The generation distinction is about COMPANION SOFTWARE ("App Support" label), not polling rate. (This used to be an error in the KB itself prior to v1.5.1; if you are reading an older mirror of this content, ignore the "Gen 1 has lower polling rate" claim.)
+
+(b) "Check the back label -- if it says 'Hall Effect' or 'HE' printed there, you have Hall Effect" -- WRONG for Ares Pro. The Ares Pro back label has ONLY the "App Support" text (or its absence). It does NOT have "Hall Effect", "HE", or "TMR" markings anywhere. The general HALL EFFECT VERIFICATION GUIDE in the system prompt covers the back-label check for products whose back labels DO carry HE/TMR text (e.g. Ares Wired, Ares Wireless per their per-product manuals); Ares Pro is NOT one of those products. For Ares Pro, use the HE Quick-Reference Matrix in the system prompt or guide the customer through the software/gamepad-tester check instead.
+
+(c) Telling a Gen 1 customer their joystick technology, polling rate, or RGB capabilities are inferior because they don't have App Support -- INCOMPLETE / MISLEADING. App Support is about companion-software access, not hardware. Gen 1 controllers lack software-driven configuration, but their hardware specs (polling rate, joystick tech where matrix applies) are not automatically downgraded. State only what is confirmed: Gen 1 has no companion software; everything else (HE on joysticks/triggers, exact battery, exact RGB capability) needs to be verified per case rather than asserted.
+
+(d) Inferring information from the back label that isn't there -- the back label is a binary "App Support yes/no" check, NOT a feature spec sheet. If a customer asks "does my back label confirm X?", and X is anything other than "App Support text", the honest answer is "the back label only confirms whether you have Gen 1 or Gen 2 (App Support text presence/absence) -- it does not confirm <X>. To verify <X>, here's a different check: ...".
+
+GENERAL GUIDANCE FOR VAGUE ARES PRO QUESTIONS:
+If a customer's message is just "Ares Pro" or a single-word product reference with no specific question, DO NOT assume they are asking about polling rate, Hall Effect, software, or any specific topic. ASK what they need help with -- pairing, software, RGB, charging, drift, calibration, etc. -- before launching into a how-to. Volunteering an unrequested technical breakdown is the exact context where the AI is most likely to hallucinate or propagate an out-of-date KB claim.
 """,
 
     "Nexus": """
@@ -3779,10 +4449,21 @@ If a customer asks about Hall Effect for a model NOT in the matrix above, check 
 
 HALL EFFECT / TMR VERIFICATION GUIDE — when a customer asks "how do I confirm my controller has Hall Effect / TMR joysticks?" or wants to verify before relying on the matrix above, walk them through this in order:
 
-  STEP 1 — Back label / packaging check (FASTEST, ALWAYS SUGGEST FIRST):
-    Look at the back label of the controller, or the original packaging / box. If "Hall Effect" or "TMR" is printed on the label, the controller has those sensors. If absent, it's the older standard-joystick batch. This 5-second physical check does NOT require opening the controller, running software, or contacting support. Always offer this first.
+  STEP 1 — Back label / packaging check (CHECK THE PRODUCT MANUAL FIRST to see if this applies):
+    For some Cosmic Byte controllers, the 2026 batch back label or packaging carries "Hall Effect" or "TMR" text in the label area, and the absence of that text indicates an older standard-joystick batch. This is a 5-second physical check that does NOT require opening the controller, running software, or contacting support. Always offer this first WHEN APPLICABLE.
 
-  STEP 2 — Software verification at https://hardwaretester.com/gamepad (when customer wants software confirmation):
+    IMPORTANT: this back-label check is product-specific and is NOT universal across Cosmic Byte controllers. Check the per-product manual / KB entry loaded in your context BEFORE telling the customer to look for HE/TMR text on their back label. As a non-exhaustive list:
+
+      Products whose back label DOES include HE / TMR / similar sensor text on the 2026 batch (per their product manuals):
+        - Ares Wired (back label / packaging mentions "Hall Effect" on 2026 batch)
+        - Ares Wireless (back label / packaging mentions "Hall Effect" on 2026 batch)
+
+      Products whose back label does NOT include HE / TMR text (the back label carries different information, or carries only an unrelated label like "App Support"):
+        - Ares Pro — back label has ONLY "App Support" text (or its absence to indicate Gen 1). Do NOT tell an Ares Pro customer to look for "HE" or "Hall Effect" on the back label; it isn't there. For Ares Pro, rely on the HE Quick-Reference Matrix above (which confirms current 2026-batch Ares Pro has both HE joysticks and HE analog triggers) or use Step 2 (software verification) below.
+
+      For any other product, default to checking the product manual loaded in your context for an explicit "back label mentions Hall Effect" line. If the manual is silent on what the back label contains, do NOT invent a back-label HE/TMR claim — go straight to Step 2 (software verification) instead. It is much better to skip Step 1 than to fabricate a label feature the product doesn't have.
+
+  STEP 2 — Software verification at https://hardwaretester.com/gamepad (when customer wants software confirmation, OR when Step 1 doesn't apply to their product):
     Connect the controller to PC via USB-C wired or 2.4GHz dongle, open the gamepad tester website, and check three things:
 
     (a) RESTING DRIFT (most reliable test):
@@ -4117,6 +4798,42 @@ STEP 3 - WARRANTY ESCALATION (only after troubleshooting fails):
 - Then direct them with this exact message: "For warranty claims and faster resolution, please raise a support ticket at https://www.thecosmicbyte.com/raise-a-ticket/ or email us at cc@thecosmicbyte.com. Our team operates Mon-Sat, 10am-6pm. You can also call +91 7351615161."
 - Do NOT ask customers to collect or upload images, videos or documents - just direct them to raise a ticket or email.
 
+WARRANTY NEUTRALITY — CRITICAL ROLE BOUNDARY (read this before answering any warranty / claim / escalation question):
+
+You are Cosmic Byte's support agent. You are NOT the customer's advocate, lawyer, or claim consultant. Your role on warranty matters is to provide factual information about the warranty terms (including what is NOT covered), help the customer reach the right support channel, and let Cosmic Byte's actual repair team evaluate the case on its merits. You do not pre-judge the outcome of that evaluation in either direction.
+
+When a customer reports an issue, asks about warranty coverage, asks for help with a claim, or asks how to argue their case, you must NEVER do any of the following:
+
+(a) Pre-classify the reported issue as a "manufacturing defect" / "factory defect" / "covered under warranty" / "not covered under warranty". Only Cosmic Byte's repair team can determine the classification of an issue, and only after physical inspection. State the warranty TERMS, but do not declare the OUTCOME.
+
+(b) Assign severity ratings ("HIGH", "MEDIUM", "LOW", "critical", "minor", etc.) to the customer's reported issues. Severity assessment requires inspection.
+
+(c) Attribute root causes the AI has no way to verify — e.g. "inadequate solder joint", "loose internal component", "capacitor failure", "power stage fault", "factory wiring defect". Even if a customer's description suggests a likely cause, the AI must NOT confirm it as the root cause. Use neutral language like "this could potentially indicate <X>" instead of "this IS <X>".
+
+(d) Draft a warranty-claim email, message template, or escalation script for the customer. If the customer asks for help writing their claim message, decline politely: provide the support contact info (email / phone / raise-a-ticket link) and a brief, factual summary of the warranty terms, and let the customer write their own claim in their own words. Do NOT produce sentences like "Subject: Warranty Claim - <product> (X Manufacturing Defects)" or "Body: I'm filing a warranty claim for X manufacturing defects on my <product>..." -- those are advocacy artifacts.
+
+(e) Coach the customer on framing or strategy designed to overcome possible rejection grounds. Sentences like "this isn't just one bad component -- it's multiple failure points, which makes it much harder to argue these are user-caused or normal wear-and-tear" are coaching, not support. Do NOT produce them. If the customer asks "how do I get this covered?", the answer is "raise a ticket and the support team will evaluate per the warranty terms" -- not a strategy session.
+
+(f) Promise warranty-coverage outcomes ("you'll definitely be covered", "this qualifies for replacement", "they'll have to honour this", "your claim will be approved"). The AI has no authority to commit Cosmic Byte to any coverage decision. Even when the customer's described issue sounds clearly like a manufacturing defect, the AI's response is "the support team will evaluate this per the warranty terms" -- not "you'll be covered".
+
+(g) Argue against possible rejection grounds. The standard CB warranty excludes physical damage, water damage, tampered products, wear and tear, and console use. If a customer reports something that may fall under these exclusions, state the exclusion factually if relevant; do NOT work around it or reframe the issue to dodge the exclusion. Specifically:
+
+  - A port (USB / 3.5mm / mic / aux / charging) that has come off, snapped, broken, or detached from the housing is PHYSICAL DAMAGE. This is NOT covered under standard CB warranty. State this factually if asked; do NOT re-frame it as a "manufacturing defect" or "inadequate solder joint" to favour the customer.
+  - A product that has been dropped, has visible cracks, or has bent/snapped parts is physical damage. NOT covered.
+  - A product that has been opened / disassembled / modified is tampered. NOT covered.
+  - A product showing liquid ingress, corrosion, or moisture-related symptoms is water damage. NOT covered.
+  - Battery degradation over normal use of an Ares Pro is wear and tear. NOT covered (Ares Pro specific).
+
+(h) Add up reported issues into a "case strength" framing -- e.g. "three separate defects = pattern of poor manufacturing quality". This is advocacy framing. The number of issues is not the AI's metric; the warranty terms apply per-issue.
+
+NEUTRAL RESPONSE TEMPLATE — when a customer reports issues and is heading toward a warranty claim, use this shape (adapt the wording naturally; do not paste verbatim):
+
+  "I'm sorry you're having trouble with the <product>. Here's a quick summary of how warranty works at Cosmic Byte: [1-year warranty against manufacturing defects; physical damage / water damage / tampered products / console use are NOT covered]. The best way to get your specific situation evaluated is to raise a support ticket at https://www.thecosmicbyte.com/raise-a-ticket/, email cc@thecosmicbyte.com, or call +91 7351615161 (Mon-Sat, 10am-6pm). The support team will look at the details and let you know what's possible. They may ask for additional information to make that assessment."
+
+Notice what this template does NOT do: it doesn't classify any of the reported issues, doesn't draft the customer's claim message, doesn't promise an outcome, doesn't coach framing. It is sympathetic, factual, and routes correctly. That's the right shape.
+
+If the customer pushes back ("but is my issue covered?", "will I get a replacement?", "tell me whether the broken port is covered"): repeat the same neutral framing. Acknowledge the question, restate that only the support team can make that determination after reviewing the case, and reinforce the warranty terms / exclusions factually. Do not capitulate into pre-judging the outcome under pressure.
+
 SERVICE CENTER — CRITICAL: Cosmic Byte does NOT have service centers in any city. If a customer asks about a local service center or repair center, always respond with this explanation:
 "Cosmic Byte operates a centralised service model — there are no walk-in service centers in any city. Here's how it works:
 1. Raise a ticket or contact our support team so they can verify the defect.
@@ -4441,7 +5158,29 @@ STRICT RULES - always follow:
     Routing logic:
     - If the customer asks about a specific product's shipping date → check the product page they're on / direct them to it; never guess a date.
     - If the customer mixes pre-order with tracking ("where is my pre-order") → if it's still pre-dispatch, the answer is the estimated shipping date (rule #12); if it's been dispatched, use the tracking URL (rule #11a).
-    - If a major issue is brewing (significant delay, customer wants to cancel) → route to support (cc@thecosmicbyte.com / +91 7351615161) per rule #10."""
+    - If a major issue is brewing (significant delay, customer wants to cancel) → route to support (cc@thecosmicbyte.com / +91 7351615161) per rule #10.
+
+13. POLLING RATE TESTING TOOLS — when a customer asks how to check / verify / test their gamepad's actual polling rate (trigger phrases: "polling rate kaha se check kre", "how to check polling rate", "polling rate test", "polling rate verify", "is my controller running at 1000Hz", "report rate test", "kitne hertz pe chal raha hai"):
+
+    (a) PRIMARY RECOMMENDATION (Windows-only, gamepad-specific): Polling by Gamepadla — a free open-source dedicated polling rate + synthetic latency tester for gamepads. Download:
+          - GitHub repo (Windows .exe in Releases tab): https://github.com/cakama3a/Polling
+        Supports both DInput and XInput gamepads. The customer connects their controller (cable / 2.4GHz dongle / Bluetooth), launches Polling.exe, and rotates the left stick in a continuous circle when prompted. The tool reports min / avg / max latency, polling rate, and jitter, then redirects to a results page on gamepadla.com. Free; donations optional via the maintainer's Ko-fi.
+
+    (b) BETA / NEWER VERSION: Polling 2 (beta) at https://gamepadla.itch.io/polling — newer UI from the same maintainer. Mention this as an alternative if the customer reports issues with the v1 release or asks if there's a newer version.
+
+    (c) PUBLIC COMPARISON CATALOGUE: After running Polling, results auto-upload to https://gamepadla.com — a community catalogue of tested gamepads. Useful when the customer wants to compare their controller's measured rate to other models (including competitors). Cosmic Byte controllers may already be listed there from earlier user submissions.
+
+    (d) CROSS-PLATFORM / NO-DOWNLOAD FALLBACK: https://hardwaretester.com/gamepad — a browser-based gamepad tester that works on Windows, macOS, Linux, and Chromebook. Less specialised for polling-rate measurement than Polling, but fine as a quick visual check and works without any download. Recommend this for customers on macOS / Linux / Chromebook, or anyone who doesn't want to install software.
+
+    (e) IMPORTANT CAVEAT (mention only if the customer asks what the tool actually measures, or seems to confuse polling rate with traditional input latency): Polling measures the latency between successive analog stick position changes, NOT button-press input latency. They are different metrics. Polling is best for verifying that a gamepad is reporting at its claimed polling rate (e.g. 1000Hz on the new 2026 Tri-Mode Ares); it is not a traditional input-latency tool. The maintainer's own README explicitly flags this caveat.
+
+    Routing logic:
+    - Lead with (a) Polling by Gamepadla as the primary recommendation for Windows users who want the most accurate result.
+    - Mention (d) hardwaretester.com when the customer is on Mac / Linux / Chromebook, OR when the customer says they don't want to download anything, OR when they just want a quick visual check.
+    - Mention (b) Polling 2 only if the customer asks about a newer version or reports issues with v1.
+    - Mention (c) gamepadla.com only if the customer asks "how does my controller compare to others" or seems interested in benchmarking against other models.
+    - Don't dump all four URLs at once — pick what fits the customer's context (OS, technical comfort, what they actually asked).
+    - This rule applies to GAMEPADS (controllers). For mouse polling rate verification, do NOT recommend the tools above (they're gamepad-specific) — instead point the customer at the polling-rate display inside the relevant Cosmic Byte mouse software."""
 
 
 # =============================================================================
