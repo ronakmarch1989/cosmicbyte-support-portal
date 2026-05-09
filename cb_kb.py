@@ -33,6 +33,98 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.8.4 (2026-05-10) -- Claude
+  * Z-bump: bug fix --
+    detect_products_from_message() was
+    missing the ("hypernova", "Hypernova
+    Mouse") keyword tuple, so customer
+    queries mentioning "hypernova" from
+    Discord and from the web portal's "All
+    Products" flow did NOT trigger product
+    detection. Hypernova was the only product
+    in PRODUCTS where the two detection
+    functions disagreed -- match_product_
+    from_title (WooCommerce page-title path)
+    correctly routed Hypernova queries, but
+    detect_products_from_message (no-page-
+    title path) returned an empty list.
+
+  Customer-visible impact:
+    * Web portal customers landing on the
+      Hypernova product page were unaffected
+      (page-title routing worked).
+    * Web portal customers in "All Products"
+      mode who typed "hypernova ..." got the
+      generic "could you clarify which model"
+      fallthrough instead of the Hypernova
+      KB entry.
+    * Discord customers asking about Hypernova
+      got the same fallthrough -- so the v1.8.0
+      Hypernova-specific intel (8000Hz minimum
+      specs, fast-charger warranty warning,
+      Left+Middle+Right pairing combo, dual-
+      battery charging) was invisible to all
+      Discord queries.
+
+  Root cause:
+    v1.8.0 (the Hypernova product addition)
+    correctly updated PRODUCTS, PRODUCT_URLS,
+    KNOWLEDGE_BASE, match_product_from_title's
+    checks list, and (in support_portal.py
+    v2.27.0) QUICK_QUESTIONS -- but the v1.8.0
+    changelog only listed the
+    match_product_from_title update; the
+    parallel checks list inside detect_
+    products_from_message was overlooked. The
+    "keep this list in sync with match_product_
+    from_title's checks list" comment at the
+    top of detect_products_from_message was
+    the only signal, and it was easy to miss
+    because the two functions live ~600 lines
+    apart in the file.
+
+  Fix:
+    Added ("hypernova", "Hypernova Mouse")
+    to the checks list in detect_products_
+    from_message, in the same position
+    relative to "helios" / "atlas" as in
+    match_product_from_title -- between
+    helios and atlas. Now both functions
+    return "Hypernova Mouse" for any
+    message containing "hypernova".
+
+    Verified by running detect_products_from_
+    message against all 39 entries in
+    PRODUCTS: every product now self-detects
+    correctly (was 38 of 39 pre-fix).
+
+  Process fix (companion change in this
+  same Z-bump):
+    Updated the "HOW TO ADD A NEW PRODUCT"
+    checklist in match_product_from_title
+    to call out the mirror requirement
+    explicitly. Added a new step 2 that
+    spells out why both functions need the
+    same keyword tuple (different routing
+    paths -- web page-title vs Discord/All-
+    Products keyword scan), and renumbered
+    the existing steps 2-6 to 3-7. Step 6
+    (QUICK_QUESTIONS) also clarified to say
+    "in support_portal.py, NOT this file"
+    since QUICK_QUESTIONS lives in the
+    portal file, not cb_kb.py.
+
+  Cleanup (also in this same Z-bump):
+    Removed the unused `import re` line
+    that lived just below __version__.
+    Confirmed unused via tokenization
+    sweep (zero references to the `re`
+    name anywhere else in the file).
+    Saves a tiny bit of import time and
+    one line of dead-imports clutter.
+
+  ast.parse before/after.
+
 v1.8.3 (2026-05-09) -- Claude
   * Z-bump: authoritative Bluetooth polling-
     rate figures provided by Ronak for the
@@ -2049,9 +2141,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.8.3"
-
-import re
+__version__ = "1.8.4"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -6315,10 +6405,24 @@ def match_product_from_title(title: str) -> str:
        - Use the most specific keyword first (e.g. "ares pro" before "ares")
        - The keyword should match part of the WooCommerce product page title
 
-    2. PRODUCTS LIST: Add "Product Name" to the PRODUCTS list further below
+    2. KEYWORD MAP — DETECT FUNCTION: ALSO add the same keyword tuple to
+       detect_products_from_message()'s `checks` list further down in this
+       file. The two functions handle different paths and BOTH must know
+       about the new product:
+         - match_product_from_title (this function): WooCommerce page-title
+           routing on the web portal when a customer arrives via a product
+           page. Has page-title context.
+         - detect_products_from_message: Discord bot AND web "All Products"
+           flow. No page-title context — relies entirely on keyword scan
+           of the customer's message text.
+       Missing the mirror means customer queries from those flows fall
+       through to the no-product-detected path and the AI never sees the
+       new product's KB entry. This was the v1.8.4 Hypernova bug.
+
+    3. PRODUCTS LIST: Add "Product Name" to the PRODUCTS list further below
        so it appears in the portal dropdown
 
-    3. KNOWLEDGE BASE: Add a full KB entry in KNOWLEDGE_BASE dict with:
+    4. KNOWLEDGE BASE: Add a full KB entry in KNOWLEDGE_BASE dict with:
        - Full product specs (keys, switches, connectivity, battery if wireless)
        - What's in the box
        - All FN key shortcuts
@@ -6331,12 +6435,13 @@ def match_product_from_title(title: str) -> str:
        - Warranty and return policy
        - Support: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
 
-    4. PRODUCT URL: Add to PRODUCT_URLS dict with the exact product page URL
+    5. PRODUCT URL: Add to PRODUCT_URLS dict with the exact product page URL
        from thecosmicbyte.com (verify the URL is live before adding)
 
-    5. QUICK QUESTIONS: Add 4-5 common questions to QUICK_QUESTIONS dict
+    6. QUICK QUESTIONS: Add 4-5 common questions to QUICK_QUESTIONS dict
+       (in support_portal.py, NOT this file)
 
-    6. WooCommerce plugin: NO CHANGES NEEDED — it auto-passes page title here
+    7. WooCommerce plugin: NO CHANGES NEEDED — it auto-passes page title here
     ────────────────────────────────────────────────────────────────────────
     """
     t = title.lower()
@@ -6980,6 +7085,7 @@ def detect_products_from_message(messages: list) -> tuple:
         ("stratos xenon",        "Stratos Xenon"),
         ("stratos",              "Stratos Xenon"),
         ("helios",               "Helios Mouse"),
+        ("hypernova",            "Hypernova Mouse"),
         ("atlas",                "Atlas Mouse"),
         ("aether",               "Aether Mouse"),
         ("umbra",                "Umbra Mouse"),

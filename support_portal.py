@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.27.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.28.0
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,68 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.28.0 (2026-05-10) -- Claude
+  - Y-bump: added QUICK_QUESTIONS entries
+    for 7 products that were previously
+    missing keyed entries and falling
+    through to the controller-themed
+    "All Products" default. Customer
+    landing on any of these product pages
+    was being shown irrelevant starter
+    chips like "Controller not detected
+    in game" and "Button keeps auto-
+    pressing", which was both confusing
+    and a missed opportunity to surface
+    the right starter questions.
+
+  Products added to QUICK_QUESTIONS:
+    1. Helios Mouse (mouse) -- inserted
+       in the mouse cluster before
+       Hypernova Mouse, matching the
+       order in PRODUCTS.
+    2. CryoCore (USB-only wired headset)
+    3. Proteus (dual-input headset --
+       USB + 3.5mm)
+    4. Immortal (tri-mode wireless
+       headset)
+    5. CosmoBuds X220 (TWS earbuds)
+    6. Cyclone RGB (laptop cooling pad)
+    7. Dragonfly (keyboard + mouse combo,
+       CB-GKM-19)
+    Trailing 6 (CryoCore through Dragonfly)
+    appended after Astra at the end of the
+    dict, in the same order as their
+    appearance in PRODUCTS.
+
+  Question selection method:
+    For each product I read the first
+    ~18 lines of its KNOWLEDGE_BASE entry
+    to identify the actual category and
+    distinguishing features, then drafted
+    5 starter questions (the standard count
+    used elsewhere in the dict) emphasising:
+      - the most likely real customer issue
+        (e.g. "One earbud not working" for
+        TWS, "Mic not working" for headsets)
+      - the product-specific feature most
+        likely to confuse new customers
+        (e.g. "GOD Mode" for CosmoBuds,
+        "USB vs 3.5mm" for Proteus)
+      - basic onboarding (pairing, software,
+        mode switching)
+
+  Coverage check:
+    Pre-v2.28.0: 31 of 38 non-"All Products"
+    entries in PRODUCTS had QUICK_QUESTIONS
+    coverage. Post-v2.28.0: 38 of 38 (full
+    coverage). The "All Products" default
+    is now only used in its actual intended
+    role -- when the customer hasn't
+    selected a product yet -- not as a
+    silent fallback.
+
+  ast.parse before/after.
 
 v2.27.1 (2026-05-09) -- Claude
   - Z-bump HOT-FIX: the v2.26.0 jump-to-page
@@ -4319,7 +4381,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.27.1"
+__version__ = "2.28.0"
 
 import streamlit as st
 import anthropic
@@ -5475,6 +5537,13 @@ QUICK_QUESTIONS = {
         "Bluetooth device name to look for",
         "Battery draining fast",
     ],
+    "Helios Mouse": [
+        "How do I pair the dongle?",
+        "Bluetooth pairing steps",
+        "DPI adjustment",
+        "Software download",
+        "Mouse not detected",
+    ],
     "Hypernova Mouse": [
         "How to pair the dongle?",
         "8000Hz polling system requirements",
@@ -5586,6 +5655,48 @@ QUICK_QUESTIONS = {
         "Software not working in Bluetooth mode",
         "Battery LED blinking red — what to do?",
         "How to switch between Windows and Mac mode?",
+    ],
+    "CryoCore": [
+        "Headset not detected on PC",
+        "Mic not working",
+        "How does 7.1 surround work?",
+        "How do I mute the mic?",
+        "Warranty claim process",
+    ],
+    "Proteus": [
+        "USB vs 3.5mm — which should I use?",
+        "Mic not working",
+        "RGB lighting control",
+        "On-cable controller buttons",
+        "Volume dial not working",
+    ],
+    "Immortal": [
+        "How do I switch between modes?",
+        "Bluetooth pairing steps",
+        "Mic not working",
+        "Battery life and charging",
+        "Using on PS5 / Xbox",
+    ],
+    "CosmoBuds X220": [
+        "How do I pair to my phone?",
+        "How do I activate GOD Mode (low-latency)?",
+        "Battery life and charging time",
+        "One earbud not working",
+        "Reset and re-pair earbuds",
+    ],
+    "Cyclone RGB": [
+        "How do I control fan speed?",
+        "Change RGB lighting effects",
+        "Which laptop sizes are supported?",
+        "USB hub ports not working",
+        "Adjusting height / angle",
+    ],
+    "Dragonfly": [
+        "How do I change RGB lighting?",
+        "Software download for customisation",
+        "Mouse DPI adjustment",
+        "Phone holder and hotkeys",
+        "Keyboard not detected",
     ],
 }
 

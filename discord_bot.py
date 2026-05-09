@@ -87,6 +87,77 @@ Companion service:
 
 CHANGELOG
 ---------
+v1.2.1 (2026-05-10) -- Claude
+  - Z-bump: cosmetic-only updates to two
+    operator-facing error messages that
+    still talked about the bot living on
+    Render. Bot moved to the Hetzner VPS
+    on 2026-05-09 (v1.1.0); these two
+    messages were left over from the
+    Render era and would have misdirected
+    the operator on misconfiguration.
+
+  Messages updated:
+    1. DISCORD_BOT_TOKEN missing fatal
+       (the early validation block that
+       runs at module load if the env var
+       is unset). Was: "Set it in
+       Render -> Environment." Now: "Edit
+       /etc/cosmic-bot.env on the VPS to
+       set it, then `systemctl restart
+       cosmic-bot`." Matches the actual
+       deploy topology and gives the
+       operator an immediately runnable
+       command.
+
+    2. Final-retry-exhausted fatal in the
+       startup retry loop (fires when 12
+       startup retries all hit Discord
+       rate limits / network errors). Was
+       referencing "QuotaGuard/Fixie's
+       status page" -- those were the
+       Render-era proxy add-ons; the bot
+       no longer uses any proxy on the
+       VPS. Now the message references
+       the journalctl log path and lays
+       out the three actually-useful
+       recovery options (wait it out,
+       contact Discord support, or
+       migrate the bot to a fresh VPS
+       IPv4). Also includes the host's
+       HOSTNAME env var so the operator
+       can see at a glance which VPS the
+       message is coming from -- helpful
+       if multiple bots are ever running
+       in parallel during a migration.
+
+  Behaviour: identical when the bot is
+  configured correctly. The two messages
+  only fire on startup misconfiguration
+  (TOKEN missing) or on persistent rate-
+  limiting (12 consecutive retry failures);
+  in normal operation neither path is hit.
+
+  Code paths NOT touched in this Z-bump:
+    The full proxy-handling code path
+    (PROXY_URL_RAW parsing, SOCKS connector
+    construction, HTTP/HTTPS proxy plumbing)
+    is intentionally left in place even
+    though it's dead on the current VPS.
+    Reason: it's documented in the
+    DEPLOYMENT section ("not currently used
+    -- leave unset") and provides a working
+    migration path if the bot ever has to
+    move back to a shared-egress host. The
+    cost of keeping it is just one extra
+    branch that's never taken; the cost of
+    removing it would be losing a tested,
+    proven proxy implementation that took
+    several iterations (v1.0.2 - v1.0.5) to
+    get right.
+
+  ast.parse before/after.
+
 v1.2.0 (2026-05-09) -- Claude
   - Y-bump: enable Anthropic prompt caching on the
     Anthropic API call. Same change as the parallel
@@ -564,7 +635,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 import os
 import sys
@@ -773,7 +844,10 @@ def _fatal(msg):
 
 
 if not TOKEN:
-    _fatal("DISCORD_BOT_TOKEN env var is not set. Set it in Render -> Environment.")
+    _fatal(
+        "DISCORD_BOT_TOKEN env var is not set. Edit /etc/cosmic-bot.env on "
+        "the VPS to set it, then `systemctl restart cosmic-bot`."
+    )
 if not ANTHROPIC_KEY:
     _fatal("ANTHROPIC_API_KEY env var is not set.")
 if not SUPPORT_CHANNEL_ID:
@@ -1492,11 +1566,14 @@ if __name__ == "__main__":
             if attempt >= MAX_STARTUP_RETRIES:
                 _fatal(
                     f"bot crashed after {MAX_STARTUP_RETRIES} startup retries "
-                    f"(last error: {err_type} status={status} {e}). The host's "
-                    f"egress IP may be persistently rate-limited by Discord, or "
-                    f"there's a problem with the proxy. Move the bot to a host "
-                    f"with a different egress IP, switch to a different proxy, "
-                    f"or check QuotaGuard/Fixie's status page."
+                    f"(last error: {err_type} status={status} {e}). The VPS "
+                    f"egress IP ({os.environ.get('HOSTNAME', 'unknown host')}) "
+                    f"may be persistently rate-limited by Discord -- check "
+                    f"`journalctl -u cosmic-bot` for the full error history. "
+                    f"If the rate limit looks permanent, options are: wait "
+                    f"longer (Discord 40062 flags can take 24h+ to lift), "
+                    f"contact Discord support with the bot's application ID, "
+                    f"or migrate the bot to a fresh VPS with a different IPv4."
                 )
             backoff = min(BASE_BACKOFF_S * (2 ** (attempt - 1)), MAX_BACKOFF_S)
             print(
