@@ -33,6 +33,433 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.4.1 (2026-05-09) -- Claude
+  * Z-bump: stop the AI from hallucinating Eclipse
+    joystick recalibration steps.
+
+  Bug:
+    A real customer typed "eclips" (a one-word
+    message, presumably the start of an Eclipse
+    question) and the AI volunteered a complete
+    "Eclipse Controller Recalibration" how-to
+    that was almost entirely wrong:
+      (a) "Hold TURBO + Y for 3 seconds" -- the
+          Eclipse has NO dedicated TURBO button.
+          There is no button labelled TURBO on
+          the controller. Turbo is functionality
+          accessed via M + button combinations
+          (M + A = manual turbo on A, etc.). The
+          correct calibration combo per the
+          manual is View + M + Menu.
+      (b) "Do NOT touch the joysticks" -- the
+          exact opposite of the manual, which
+          REQUIRES rotating both sticks clockwise
+          3 full turns AND pressing both triggers
+          3 times during calibration. The "don't
+          touch" pattern is for GYRO calibration
+          (a separate procedure: power off, place
+          flat, View + A + B + Home, press Menu),
+          NOT stick calibration.
+      (c) "Wait for the vibration to stop" --
+          there is no vibration cue for Eclipse
+          stick calibration. The cues are LED1
+          and LED3 flashing (mode active) then
+          staying solid for 5 seconds (complete).
+      (d) Did not mention the second-stage short-
+          travel trigger calibration that the
+          manual explicitly requires; did not
+          mention the joystick resistance roller
+          which the manual's troubleshooting
+          (Q5) flags as a common drift fix.
+
+  Root cause:
+    The KB already had the correct procedure in
+    the STICK & TRIGGER CALIBRATION section. The
+    AI just ignored it and pattern-matched on
+    generic gaming-controller recalibration
+    tropes from the open web -- "Hold TURBO + Y"
+    is a Razer / generic-China-controller move,
+    not a Cosmic Byte one. The KB content was
+    correct but apparently not emphatic enough
+    to override the model's prior on what
+    "controller recalibration" looks like in
+    general.
+
+  Fix:
+    1. Expanded the STICK & TRIGGER CALIBRATION
+       section into a numbered, step-by-step
+       procedure with the exact button positions
+       called out (View top-left, M centre-
+       bottom, Menu top-right) and an explicit
+       list of every action required during
+       calibration mode (rotate sticks, press
+       triggers, switch trigger travel, repeat).
+       Added a cross-reference to the JOYSTICK
+       RESISTANCE ROLLER section for drift cases
+       not solved by calibration alone, and to
+       rule #11 (raise-a-ticket) for cases not
+       solved by either.
+    2. Added a new ANTI-HALLUCINATION GUARD
+       block at the end of the Eclipse manual
+       entry (same pattern as the Lumora guard
+       added in v1.1.4) calling out (a)/(b)/(c)
+       above by their exact phrasing. Future-
+       Claude reading the guard before answering
+       a calibration question will see those
+       fabrications flagged as known hallucinations
+       and refer back to the verbatim procedure
+       above.
+    3. Clarified the boundary between stick and
+       gyro calibration in the guard so the AI
+       does not confuse the "place flat / don't
+       touch" gyro procedure with the active
+       stick procedure -- they are different
+       button combos, different LED cues, and
+       different physical actions.
+
+  Verified against the official Cosmic Byte
+  Eclipse User Manual provided by Ronak. Every
+  combo, LED behaviour, and step in the new
+  Eclipse content now matches the manual
+  word-for-word.
+
+  No code change. ast.parse before/after.
+
+v1.4.0 (2026-05-09) -- Claude
+  * Y-bump: Cosmic Byte Lumora companion software
+    documentation added, with a focus on the new
+    MOTION TAB introduced in software v1.3.4.
+
+  Why:
+    Ronak shipped Lumora software v1.3.4 with a new
+    "Motion" tab that exposes gyro / motion-curve
+    customisation in much greater depth than the
+    previous "ON-THE-FLY GYRO (via Cosmic Byte
+    software)" section in the KB ever covered. The
+    new tab adds:
+      - explicit Activation Method on/off toggle
+      - selectable Output (left stick or right
+        stick mimic)
+      - Activation Button picker (NC default = no
+        button required, gyro is on whenever
+        Activation Method is On)
+      - configurable Deadzone slider
+      - four Curve presets:
+          DEFAULT    -- linear (1:1)
+          AGGRESSIVE -- exponential (slow centre,
+                        fast extremes; FPS-style)
+          SMOOTH     -- S-curve (gradual ease-in
+                        and ease-out; camera-style)
+          CUSTOM     -- user-editable multi-point
+                        curve, drag points on the
+                        graph to define your own
+                        response shape
+    The KB previously only described the older
+    Always-On / Toggle / Press-and-Hold activation
+    modes -- with no curve or deadzone vocabulary
+    at all -- so any customer asking about the new
+    tab would have got either a refusal or a
+    fabrication.
+
+  What's new:
+
+  1. New SOFTWARE block at the top of the Lumora
+     manual entry (positioned before LED INDICATORS
+     for parity with the Velox entry layout in
+     v1.3.0). Covers:
+       * Download URL + current version (v1.3.4)
+       * Connection requirement (Wired or 2.4GHz
+         only -- not Bluetooth)
+       * App layout overview: 9 left-sidebar tabs
+         (Mappings / Macro / Sticks / Triggers /
+         Vibration / Motion / Lighting / Extended
+         Settings / Firmware Update), live
+         controller render with real-time joystick
+         + trigger readouts on the right, Profiles
+         selector top-right, Back / Restore To
+         Default bottom-left, language + version
+         bottom-right.
+       * 4-profile system documented with the on-
+         controller hardware switch combo (M +
+         Right Joystick Up/Down -> HOME LED
+         flashes 1/2/3/4 to indicate active
+         profile). Profile switching works without
+         the software running -- it's hardware-
+         based once profiles are saved to the
+         controller.
+       * Full MOTION TAB documentation: every
+         visible control on the new tab and what
+         each does, with the four curve presets
+         described in plain English + when each
+         is useful.
+       * Brief one-line reference for each of the
+         other 8 tabs (Mappings / Macro / Sticks /
+         etc.) so the AI can point a customer at
+         the right tab even without full
+         per-tab documentation.
+       * Settings persist on the controller, not
+         just in software (same as Velox v1.3.0).
+       * Software is Windows ONLY.
+
+  2. The existing ON-THE-FLY GYRO section (the old
+     paragraph describing Always-On / Toggle /
+     Press-and-Hold) gets a note pointing to the
+     new MOTION TAB for the current behaviour. The
+     old activation-mode vocabulary is preserved
+     because customers running older software
+     versions will still see those terms; the AI
+     should be able to answer questions about both
+     vintages without confusion.
+
+  Verified against four screenshots of Lumora
+  software v1.3.4 provided by Ronak (Profile 1
+  with Default linear curve, Profile 2 with
+  Aggressive exponential curve, Profile 3 with
+  Smooth S-curve, Profile 4 with a user-edited
+  Custom multi-point curve).
+
+  No code change. ast.parse before/after.
+
+v1.3.0 (2026-05-09) -- Claude
+  * Y-bump: full Cosmic Byte Velox software
+    documentation added to the Velox manual entry.
+
+  Why:
+    The previous Velox SOFTWARE block was three
+    lines: download URL, "Windows only", and a note
+    about custom DPI / button remapping / polling
+    rate. That's enough for "do I need to install
+    something" but nowhere near enough for any
+    detailed customer question about specific
+    software features (LOD adjustment, debounce
+    time, sleep timeout, profile management, macro
+    recording, firmware updates, etc.). Without
+    detail in the KB the AI either declines or
+    hallucinates -- neither is acceptable for a
+    flagship tri-mode mouse with a feature-rich
+    companion app.
+
+  What's new:
+    Replaced the SOFTWARE block with a full
+    breakdown of the Cosmic Byte Velox companion
+    software, organised by the five tabs in the app
+    (Home, Mouse Key, Mouse Config, Macro,
+    Settings). For each tab, every visible control
+    and its allowed values / defaults are
+    documented:
+
+    - HOME tab: live battery indicator, charging
+      icon, current connection mode shown in the
+      top-left badge.
+
+    - MOUSE KEY tab: 6 remappable buttons with
+      defaults (Key 1 Left-Click, Key 2 Right-Click,
+      Key 3 Middle-Click / scroll-wheel click,
+      Key 4 Forward, Key 5 Backward, Key 6 DPI
+      Loop). Reset All Keys button.
+
+    - MOUSE CONFIG tab: DPI Sensitivity (DPI Count
+      1-4 selectable, per-stage value 100-26000,
+      defaults DPI 1 = 800 / DPI 2 = 1200), Report
+      Rate (125 / 250 / 500 / 1000 Hz), Sleep
+      Settings (timeout dropdown with 5 Min default
+      and "Move to wake up" toggle), LOD / Lift Off
+      Distance (1.0 mm or 2.0 mm), Mouse Properties
+      shortcut to the Windows mouse settings panel,
+      Debounce Time (default 8 ms, +/- adjustable).
+
+    - MACRO tab: full macro editor with Macro Name
+      list (New / Delete), Event List (Insert /
+      Clear / Delete), Start Recording, Delay
+      Settings (Record Delay -- captures real
+      timing, or Uniform Delay -- fixed ms between
+      events, default 10 ms), Loops Setting (Loops
+      Until Key Released / Loops Until Key Pressed
+      / Loop Time numeric).
+
+    - SETTINGS tab: Mouse Firmware section with
+      Check Update button and current firmware
+      version display.
+
+    - Bottom-bar elements: Software version (left,
+      e.g. v1.0.0.5), thecosmicbyte.com link
+      (centre), Profile selector (right, switchable
+      between profiles to swap entire saved
+      configurations).
+
+    Software is Windows ONLY (existing rule) -- this
+    is repeated at the top of the new section as a
+    guard rail because the level of detail might
+    otherwise tempt the AI into describing it to
+    macOS users who can't actually run it.
+
+  Verified against five actual Velox software
+  screenshots provided by Ronak (Home, Mouse Key,
+  Mouse Config, Macro, Settings tabs from software
+  v1.0.0.5).
+
+  No code change. ast.parse before/after.
+
+v1.2.1 (2026-05-09) -- Claude
+  * Z-bump: fix Velox LED-location hallucination.
+
+  Bug:
+    A real customer asked "where you can see green
+    light flickering while charging" for the Velox
+    mouse. The AI replied with the meanings of the
+    LED states (which were correct) but admitted "the
+    manual doesn't specify exactly where on the mouse
+    the LED is located, but it's typically on the top
+    or underside near the sensor area on most gaming
+    mice." That guess was WRONG -- the Velox LED is
+    on the LEFT SIDE of the mouse, near the FRONT (a
+    small green LED dot visible on the side panel
+    near the front edge, just above the orange base
+    trim).
+
+  Root cause:
+    The Velox manual entry's LED STATUS INDICATORS
+    section listed every LED state (wired green, 2.4G
+    red, BT blue, charging green flash, etc.) but
+    never said WHERE the physical LED is on the
+    mouse. With no location info in the KB, the AI
+    fell back to "typical for gaming mice" which is
+    a hallucination dressed as a hedge.
+
+  Fix:
+    Added a new LED LOCATION line at the top of the
+    LED STATUS INDICATORS section stating the exact
+    physical location (left side of the mouse, near
+    the front, small dot just above the orange base
+    trim, visible from the side view). Also added an
+    explicit "DO NOT guess the LED location for the
+    Velox" guard rail because the existing AI failure
+    mode was confidently guessing rather than
+    deferring.
+
+  Verified against the official Velox product
+  rendering provided by Ronak (Velox_Mouse_5.jpg)
+  which clearly shows the LED on the front-left side.
+
+  No code change. ast.parse before/after.
+
+v1.2.0 (2026-05-09) -- Claude
+  * Y-bump: added PRE-ORDER POLICY as rule #12 in the
+    system prompt's policy section.
+
+  Why:
+    Cosmic Byte runs pre-orders on products with
+    incoming stock -- customers can place an order on
+    the website, and the product page displays an
+    estimated shipping date. The AI had no policy
+    content for this -- when customers asked "when
+    will this ship", "is this on pre-order", "can I
+    pay COD for a pre-order", "can I cancel my pre-
+    order", etc., the AI would either guess, decline,
+    or invent details. Need a single authoritative
+    block covering the full pre-order Ts and Cs.
+
+  What's new:
+    Added rule #12 to the system prompt's numbered
+    policy list, alongside the existing rules #10
+    (support details) and #11 (tracking/returns/
+    shipping). The new rule covers all 13 sections of
+    Cosmic Byte's published Pre-Order Terms &
+    Conditions:
+      - Definition of pre-order (reserve before sale)
+      - Estimated shipping timeline (indicative,
+        notification on major delays)
+      - Payment terms (full payment up front, COD
+        often unavailable)
+      - First-come-first-served fulfilment priority
+      - Cancellation policy (before dispatch, via
+        cc@thecosmicbyte.com / +91 7351615161)
+      - Refund policy (5-7 business days to original
+        payment method, gateway charges may apply)
+      - Product changes (specs/colours/packaging may
+        update before launch; images representational)
+      - Shipping & delivery (timelines depend on
+        location/courier)
+      - Pricing/offers (pre-order discounts may not
+        carry past launch)
+      - Warranty (standard, from delivery date)
+      - Customer responsibility (accurate details)
+      - Force majeure (delays beyond CB's control)
+
+    Includes trigger phrases ("pre-order", "preorder",
+    "pre-book", "reserve", "release date", "when will
+    it ship", "is this in stock", etc.) and tailored
+    response templates for the most common pre-order
+    questions, so the AI quotes only the relevant
+    policy points instead of dumping the whole block.
+
+    Important guardrail: the rule explicitly forbids
+    inventing specific shipping dates for any product
+    -- the product page is the authoritative source
+    and the AI must direct customers there.
+
+  No code change. ast.parse before/after.
+
+v1.1.4 (2026-05-09) -- Claude
+  * Z-bump: expand Lumora CONNECTIVITY section so the
+    AI doesn't hallucinate when asked about PC Bluetooth
+    pairing.
+
+  Bug:
+    A real customer asked "how to connect with pc
+    bluetooth" for Lumora. The AI replied with a
+    confident, fully-formatted multi-step guide that
+    contained three fabrications:
+      (a) "Press Y + HOME together for 3 seconds"
+          -- the actual manual says Y + P (the PAIRING
+             button, not HOME).
+      (b) "The LED will show LED3 ON" -- Lumora has
+          NO numbered LED indicators. It uses colour
+          codes only (Green / Blue / Purple).
+      (c) "Lumora will appear as 'Lumora' or
+          'Pro Controller'" -- partially right but
+          conflated the two distinct PC Bluetooth
+          modes (Standard mode shows "Cosmic Byte
+          Lumora", Gyro mode shows "Pro Controller").
+
+  Root cause:
+    The Lumora manual entry's CONNECTIVITY section had
+    only three terse one-liners for Bluetooth (Android,
+    iOS, PC Gyro). The actual user manual has TWO
+    distinct PC Bluetooth flows -- Standard Mode (the
+    Android/iOS pairing also works on PC and supports
+    gyro on PC) and Bluetooth Gyro Mode (Y + P, appears
+    as Pro Controller). When a customer asked the broader
+    "PC Bluetooth" question, the AI got an ambiguous
+    one-liner and improvised the surrounding step-by-step
+    structure, where the hallucinations crept in.
+
+  Fix:
+    1. Expanded CONNECTIVITY into full step-by-step
+       flows for each mode: 2.4GHz, Standard Bluetooth
+       (Android/iOS/PC/Mac/TV), Bluetooth Gyro Mode
+       for PC, and Wired USB-C. Each step is now
+       atomic and ordered, with explicit pairing
+       buttons, LED states, and device-list names.
+    2. Replaced the cryptic one-line LED INDICATORS
+       legend with a comprehensive list mapping every
+       LED state to a connection mode -- with a
+       prominent "DO NOT invent additional LEDs" note
+       referencing the LED3 hallucination by name.
+    3. Added an explicit ANTI-HALLUCINATION GUARD
+       block at the bottom of the Lumora manual
+       calling out "Y + HOME" and "LED3 ON" as
+       previously-observed fabrications and
+       instructing the model to ask clarifying
+       questions rather than improvise pairing steps.
+
+  Verified against the actual user manual PDF
+  (Cosmic_Byte_Lumora_User_Manual.pdf) provided by
+  Ronak. All button combos, LED behaviours, and device
+  names now match the manual word-for-word.
+
+  No code change. ast.parse before/after.
+
 v1.1.3 (2026-05-09) -- Claude
   * Z-bump: docs only -- added a DEPLOYMENT NOTE to the
     file's top docstring so future Claude sessions know
@@ -261,7 +688,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.1.3"
+__version__ = "1.4.1"
 
 import re
 
@@ -345,15 +772,58 @@ KEY FEATURES (full list — surface these accurately when comparing Lumora to ot
 - MECHANICAL ABXY and D-Pad. 3.5mm audio jack (works in Wired and 2.4GHz only, not Bluetooth).
 
 CONNECTIVITY:
-- 2.4GHz (recommended for PC): Insert USB dongle. Press HOME to power on. Hold PAIRING (P) 3 seconds until LED flashes purple - vibrates once. Dongle LED stays solid yellow when connected. Keep within 7-10m. Software works in 2.4GHz only (NOT Bluetooth).
-- Bluetooth Android: Hold PAIRING (P) + A for 3 seconds until green LED flashes. Select "Cosmic Byte Lumora" in Bluetooth.
-- Bluetooth iOS: Hold PAIRING (P) + B for 3 seconds until blue LED flashes.
-- Bluetooth PC Gyro: Hold Y + P for 3 seconds. Appears as "Pro Controller" in Windows.
-- Wired USB-C: Plug in - auto-detects. Yellow LED = X-Input. Red LED = D-Input. Hold Back + Start for 3 seconds to toggle. Software works in wired mode.
-- Auto sleep: 5 minutes inactivity. Press HOME to wake. Range: 7-10m (2.4GHz), 8m (Bluetooth).
-- Re-pair: If previously in Bluetooth mode, must re-pair with dongle. Press dongle Force key 1 second, then PAIRING (P) 3 seconds.
 
-LED INDICATORS: Yellow = X-Input wired. Red = D-Input wired. Green = Android Bluetooth. Blue = iOS Bluetooth. Purple flashing = 2.4GHz pairing.
+A. 2.4GHz WIRELESS MODE (recommended for PC, lowest latency, also for Android with USB-C OTG):
+   1. Plug the USB dongle into the PC. Press the dongle's Force key for 1 second until its LED starts flashing.
+   2. Press HOME on the controller to power it on.
+   3. Hold PAIRING (P) for 3 seconds. The LED flashes purple. The controller vibrates once.
+   4. The controller searches for the dongle. Once paired, the dongle's LED stops flashing and stays solid yellow.
+   5. Auto-reconnects to the same dongle on every power-on after that.
+   Range: 7-10 metres. Software (RGB / button mapping / triggers / sensitivity) works in this mode. Re-pair required if the controller was last used in Bluetooth mode (press dongle Force key 1 sec, then PAIRING (P) 3 sec).
+
+B. STANDARD BLUETOOTH MODE (Android, iOS, PC, Mac, Smart TV, Tablet — for general gamepad use; appears in BT list as "Cosmic Byte Lumora"):
+   This same flow works for PC too -- per the manual: "this mode will also work [on] PC and support Gyro on PC". Use this for general PC gamepad use. Use Mode C below if you specifically want the Switch-Pro-Controller protocol.
+   1. Press HOME to power on the controller.
+   2. Enter pairing mode for your platform:
+        * Android: Hold PAIRING (P) + A together for 3 seconds. LED flashes green rapidly. Controller vibrates once.
+        * iOS / Mac / PC: Hold PAIRING (P) + B together for 3 seconds. LED flashes blue rapidly. Controller vibrates once.
+   3. On the device, open Bluetooth settings and select "Cosmic Byte Lumora" from the available-devices list.
+   4. Once paired the LED becomes SOLID -- solid green if paired via the Android flow, solid blue if paired via the iOS/Mac/PC flow. Controller vibrates once.
+   5. Auto-reconnects on subsequent power-on. To pair to a different device, hold PAIRING (P) for 3 seconds (LED blinks rapidly) to clear the existing pairing first, then re-enter pairing mode.
+   Range: up to 8 metres.
+
+C. BLUETOOTH GYRO MODE (PC only; alternative PC Bluetooth flow that emulates the Switch Pro Controller protocol; appears in Windows BT list as "Pro Controller"):
+   Use this method when you specifically want gyro support on PC via the Pro-Controller protocol. For most PC use cases, Mode B (Standard Bluetooth) is simpler and also supports gyro.
+   1. Press HOME to power on the controller.
+   2. Hold Y + P (the Y face button + the PAIRING button) together for 3 seconds. LED blinks to indicate pairing mode.
+   3. On Windows: Settings > Bluetooth & devices > Add device > Bluetooth.
+   4. Select "Pro Controller" from the discovered-devices list.
+   5. LED becomes stable. Controller is ready in Gyro Mode.
+   IMPORTANT: in this mode the analog triggers (LT/RT) act as DIGITAL buttons (on/off) -- they are NOT pressure-sensitive. Use Mode A (2.4GHz) or Mode D (Wired) if you need analog trigger pressure.
+
+D. WIRED USB-C MODE (best for stability, charging, and software configuration):
+   1. Plug the included USB-C cable into the controller and into the PC.
+   2. Controller powers on automatically. Windows detects it (no drivers required).
+   3. Default mode is X-Input. To toggle X-Input <-> D-Input: hold Back + Start for 3 seconds.
+   4. Cosmic Byte software works in this mode for full customisation.
+   LED: Yellow = X-Input. Red = D-Input.
+
+GENERAL NOTES (apply across modes):
+- Auto sleep: 5 minutes of inactivity. Press HOME to wake.
+- Software configuration (RGB customisation, button mapping, polling rate, sensitivity, etc.) works in 2.4GHz and Wired modes ONLY -- NOT in any Bluetooth mode (Standard or Gyro). Configure once via cable or dongle, then settings persist when you switch to Bluetooth.
+- Audio (3.5mm jack) works in 2.4GHz and Wired modes ONLY -- NOT in any Bluetooth mode.
+
+LED INDICATORS (Lumora uses COLOUR codes only — there are NO numbered LED indicators like "LED1", "LED2", "LED3" on the Lumora; if a previous response mentioned numbered LEDs that was a hallucination, correct it):
+- Yellow (solid)         = Wired X-Input mode
+- Red (solid)            = Wired D-Input mode
+- Green (rapid flash)    = Bluetooth pairing mode for Android (PAIRING + A held)
+- Green (solid)          = Connected via Android-flow Bluetooth
+- Blue (rapid flash)     = Bluetooth pairing mode for iOS / Mac / PC (PAIRING + B held)
+- Blue (solid)           = Connected via iOS/Mac/PC-flow Bluetooth
+- Purple (flashing)      = 2.4GHz pairing mode (PAIRING held alone)
+- LED stable in Gyro Mode = Connected as "Pro Controller" via Y + P
+- HOME LED breathing slowly = Charging
+- HOME LED flashing quickly = Low battery
 
 TRIGGER MODES (Hall Effect L2/R2):
 - Physical travel switch toggles Analog (gradual, longer travel) vs Digital (instant, shorter travel).
@@ -371,16 +841,86 @@ JOYSTICK CALIBRATION: Power off. Hold Back + X + Home for 1 second. Rotate both 
 JOYSTICK RANGE MODES: L3/R3 + Macro to toggle: Full Circle (default) -> Small Circle (precision) -> Square Mode.
 
 RESET: Pin into RESET hole on back for 2 seconds. Does NOT delete macros. Clears pairing data.
+
+SOFTWARE (Cosmic Byte Lumora companion app — Windows ONLY):
+
+Download from https://www.thecosmicbyte.com/downloaddrivers/. Current software version is v1.3.4 (visible at the bottom-right of the app window). The Lumora is plug-and-play on Windows in all four connection modes for normal gamepad use; the software is OPTIONAL and only needed for customisation. There is no macOS build — Lumora works on macOS in 2.4GHz / Bluetooth / Wired modes for normal gamepad use, but software-only features below are not available on macOS.
+
+CONNECTION REQUIREMENT: software works over WIRED or 2.4GHz only. NOT in any Bluetooth mode (Standard or Gyro). If the customer reports the software won't detect their Lumora, first confirm they are NOT connected via Bluetooth.
+
+APP LAYOUT:
+- LEFT SIDEBAR NAV (9 tabs): Mappings / Macro / Sticks / Triggers / Vibration / Motion / Lighting / Extended Settings / Firmware Update.
+- RIGHT PANEL: live render of the Lumora controller with real-time joystick X/Y readouts (shown as percentages near each stick) and trigger intensity bars on the far left (LT) and far right (RT) of the panel.
+- TOP-RIGHT: Profiles selector — four numbered slots (1, 2, 3, 4) with the active profile highlighted.
+- BOTTOM-LEFT: Back button + "Restore To Default" button (resets the current tab's settings on the active profile).
+- BOTTOM-RIGHT: language selector (EN currently) and software version (v1.3.4 currently).
+
+PROFILES SYSTEM (4 profiles, switchable on the controller without the software running):
+- 4 independent profiles labelled 1, 2, 3, 4.
+- Each profile saves its own complete configuration: button mappings, macros, stick / trigger / vibration / motion / lighting settings, etc.
+- ON-CONTROLLER SWITCH: press M (Macro) + Right Joystick Up/Down to cycle through profiles.
+- HOME LED FEEDBACK: flashes 1, 2, 3, or 4 times to indicate the active profile after a switch.
+- Useful for switching between, e.g., an FPS profile (motion on, aggressive curve, mapped to RT-hold) and a racing profile (motion on, smooth curve, mapped to left stick) without re-opening the software.
+- Profile switching is hardware-based once the profiles are saved -- the Lumora doesn't need a PC connection to switch.
+
+MOTION TAB (NEW IN SOFTWARE v1.3.4 — gyro / motion customisation):
+
+The Motion tab supersedes and extends the older "on-the-fly gyro" feature. It exposes per-profile controls for how the Lumora's 6-axis gyroscope translates motion into joystick output:
+
+a) ACTIVATION METHOD (on/off toggle):
+   * Off (default) — gyro is disabled entirely on this profile. The other Motion controls are still visible but inactive.
+   * On — gyro is active per the Activation Button setting below.
+
+b) OUTPUT (which joystick the gyro motion mimics):
+   * Left Stick (default) — gyro motion translates to left-stick input. Typical for movement in racing / flight games or for crouching / strafing in FPS hybrids.
+   * Right Stick — gyro motion translates to right-stick input. Typical for camera / aim control in FPS or third-person games.
+
+c) ACTIVATION BUTTON (which controller button gates gyro):
+   * NC (No Command, default) — no specific activation button; gyro is on whenever Activation Method is On. This is the equivalent of the older software's "Always On" mode.
+   * Any other controller button (A, B, X, Y, RT, LT, etc.) — gyro is gated by that button. The interaction style (Toggle vs Press-and-Hold) is set elsewhere in the software / firmware; for FPS aiming, customers typically assign LT or RT and use it as a hold-to-aim gate.
+
+d) DEADZONE (slider):
+   * Lower deadzone → more sensitive (small wrist movements register as input).
+   * Higher deadzone → more relaxed (only deliberate motion registers, ignores hand tremor / tabletop vibration).
+   * Adjust based on game and personal preference.
+
+e) CURVE (response shape — four presets plus Custom):
+   * DEFAULT — linear curve. 1:1 motion-to-output mapping. Predictable, what most players expect on first try. Use this if you're new to gyro.
+   * AGGRESSIVE — exponential curve. Slow response near centre, fast at extremes. Good for FPS aiming where you want fine control near rest and quick flicks at the edges. Curve graph: flat-then-steep.
+   * SMOOTH — S-curve / sigmoid. Gradual ease-in and ease-out, faster response through the middle. Good for camera control in third-person games and racing. Curve graph: ease-in-ease-out.
+   * CUSTOM — user-editable multi-point curve. Drag control points on the curve graph to define an arbitrary response shape. Power users can build piecewise-linear responses (e.g. a deadband-then-burst-then-cap profile for very specific game requirements). Points snap to the grid.
+
+Notes on the Motion tab:
+- Each profile has its own Motion settings, so a player can have one profile with gyro Off (for menu/casual use) and another with gyro On + Aggressive curve (for FPS).
+- The Motion tab does NOT replace native Bluetooth Gyro Mode (Y + P, "Pro Controller"). The Motion tab works over Wired or 2.4GHz; native Bluetooth Gyro Mode is a separate firmware-level feature for use specifically over Bluetooth.
+
+OTHER TABS (brief reference — when a customer asks about a feature not on the Motion tab, point them at the right tab):
+- MAPPINGS — button remapping (Key 1..6 etc., remap to other buttons / keyboard keys / macros / multimedia).
+- MACRO — macro recording, event editor, loop settings (similar UX to the Velox companion app).
+- STICKS — per-stick deadzone, range mode (Full Circle / Small Circle / Square), response curve, anti-deadzone.
+- TRIGGERS — Hall Effect trigger configuration: analog/digital mode toggle, sensitivity ranges (30% / 60% / 100%), debounce.
+- VIBRATION — dual-motor intensity per profile, optional per-event triggering.
+- MOTION — (the section above).
+- LIGHTING — RGB customisation. (Lumora has 5-zone preset-animation RGB; not as granular as Stellaris.)
+- EXTENDED SETTINGS — miscellaneous: auto-shutdown timeout, polling rate, etc.
+- FIRMWARE UPDATE — check / install controller firmware from within the app. Requires Wired or 2.4GHz (NOT Bluetooth).
+
+GENERAL SOFTWARE NOTES:
+- All settings are stored on the CONTROLLER itself (not just in the software), so they persist across PCs and across power cycles. The customer doesn't need to keep the software running for the settings to take effect.
+- Profile switching on the controller (M + Right Joystick Up/Down) works without the software running.
+- Software is WINDOWS ONLY. No macOS / Linux / Android build exists. Do NOT direct macOS users to a "Mac version" — none exists.
+- Software does NOT detect the controller over Bluetooth. Use Wired or 2.4GHz to access any of the tabs above.
+
 GYRO (6-axis built-in):
-ON-THE-FLY GYRO (via Cosmic Byte software - works in ANY game even without native gyro support):
-- Connect via Wired or 2.4GHz. Open Cosmic Byte software (download from https://www.thecosmicbyte.com/downloaddrivers/).
-- Assign gyro to any button of your choice.
-- Three activation modes:
-  * Always On - Gyro is always active (good for racing/flight games).
-  * Toggle - Press the assigned button once to enable, press again to disable.
-  * Press and Hold - Gyro only active while the button is held down (best for aiming in FPS).
-- Gyro output mimics left or right joystick movement, so it works in ANY game that supports a joystick - even games with no native gyro support.
-- Note: Native Bluetooth Gyro Mode is also available (press Y + HOME for 3 seconds) but software method works over wired/2.4GHz and gives full activation control.
+
+NATIVE BLUETOOTH GYRO MODE (firmware-level, works over Bluetooth):
+- Hold Y + P (PAIRING) for 3 seconds. Controller pairs as "Pro Controller" in Windows Bluetooth.
+- See Mode C in CONNECTIVITY above for the full pairing flow.
+
+MOTION TAB GYRO (software-level, works over Wired or 2.4GHz):
+- For full controls including Activation Method, Output, Activation Button, Deadzone, and Curve presets (Default / Aggressive / Smooth / Custom), see the MOTION TAB section under SOFTWARE above. This is the current (v1.3.4) implementation.
+- LEGACY ACTIVATION MODES (still valid for older software versions): older releases described three activation modes — Always On (NC equivalent), Toggle (press button once to enable, again to disable), and Press and Hold (gyro active only while button is held). In v1.3.4 these are subsumed under the Activation Method on/off toggle plus the Activation Button picker. If a customer is on an older version, the legacy terms still apply; if they're on v1.3.4, point them at the Motion tab.
+- Gyro output mimics joystick movement (left or right stick, configurable on the Motion tab), so it works in ANY game that supports a joystick — even games with no native gyro support.
 
 AUDIO: 3.5mm jack works in 2.4GHz and wired only. NOT functional in Bluetooth mode.
 
@@ -395,6 +935,21 @@ TROUBLESHOOTING:
 - Controller not in game: Verify Yellow LED (X-Input). Restart Steam/Epic. Disable Steam Input Override in game properties.
 
 WARRANTY: 1 year manufacturing defects only. Physical damage, water damage, tampered products NOT covered.
+
+ANTI-HALLUCINATION GUARD (Lumora — read this before answering any pairing / connection / LED / button-combo question):
+The pairing flows above are EXHAUSTIVE -- there are exactly four connection modes (2.4GHz, Standard Bluetooth, Bluetooth Gyro, Wired). If the customer's question doesn't map cleanly to one of these, ask them to clarify which mode they want before answering.
+
+The following are previously-observed hallucinations that the AI has produced when asked "how to connect Lumora to PC via Bluetooth" -- do NOT reproduce any of them, even if they sound plausible:
+
+(a) "Press Y + HOME together for 3 seconds" -- WRONG. The correct combo is Y + P (the PAIRING button on the front, NOT the HOME button). HOME is for power and wake; PAIRING (P) is the dedicated pairing button.
+
+(b) "The LED will show LED3 ON" -- WRONG. The Lumora has NO numbered LED indicators (no LED1/LED2/LED3/LED4). It uses COLOUR codes (yellow/red/green/blue/purple) and animation patterns (solid/flashing/breathing) only. If you find yourself about to write "LED1" or "LED2" or "LED3" or "LED4" for a Lumora question, STOP -- you're hallucinating, refer back to the LED INDICATORS list above.
+
+(c) "Lumora will appear as 'Lumora' OR 'Pro Controller' (depending on mode)" -- INCOMPLETE/MISLEADING. Be specific: in Standard Bluetooth Mode (PAIRING + A or PAIRING + B) the device shows up as "Cosmic Byte Lumora". In Bluetooth Gyro Mode (Y + P) it shows up as "Pro Controller". Don't merge them into one ambiguous "either/or".
+
+(d) Inventing intermediate steps that aren't in the four flows above (e.g. "go to Device Manager", "install drivers", "run as administrator") -- WRONG. The Lumora is plug-and-play on Windows; no drivers, no Device Manager steps. The Cosmic Byte software is OPTIONAL and only needed for customisation, not for basic connection.
+
+If a customer reports a step that isn't in the manual, treat it as a customer mistake, not as a hidden feature -- ask them to check the manual flow above.
 """,
     "Stellaris": """
 COSMIC BYTE STELLARIS - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
@@ -1297,11 +1852,31 @@ M1/M2 MACRO BUTTONS:
 - Up to 21 programmable buttons.
 - Clear: hold M + M1 for 3 seconds -> exit without pressing anything.
 
-STICK & TRIGGER CALIBRATION:
-- Hold View + M + Menu for 3 seconds -> LED1 and LED3 flash.
-- Rotate both joysticks clockwise 3 full turns. Press both triggers 3 times.
-- Switch triggers to SHORT travel mode, press fully 3 more times. Press View to exit.
-- Must calibrate BOTH long and short trigger travel modes.
+STICK & TRIGGER CALIBRATION (use this for ALL drift / joystick / trigger response complaints — the Eclipse has an active, user-driven calibration; it is NOT a "sit untouched" procedure):
+
+Exact procedure, step by step (do not paraphrase or improvise — follow these steps verbatim):
+
+1. Power on the controller.
+2. Hold View + M + Menu together for 3 seconds. The buttons are:
+   * View — top-left, near the left joystick.
+   * M — centre-bottom, marked with "M".
+   * Menu — top-right, near the right joystick.
+3. LED1 and LED3 (channel indicator lights, near the right joystick) start flashing. This confirms calibration mode is active.
+4. While in calibration mode, perform every action in this list:
+   * Rotate the LEFT joystick clockwise 3 full turns.
+   * Rotate the RIGHT joystick clockwise 3 full turns.
+   * Fully press LT (left trigger) 3 times.
+   * Fully press RT (right trigger) 3 times.
+5. Switch the Trigger Travel switch on the back of the controller from LONG to SHORT travel.
+6. With short travel selected, fully press LT 3 more times, and RT 3 more times.
+7. Press the View button to exit calibration. LED1 and LED3 stay solid for 5 seconds, then the controller powers off.
+8. Power back on and test.
+
+IMPORTANT: BOTH long and short trigger travel modes must be calibrated. Skipping the short-travel pass leaves the trigger response inconsistent in games that use short-travel mode.
+
+DRIFT NOT FIXED BY CALIBRATION? Check the Joystick Resistance Roller adjustment (see JOYSTICK RESISTANCE ROLLER section above). Per the manual's own troubleshooting (Q5), too-stiff joysticks can feel like drift. Try rotating the roller counter-clockwise to reduce stiffness, then re-test.
+
+DRIFT STILL PRESENT AFTER BOTH CALIBRATION AND ROLLER ADJUSTMENT? Escalate via the standard support flow (rule #11): raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/ or contact cc@thecosmicbyte.com / +91 7351615161.
 
 GYRO CALIBRATION:
 - Power off. Place flat on stable surface. Hold View + A + B + Home -> LED1+LED2 flash.
@@ -1343,6 +1918,29 @@ WARRANTY:
 - 1 year against manufacturing defects only.
 - Physical damage, water damage, tampered products NOT covered.
 - Replaceable D-pad included in box.
+
+ANTI-HALLUCINATION GUARD (Eclipse — read this before answering any calibration / button-combo / drift question):
+
+The Eclipse calibration procedure is exact: View + M + Menu (held 3 seconds) -> LED1 and LED3 flash -> rotate both sticks clockwise 3 full turns + press both triggers 3 times -> switch to SHORT travel mode and repeat the trigger presses -> press View to exit (LEDs stay solid 5 seconds, controller powers off). Use the STICK & TRIGGER CALIBRATION section above verbatim — do NOT improvise a different procedure.
+
+Known hallucinations the AI has produced when asked about Eclipse joystick recalibration — do NOT reproduce any of these, even if they sound plausible from generic gaming-controller knowledge:
+
+(a) "Hold TURBO + Y for 3 seconds" -- WRONG. The Eclipse has NO dedicated TURBO button. There is no button on the controller labelled TURBO. Turbo is FUNCTIONALITY accessed via M + button combinations (M + A enables manual turbo on the A button, M + B on B, etc. — see TURBO & AUTO TURBO section above). The correct calibration combo is View + M + Menu, NOT TURBO + anything.
+
+(b) "Do NOT touch the joysticks during calibration" -- WRONG. The Eclipse stick calibration REQUIRES rotating both joysticks clockwise 3 full turns AND pressing both triggers 3 times. It is an active, user-driven calibration. The "place flat / don't touch" pattern applies to GYROSCOPE calibration only — that is a SEPARATE procedure (View + A + B + Home with the controller powered OFF and placed flat, then press Menu after 1 second; see GYRO CALIBRATION section). Do not blend the two procedures.
+
+(c) "Wait for the vibration to stop" -- WRONG. There is no vibration cue for Eclipse stick calibration. The visual cues are LED1 and LED3 (channel indicator lights, near the right joystick) FLASHING when calibration mode is active and STAYING SOLID for 5 seconds when calibration completes (after which the controller powers off automatically). If you find yourself describing a vibration cue for stick calibration, stop — you're hallucinating.
+
+(d) Inventing other button combos like "M + Y", "Hold Home for 5 seconds for calibration", "Press the pairing button while holding sticks", or any combination not exactly "View + M + Menu" -- WRONG. View + M + Menu is the only correct stick/trigger calibration combo per the manual.
+
+(e) Forgetting the second-stage short-travel trigger calibration -- INCOMPLETE. The procedure has TWO trigger-press stages: first in long-travel mode, then again in short-travel mode after toggling the Trigger Travel switch on the back. Do not omit the short-travel pass.
+
+(f) Recommending calibration without checking whether the customer's complaint might be solved by the Joystick Resistance Roller -- INCOMPLETE. Per the manual's own troubleshooting (Q5), too-stiff joysticks can feel like drift; rotating the roller counter-clockwise reduces stiffness. Mention BOTH calibration AND roller adjustment for drift complaints.
+
+If a customer's reported step doesn't match the manual procedure above, treat it as a customer mistake or a wrong-product confusion (the customer might actually have a different controller). Confirm they have a Cosmic Byte Eclipse before walking them through any procedure.
+
+GENERAL GUIDANCE FOR VAGUE ECLIPSE QUESTIONS:
+If a customer's message is just "Eclipse" or "eclips" with no specific question (as has happened in production logs), DO NOT assume they are asking about calibration / drift / any specific topic. ASK them what they need help with — pairing, calibration, RGB, macros, software, charging, etc. — before launching into a how-to. Volunteering an unrequested calibration walk-through wastes the customer's time and (as v1.4.1 demonstrated) is the exact context where the AI is most likely to hallucinate the steps.
 """,
 
     "Starforge": """
@@ -1538,6 +2136,7 @@ DPI LEVELS (press DPI button to cycle):
 - Sensor: PixArt PAW3395, 650 IPS, 50G acceleration.
 
 LED STATUS INDICATORS:
+- LED LOCATION: The Velox has ONE status LED located on the LEFT SIDE of the mouse, near the FRONT — a small dot visible on the side panel just above the orange base trim, near where your thumb sits. Visible from the side view of the mouse. The Velox does NOT have an LED on the underside, on top, or near the sensor — if a customer asks "where is the LED" or "where can I see the charging light", the answer is the front-left side of the mouse. Do NOT guess "near the sensor" or "on the bottom" — that is incorrect for the Velox.
 - Wired: Green LED always on. 2.4GHz: Red slow flash=reconnecting, Red fast flash=pairing mode.
 - Bluetooth: Blue slow flash=reconnecting, Blue fast flash=pairing mode.
 - Red fast flash=low battery (below 3.2V). Green flash=charging. Green steady=fully charged.
@@ -1558,10 +2157,75 @@ TROUBLESHOOTING:
 - Cursor lagging/skipping: use mouse pad (not glass), lower DPI, switch to wired mode to isolate, move receiver to USB 2.0 port, re-pair.
 - Buttons unresponsive: test in wired mode first. If wired OK = wireless issue. If wired also fails = contact support.
 
-SOFTWARE:
-- Cosmic Byte Velox software available at https://www.thecosmicbyte.com/downloaddrivers/. Windows ONLY.
-- Allows custom DPI up to 26000, button remapping, polling rate adjustment.
-- macOS: the Velox works as a plug-and-play mouse on macOS in all 3 modes (wired, 2.4GHz, Bluetooth) for normal mouse use. However, there is NO dedicated macOS software — software-only features (custom DPI levels beyond presets, button remapping, polling rate adjustment) are Windows-only. Do NOT direct macOS users to a "macOS version" of the software — none exists.
+SOFTWARE (Cosmic Byte Velox companion app — Windows ONLY):
+
+Download from https://www.thecosmicbyte.com/downloaddrivers/. Software is currently v1.0.0.5 (visible at the bottom-left of the app window). The Velox is plug-and-play on macOS in all 3 modes (wired / 2.4GHz / Bluetooth) for normal mouse use, but software-only features below are NOT available on macOS — there is no macOS build. Do NOT direct macOS users to a "macOS version" of the software; none exists.
+
+App layout overview:
+- TOP-LEFT BADGE: shows current connection mode (e.g. "2.4Ghz Mode" when connected via the dongle).
+- TOP-RIGHT: live battery indicator (3-bar icon), settings cog, minimise, close.
+- LEFT SIDEBAR NAV: five tabs — Home / Mouse Key / Mouse Config / Macro / Settings.
+- BOTTOM BAR: Software version (left), thecosmicbyte.com link (centre), Profile selector dropdown (right). The Profile selector lets the user switch between saved configurations on the fly (Profile 1, Profile 2, etc.) — each profile stores its own button mappings, DPI stages, polling rate, etc.
+
+HOME TAB:
+- Visual rendering of the Velox mouse.
+- Live battery indicator (3-bar) and a charging-status icon next to it.
+- Current connection mode shown in the top-left badge.
+- This tab is informational — no configurable controls.
+
+MOUSE KEY TAB (button remapping):
+- All 6 mouse buttons can be remapped. Defaults:
+    Key 1 = Left-Click           (top-left button on the top of the mouse)
+    Key 2 = Right-Click          (top-right button on the top of the mouse)
+    Key 3 = Middle-Click         (scroll wheel click)
+    Key 4 = Forward              (top side button — front side button on the left side panel)
+    Key 5 = Backward             (bottom side button — rear side button on the left side panel)
+    Key 6 = DPI Loop             (cycles through configured DPI stages)
+- Each key can be remapped to: a different mouse button, a keyboard key, a macro (created in the Macro tab), or a multimedia function.
+- A visual diagram of the mouse appears on the right with each key labelled (Key 1 to Key 6) and a leader line pointing to the physical button location.
+- "Reset All Keys" button at the bottom restores every key to its default mapping.
+
+MOUSE CONFIG TAB (sensor / report rate / power / lift-off / debounce):
+- DPI SENSITIVITY:
+    * DPI Count selector — choose how many DPI stages to cycle through (1, 2, 3, or 4).
+    * Each DPI stage is configurable individually with its own colour indicator. Defaults: DPI 1 = 800 (Blue), DPI 2 = 1200 (Green).
+    * Per-stage range: 100 to 26000 DPI (slider).
+    * The active DPI stage is cycled in-game via the DPI Loop button (Key 6 by default).
+- REPORT RATE (polling rate): 125 Hz, 250 Hz, 500 Hz, 1000 Hz (default for gaming).
+- SLEEP SETTINGS:
+    * Sleep timeout dropdown — when the mouse goes to sleep after inactivity. Default 5 Min. Other options available in the dropdown.
+    * "Move to wake up" toggle — when checked, moving the mouse wakes it. When unchecked, a button click is needed to wake.
+- LOD (Lift Off Distance): radio choice between 1.0 mm (default, more responsive) and 2.0 mm (more forgiving for low-sensitivity users who lift the mouse a lot).
+- MOUSE PROPERTIES: button labelled "Open the mouse prop" — opens the standard Windows Mouse Properties dialog (the same one as Control Panel > Mouse), for system-level settings like double-click speed and pointer trails.
+- DEBOUNCE TIME: numeric value with +/- buttons. Default 8 ms. Lower values reduce input delay but may produce double-clicks if the switch bounces; higher values are safer if the customer is getting unwanted double-clicks.
+
+MACRO TAB (recording / editing / playback):
+- LEFT COLUMN — Macro Name list:
+    * Lists all saved macros.
+    * "New" button creates a new macro slot. "Delete" removes the selected macro.
+- MIDDLE COLUMN — Event List for the selected macro:
+    * Each row shows No. (sequence number), Attribute (event type — key press, key release, delay, etc.), and Value.
+    * "Insert" lets the user manually add an event between existing rows. "Clear" removes all events. "Delete" removes the selected event.
+- RIGHT PANEL — Recording controls:
+    * "Start Recording" — begins capturing keyboard / mouse input into the Event List.
+    * Delay Settings:
+        - "Record Delay" — captures the real time between events as the user types them.
+        - "Uniform Delay" — uses a fixed delay between all events, default 10 ms.
+    * Loops Setting:
+        - "Loops Until Key Released" — macro repeats while the trigger button is held; stops on release.
+        - "Loops Until Key Pressed" — macro starts on first press, runs continuously, stops on the next press.
+        - "Loop Time" — numeric, runs the macro a specific number of times (default 1, single play).
+- A saved macro can be assigned to any mouse button via the Mouse Key tab.
+
+SETTINGS TAB:
+- MOUSE FIRMWARE: shows the current firmware version (e.g. "v1.84") and a "Check Update" button.
+    * If the displayed text reads "Currently the latest version", no update is available.
+    * If a newer firmware exists, the Check Update button will trigger the download / install flow.
+- Firmware updates require the mouse to be connected via 2.4GHz dongle or wired (NOT Bluetooth) and the battery should be above ~50% — same general rule as other Cosmic Byte products with companion software.
+
+GENERAL SOFTWARE NOTES:
+- All settings made in the software are stored on the mouse itself (not just in the software), so they persist across PCs and across power cycles. The customer doesn't need to keep the software running for the settings to take effect.
+- Multiple profiles are supported via the bottom-right Profile selector — each profile stores independent button mappings / DPI / polling rate / debounce / LOD / sleep settings. Useful for switching between, e.g., a gaming profile and a productivity profile.
 
 BUTTONS: Left Click (Huano, 100M clicks), Right Click, Scroll Click, Side Button 1 (Forward), Side Button 2 (Backward).
 
@@ -3650,7 +4314,62 @@ STRICT RULES - always follow:
     - If the customer wants to return / exchange / refund a delivered item → returns submission URL + brief mention that the policy page has the full eligibility rules.
     - If the customer asks about the policy itself (timelines, what's eligible, charges, etc.) → policy page URL + the brief summary above. Do NOT make up specific clauses — link the policy page as the authoritative source.
     - If the customer's situation involves a defect, damage, or warranty claim → use the existing raise-a-ticket flow (rule #6/#7) in addition to or instead of the returns URL, since warranty claims are handled through the ticket system, not the returns portal.
-    - These three URLs are SEPARATE from the raise-a-ticket URL — never substitute one for another. Tracking is for "where is my order"; returns submission is for "I want to send something back"; raise-a-ticket is for warranty/defect claims and general support escalation."""
+    - These three URLs are SEPARATE from the raise-a-ticket URL — never substitute one for another. Tracking is for "where is my order"; returns submission is for "I want to send something back"; raise-a-ticket is for warranty/defect claims and general support escalation.
+
+12. PRE-ORDER POLICY — when a customer asks about pre-orders, future stock, upcoming product availability, or "when will this ship":
+
+    HOW TO IDENTIFY A PRE-ORDER PRODUCT: Cosmic Byte runs pre-orders on selected products that have incoming stock. Pre-order products display an "estimated shipping date" on their product page on https://www.thecosmicbyte.com/. If you don't know whether a specific product is currently on pre-order, ask the customer to check the product page for an estimated shipping date — that's the source of truth. Do NOT make up dates for any product.
+
+    Trigger phrases: "pre-order", "preorder", "pre order", "pre-book", "prebook", "reserve", "when will it ship", "when does it come back in stock", "release date", "launch date", "is this in stock", "available for shipping", "how do I order before launch", "early access purchase", "shipping date", or any typo variant.
+
+    KEY POLICY POINTS (paraphrase only the ones relevant to the customer's question — don't dump the whole list unless they ask broadly):
+
+    a) WHAT IS PRE-ORDER: Reserves an upcoming Cosmic Byte product before it's officially available for sale. The product page shows an estimated shipping date for when stock is expected to ship.
+
+    b) SHIPPING TIMELINE: The estimated date is indicative — actual ship date may shift due to manufacturing, logistics, or unforeseen circumstances. Customers will be notified via email/SMS in case of major delays. Once the product is shipped, delivery time depends on location and courier partner; tracking details are sent on dispatch.
+
+    c) PAYMENT: Full payment is required at the time of placing the pre-order — orders are only confirmed after successful payment. Cash on Delivery (COD) MAY NOT be available for pre-order products; online payment options work as usual.
+
+    d) FULFILMENT PRIORITY: Pre-orders are fulfilled on a first-come-first-served basis. Earlier customers get priority in shipment allocation when stock arrives.
+
+    e) CANCELLATION: Customers can cancel a pre-order BEFORE it's dispatched by contacting customer support — cc@thecosmicbyte.com or +91 7351615161 (Mon-Sat 10am-6pm). Once the product is shipped, standard return policies apply (rule #11). Cosmic Byte also reserves the right to cancel pre-orders due to stock unavailability, pricing errors, or payment issues — in which case the customer is notified and refunded.
+
+    f) REFUND: Refunds for cancelled pre-orders are processed within 5-7 business days to the original payment method. Any payment gateway charges (if applicable) may be deducted from the refund.
+
+    g) PRODUCT CHANGES BEFORE LAUNCH: Specs, features, colours, or packaging may be updated before the final release. Product images on the page are representational and may differ slightly from the final product. Major changes are communicated to pre-order customers.
+
+    h) PRICING / OFFERS: Pre-order pricing or any pre-order-specific offers (bundles, freebies, discounts) are limited-time and may not be available post-launch. Subject to availability and may change.
+
+    i) WARRANTY: Standard 1-year manufacturing-defect warranty applies, starting from the date of DELIVERY (not the date of pre-order). Same warranty terms as any other Cosmic Byte product (rule covered elsewhere — physical/water damage, tampering, console use are not covered).
+
+    j) CUSTOMER RESPONSIBILITY: Customers must provide accurate shipping and contact details. Cosmic Byte is not responsible for delays caused by incorrect information.
+
+    k) FORCE MAJEURE: Delays caused by natural disasters, government restrictions, or supply-chain disruptions are outside Cosmic Byte's control and not grounds for compensation beyond a refund if the customer chooses to cancel.
+
+    RESPONSE TEMPLATES (use these as a starting point, tailored to the customer's specific question):
+
+    - "When will this product ship?" / "When is the shipping date?":
+      "This product is currently on pre-order. The estimated shipping date is shown on the product page at <product URL> — please check there for the latest date. The date is indicative; you'll receive an email/SMS update if there's a major change to the timeline."
+
+    - "Can I pay Cash on Delivery for a pre-order?":
+      "Cash on Delivery is typically not available for pre-order products. Pre-orders require full payment upfront to confirm the reservation. Online payment options (UPI, cards, net banking) work as usual."
+
+    - "Can I cancel my pre-order?":
+      "Yes — pre-orders can be cancelled before dispatch. Email cc@thecosmicbyte.com or call +91 7351615161 (Mon-Sat 10am-6pm) with your order details and we'll process the cancellation. Refunds are issued to the original payment method within 5-7 business days. Once the product has shipped, the standard return policy applies instead."
+
+    - "How do pre-orders work?" / "What is a pre-order?" / general inquiry:
+      "A pre-order lets you reserve a Cosmic Byte product before it's officially in stock. Full payment is taken at the time of order, and the product ships on the estimated date shown on the product page. Pre-orders are fulfilled first-come-first-served, so earlier customers get priority. You can cancel anytime before dispatch by contacting customer support."
+
+    - "Will the product look exactly like the picture / will the specs be exactly as listed?":
+      "Pre-order product specs, features, colours, and packaging may be updated before the final release. Images on the product page are representational. We'll communicate any major changes — and if you're not happy with a change, you can cancel before dispatch for a full refund."
+
+    - "What about warranty on a pre-ordered product?":
+      "Standard 1-year warranty against manufacturing defects, same as any other Cosmic Byte product. The warranty period starts from the date of delivery (not the date of pre-order)."
+
+    Routing logic:
+    - If the customer asks about a specific product's shipping date → check the product page they're on / direct them to it; never guess a date.
+    - If the customer mixes pre-order with tracking ("where is my pre-order") → if it's still pre-dispatch, the answer is the estimated shipping date (rule #12); if it's been dispatched, use the tracking URL (rule #11a).
+    - If a major issue is brewing (significant delay, customer wants to cancel) → route to support (cc@thecosmicbyte.com / +91 7351615161) per rule #10."""
 
 
 # =============================================================================
