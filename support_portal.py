@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.3
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.4
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,84 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.24.4 (2026-05-09) -- Claude
+  - Z-bump: admin conversation list now behaves as a
+    true accordion -- only ONE row is expanded at a
+    time. Click another row to expand it (auto-
+    closing the previously open one); click the
+    already-open row to collapse it.
+
+  Why:
+    Ronak reported that opening several conversation
+    rows on the admin dashboard made the page very
+    long -- 173 conversations worth of cumulative
+    scroll if he had multiple expanded mid-review.
+    He asked for accordion behaviour: at most one
+    open at a time.
+
+  Why this needs a real fix (not a config tweak):
+    Streamlit's native st.expander allows multiple
+    expanders to be open simultaneously and exposes
+    no API for the host code to read or override
+    the open/close state. Once the user has clicked
+    an expander, its state is internal to Streamlit
+    and any subsequent reruns cannot collapse it
+    from Python code. So accordion behaviour cannot
+    be achieved by just passing `expanded=False` to
+    st.expander -- that parameter is initial state
+    only.
+
+  Implementation:
+    Replaced the per-row st.expander in
+    _render_admin_conversation_row with a button +
+    conditional content block:
+      * Track the currently-open row in
+        st.session_state._admin_open_row_key (a
+        string derived from Session ID + Date +
+        Time, content-stable across reruns).
+      * Each row renders a full-width button as
+        the header. The button label is prefixed
+        with ▶ when collapsed and ▼ when expanded
+        (visually mirroring Streamlit's native
+        expander glyph).
+      * Click handler: if the clicked row is
+        already open, set the open-key to None
+        (collapse). Otherwise, set the open-key
+        to this row's state_key (auto-closing
+        whichever row was previously open). Then
+        st.rerun() to repaint with the new state.
+      * Below the button, render the row's content
+        (customer message, attached photos, AI
+        response, feedback) only if this row is
+        the currently-open one. Otherwise return
+        immediately.
+      * A divider is rendered after the open row's
+        content for visual separation from the
+        next collapsed header.
+
+    Widget keys for the row buttons include the
+    row index `i` for absolute uniqueness, even in
+    the unlikely case that two rows share the same
+    Session ID + Date + Time. Photo-download
+    buttons inside the open row continue to use
+    the existing `dl_{i}_{ti}` keys -- unchanged.
+
+    The day / week / month grouping expanders
+    above the conversation rows are unchanged --
+    those are normal st.expander instances and
+    multiple can stay open simultaneously, which
+    is the desired behaviour for those (Ronak
+    wants to see multiple days within a week
+    without having to re-click each time).
+
+  Side benefit:
+    With at most one row's heavy content (photos,
+    base64-decoded thumbnails) rendered at a time,
+    the admin page also gets noticeably lighter on
+    days with many image-attached rows.
+
+  ast.parse before/after.
 
 v2.24.3 (2026-05-09) -- Claude
   - Z-bump: actually fix admin getting kicked to the
@@ -3745,7 +3823,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.24.3"
+__version__ = "2.24.4"
 
 import streamlit as st
 import anthropic
@@ -5185,7 +5263,19 @@ def _render_admin_conversation_row(i, r):
     response, feedback). Factored out of render_admin in v2.21.0 so both
     the flat path and the grouped Month/Week/Day path can share the same
     UI without duplication. `i` is the per-row index used for unique
-    Streamlit widget keys (specifically the photo download buttons)."""
+    Streamlit widget keys (specifically the photo download buttons).
+
+    v2.24.4: replaced st.expander with a button + conditional-content
+    accordion pattern. Streamlit's native expander allows multiple rows
+    to be open simultaneously and exposes no API for the host code to
+    read or override the open/close state -- so when Ronak expanded
+    several conversations in a row, the page got very long. The
+    accordion pattern below keeps at most ONE row expanded at a time:
+    clicking a closed row makes it the open one (auto-closes whichever
+    was previously open), clicking the already-open row collapses it.
+    State lives in `_admin_open_row_key` in session_state; the key is
+    content-derived (Session ID + Date + Time) so it survives reruns
+    even if the underlying row index shifts."""
     try:
         customer_msg = r.get("Customer Message", "")
         ai_resp      = r.get("AI Response", "")
@@ -5198,49 +5288,87 @@ def _render_admin_conversation_row(i, r):
             f"· [{source_tag}] · {r.get('Product','?')} "
             f"· {customer_msg[:55]}{'…' if len(customer_msg) > 55 else ''}"
         )
-        with st.expander(label):
-            st.caption(f"Session: {r.get('Session ID','?')}")
-            st.markdown("**Customer message**")
-            st.text(customer_msg)
-            # If this row has thumbnails attached, render them in a 4-column grid.
-            # Stored as a JSON list of {name, data} where data is a base64 JPEG.
-            thumbs_raw = r.get("Image Thumbnails", "")
-            if thumbs_raw:
-                try:
-                    thumbs = json.loads(thumbs_raw)
-                    if thumbs:
-                        st.markdown(f"**Attached photos ({len(thumbs)})**")
-                        cols = st.columns(min(4, len(thumbs)))
-                        for ti, t in enumerate(thumbs):
-                            with cols[ti % len(cols)]:
-                                try:
-                                    thumb_bytes = base64.b64decode(t["data"])
-                                    original_name = t.get("name", f"image_{ti+1}")
-                                    # Thumbnails are stored as JPEG (we convert in
-                                    # _make_thumbnails_for_log), so force .jpg on
-                                    # download so the file opens cleanly regardless
-                                    # of what the customer originally uploaded.
-                                    base_name = os.path.splitext(original_name)[0] or f"image_{ti+1}"
-                                    dl_filename = f"{base_name}.jpg"
-                                    st.image(thumb_bytes, caption=original_name, width=180)
-                                    st.download_button(
-                                        label="📥 Download photo",
-                                        data=thumb_bytes,
-                                        file_name=dl_filename,
-                                        mime="image/jpeg",
-                                        key=f"dl_{i}_{ti}",
-                                        use_container_width=True,
-                                    )
-                                except Exception:
-                                    st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
-                except (json.JSONDecodeError, TypeError):
-                    # Old log row or malformed value -- skip silently
-                    pass
-            st.markdown("**AI response**")
-            st.text(ai_resp)
-            fb  = r.get("Feedback") or "No feedback"
-            note = r.get("Feedback Note", "")
-            st.markdown(f"**Feedback:** {fb}" + (f" — {note}" if note else ""))
+
+        # v2.24.4: accordion state. The "state key" is content-derived so it
+        # is stable across reruns; the widget key includes the row index `i`
+        # for absolute uniqueness in case two rows happen to share the same
+        # Session ID + Date + Time (e.g. two messages logged in the same
+        # minute under one session -- Streamlit would otherwise raise
+        # StreamlitDuplicateElementKey).
+        state_key = (
+            f"{r.get('Session ID','')}::"
+            f"{r.get('Date','')}::"
+            f"{r.get('Time','')}"
+        )
+        widget_key = f"admin_row_btn_{state_key}_idx{i}"
+        is_open = st.session_state.get("_admin_open_row_key") == state_key
+        glyph = "▼" if is_open else "▶"
+
+        if st.button(
+            f"{glyph}  {label}",
+            key=widget_key,
+            use_container_width=True,
+        ):
+            if is_open:
+                # Click on the already-open row -> collapse it.
+                st.session_state._admin_open_row_key = None
+            else:
+                # Click on a closed row -> make it the open one. This
+                # automatically "closes" whichever row was previously open
+                # because the accordion only renders content for the row
+                # whose state_key matches _admin_open_row_key.
+                st.session_state._admin_open_row_key = state_key
+            st.rerun()
+
+        if not is_open:
+            # Collapsed -- header only, nothing else to render for this row.
+            return
+
+        # === Open row: render full content (indented from the button so it
+        # visually attaches to the header above). ===
+        st.caption(f"Session: {r.get('Session ID','?')}")
+        st.markdown("**Customer message**")
+        st.text(customer_msg)
+        # If this row has thumbnails attached, render them in a 4-column grid.
+        # Stored as a JSON list of {name, data} where data is a base64 JPEG.
+        thumbs_raw = r.get("Image Thumbnails", "")
+        if thumbs_raw:
+            try:
+                thumbs = json.loads(thumbs_raw)
+                if thumbs:
+                    st.markdown(f"**Attached photos ({len(thumbs)})**")
+                    cols = st.columns(min(4, len(thumbs)))
+                    for ti, t in enumerate(thumbs):
+                        with cols[ti % len(cols)]:
+                            try:
+                                thumb_bytes = base64.b64decode(t["data"])
+                                original_name = t.get("name", f"image_{ti+1}")
+                                # Thumbnails are stored as JPEG (we convert in
+                                # _make_thumbnails_for_log), so force .jpg on
+                                # download so the file opens cleanly regardless
+                                # of what the customer originally uploaded.
+                                base_name = os.path.splitext(original_name)[0] or f"image_{ti+1}"
+                                dl_filename = f"{base_name}.jpg"
+                                st.image(thumb_bytes, caption=original_name, width=180)
+                                st.download_button(
+                                    label="📥 Download photo",
+                                    data=thumb_bytes,
+                                    file_name=dl_filename,
+                                    mime="image/jpeg",
+                                    key=f"dl_{i}_{ti}",
+                                    use_container_width=True,
+                                )
+                            except Exception:
+                                st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
+            except (json.JSONDecodeError, TypeError):
+                # Old log row or malformed value -- skip silently
+                pass
+        st.markdown("**AI response**")
+        st.text(ai_resp)
+        fb  = r.get("Feedback") or "No feedback"
+        note = r.get("Feedback Note", "")
+        st.markdown(f"**Feedback:** {fb}" + (f" — {note}" if note else ""))
+        st.divider()
     except Exception as e:
         st.warning(f"Could not display row {i}: {e}")
 
