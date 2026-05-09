@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.2
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,66 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.24.2 (2026-05-09) -- Claude
+  - Z-bump: fix admin getting kicked to the password
+    form on every hard refresh of the AI page.
+
+  Symptom (reported by Ronak):
+    "If I refresh the AI page my admin gets logged out.
+    I have to reenter password."
+
+  Root cause:
+    The cookie-based persistent admin auth introduced
+    in v2.13.0/.1 has a race window on the very first
+    render after a hard refresh. The CookieManager
+    component (extra_streamlit_components.CookieManager)
+    needs ~100ms to mount its iframe and post the
+    saved cookies back to the script. During that
+    window `_cookies` is None.
+
+    The auth-restore check at the top of the admin
+    gate read:
+
+        if not st.session_state.admin_authenticated and _cookies:
+            ...validate token, restore auth...
+
+    With `_cookies = None`, the boolean falls through,
+    the cookie check is skipped, and the operator
+    drops straight to the login form. A few hundred
+    ms later the iframe mounts and triggers a Streamlit
+    rerun -- which WOULD have restored auth from the
+    cookie -- but by then the operator has already
+    seen the password prompt and is typing into it.
+
+  Fix:
+    Add an explicit "cookies still loading" branch
+    above the auth-restore check. If a CookieManager
+    exists but `_cookies is None` and we haven't
+    waited yet, render an "🔐 Restoring admin
+    session..." message and st.stop() -- the iframe-
+    mount-triggered rerun lands the script back here
+    with `_cookies` populated, and the restore
+    succeeds on the second pass.
+
+    Guarded with a `_admin_cookies_waited`
+    session_state flag so the wait only happens once.
+    Browsers that block the iframe entirely (third-
+    party cookies disabled, ad-blocker stripping the
+    component, etc.) fall through to the login form
+    on the second pass -- graceful degradation, no
+    infinite "Restoring..." loop.
+
+    The wait flag is cleared on successful restore
+    AND on successful password login, so a future
+    sign-out + sign-back-in cycle within the same
+    session gets a fresh wait window on the next
+    refresh.
+
+    No change to token format, cookie name, cookie
+    duration (8h), or the embed_mode skip path.
+
+  ast.parse before/after.
 
 v2.24.1 (2026-05-09) -- Claude
   - Z-bump: docs only. Added DEPLOYMENT section to the
@@ -3599,7 +3659,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.24.1"
+__version__ = "2.24.2"
 
 import streamlit as st
 import anthropic
@@ -5359,10 +5419,38 @@ if st.session_state.show_admin:
     # active session instead of dumping the operator back to the
     # password screen. Reads the shared _cookies dict (set above) --
     # never re-instantiates the manager.
+    #
+    # v2.24.2: handle the first-render race after a hard refresh. The
+    # CookieManager iframe needs ~100ms to mount and post its cookies
+    # back to the script -- during that window _cookies is None. The
+    # check at line below treats None the same as "no cookie present"
+    # and falls straight through to the login form, so the operator
+    # sees the password prompt and types into it before the iframe-
+    # mount-triggered rerun has a chance to restore auth from the
+    # cookie. Fix: when _cookies is None on this path AND a cookie
+    # manager exists, show a brief "restoring..." state and st.stop()
+    # -- the iframe mount will trigger a rerun which lands here again
+    # with _cookies populated, and the auth restore below succeeds.
+    # Guard with a one-rerun-only flag so a browser that blocks the
+    # iframe (cookies disabled, third-party-cookie restrictions in an
+    # iframe, etc.) doesn't loop forever -- the second pass falls
+    # through to the login form as a graceful degradation.
+    if (not st.session_state.admin_authenticated
+            and _cookie_manager is not None
+            and _cookies is None
+            and not st.session_state.get("_admin_cookies_waited", False)):
+        st.session_state._admin_cookies_waited = True
+        st.info("🔐 Restoring admin session...")
+        st.stop()
+
     if not st.session_state.admin_authenticated and _cookies:
         _admin_token = _cookies.get(ADMIN_AUTH_COOKIE_NAME)
         if _admin_token and _verify_admin_auth_token(_admin_token, ADMIN_PASSWORD):
             st.session_state.admin_authenticated = True
+            # Successful restore -- clear the wait flag so a future
+            # show_admin transition (e.g. Cancel -> click Admin again)
+            # gets a fresh wait window.
+            st.session_state.pop("_admin_cookies_waited", None)
 
     if not st.session_state.admin_authenticated:
         st.markdown("### 🔒 Admin Login")
@@ -5382,6 +5470,10 @@ if st.session_state.show_admin:
                             _make_admin_auth_token(ADMIN_PASSWORD),
                             expires_at=datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS),
                         )
+                    # v2.24.2: clear the wait flag so a sign-out + sign-
+                    # back-in cycle inside the same session gets a fresh
+                    # wait window on the next refresh.
+                    st.session_state.pop("_admin_cookies_waited", None)
                     st.rerun()
                 else:
                     st.error("Incorrect password")
