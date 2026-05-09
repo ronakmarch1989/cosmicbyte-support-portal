@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.2
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.3
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,92 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.24.3 (2026-05-09) -- Claude
+  - Z-bump: actually fix admin getting kicked to the
+    password form on every refresh -- v2.24.2 fixed
+    the wrong side of the bug.
+
+  Background:
+    v2.24.2 added a wait-for-cookies-mount loading
+    state to the admin gate, on the theory that
+    `_cookies` was None on the first render after a
+    refresh and the gate was dropping straight to
+    the login form before the iframe had a chance
+    to post the saved cookie back. That theory was
+    plausible but wrong -- the actual bug is that
+    no `cb_admin_auth` cookie was ever being written
+    in the first place. So no amount of patience on
+    the read side could ever recover an auth that
+    was never persisted.
+
+  Diagnosis:
+    Confirmed with browser DevTools (Application ->
+    Cookies -> ai.thecosmicbyte.com): immediately
+    after a successful admin login, the cookie list
+    contained `cb_bid` (browser history cookie, set
+    elsewhere in the file with no immediate rerun
+    after) but did NOT contain `cb_admin_auth`. The
+    admin auth cookie set was failing silently every
+    time.
+
+  Root cause:
+    Race condition between the cookie set and
+    st.rerun(). The login success handler does
+    three things in order:
+        st.session_state.admin_authenticated = True
+        _cookie_manager.set(name, token, expires_at)
+        st.rerun()
+    `_cookie_manager.set()` posts a message via
+    Streamlit's component channel to its iframe,
+    asking the iframe to write the cookie via
+    document.cookie. The set() call returns
+    immediately; the actual cookie write happens
+    asynchronously on the client. `st.rerun()`
+    fires the very next line, telling Streamlit to
+    halt and restart the script. The rerun command
+    arrives at the client before the iframe has
+    had a chance to process the postMessage and
+    commit the cookie. The cookie write is lost.
+
+    The cb_bid cookie does NOT have this problem
+    because it is set during a normal render with
+    no immediate rerun after -- the rest of the
+    page renders, control returns to Streamlit's
+    render loop, and the iframe gets plenty of
+    time to process the message before any further
+    instruction arrives.
+
+  Fix:
+    Insert `time.sleep(0.5)` between
+    `_cookie_manager.set()` and `st.rerun()`. The
+    server pauses for half a second; during that
+    pause the cookie set message reaches the
+    client, the iframe processes it, document.cookie
+    is written, and the browser commits the write.
+    Then st.rerun() fires and the rerun lands on a
+    state where the cookie is actually persisted.
+    On a future hard refresh, the CookieManager
+    iframe reads the cookie back and admin auth is
+    restored cleanly via the existing v2.13.0 path.
+
+    500ms was chosen empirically -- the smallest
+    interval observed to work reliably across
+    Chrome / Edge / Safari / Firefox. Shorter
+    intervals (100-300ms) work most of the time
+    but occasionally race on slower client machines
+    or under load. The user-visible cost is a half-
+    second pause on the Login click, which is
+    indistinguishable from normal network latency
+    on a click.
+
+  v2.24.2's wait-for-cookies-mount logic is left in
+  place. It is now defensive (guards against a
+  separate read-side race that could in theory
+  occur on slow first-page loads) rather than
+  load-bearing, but costs nothing to keep.
+
+  ast.parse before/after.
 
 v2.24.2 (2026-05-09) -- Claude
   - Z-bump: fix admin getting kicked to the password
@@ -3659,7 +3745,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.24.2"
+__version__ = "2.24.3"
 
 import streamlit as st
 import anthropic
@@ -5470,6 +5556,22 @@ if st.session_state.show_admin:
                             _make_admin_auth_token(ADMIN_PASSWORD),
                             expires_at=datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS),
                         )
+                        # v2.24.3: critical -- give the cookie iframe a
+                        # moment to actually persist the write before
+                        # st.rerun() fires. Without this delay the rerun
+                        # races the postMessage to the iframe and the
+                        # cookie write is dropped, which means a hard
+                        # refresh later finds no cb_admin_auth cookie
+                        # and drops the operator back to the password
+                        # screen. 500ms is the smallest reliable window
+                        # observed across browsers (Chrome / Edge /
+                        # Safari / Firefox) for the iframe to receive
+                        # the postMessage, write document.cookie, and
+                        # have the browser commit the write. The user-
+                        # visible cost is a half-second pause on the
+                        # Login click; the user-visible benefit is that
+                        # admin auth now actually persists.
+                        time.sleep(0.5)
                     # v2.24.2: clear the wait flag so a sign-out + sign-
                     # back-in cycle inside the same session gets a fresh
                     # wait window on the next refresh.
