@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.4
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.6
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,147 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.24.6 (2026-05-09) -- Claude
+  - Y-bump: per-day pagination on the admin
+    conversation list, plus a "Reset pages" button
+    and a "Per page" selector. Targeted at the
+    long-page complaint that v2.24.4 (since
+    reverted) tried and failed to address by
+    replacing st.expander with custom buttons.
+
+  Why:
+    With 56 conversations on a single busy day,
+    the admin dashboard could become a very long
+    scroll, especially when several rows were
+    expanded simultaneously. Streamlit's
+    st.expander does not expose its open/close
+    state to the host code, so we cannot enforce
+    "only one open" or "collapse all" from Python.
+    The only reliable lever we have is rendering
+    fewer rows in the first place -- pagination.
+
+  What's new:
+
+  1. PAGE-SIZE SELECTOR (5th filter column):
+     "Per page" -> 5 / 10 / 20 / 50. Default 10.
+     Lives next to Date / Product / Feedback /
+     Source so it is in the natural place an
+     operator looks when narrowing a view.
+
+  2. PAGINATION CONTROLS PER DAY:
+     New helper `_render_paginated_rows()` wraps
+     the existing per-row renderer with Prev /
+     Next buttons and a "Page X of Y · showing
+     A-B of N" centre-aligned indicator. The
+     pagination UI is suppressed when a day has
+     fewer rows than the page size, so quiet days
+     still render as a single uninterrupted list
+     (no Prev/Next clutter when not needed).
+
+     Each day tracks its own current page in
+     session_state under the key
+     `_admin_page__day__<day_label>`, so paging
+     forward in "09 May" does not affect "08 May"
+     etc. The flat-view path also paginates
+     under `_admin_page__flat`.
+
+     Page state survives reruns (clicking inside
+     a row, refresh-data, etc.) so the operator
+     does not get bounced back to page 1 by
+     normal interactions.
+
+  3. "RESET PAGES" BUTTON in the top action bar
+     (next to Refresh data / Sign out): clears
+     every session_state key starting with
+     `_admin_page__`, which jumps every day's
+     pagination back to page 1 in one click.
+
+     The button is honest about what it does NOT
+     do: its tooltip explicitly says "Does NOT
+     close any expanders you have open". This is
+     because once a user has clicked an
+     st.expander, its state is internal to
+     Streamlit and cannot be programmatically
+     reset from the host code. v2.24.4 tried to
+     work around this by replacing st.expander
+     with a custom button-based accordion; that
+     was rejected on visual + performance
+     grounds. So instead of pretending we can
+     close expanders, we tell the operator
+     plainly that they need to click each one
+     themselves. With pagination active and a
+     sensible page size, this rarely matters
+     because the visible row count is bounded.
+
+  Edge cases handled:
+    - If page_size shrinks (operator changes
+      selector from 50 to 10) and the previously
+      stored page is now out of bounds, the page
+      is silently clamped back to 0.
+    - When a new conversation arrives and changes
+      the row count, the pagination indicator
+      updates correctly on the next refresh.
+    - Per-row widget keys (photo download buttons
+      etc.) continue to use the original
+      filtered_idx, so they stay stable across
+      pagination changes.
+
+  ast.parse before/after.
+
+v2.24.5 (2026-05-09) -- Claude
+  - Z-bump: revert v2.24.4. The button-based
+    accordion looked wrong and rendered slowly --
+    Ronak rejected both immediately on first
+    deploy.
+
+  Two problems with v2.24.4:
+
+  (a) VISUAL: each conversation row rendered as a
+      Streamlit st.button with use_container_width.
+      Streamlit buttons inherit the app's primary
+      colour, which for Cosmic Byte is brand
+      orange. The result: every row in the admin
+      conversation list looked like an orange
+      warning / call-to-action button rather than a
+      neutral expandable header. Visually
+      overwhelming, especially on days with many
+      conversations.
+
+  (b) PERFORMANCE: 173 st.button widgets are
+      noticeably heavier to render than 173
+      st.expander widgets, and every click
+      triggered a full-page st.rerun() which
+      re-rendered all 173 rows. The end-to-end
+      latency on opening any single row became
+      unacceptable.
+
+  Fix:
+    Restored the original st.expander-based
+    rendering (the v2.24.3 behaviour). Multiple
+    rows can again be open simultaneously -- this
+    is a downside of going back to expanders, but
+    it is the trade-off Ronak preferred over the
+    orange-buttons-and-slow-page outcome of
+    v2.24.4. The "page-too-long when many rows are
+    open" concern that motivated v2.24.4 is still
+    real; future work will address it via a
+    different mechanism (likely pagination per
+    day, smarter day-collapse defaults, or a
+    "Collapse all" button), NOT by replacing
+    st.expander with widgets that have these two
+    properties.
+
+  Net effect:
+    The admin dashboard's conversation rows behave
+    exactly as they did before v2.24.4. The
+    accordion state-tracking session_state key
+    (`_admin_open_row_key`) is no longer read or
+    written; if it ever appears in session_state
+    from a stale tab on the v2.24.4 deploy, it is
+    harmless (just unused).
+
+  ast.parse before/after.
 
 v2.24.4 (2026-05-09) -- Claude
   - Z-bump: admin conversation list now behaves as a
@@ -3823,7 +3964,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.24.4"
+__version__ = "2.24.6"
 
 import streamlit as st
 import anthropic
@@ -5258,6 +5399,93 @@ def _group_log_for_admin(rows_with_idx):
     return result
 
 
+def _render_paginated_rows(rows_with_idx, page_key, page_size):
+    """Render a list of (filtered_idx, row_dict) tuples with Prev / Next
+    pagination controls.
+
+    v2.24.6: introduced to keep the admin dashboard scroll length bounded
+    on days with many conversations. Without pagination, a day with 56
+    conversations + several expanded rows produces an unwieldy infinite
+    scroll. With pagination set to 10 per page, the worst-case scroll
+    length is ~10 conversations regardless of the day's total volume.
+
+    Parameters:
+        rows_with_idx : list of (filtered_idx, row_dict)
+            The rows to display. The filtered_idx is preserved so per-row
+            widget keys (photo download buttons etc.) stay stable.
+        page_key : str
+            Unique key under which the current page is tracked in
+            st.session_state. Use one key per logical pagination context
+            (e.g. one per day_label, one for the flat-view list).
+        page_size : int
+            How many rows per page. The Prev/Next UI is suppressed when
+            the total row count is <= page_size, so small days still
+            render as a single uninterrupted list.
+
+    Behaviour:
+        - Pagination state survives reruns within a session, so opening
+          a row does not reset the user back to page 1.
+        - If page_size shrinks (user changed selector from 50 -> 10) and
+          the previously stored page is now out of bounds, the page is
+          clamped back to 0 silently.
+        - The "Reset pages" button at the top of the dashboard clears
+          every key with the `_admin_page__` prefix in one go, jumping
+          all days back to page 1 simultaneously.
+    """
+    total = len(rows_with_idx)
+    if total <= page_size:
+        # Single page -- no pagination UI needed, render everything.
+        for i, r in rows_with_idx:
+            _render_admin_conversation_row(i, r)
+        return
+
+    total_pages = (total + page_size - 1) // page_size
+    current_page = st.session_state.get(page_key, 0)
+    # Clamp in case page_size shrank since the page was last set.
+    if current_page < 0 or current_page >= total_pages:
+        current_page = 0
+        st.session_state[page_key] = 0
+
+    start = current_page * page_size
+    end = min(start + page_size, total)
+
+    # Pagination header: Prev | "Page X of Y · showing A–B of N" | Next
+    p1, p2, p3 = st.columns([1, 3, 1])
+    with p1:
+        prev_disabled = (current_page == 0)
+        if st.button(
+            "← Previous",
+            key=f"{page_key}__prev",
+            disabled=prev_disabled,
+            use_container_width=True,
+        ):
+            st.session_state[page_key] = current_page - 1
+            st.rerun()
+    with p2:
+        st.markdown(
+            f"<div style='text-align:center; padding-top:6px; opacity:0.85'>"
+            f"Page <b>{current_page + 1}</b> of <b>{total_pages}</b> · "
+            f"showing {start + 1}–{end} of {total}"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+    with p3:
+        next_disabled = (current_page + 1 >= total_pages)
+        if st.button(
+            "Next →",
+            key=f"{page_key}__next",
+            disabled=next_disabled,
+            use_container_width=True,
+        ):
+            st.session_state[page_key] = current_page + 1
+            st.rerun()
+
+    # Render only the rows for this page.
+    page_rows = rows_with_idx[start:end]
+    for i, r in page_rows:
+        _render_admin_conversation_row(i, r)
+
+
 def _render_admin_conversation_row(i, r):
     """Render one conversation row's expander (customer msg, photos, AI
     response, feedback). Factored out of render_admin in v2.21.0 so both
@@ -5265,17 +5493,21 @@ def _render_admin_conversation_row(i, r):
     UI without duplication. `i` is the per-row index used for unique
     Streamlit widget keys (specifically the photo download buttons).
 
-    v2.24.4: replaced st.expander with a button + conditional-content
-    accordion pattern. Streamlit's native expander allows multiple rows
-    to be open simultaneously and exposes no API for the host code to
-    read or override the open/close state -- so when Ronak expanded
-    several conversations in a row, the page got very long. The
-    accordion pattern below keeps at most ONE row expanded at a time:
-    clicking a closed row makes it the open one (auto-closes whichever
-    was previously open), clicking the already-open row collapses it.
-    State lives in `_admin_open_row_key` in session_state; the key is
-    content-derived (Session ID + Date + Time) so it survives reruns
-    even if the underlying row index shifts."""
+    History note (v2.24.4 -> v2.24.5):
+    v2.24.4 briefly replaced the per-row st.expander with a button +
+    conditional-content accordion to enforce "only one row open at a
+    time". That worked functionally but had two problems Ronak rejected:
+      (a) the buttons inherited the app's orange brand colour, making
+          every row look like a warning / call-to-action rather than a
+          neutral expandable header.
+      (b) rendering 173 st.button widgets + a full-page st.rerun() on
+          every click was significantly slower than 173 native
+          st.expander widgets.
+    v2.24.5 reverts to st.expander. Multiple rows can be open at once
+    again -- the trade-off Ronak preferred over the button approach.
+    The "too-long page" concern from the original v2.24.4 ask will be
+    addressed differently (likely via pagination / smarter day-collapse
+    defaults) in a future bump."""
     try:
         customer_msg = r.get("Customer Message", "")
         ai_resp      = r.get("AI Response", "")
@@ -5288,87 +5520,49 @@ def _render_admin_conversation_row(i, r):
             f"· [{source_tag}] · {r.get('Product','?')} "
             f"· {customer_msg[:55]}{'…' if len(customer_msg) > 55 else ''}"
         )
-
-        # v2.24.4: accordion state. The "state key" is content-derived so it
-        # is stable across reruns; the widget key includes the row index `i`
-        # for absolute uniqueness in case two rows happen to share the same
-        # Session ID + Date + Time (e.g. two messages logged in the same
-        # minute under one session -- Streamlit would otherwise raise
-        # StreamlitDuplicateElementKey).
-        state_key = (
-            f"{r.get('Session ID','')}::"
-            f"{r.get('Date','')}::"
-            f"{r.get('Time','')}"
-        )
-        widget_key = f"admin_row_btn_{state_key}_idx{i}"
-        is_open = st.session_state.get("_admin_open_row_key") == state_key
-        glyph = "▼" if is_open else "▶"
-
-        if st.button(
-            f"{glyph}  {label}",
-            key=widget_key,
-            use_container_width=True,
-        ):
-            if is_open:
-                # Click on the already-open row -> collapse it.
-                st.session_state._admin_open_row_key = None
-            else:
-                # Click on a closed row -> make it the open one. This
-                # automatically "closes" whichever row was previously open
-                # because the accordion only renders content for the row
-                # whose state_key matches _admin_open_row_key.
-                st.session_state._admin_open_row_key = state_key
-            st.rerun()
-
-        if not is_open:
-            # Collapsed -- header only, nothing else to render for this row.
-            return
-
-        # === Open row: render full content (indented from the button so it
-        # visually attaches to the header above). ===
-        st.caption(f"Session: {r.get('Session ID','?')}")
-        st.markdown("**Customer message**")
-        st.text(customer_msg)
-        # If this row has thumbnails attached, render them in a 4-column grid.
-        # Stored as a JSON list of {name, data} where data is a base64 JPEG.
-        thumbs_raw = r.get("Image Thumbnails", "")
-        if thumbs_raw:
-            try:
-                thumbs = json.loads(thumbs_raw)
-                if thumbs:
-                    st.markdown(f"**Attached photos ({len(thumbs)})**")
-                    cols = st.columns(min(4, len(thumbs)))
-                    for ti, t in enumerate(thumbs):
-                        with cols[ti % len(cols)]:
-                            try:
-                                thumb_bytes = base64.b64decode(t["data"])
-                                original_name = t.get("name", f"image_{ti+1}")
-                                # Thumbnails are stored as JPEG (we convert in
-                                # _make_thumbnails_for_log), so force .jpg on
-                                # download so the file opens cleanly regardless
-                                # of what the customer originally uploaded.
-                                base_name = os.path.splitext(original_name)[0] or f"image_{ti+1}"
-                                dl_filename = f"{base_name}.jpg"
-                                st.image(thumb_bytes, caption=original_name, width=180)
-                                st.download_button(
-                                    label="📥 Download photo",
-                                    data=thumb_bytes,
-                                    file_name=dl_filename,
-                                    mime="image/jpeg",
-                                    key=f"dl_{i}_{ti}",
-                                    use_container_width=True,
-                                )
-                            except Exception:
-                                st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
-            except (json.JSONDecodeError, TypeError):
-                # Old log row or malformed value -- skip silently
-                pass
-        st.markdown("**AI response**")
-        st.text(ai_resp)
-        fb  = r.get("Feedback") or "No feedback"
-        note = r.get("Feedback Note", "")
-        st.markdown(f"**Feedback:** {fb}" + (f" — {note}" if note else ""))
-        st.divider()
+        with st.expander(label):
+            st.caption(f"Session: {r.get('Session ID','?')}")
+            st.markdown("**Customer message**")
+            st.text(customer_msg)
+            # If this row has thumbnails attached, render them in a 4-column grid.
+            # Stored as a JSON list of {name, data} where data is a base64 JPEG.
+            thumbs_raw = r.get("Image Thumbnails", "")
+            if thumbs_raw:
+                try:
+                    thumbs = json.loads(thumbs_raw)
+                    if thumbs:
+                        st.markdown(f"**Attached photos ({len(thumbs)})**")
+                        cols = st.columns(min(4, len(thumbs)))
+                        for ti, t in enumerate(thumbs):
+                            with cols[ti % len(cols)]:
+                                try:
+                                    thumb_bytes = base64.b64decode(t["data"])
+                                    original_name = t.get("name", f"image_{ti+1}")
+                                    # Thumbnails are stored as JPEG (we convert in
+                                    # _make_thumbnails_for_log), so force .jpg on
+                                    # download so the file opens cleanly regardless
+                                    # of what the customer originally uploaded.
+                                    base_name = os.path.splitext(original_name)[0] or f"image_{ti+1}"
+                                    dl_filename = f"{base_name}.jpg"
+                                    st.image(thumb_bytes, caption=original_name, width=180)
+                                    st.download_button(
+                                        label="📥 Download photo",
+                                        data=thumb_bytes,
+                                        file_name=dl_filename,
+                                        mime="image/jpeg",
+                                        key=f"dl_{i}_{ti}",
+                                        use_container_width=True,
+                                    )
+                                except Exception:
+                                    st.caption(f"📎 {t.get('name', 'image')} (preview unavailable)")
+                except (json.JSONDecodeError, TypeError):
+                    # Old log row or malformed value -- skip silently
+                    pass
+            st.markdown("**AI response**")
+            st.text(ai_resp)
+            fb  = r.get("Feedback") or "No feedback"
+            note = r.get("Feedback Note", "")
+            st.markdown(f"**Feedback:** {fb}" + (f" — {note}" if note else ""))
     except Exception as e:
         st.warning(f"Could not display row {i}: {e}")
 
@@ -5379,7 +5573,10 @@ def render_admin():
     # v2.13.0: top action bar — refresh data without losing session, plus
     # explicit sign-out that clears the auth cookie. Distinct from the
     # bottom "Back to Support" button which keeps the session alive.
-    _bar_c1, _bar_c2, _bar_spacer = st.columns([1, 1, 4])
+    # v2.24.6: added "Reset pages" button to jump every day's pagination
+    # back to page 1 in one click, useful when the operator has been
+    # paging through several days.
+    _bar_c1, _bar_c2, _bar_c3, _bar_spacer = st.columns([1, 1, 1.2, 3.8])
     with _bar_c1:
         if st.button("🔄 Refresh data", key="admin_refresh", help="Reload conversation log without signing out"):
             st.rerun()
@@ -5398,6 +5595,22 @@ def render_admin():
                 pass
             st.session_state.admin_authenticated = False
             st.session_state.show_admin = False
+            st.rerun()
+    with _bar_c3:
+        if st.button(
+            "⊟ Reset pages",
+            key="admin_reset_pages",
+            help="Jump every day's pagination back to page 1. Does NOT close any expanders you have open -- Streamlit's st.expander state is internal and cannot be programmatically closed once you've interacted with it; click them yourself if needed.",
+        ):
+            # v2.24.6: clear every per-day / flat-view pagination key.
+            # Convention: pagination keys are prefixed with
+            # "_admin_page__" so they're easy to find and bulk-clear.
+            keys_to_clear = [
+                k for k in list(st.session_state.keys())
+                if isinstance(k, str) and k.startswith("_admin_page__")
+            ]
+            for k in keys_to_clear:
+                del st.session_state[k]
             st.rerun()
 
     st.divider()
@@ -5450,7 +5663,7 @@ def render_admin():
         all_products = ["All Products"]
         all_sources = ["All sources"]
 
-    col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+    col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns(5)
     with col_f1:
         selected_date = st.selectbox("Date", all_dates, key="admin_date_filter")
     with col_f2:
@@ -5459,6 +5672,20 @@ def render_admin():
         fb_filter = st.selectbox("Feedback", ["All", "👍 Helpful", "👎 Unhelpful", "No feedback"], key="admin_fb_filter")
     with col_f4:
         selected_source = st.selectbox("Source", all_sources, key="admin_source_filter")
+    with col_f5:
+        # v2.24.6: per-page selector. Bounds the scroll length on days
+        # with many conversations. Streamlit's st.expander state is
+        # internal and cannot be programmatically closed, so the only
+        # reliable way to keep the page short is to render fewer rows
+        # in the first place. Default 10 strikes a balance between
+        # "see enough at once" and "no infinite scroll".
+        page_size = st.selectbox(
+            "Per page",
+            options=[5, 10, 20, 50],
+            index=1,  # default 10
+            key="admin_page_size",
+            help="Conversations to show per page within each day. Use Prev / Next inside each day to move between pages.",
+        )
 
     # ── Apply filters ──
     try:
@@ -5508,8 +5735,15 @@ def render_admin():
     )
 
     if use_flat_view:
-        for i, r in rows_with_idx:
-            _render_admin_conversation_row(i, r)
+        # v2.24.6: paginate the flat list too. Most flat-view triggers
+        # (specific date filter active, or small dataset) keep the row
+        # count low, but a busy single day with 50+ conversations can
+        # still benefit from pagination.
+        _render_paginated_rows(
+            rows_with_idx,
+            page_key="_admin_page__flat",
+            page_size=page_size,
+        )
     else:
         # Hierarchical: Month -> Week -> Day -> conversation. Auto-expand
         # the most recent path so today's conversations are visible
@@ -5537,8 +5771,16 @@ def render_admin():
                                 f"· {day['day_count']}"
                             )
                             with st.expander(day_header, expanded=day_expanded):
-                                for i, r in day['rows']:
-                                    _render_admin_conversation_row(i, r)
+                                # v2.24.6: paginate per-day. The page
+                                # state key includes the day_label so
+                                # each day tracks its own current page
+                                # independently -- moving to page 2 of
+                                # "09 May" doesn't affect "08 May".
+                                _render_paginated_rows(
+                                    day['rows'],
+                                    page_key=f"_admin_page__day__{day['day_label']}",
+                                    page_size=page_size,
+                                )
 
     st.divider()
 
