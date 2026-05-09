@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.26.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.27.1
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,117 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.27.1 (2026-05-09) -- Claude
+  - Z-bump HOT-FIX: the v2.26.0 jump-to-page
+    feature broke Prev/Next pagination on
+    production. Every Prev or Next click
+    raised StreamlitAPIException:
+      "st.session_state.<jump_widget_key>
+      cannot be modified after the widget with
+      key <jump_widget_key> is instantiated."
+
+  Root cause:
+    The v2.26.0 implementation tried to keep
+    the number_input's displayed value in sync
+    with the actual page state by manually
+    writing to st.session_state[jump_widget_key]
+    inside the Prev/Next button click handlers.
+    Streamlit does NOT allow this -- once a
+    widget has been instantiated in any prior
+    run, its session_state key is "owned" by
+    Streamlit and external writes throw
+    StreamlitAPIException, even after
+    st.rerun(). The previous version's "if
+    jump_widget_key in st.session_state:" guard
+    prevented the error on the FIRST page-load
+    (when the key didn't exist yet) but not on
+    subsequent navigations once the user had
+    interacted with the input or seen it
+    rendered.
+
+    My v2.26.0 changelog had a comment about
+    "Streamlit gotcha: widget state takes
+    precedence over the value= parameter once
+    the widget has been interacted with" -- but
+    I picked the wrong fix for that gotcha
+    (manually writing to widget state) instead
+    of the correct fix (recreating the widget
+    with a new key when external state
+    changes). My bad on the v2.26.0 review --
+    should have caught this in pre-deploy
+    testing.
+
+  Fix:
+    Replaced the static jump_widget_key with a
+    DYNAMIC key that includes the current page
+    number:
+      jump_widget_key = f"{page_key}__jump_at_p{current_page}"
+
+    When current_page changes via Prev/Next +
+    st.rerun(), the widget gets a brand-new key
+    that has no prior session_state, so
+    Streamlit honours the value=current_page+1
+    parameter on first instantiation. No
+    manual session_state manipulation needed
+    anywhere -- the widget re-renders with the
+    correct value automatically because it's
+    effectively a "new" widget at the new page.
+
+    Side effect: old widget keys accumulate in
+    session_state as the operator paginates
+    (one per page visited within a session),
+    but this is bounded -- no operator
+    paginates more than a few dozen pages per
+    session, and Streamlit's session_state is
+    cleared on browser tab close. Acceptable
+    cost for a clean fix.
+
+    The Prev/Next click handlers no longer
+    touch any widget state -- they just update
+    page_key and call st.rerun(), and the
+    natural widget-recreation handles the
+    rest.
+
+  Risk-flagging code from v2.26.0 is unaffected
+  by this hot-fix -- only the jump-to-page
+  pagination control was broken.
+  ast.parse before/after.
+
+v2.27.0 (2026-05-09) -- Claude
+  - Y-bump: companion to cb_kb.py v1.8.0 -- new
+    product (Cosmic Byte Hypernova Tri-Mode
+    Gaming Mouse) added to the QUICK_QUESTIONS
+    dict so the in-portal starter-question
+    chips render correctly when a customer
+    arrives via the Hypernova product page.
+
+  Quick questions added (5, the standard count
+  for mouse products):
+    - "How to pair the dongle?" -- routes to
+      the Hypernova-specific Left+Middle+Right
+      mouse buttons + Spacebar pairing combo.
+    - "8000Hz polling system requirements" --
+      surfaces the i7 9700K / 240Hz / GTX 1080
+      / 16GB minimum specs documented in the
+      Hypernova manual.
+    - "Can I use a fast charger?" -- this is
+      the highest-stakes Hypernova-specific
+      question (warranty void if damaged by
+      fast charger). Surfacing this proactively
+      is exactly the kind of thing the
+      starter-chip UX is for.
+    - "How to charge the spare battery?" --
+      Hypernova ships with TWO removable
+      batteries; the spare has its own USB-C
+      port, which is unusual.
+    - "Mouse cursor stuttering at 8000Hz" --
+      common-by-construction issue when 8000Hz
+      polling is enabled on a PC that doesn't
+      meet the manual's minimum specs.
+
+  No code change beyond the dict addition.
+  ast.parse before/after.
 
 v2.26.0 (2026-05-09) -- Claude
   - Y-bump: review-risk flagging on the admin
@@ -4208,7 +4319,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.26.0"
+__version__ = "2.27.1"
 
 import streamlit as st
 import anthropic
@@ -5364,6 +5475,13 @@ QUICK_QUESTIONS = {
         "Bluetooth device name to look for",
         "Battery draining fast",
     ],
+    "Hypernova Mouse": [
+        "How to pair the dongle?",
+        "8000Hz polling system requirements",
+        "Can I use a fast charger?",
+        "How to charge the spare battery?",
+        "Mouse cursor stuttering at 8000Hz",
+    ],
     "Atlas Mouse": [
         "How do I connect via 2.4GHz?",
         "Bluetooth polling rate vs wired",
@@ -5839,14 +5957,27 @@ def _render_paginated_rows(rows_with_idx, page_key, page_size):
     end = min(start + page_size, total)
 
     # Pagination header: Prev | "Page [N] of Y · showing A-B of N" | Next
-    # v2.26.0: replaced the static markdown page indicator with an
-    # editable number_input so the operator can jump directly to a page
-    # without click-spamming Next on long days. The number input syncs
-    # with session_state in both directions: typing a new page updates
-    # the page state, and clicking Prev/Next updates the input field
-    # value too (so it stays consistent with the actual current page).
+    # v2.27.1: HOT-FIX. The v2.26.0 implementation tried to keep the
+    # number_input's displayed value in sync with the actual page state
+    # by manually writing st.session_state[jump_widget_key] = new_page+1
+    # inside the Prev/Next button click handlers. Streamlit raises
+    # StreamlitAPIException for this -- once a widget has been
+    # instantiated (in any prior run), its session_state key cannot be
+    # modified externally, even after st.rerun(). The previous approach
+    # broke Prev/Next entirely on production.
+    #
+    # The fix: use a DYNAMIC widget key that includes the current page
+    # number (f"...__jump_at_p{current_page}"). When current_page changes
+    # via Prev/Next click + st.rerun(), the widget gets a brand-new key
+    # that has no prior session_state, so Streamlit honours the
+    # value=current_page+1 parameter on first instantiation. No manual
+    # session_state manipulation needed -- the widget re-renders with
+    # the correct value automatically because it's effectively a "new"
+    # widget at the new page. Cost: old widget keys accumulate in
+    # session_state as the operator paginates, but page changes within
+    # a session are bounded (max ~few dozen) so this is harmless.
     p1, p2_input, p2_label, p3 = st.columns([1, 0.7, 2.3, 1])
-    jump_widget_key = f"{page_key}__jump"
+    jump_widget_key = f"{page_key}__jump_at_p{current_page}"
     with p1:
         prev_disabled = (current_page == 0)
         if st.button(
@@ -5855,15 +5986,7 @@ def _render_paginated_rows(rows_with_idx, page_key, page_size):
             disabled=prev_disabled,
             use_container_width=True,
         ):
-            new_page = current_page - 1
-            st.session_state[page_key] = new_page
-            # Sync the number_input widget state too, otherwise the
-            # input keeps showing the old page after Prev/Next is
-            # clicked (Streamlit gotcha: widget state takes precedence
-            # over the value= initial parameter once the widget has
-            # been interacted with).
-            if jump_widget_key in st.session_state:
-                st.session_state[jump_widget_key] = new_page + 1
+            st.session_state[page_key] = current_page - 1
             st.rerun()
     with p2_input:
         # Number-input for direct page jumps. Streamlit's number_input
@@ -5897,10 +6020,7 @@ def _render_paginated_rows(rows_with_idx, page_key, page_size):
             disabled=next_disabled,
             use_container_width=True,
         ):
-            new_page = current_page + 1
-            st.session_state[page_key] = new_page
-            if jump_widget_key in st.session_state:
-                st.session_state[jump_widget_key] = new_page + 1
+            st.session_state[page_key] = current_page + 1
             st.rerun()
 
     # Render only the rows for this page.

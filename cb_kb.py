@@ -33,6 +33,526 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.8.3 (2026-05-09) -- Claude
+  * Z-bump: authoritative Bluetooth polling-
+    rate figures provided by Ronak for the
+    full gamepad lineup. Closes the loose end
+    flagged in v1.8.1 ("exact Bluetooth figure
+    for Ares Pro is not currently confirmed in
+    this KB -- route to support if customer
+    asks"). The route-to-support fallback can
+    now be replaced with the precise figure.
+
+  Authoritative data per Ronak (2026-05-09).
+  Initial figures provided, then two
+  corrections during the same session
+  ("My mistake"):
+
+    Ares Tri Mode      -- 250Hz max BT
+    Ares Pro           -- 500Hz max BT
+    Blitz Tri-Mode     -- 500Hz max BT
+    Blitz Wireless     -- NO BLUETOOTH (it's
+                          a Wired+2.4GHz dual
+                          mode, both at
+                          1000Hz; my initial
+                          interpretation that
+                          "Blitz Dual Mode =
+                          BT+2.4G" was wrong;
+                          Ronak corrected:
+                          "Blitz Wireless
+                          Dual Mode does not
+                          have Bluetooth so
+                          remove its polling
+                          rate. Wired and
+                          Wireless is 1000Hz")
+    Stellaris 1st Gen  -- 250Hz max BT.
+                          Wired/2.4GHz is
+                          1000Hz on 1st Gen
+                          too (Ronak
+                          corrected: "Stellaris
+                          1st Gen Wired and
+                          Wireless also has
+                          1000Hz Polling
+                          rate"). My initial
+                          matrix said "older
+                          spec, see SECTION 2"
+                          for the wired/2.4GHz
+                          column on 1st Gen --
+                          that was overly
+                          cautious; 1st Gen
+                          is the same 1000Hz
+                          on those two modes.
+    Stellaris 2nd Gen  -- 500Hz max BT
+    Drakon             -- 500Hz max BT
+    Lumora             -- 250Hz max BT
+    Eclipse            -- 250Hz max BT.
+                          Wired/2.4GHz is
+                          1000Hz (per Ronak).
+    Starforge          -- 250Hz max BT.
+                          Wired/2.4GHz is
+                          1000Hz (per Ronak).
+    Quantum            -- 250Hz max BT
+                          (Wired/2.4GHz not
+                          stated in this
+                          update; left as
+                          "not specified" in
+                          the matrix).
+    Stratos Xenon      -- 250Hz max BT
+                          (Wired/2.4GHz not
+                          stated in this
+                          update; left as
+                          "not specified" in
+                          the matrix).
+    Nexus              -- 2.4GHz wireless
+                          ONLY (NO Bluetooth,
+                          NO wired). Max
+                          polling rate 250Hz
+                          on its single
+                          2.4GHz mode. Listed
+                          in the NOT IN THE
+                          BLUETOOTH MATRIX
+                          section since it
+                          has no Bluetooth
+                          mode. Note: 250Hz
+                          is unusually low
+                          for a 2.4GHz-only
+                          controller (other
+                          CB 2.4GHz products
+                          run at 1000Hz on
+                          that mode), but
+                          this is the spec
+                          confirmed by Ronak
+                          for Nexus -- not a
+                          defect.
+
+  Fixes:
+    1. Added BLUETOOTH POLLING RATE QUICK-
+       REFERENCE MATRIX to the SYSTEM_PROMPT,
+       sibling to the Hall Effect and
+       Mechanical Buttons matrices added in
+       earlier versions. The matrix lists all
+       8 gamepads with their max Bluetooth
+       polling rate and includes the explicit
+       framing that 250/500Hz Bluetooth is
+       NORMAL hardware-protocol behaviour
+       (NOT a defect), and that customers
+       wanting higher polling should use
+       Wired or 2.4GHz mode.
+    2. Updated the Ares Pro POLLING RATE
+       section to specify "500Hz max" for
+       Bluetooth (replacing the v1.8.1
+       wording "LOWER than 1000Hz... exact
+       figure not currently confirmed in
+       this KB").
+    3. Updated Lumora, Drakon, Stellaris
+       (current Gen 2), Blitz Tri-Mode,
+       Blitz Wireless, and Ares per-product
+       entries to include the precise BT
+       polling rate where each entry has a
+       polling-rate or Bluetooth section
+       (per-product accuracy in addition to
+       the matrix).
+
+  Why the matrix matters: same architectural
+  lesson from v1.8.2 (mechanical buttons
+  matrix) -- only one product entry is
+  injected at query time, so cross-product
+  questions ("which CB controller has the
+  highest BT polling rate?", "is my BT
+  polling rate normal?") cannot be answered
+  accurately without a SYSTEM_PROMPT-level
+  reference. The matrix is the source of
+  truth; per-product entries reinforce it
+  for the specific product loaded.
+
+  Why the framing about "NOT a defect"
+  matters: customers running a 1000Hz-
+  capable controller in Bluetooth mode and
+  seeing 250-500Hz reported by polling rate
+  testers may incorrectly conclude the
+  controller is faulty. The matrix
+  explicitly tells the AI to frame BT
+  polling as "this is the protocol-level
+  maximum -- working as designed -- if you
+  need higher polling, switch to Wired or
+  2.4GHz mode where the controller hits
+  1000Hz". This is a routing answer, not a
+  warranty answer.
+
+  No code change. ast.parse before/after.
+
+v1.8.2 (2026-05-09) -- Claude
+  * Z-bump: cross-product mechanical-buttons
+    documentation. Customer asked which CB
+    controllers have mechanical buttons (after
+    seeing the Lumora launch). AI fabricated a
+    confident multi-product comparison saying
+    only Lumora has mechanical buttons and
+    every other CB controller (Stellaris,
+    Blitz, Drakon, Ares Pro, Ares Tri-Mode,
+    Ares Wireless, Quantum, Stratos Xenon) has
+    rubber-dome buttons.
+
+  Bug:
+    The actual situation per Ronak's correction:
+      - DRAKON has mechanical ABXY + LB + RB.
+      - LUMORA has mechanical ABXY + LB + RB
+        PLUS a mechanical D-pad (the D-pad
+        being Lumora's distinguishing
+        mechanical feature vs Drakon).
+      - Other CB controllers: not currently
+        documented in the KB as either
+        mechanical or rubber-dome -- absence
+        of "mechanical" in an entry is NOT
+        the same as "confirmed rubber-dome".
+
+    The AI's fabrication had two parts:
+    (a) WRONG to say Drakon is rubber-dome --
+        it has 6 mechanical buttons.
+    (b) WRONG to confidently claim other CB
+        controllers (Stellaris, Ares family,
+        etc.) are rubber-dome -- the KB
+        doesn't actually document button
+        mechanism for those, and the AI was
+        guessing.
+
+  Root cause:
+    Two compounding issues:
+    (1) Per-product entries had incomplete
+        button-mechanism documentation:
+          - Lumora entry said "MECHANICAL
+            ABXY and D-Pad" -- missing the
+            LB/RB mention entirely.
+          - Drakon entry had NO mention of
+            button mechanism at all (neither
+            mechanical nor rubber-dome).
+    (2) The KB injects only the matched
+        product's manual at query time. So
+        when a customer asks a CROSS-PRODUCT
+        question ("does any other variant
+        have mechanical buttons?") with a
+        Lumora context, the AI gets only the
+        Lumora KB and has to guess for every
+        other product. That's structurally
+        guaranteed to produce fabrications
+        for cross-product questions on any
+        feature not covered by a system-level
+        matrix.
+
+  Fix:
+    1. Updated Lumora entry to state
+       "MECHANICAL ABXY, LB/RB, and D-Pad"
+       explicitly (was: "MECHANICAL ABXY and
+       D-Pad" -- LB/RB was missing).
+    2. Added a MECHANICAL BUTTONS section to
+       the Drakon entry stating ABXY + LB/RB
+       are mechanical and D-pad is rubber-dome
+       (so the contrast vs Lumora is explicit
+       on both product entries).
+    3. Added a MECHANICAL BUTTONS QUICK-
+       REFERENCE MATRIX to the SYSTEM_PROMPT
+       (modelled on the existing HALL EFFECT
+       QUICK-REFERENCE MATRIX). Lists Lumora
+       and Drakon as the two confirmed
+       mechanical-button products, and
+       explicitly tells the AI not to assert
+       rubber-dome for unlisted products
+       (route to support for confirmation
+       instead).
+    4. The matrix includes the explicit
+       counter-statement: "Lumora is NOT
+       unique in having mechanical face
+       buttons -- Drakon also has them. Do
+       NOT tell a customer Lumora is the
+       only CB controller with mechanical
+       buttons -- that statement is wrong."
+       This catches the exact fabrication
+       pattern from this customer session.
+
+  Lesson logged: cross-product comparison
+  questions are structurally unsafe in this
+  KB architecture (only one product entry is
+  injected at query time). For any feature
+  where customers commonly ask "which CB
+  product also has X?", the answer must live
+  in the SYSTEM_PROMPT (always-injected) as a
+  matrix. Per-product entries alone are not
+  enough -- they cover their own product but
+  cannot answer cross-product questions
+  accurately. This is the same architectural
+  reasoning as the Hall Effect matrix added
+  earlier; the mechanical-buttons matrix is
+  now its sibling for the same reason.
+
+  No code change. ast.parse before/after.
+
+v1.8.1 (2026-05-09) -- Claude
+  * Z-bump: two KB content corrections after
+    Ronak flagged AI responses that were wrong
+    on (a) Vanth/Pandora having companion
+    software (they don't), and (b) Ares Pro
+    having "fixed 1000Hz polling rate across
+    all modes including Bluetooth" (it doesn't,
+    Bluetooth is hardware-limited lower).
+
+  Bug 1 -- Vanth and Pandora software:
+    Customer asked "How to change backlight?"
+    on Vanth. AI faithfully reproduced KB
+    content including a final section:
+      "ADVANCED CONTROL (Windows only): For
+      per-key RGB customisation and deeper
+      settings, download the Vanth software
+      from here: https://www.thecosmicbyte.com/
+      downloaddrivers/"
+    Ronak corrected: "VAnth and Pandora do not
+    have software support."
+
+    Root cause: not a hallucination -- the AI
+    faithfully reproduced what was in the KB.
+    Both Vanth and Pandora entries had a
+    SOFTWARE: section with a v1.0.0.4 changelog
+    note. This appears to have been copied
+    from the standard keyboard-entry template
+    used across 9 different CB keyboards
+    without verification of which keyboards
+    actually have software. The Vanth/Pandora
+    SOFTWARE: entries were always wrong --
+    these are FN-key-only keyboards with no
+    companion app at all.
+
+    Both entries also had a "Mac use" line
+    saying "RGB software is Windows only" --
+    which incorrectly implied software exists
+    but is Windows-only. The correct framing
+    is that there is no software at all; all
+    backlight customisation is via FN+key
+    combinations on the keyboard itself.
+
+    Fix:
+      (1) Removed the SOFTWARE: section
+          (2 lines including v1.0.0.4 note)
+          from both Vanth and Pandora.
+      (2) Added an explicit "NO COMPANION
+          SOFTWARE" note to both entries that
+          tells the AI: all backlight / RGB /
+          effect / brightness / animation
+          customisation happens via FN+key
+          combinations on the keyboard itself
+          (already documented elsewhere in
+          each entry); there is no Windows
+          app, no macOS app, no driver
+          download, nothing on
+          downloaddrivers/.
+      (3) Updated the "Mac use" line in each
+          to remove the misleading "RGB
+          software is Windows only" reference,
+          replacing it with "Mac use: works
+          plug-and-play for typing; backlight
+          features are accessible via FN+key
+          combos as documented above (no
+          software needed for any platform)."
+
+  PATTERN OBSERVED -- 7 other keyboards have
+  the SAME generic "SOFTWARE: Download from
+  ..." block, BUT THEY ARE CORRECT (per Ronak):
+    The same generic SOFTWARE block originally
+    appeared in 9 keyboard entries: Phantom
+    TKL, Phantom TKL Wired, Pandora (FIXED in
+    v1.8.1), Vanth (FIXED in v1.8.1), Artemis
+    Wireless, Artemis, Firefly TKL, Trinity,
+    Astra. RONAK CONFIRMED (2026-05-09):
+    "Rest keyboards have software support."
+    So the 7 remaining keyboards DO have
+    companion software -- their SOFTWARE
+    blocks are accurate and should NOT be
+    removed. Only Pandora and Vanth were
+    incorrect; everything else stays as-is.
+    No further action needed for the 7
+    confirmed keyboards in any subsequent KB
+    update.
+
+  Bug 2 -- Ares Pro Bluetooth polling rate:
+    Customer asked "Can I use any headphones
+    with ares pro 3.5mm jack and will the
+    polling rate of the controller fluctuate?"
+    AI responded:
+      "The Ares Pro has a fixed 1000Hz polling
+      rate -- it does NOT fluctuate. This is
+      consistent and stable whether you're
+      using:
+        - Wired USB-C connection
+        - 2.4GHz wireless dongle
+        - Bluetooth mode
+      The polling rate remains constant
+      regardless of connection mode..."
+    Ronak corrected: "Stable 1000 Hz Polling
+    rate and also in Bluetooth mode? We didn't
+    add this."
+
+    Root cause: not a hallucination per se --
+    the AI extrapolated from the existing
+    POLLING RATE section, which only said
+    "1000Hz polling rate on BOTH Gen 1 and
+    Gen 2" without specifying which CONNECTION
+    MODES that 1000Hz applies to. The AI
+    interpreted "1000Hz" as "1000Hz across
+    all modes". This is incorrect -- Bluetooth
+    polling rate is hardware-limited by the
+    Bluetooth protocol itself and is
+    typically much lower (~125Hz on most CB
+    tri-mode controllers, see Helios Mouse
+    entry for an explicit example).
+
+    Fix:
+      (1) Updated the POLLING RATE section in
+          the Ares Pro entry to be EXPLICIT
+          about per-connection-mode polling
+          rates: 1000Hz on Wired and 2.4GHz,
+          Bluetooth is hardware-limited lower
+          per the Bluetooth protocol, and the
+          exact Bluetooth figure for Ares Pro
+          should be confirmed with CB support
+          if a customer asks for the precise
+          spec (rather than fabricating a
+          number).
+      (2) Expanded the Ares Pro anti-
+          hallucination guard with new
+          fabrication entries:
+          (e) "Fixed 1000Hz polling rate
+          across all modes including
+          Bluetooth" / "polling rate remains
+          constant regardless of connection
+          mode" -- WRONG. Bluetooth has a
+          lower hardware-limited polling rate.
+          Do not assert "fixed" or "constant"
+          1000Hz across all three modes.
+          (f) Inferring per-mode polling
+          rates from a non-mode-specific
+          POLLING RATE statement -- WRONG.
+          If the KB says "1000Hz" without
+          specifying connection modes, the
+          AI must NOT extrapolate that the
+          1000Hz applies across all modes.
+          State only what is documented per
+          mode; if Bluetooth is not
+          specified, say so and route the
+          customer to CB support for the
+          precise figure.
+
+  Lesson logged: the same lesson as v1.6.1
+  (firmware Wired-only) -- general statements
+  about a feature or spec must be PER-CONNECTION-
+  MODE for tri-mode controllers, not blanket.
+  When in doubt about a per-mode value, state
+  what's known and route the rest to support
+  rather than letting the AI infer.
+
+  No code change. ast.parse before/after.
+
+v1.8.0 (2026-05-09) -- Claude
+  * Y-bump: new product added -- Cosmic Byte
+    Hypernova Tri-Mode Gaming Mouse. Source:
+    Hypernova user manual PDF provided by Ronak.
+
+  Product overview:
+    Flagship tri-mode wireless gaming mouse.
+    Pixart 3395 sensor, 200-26000 DPI, 55g
+    without cable, Omron 100M switches, 0.6mm
+    PTFE feet, 1.8m paracord cable, 5
+    programmable buttons, replaceable battery
+    (TWO included with separate USB-C
+    charging port on the spare). Polling rates:
+    Wired 8000Hz / 2.4G 4000Hz / Bluetooth
+    250Hz. Software: Windows only.
+
+  Notable Hypernova-specific facts captured in
+  the entry (worth flagging because customers
+  may misremember or extrapolate):
+    1. 8000Hz polling rate has explicit minimum
+       PC requirements (i7 9700K+ / R7 3700X+,
+       240Hz+ monitor, GTX 1080 / RX 5700+,
+       16GB+ RAM). The manual explicitly says
+       to reduce polling rate if stuttering /
+       lag occurs. This is documented as
+       expected behaviour at 8000Hz on
+       lower-spec PCs, NOT a defect.
+    2. CHARGING WARNING: use 5V/1A or 5V/2A
+       standard charger only. DO NOT use fast
+       chargers. The manual explicitly states
+       "The warranty will be void if the mouse
+       is damaged by using fast chargers." This
+       is unique among CB mice -- captured
+       prominently in the entry so AI doesn't
+       give generic "any charger is fine"
+       advice.
+    3. Spare battery has its OWN USB-C port --
+       can be charged independently of the
+       mouse by plugging the mouse's USB-C
+       cable into the spare battery.
+    4. Dongle pairing combo: Left + Middle +
+       Right Mouse Buttons -> LED blinks
+       YELLOW (pairing mode active) -> press
+       Spacebar in software to start pairing.
+       This is unique and documented exactly as
+       in the manual (NOT extrapolated from
+       other CB mice, which use different
+       combos).
+    5. Antivirus may flag the software
+       installer (per manual): the AI should
+       suggest temporarily disabling antivirus
+       during install, then restarting the PC
+       after install. This is documented in
+       the manual itself, not invented.
+
+  Notable peculiarity: support phone number.
+    The Hypernova manual lists "07969273222
+    (Mon-Sat 10am to 6pm)" as the contact
+    number -- DIFFERENT from the standard
+    +91 7351615161 used elsewhere in the KB
+    and in rule #11 (warranty escalation
+    routing). RONAK CONFIRMED (2026-05-09):
+    "irrespective of support number in manual
+    standard number is currently operational
+    7351615161". So the Hypernova manual's
+    07969273222 is a PRINT ERROR / non-
+    operational line, NOT an alternate or VIP
+    number. The AI should always direct
+    customers to the standard +91 7351615161
+    and treat the manual's printed number as
+    incorrect. The Hypernova entry's SUPPORT
+    section captures this explicitly so the AI
+    cannot extract the wrong number even if a
+    customer references their manual.
+
+  Updates made to file:
+    1. PRODUCT_URLS dict: added Hypernova URL
+       (best-guess URL pattern based on other
+       CB product URLs -- Ronak should verify
+       the URL is live).
+    2. match_product_from_title() checks list:
+       added ("hypernova", "Hypernova Mouse")
+       so customer queries with "hypernova" in
+       the WooCommerce page title route to
+       the new entry.
+    3. PRODUCT_MANUALS dict: added comprehensive
+       Hypernova entry modelled on the Helios
+       Mouse template (SPECS / CONNECTIVITY /
+       DPI / POLLING RATE / 8000HZ REQUIREMENTS
+       / BUTTONS / CHARGING / SPARE BATTERY /
+       SOFTWARE / TROUBLESHOOTING / WARRANTY).
+    4. PRODUCTS list: added "Hypernova Mouse"
+       so it appears in the portal product
+       dropdown.
+
+  Companion change in support_portal.py
+  v2.27.0: Hypernova Mouse added to
+  QUICK_QUESTIONS dict so the in-portal
+  starter-question chips render correctly
+  when a customer arrives via the Hypernova
+  product page.
+
+  No code change. ast.parse before/after.
+
 v1.7.0 (2026-05-09) -- Claude
   * Y-bump: added rule #14 (CLARIFY BEFORE
     PROCEDURE) to the SYSTEM_PROMPT, plus
@@ -1529,7 +2049,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.7.0"
+__version__ = "1.8.3"
 
 import re
 
@@ -1573,6 +2093,7 @@ PRODUCT_URLS = {
     "Quantum": "https://www.thecosmicbyte.com/product/cosmic-byte-quantum-controller/",
     "Stratos Xenon": "https://www.thecosmicbyte.com/product/cosmic-byte-stratos-xenon-gamepad-for-ps4-ios-and-android/",
     "Velox": "https://www.thecosmicbyte.com/product/cosmic-byte-velox-tri-mode-mouse-pixart-3395-sensor-39-grams/",
+    "Hypernova Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-hypernova-wireless-bluetooth-wired-tri-mode-gaming-mouse/",
     "Helios Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-helios-tri-mode-mouse-with-software-support-1000hz-polling-rate/",
     "Atlas Mouse": "https://www.thecosmicbyte.com/product-category/gamingmouse/",
     "Aether Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-aether-tri-mode-gaming-mouse-pixart-3311-sensor-optical-switches-replaceable-battery/",
@@ -1610,7 +2131,7 @@ KEY FEATURES (full list — surface these accurately when comparing Lumora to ot
 - BATTERY: 1300mAh. Configurable auto-sleep (default 5 minutes).
 - POLLING: 1000Hz on Wired and 2.4GHz.
 - CONNECTIVITY: Tri-Mode (USB Wired / 2.4GHz / Bluetooth).
-- MECHANICAL ABXY and D-Pad. 3.5mm audio jack (works in Wired and 2.4GHz only, not Bluetooth).
+- MECHANICAL ABXY, LB/RB, and D-Pad — the ABXY face buttons, LB/RB shoulder bumpers, AND the D-pad are all mechanical-switch / clicky-tactile (NOT rubber-dome). This is Lumora's full mechanical button cluster. Among Cosmic Byte gamepads, Lumora and Drakon are the two products with mechanical ABXY+LB/RB; Lumora's distinguishing feature vs Drakon is the additional MECHANICAL D-PAD (Drakon's D-pad is rubber-dome). 3.5mm audio jack (works in Wired and 2.4GHz only, not Bluetooth).
 
 CONNECTIVITY:
 
@@ -2224,6 +2745,8 @@ ABXY SWAP: Hold TURBO + R3 for 2 seconds.
 D-PAD/JOYSTICK SWAP: Hold L3 + CAPTURE for 2 seconds.
 JOYSTICK ROUND/SQUARE: Hold L3 + TURBO for 2 seconds.
 
+MECHANICAL BUTTONS: Drakon has MECHANICAL ABXY face buttons AND mechanical LB/RB shoulder bumpers (clicky-tactile switches, not rubber-dome). The D-pad on Drakon is rubber-dome (NOT mechanical). Among Cosmic Byte gamepads, Drakon shares this mechanical-ABXY+LB/RB feature with Lumora; the difference is that Lumora ALSO has a mechanical D-pad while Drakon's D-pad is rubber-dome. If a customer asks "is Lumora the only CB controller with mechanical buttons?", the answer is NO -- Drakon has mechanical ABXY+LB/RB too. Lumora is unique only in adding a mechanical D-pad on top of those.
+
 CHARGING: Dock - connect to power, place on magnetic contacts. Dock LED on = charging, off = full. Cable - USB-C to 5V source. LED blinking = charging, steady = full. RGB turns off at low battery. Battery: 8-20 hours.
 AUDIO: 3.5mm works in 2.4GHz wireless and wired only. NOT in Bluetooth or mobile.
 RESET: Pin into RESET hole for 1 second. Normal restart.
@@ -2433,7 +2956,12 @@ BATTERY:
 - Charging: LED flashes slowly. Fully charged: LED turns off.
 
 POLLING RATE:
-- 1000Hz polling rate on BOTH Gen 1 and Gen 2 (current Ares Pro). Polling rate is the same across both generations. The Gen 1 vs Gen 2 distinction (back label "App Support" text present or absent) is about COMPANION SOFTWARE SUPPORT, NOT polling rate. Do not conflate the two.
+- Wired (USB-C): 1000Hz on BOTH Gen 1 and Gen 2.
+- 2.4GHz (dongle):  1000Hz on BOTH Gen 1 and Gen 2.
+- Bluetooth:        500Hz max on BOTH Gen 1 and Gen 2 (hardware-protocol limit; this is the highest the Bluetooth protocol practically supports for this controller and is NOT a defect). If a customer wants the full 1000Hz polling rate, they need to switch to Wired or 2.4GHz mode -- 1000Hz over Bluetooth is not achievable on this controller.
+- Polling rate is the same across both generations on each given connection mode -- the Gen 1 vs Gen 2 distinction (back label "App Support" text present or absent) is about COMPANION SOFTWARE SUPPORT, NOT polling rate. Do not conflate the two.
+
+CRITICAL -- do NOT tell customers the Ares Pro has a "fixed 1000Hz polling rate" or that it "remains constant regardless of connection mode" or that it's "1000Hz across all modes including Bluetooth". All three of those statements are FABRICATIONS that pattern-match to Bug 2 in changelog v1.8.1. Bluetooth polling on the Ares Pro is 500Hz max -- about half the wired/2.4GHz figure -- because of Bluetooth-protocol limitations, not because the controller is defective.
 
 WARRANTY:
 - 1 year against manufacturing defects only.
@@ -2472,6 +3000,10 @@ Known hallucinations and KB errors the AI has produced for the Ares Pro — do N
 (c) Telling a Gen 1 customer their joystick technology, polling rate, or RGB capabilities are inferior because they don't have App Support -- INCOMPLETE / MISLEADING. App Support is about companion-software access, not hardware. Gen 1 controllers lack software-driven configuration, but their hardware specs (polling rate, joystick tech where matrix applies) are not automatically downgraded. State only what is confirmed: Gen 1 has no companion software; everything else (HE on joysticks/triggers, exact battery, exact RGB capability) needs to be verified per case rather than asserted.
 
 (d) Inferring information from the back label that isn't there -- the back label is a binary "App Support yes/no" check, NOT a feature spec sheet. If a customer asks "does my back label confirm X?", and X is anything other than "App Support text", the honest answer is "the back label only confirms whether you have Gen 1 or Gen 2 (App Support text presence/absence) -- it does not confirm <X>. To verify <X>, here's a different check: ...".
+
+(e) "The Ares Pro has a fixed 1000Hz polling rate -- it does NOT fluctuate. This is consistent and stable whether you're using Wired USB-C, 2.4GHz wireless dongle, or Bluetooth mode" / "The polling rate remains constant regardless of connection mode" -- WRONG. The 1000Hz figure applies to Wired and 2.4GHz only. Bluetooth polling on every Cosmic Byte tri-mode controller (and on consumer gamepads in general) is hardware-limited LOWER than 1000Hz by the Bluetooth protocol itself. Do not state "fixed 1000Hz across all modes" or "polling rate remains constant" or "1000Hz in Bluetooth mode" -- all three are fabrications. State per-mode polling rates explicitly per the POLLING RATE section above; for Bluetooth specifically, route the customer to CB support if they need the precise figure.
+
+(f) Extrapolating per-connection-mode behaviour from a non-mode-specific KB statement -- WRONG. If the KB describes a feature or spec without specifying which connection modes it applies to, the AI must NOT assume it applies to all three modes (Wired, 2.4GHz, Bluetooth) automatically. Tri-mode controllers commonly have different specs per connection mode (firmware update only on wired, Bluetooth lower polling rate, software detection not over Bluetooth, etc.). When the per-mode answer is not explicit in the KB, state what IS known and ask the customer to confirm their connection mode rather than asserting a blanket value.
 
 GENERAL GUIDANCE FOR VAGUE ARES PRO QUESTIONS:
 If a customer's message is just "Ares Pro" or a single-word product reference with no specific question, DO NOT assume they are asking about polling rate, Hall Effect, software, or any specific topic. ASK what they need help with -- pairing, software, RGB, charging, drift, calibration, etc. -- before launching into a how-to. Volunteering an unrequested technical breakdown is the exact context where the AI is most likely to hallucinate or propagate an out-of-date KB claim.
@@ -3549,6 +4081,157 @@ TROUBLESHOOTING:
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 """,
 
+    "Hypernova Mouse": """
+COSMIC BYTE HYPERNOVA — WIRELESS + BLUETOOTH + WIRED TRI-MODE GAMING MOUSE — FULL MANUAL
+
+SPECS:
+- Sensor: PixArt 3395 (premium-tier optical gaming sensor).
+- DPI: 200 to 26000, fully customisable via software.
+- Polling Rate: Wired 8000Hz / 2.4GHz Wireless 4000Hz / Bluetooth 250Hz.
+- Weight: 55g without cable.
+- Switches: Omron 100 million click rated (gaming-grade).
+- Mouse Feet: 0.6mm PTFE.
+- Cable: 1.8m paracord with loop (extremely lightweight, gives the mouse a near-wireless feel even in wired mode).
+- Buttons: 5 programmable buttons (Left, Right, scroll-wheel click, plus 2 side buttons on the left).
+- Tracking Speed: 650 IPS max.
+- Acceleration: 50G.
+- Surface: ABS plastic.
+- Battery: REPLACEABLE. Hypernova ships with TWO removable batteries -- the in-mouse battery and a spare.
+- Software: Windows ONLY. No macOS / Linux / Android software build.
+
+CONNECTIVITY (Tri-Mode: Wired + 2.4GHz + Bluetooth):
+- Wired (USB-C): Connect the included paracord cable to the mouse's USB-C port, plug the other end into a PC USB port. 8000Hz polling rate available -- this is the highest of any Hypernova mode.
+- 2.4GHz Wireless: Slide the mode switch on the bottom of the mouse to "2.4G". Plug the dongle into a PC USB port. 4000Hz polling rate. The dongle is pre-paired at the factory in most cases -- works on first plug-in.
+- Bluetooth: 250Hz polling rate (hardware-limited at low frequency by the BT protocol; this is normal and NOT a defect).
+- Best for competitive gaming: Wired (8000Hz) or 2.4GHz (4000Hz). Bluetooth is for productivity / battery-saving / multi-device use, not gaming.
+
+DONGLE PAIRING (only needed if the dongle is NOT pre-paired or pairing is lost):
+The dongle is typically pre-paired with the mouse at the factory. If the dongle does not detect the mouse, follow these steps:
+1. Open the Hypernova companion software on the PC (Windows only -- download from https://www.thecosmicbyte.com/downloaddrivers/).
+2. Slide the mouse's bottom switch to 2.4G mode.
+3. Connect the dongle to the PC via USB cable.
+4. Follow the on-screen pairing instructions in the software.
+5. ON THE MOUSE: press Left + Middle + Right Mouse Buttons together. The LED will blink YELLOW -- this indicates pairing mode is active.
+6. ON THE KEYBOARD: press the Spacebar key to start the pairing process (the software handles the actual pairing once Spacebar is pressed).
+This combo is documented in the Hypernova manual exactly as above. Do NOT extrapolate pairing combos from other Cosmic Byte mice -- the Hypernova combo is specifically Left+Middle+Right -> Spacebar.
+
+INITIAL CONNECT-TO-PC FLOW (per the Hypernova user manual):
+1. Unpack the mouse, remove any plastic film from the mouse feet.
+2. Connect the mouse via USB cable, OR plug the dongle into a PC USB port.
+3. The mouse will be detected by Windows within 5-30 seconds.
+4. Download the Hypernova software from the Cosmic Byte website (https://www.thecosmicbyte.com/downloaddrivers/).
+5. Install the software. NOTE: some antivirus programs may try to block the install because the software may not be in their database yet. The manual explicitly recommends temporarily disabling the antivirus during install. This is documented behaviour, NOT malware.
+6. Once installed, RESTART the PC for the driver to fully load.
+7. The mouse is now ready. Customise via the software.
+
+DPI:
+- Range: 200 to 26000 DPI, set in the software.
+- Customers can configure preset DPI stages and cycle through them via a hardware DPI button.
+- Specific recommended values vary by use case -- ask the customer what they're optimising for (gaming sensitivity, productivity, design work) before suggesting specific DPI values.
+
+POLLING RATE — IMPORTANT DETAILS:
+- Wired: 8000Hz max (configurable in software; can be reduced to 4000 / 2000 / 1000 / 500 / 250 / 125 Hz via software dropdown if needed).
+- 2.4GHz: 4000Hz max (configurable, can be reduced).
+- Bluetooth: 250Hz (hardware-fixed; not adjustable via software).
+- High polling rates (8000Hz) require a high-spec PC -- see SYSTEM REQUIREMENTS below.
+
+SYSTEM REQUIREMENTS FOR 8000Hz POLLING (per the Hypernova user manual, page 5):
+To get the full 8000Hz experience, the PC needs to meet these minimums:
+- CPU: Intel Core i7 9700K or above, OR AMD Ryzen 7 3700X or above.
+- Monitor: refresh rate 240Hz or above.
+- GPU: NVIDIA GTX 1080 or above, OR AMD RX 5700 or above.
+- RAM: 16GB or above.
+If the customer's PC does NOT meet these specs and they experience stuttering or lag at 8000Hz, the manual EXPLICITLY recommends reducing the polling rate. This is documented expected behaviour at high polling rates on lower-spec hardware -- NOT a defect of the mouse. Customers should not be told their stutter is a hardware fault until the polling rate has been reduced to 4000Hz or 2000Hz to confirm it's PC-specs related vs an actual mouse fault.
+
+BUTTONS:
+- 5 programmable buttons total: Left click, Right click, scroll-wheel click (middle button), and 2 side buttons on the left side of the mouse.
+- All 5 buttons fully customisable via the Windows software (remap to any keystroke / mouse function / macro).
+- Switch type: Omron 100 million click rated.
+
+CHARGING — CRITICAL WARNING (manual page 6):
+- USE STANDARD CHARGER ONLY. The manual explicitly says: "Use only standard chargers to avoid damaging the battery. Chargers with high output can harm the battery."
+- Recommended output: 5V/1A or 5V/2A. Standard PC USB ports are always safe (always 5V output).
+- DO NOT use fast chargers. The manual explicitly states: "The warranty will be void if the mouse is damaged by using fast chargers."
+- Recommended method: plug the included USB-C cable into a PC USB port. PC USB is always 5V standard output.
+- Charging duration: a few hours depending on battery state.
+- The mouse can be used in WIRED mode while charging (charging happens in the background while the cable carries the data signal).
+- A "battery full" indicator appears in the software once the battery is fully charged. Disconnect the cable at that point if charging from a wall adapter.
+
+SPARE BATTERY (per manual):
+- The Hypernova ships with TWO removable batteries -- the one inside the mouse, and a spare.
+- The spare battery has its OWN USB-C port. Plug the mouse's USB-C cable directly into the spare battery to charge the spare INDEPENDENTLY of the mouse.
+- This is convenient: customer can have one battery in the mouse while charging the other separately, then hot-swap when needed.
+- Same fast-charger restriction applies to the spare battery -- standard charger only.
+
+SOFTWARE (Windows ONLY):
+- Download from https://www.thecosmicbyte.com/downloaddrivers/.
+- Configure: DPI levels and presets, polling rate, button remapping, macros, RGB lighting, lift-off distance, debounce time.
+- Antivirus may flag the installer (per manual). Temporarily disable antivirus during install if this happens.
+- After install, restart the PC for the driver to fully load.
+- There is no macOS / Linux / Android version. If a customer asks about non-Windows software, the answer is "no, the Hypernova companion software is Windows only -- the mouse itself works as a standard plug-and-play mouse on macOS / Linux / Android via the dongle or USB cable, but advanced features (custom DPI levels, button remapping, RGB customisation) require the Windows software."
+
+TROUBLESHOOTING (per manual page 8):
+1. CHECK THE BASICS:
+   - Battery fully charged? Mouse turned on?
+   - Dongle properly inserted into the PC?
+   - Mouse bottom switch set to 2.4G mode?
+2. RESTART THE CONNECTION:
+   - Unplug dongle, wait a few seconds, plug back in.
+   - If the dongle is not detected by the mouse, run the dongle pairing procedure (see DONGLE PAIRING above).
+3. TEST THE USB PORT:
+   - Try a different USB port.
+   - Test the dongle on another computer to isolate whether the issue is mouse-side or PC-side.
+4. CHECK FOR INTERFERENCE:
+   - Remove physical obstructions between the mouse and the dongle.
+   - Move other 2.4GHz devices (Wi-Fi router, USB 3.0 devices, other wireless mice) away from the dongle.
+5. UPDATE DRIVERS:
+   - Open Device Manager > Mice and other pointing devices > update the driver.
+   - Or download the latest software from the Cosmic Byte website.
+6. CHECK THE SURFACE:
+   - Try the mouse on a different surface or a mouse pad.
+   - Clean the sensor on the bottom of the mouse with a dry microfiber cloth.
+7. SOFTWARE ISSUES:
+   - Restart the PC.
+   - Check for conflicts with other mouse drivers.
+8. BATTERY ISSUES:
+   - Confirm battery is fully charged. Or use the SPARE battery to test (see SPARE BATTERY above) -- this isolates whether the issue is the battery or the mouse itself.
+9. TEST ON ANOTHER COMPUTER:
+   - Useful for confirming whether the issue is the mouse or the PC.
+10. HARDWARE ISSUES:
+    - Inspect the dongle and mouse for any visible damage.
+    - If physical damage is present (drop, port broken off, visible cracks), this is NOT covered under standard warranty -- direct the customer to raise a support ticket per rule #11.
+
+STUTTERING / LAG SPECIFICALLY AT 8000Hz:
+- This is likely PC-specs-related, NOT a mouse defect. See SYSTEM REQUIREMENTS above.
+- First, try reducing polling rate to 4000Hz (via software). If stuttering goes away, the cause is confirmed: the customer's PC can't sustain 8000Hz throughput. They can either upgrade hardware or run the mouse at 4000Hz, which is still very high.
+- If stuttering persists at 4000Hz and 1000Hz, then it's likely a different cause (interference, surface, driver) -- continue troubleshooting per the standard list.
+
+WARRANTY:
+- 1 year warranty against manufacturing defects only.
+- Physical damage, water damage, tampered or modified products NOT covered.
+- Regular wear and tear from battery usage NOT covered.
+- Damage from using fast chargers NOT covered (per the manual's explicit warranty void clause).
+- Standard CB warranty exclusions also apply.
+
+SUPPORT (per Hypernova manual page 9):
+- Phone: 07969273222 (Mon-Sat 10am to 6pm) -- printed in the Hypernova manual.
+- Email: cc@thecosmicbyte.com.
+- FAQ portal: support.thecosmicbyte.com.
+
+IMPORTANT FOR THE AI -- which support number to actually give customers:
+
+The Hypernova manual prints the phone number "07969273222". HOWEVER, this number is NOT currently operational. The phone line that IS operational and that customers should be given is the standard Cosmic Byte support number: +91 7351615161 (Mon-Sat 10am-6pm). This is the same number used in rule #11 (warranty escalation routing) and across every other product entry in this KB.
+
+Treat the Hypernova manual's "07969273222" as a print error -- DO NOT give it to customers, even if they specifically ask for the number printed in their manual. If a customer mentions they tried the manual's number and it didn't work, confirm: "yes, that number isn't currently operational -- please use +91 7351615161 instead, which is our active support line for all Cosmic Byte products including Hypernova."
+
+The AI should always default to:
+  Email: cc@thecosmicbyte.com
+  Phone: +91 7351615161 (Mon-Sat 10am-6pm)
+  Raise a ticket: https://www.thecosmicbyte.com/raise-a-ticket/
+
+These three channels work for every CB product including Hypernova.
+""",
+
     "Phantom TKL": """
 COSMIC BYTE PHANTOM TKL — WIRELESS TRIPLE MODE MECHANICAL KEYBOARD
 
@@ -3733,10 +4416,7 @@ CUSTOM BACKLIGHT RECORDING:
 4. Press FN + End to save
 5. Press FN + ESC to clear custom and restore to normal lighting
 
-SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
-- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
-- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
-Always use the latest version from the official website. (Windows only). Allows per-key RGB customisation and advanced settings.
+NO COMPANION SOFTWARE: the Pandora is a hardware-only keyboard with NO Windows software, NO macOS software, and NO companion app of any kind. All backlight customisation (effects, brightness, animation speed, custom recording) is via the FN+key combinations documented above. Do NOT direct customers to https://www.thecosmicbyte.com/downloaddrivers/ for the Pandora -- there is nothing there for this model. If a customer asks about "advanced control" or "per-key RGB software" for the Pandora, the honest answer is that everything possible on this keyboard is already accessible via the FN+key combos; for fancier per-key RGB or macros, they'd need a different CB keyboard model that has software support.
 
 TROUBLESHOOTING:
 - Keyboard not detected: Try a different USB port. Try a different cable. Test on another PC.
@@ -3745,7 +4425,7 @@ TROUBLESHOOTING:
 - Some keys not registering simultaneously (ghosting): Switch to full-key NKRO mode: FN + Scroll Lock.
 - All keys registering wrongly: Check if WASD/arrow swap is active — press FN + W to toggle. Check Windows lock — press FN + L-WIN.
 - Keyboard stops working mid-use: Disconnect, wait 10 seconds, reconnect. Try different USB port.
-- Mac use: Works plug-and-play for basic typing. RGB software is Windows only.
+- Mac use: Works plug-and-play for basic typing. All backlight features are accessible via the FN+key combos documented above on any platform (Windows, macOS, Linux) -- no software is needed for any platform.
 
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage NOT covered.
 RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
@@ -3796,10 +4476,7 @@ CUSTOM BACKLIGHT RECORDING:
 3. Press keys to assign colours
 4. FN + End to save | FN + ESC to clear
 
-SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
-- v1.0.0.4 (March 2026): Fixed icon and software resolution display.
-- v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
-Always use the latest version from the official website. (Windows only). Per-key RGB and advanced customisation.
+NO COMPANION SOFTWARE: the Vanth is a hardware-only keyboard with NO Windows software, NO macOS software, and NO companion app of any kind. All backlight customisation (effects, brightness, animation speed, custom recording) is via the FN+key combinations documented above. Do NOT direct customers to https://www.thecosmicbyte.com/downloaddrivers/ for the Vanth -- there is nothing there for this model. If a customer asks about "advanced control" or "per-key RGB software" for the Vanth, the honest answer is that everything possible on this keyboard is already accessible via the FN+key combos; for fancier per-key RGB or macros, they'd need a different CB keyboard model that has software support.
 
 TROUBLESHOOTING:
 - Keyboard not detected: Try different USB port. Different cable. Test on another PC.
@@ -3808,7 +4485,7 @@ TROUBLESHOOTING:
 - Backlight not working: FN + Up to increase brightness. Cycle effects with FN + Home etc. If no response, factory reset: FN + ESC for 3 seconds.
 - Keys ghosting / not registering together: Toggle to NKRO mode: FN + Scroll Lock.
 - Keys registering wrong: Check WASD swap (FN + W) and Windows lock (FN + L-WIN).
-- Mac use: Plug-and-play for typing. RGB software Windows only.
+- Mac use: Plug-and-play for typing. All backlight features are accessible via the FN+key combos documented above on any platform (Windows, macOS, Linux) -- no software is needed for any platform.
 - No wireless: Vanth is wired only — no Bluetooth, no 2.4G.
 
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage NOT covered.
@@ -4722,7 +5399,7 @@ KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 # =============================================================================
 # PRODUCTS
 # =============================================================================
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
 
 
 # =============================================================================
@@ -4753,6 +5430,63 @@ Other CB controllers with Hall Effect (for reference):
 - Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
+
+MECHANICAL BUTTONS QUICK-REFERENCE MATRIX (answer confidently when customers ask which CB controllers have mechanical buttons; do NOT fabricate "Lumora is the only one"):
+
+Cosmic Byte gamepads with mechanical (clicky / tactile-switch) face buttons:
+
+  Controller        | Mechanical buttons confirmed
+  ----------------------------------------------------------------------------
+  Lumora            | ABXY + LB + RB + D-Pad (full mechanical button cluster, including mechanical D-pad)
+  Drakon            | ABXY + LB + RB (mechanical face buttons and shoulders; D-pad is RUBBER-DOME, NOT mechanical)
+
+Lumora's distinguishing feature vs Drakon: the D-pad. Lumora has all of Drakon's mechanical buttons (ABXY + LB/RB) PLUS a mechanical D-pad. Drakon's D-pad is rubber-dome. If a customer is comparing Lumora vs Drakon specifically on the mechanical-button dimension, the D-pad is what makes Lumora the "fuller mechanical experience".
+
+CRITICAL — do NOT tell a customer "Lumora is the only CB controller with mechanical buttons" or "Lumora is unique in the lineup for mechanical buttons". That statement is WRONG. Drakon has mechanical ABXY+LB/RB too. Lumora is unique only in adding a mechanical D-pad on top of those.
+
+For all OTHER current-generation CB gamepads (Stellaris 2nd Gen, Blitz Tri-Mode, Ares family — Ares, Ares Wired, Ares Wireless, Ares Pro — Quantum, Stratos Xenon, Eclipse, Starforge, Nexus, etc.): the KB does NOT currently document the button mechanism for these models. The default for consumer gaming controllers is rubber-dome, but absence of "mechanical" in a KB entry is NOT the same as "confirmed rubber-dome" -- it just means it's not documented. If a customer asks whether <model X> has mechanical buttons and X is not in the Lumora/Drakon list above, the safe answer is:
+
+  "To my knowledge, only Lumora and Drakon currently have mechanical face buttons in the Cosmic Byte gamepad lineup. I don't have confirmed information about the button mechanism on <model X>. If the precise spec matters for your purchase, the surest way is to check the product page on thecosmicbyte.com or email cc@thecosmicbyte.com -- they can confirm definitively."
+
+Do NOT confidently assert "rubber-dome" for any specific other model unless that model's manual entry above explicitly says so. The fabrication that triggered this matrix's creation was the AI confidently labelling Stellaris, Blitz, Ares Pro, etc. as rubber-dome -- when in fact those entries don't document the button mechanism either way.
+
+BLUETOOTH POLLING RATE QUICK-REFERENCE MATRIX (answer confidently when customers ask the Bluetooth polling rate of any specific gamepad; do NOT fabricate "1000Hz across all modes" or claim BT polling matches wired):
+
+Bluetooth-mode polling rate caps for each Cosmic Byte gamepad (all values are MAX -- the Bluetooth protocol's practical ceiling for that controller's hardware):
+
+  Controller             | BT polling rate (max) | Wired/2.4GHz polling rate (for contrast)
+  -------------------------------------------------------------------------------------------
+  Ares (Tri-Mode)        | 250Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Ares Pro               | 500Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Blitz Tri-Mode         | 500Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Stellaris 1st Gen      | 250Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Stellaris 2nd Gen      | 500Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Drakon                 | 500Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Lumora                 | 250Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Eclipse                | 250Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Starforge              | 250Hz max             | 1000Hz wired / 1000Hz 2.4GHz
+  Quantum                | 250Hz max             | not specified in this update; check Quantum product manual or contact support if precise figure needed
+  Stratos Xenon          | 250Hz max             | not specified in this update; check Stratos Xenon product manual or contact support if precise figure needed
+
+NOT IN THE BLUETOOTH MATRIX -- the following CB gamepads do NOT have a Bluetooth mode at all, so the matrix above does not apply:
+  - Ares Wired (per its manual: 2.4GHz wireless via USB dongle and wired only, NO Bluetooth)
+  - Ares Wireless (per its manual: 2.4GHz wireless via USB dongle only, NO wired, NO Bluetooth)
+  - Blitz Wireless (Dual-Mode = Wired + 2.4GHz only, NO Bluetooth -- both modes run at 1000Hz)
+  - Nexus (2.4GHz wireless only -- NO Bluetooth, NO wired. Max polling rate is 250Hz on its single 2.4GHz mode -- unusually low for a 2.4GHz-only controller compared to other CB 2.4GHz products that run at 1000Hz, but this is the spec confirmed by Cosmic Byte. NOT a defect.)
+
+If a customer asks "what's the BT polling rate of <one of these>", the right answer is "this controller doesn't have Bluetooth mode -- it's <list its actual modes per its manual>." Do NOT fabricate a BT polling rate figure for a controller that doesn't have BT at all.
+
+CRITICAL FRAMING WHEN ANSWERING BT POLLING RATE QUESTIONS:
+
+(1) Bluetooth polling rates of 250-500Hz are NOT a defect. They are the hardware-protocol-level maximum for that specific controller's Bluetooth implementation. Customers may run a polling-rate tester (see system-prompt rule #13) and see 250 or 500Hz, then conclude their 1000Hz-rated controller is "broken". The right answer is: "this is normal for Bluetooth mode -- the Bluetooth protocol limits the polling rate to what your controller's matrix figure says (e.g. 500Hz for Ares Pro). If you want the full 1000Hz polling rate, switch to Wired USB-C or 2.4GHz dongle mode where the controller's full 1000Hz spec is achievable."
+
+(2) Do NOT tell customers their controller is "fixed 1000Hz across all modes" or that BT polling rate "matches wired". For every CB gamepad with Bluetooth, BT polling is LOWER than wired/2.4GHz. The matrix above is the source of truth.
+
+(3) Do NOT fabricate or guess BT polling rates for controllers NOT in the matrix above. After the v1.8.3 expansion, the matrix covers all current-generation gamepads with Bluetooth (Ares Tri-Mode, Ares Pro, Blitz Tri-Mode, Stellaris 1st & 2nd Gen, Drakon, Lumora, Eclipse, Starforge, Quantum, Stratos Xenon). The remaining gamepads either are non-Bluetooth (see the NOT IN THE BLUETOOTH MATRIX list above for Ares Wired, Ares Wireless, Blitz Wireless, Nexus) or are not currently CB gamepad products. The matrix is now complete -- do NOT route any of these to support for the BT polling rate; the figure is in the matrix or the controller doesn't have Bluetooth.
+
+(4) For controllers without Bluetooth at all, see the "NOT IN THE BLUETOOTH MATRIX" list above (Ares Wired, Ares Wireless, Blitz Wireless). For these controllers, the matrix does NOT apply -- the right answer to "what's the BT polling rate" is "this controller doesn't have Bluetooth mode". Confirm the controller has Bluetooth before quoting any figure from the matrix.
+
+(5) The Ares Pro entry's POLLING RATE section also documents 500Hz max for Bluetooth (per v1.8.3 update). The matrix above is the authoritative cross-product reference; per-product entries reinforce it for the loaded product. Both should always agree -- if they ever disagree in future, the matrix is the source of truth and the per-product entry should be updated to match.
 
 HALL EFFECT / TMR VERIFICATION GUIDE — when a customer asks "how do I confirm my controller has Hall Effect / TMR joysticks?" or wants to verify before relying on the matrix above, walk them through this in order:
 
@@ -5623,6 +6357,7 @@ def match_product_from_title(title: str) -> str:
         ("stratos xenon",         "Stratos Xenon"),
         ("stratos",               "Stratos Xenon"),
         ("helios",                "Helios Mouse"),
+        ("hypernova",             "Hypernova Mouse"),
         ("atlas",                 "Atlas Mouse"),
         ("aether",                "Aether Mouse"),
         ("umbra",                 "Umbra Mouse"),
