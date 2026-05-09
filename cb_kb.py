@@ -33,6 +33,78 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.4.2 (2026-05-09) -- Claude
+  * Z-bump: correct the COD-on-pre-order policy.
+    Cash on Delivery IS available for pre-order
+    products. The v1.2.0 implementation said the
+    opposite based on a literal reading of the
+    published T&C ("COD may not be available")
+    -- Ronak flagged the AI response in
+    production and corrected: COD is available.
+
+  Bug:
+    The AI responded to a customer asking about
+    COD for pre-orders with "Cash on Delivery is
+    typically NOT available for pre-order
+    products. Pre-orders require full payment
+    upfront..." -- which is wrong. The actual
+    policy is that COD is available alongside
+    the usual online payment options.
+
+  Root cause:
+    The official Pre-Order Terms & Conditions
+    document Ronak provided in v1.2.0 contained
+    the phrase "Cash on Delivery (COD) may not
+    be available for pre-order products." I
+    interpreted "may not be available" as
+    "typically unavailable" and wrote rule #12
+    accordingly, both in the policy block and
+    in the response template for the question
+    "Can I pay Cash on Delivery for a pre-
+    order?". In hindsight "may not be" was hedge
+    wording -- the actual operational policy
+    Cosmic Byte runs is that COD is available
+    for pre-orders.
+
+  Fix:
+    1. Rule #12, point (c) PAYMENT: replaced
+       the "COD MAY NOT be available" framing
+       with a clear statement that COD IS
+       available alongside online options (UPI,
+       cards, net banking). Removed the
+       categorical "Full payment is required at
+       the time of placing the pre-order" line
+       because it was inconsistent with COD
+       being available -- replaced with a
+       softer "online prepaid orders are
+       confirmed after successful payment; COD
+       orders are confirmed at placement and
+       payment is collected at delivery as
+       usual".
+    2. The response template for "Can I pay
+       Cash on Delivery for a pre-order?" was
+       rewritten to confirm COD availability
+       and list it alongside the online
+       options, rather than steering the
+       customer away from COD.
+    3. Other points in rule #12 (cancellation,
+       refund, fulfilment priority, warranty,
+       force majeure, etc.) are unchanged --
+       only the payment-method point was
+       wrong.
+
+  Reminder for future Claude: when the source
+  document uses hedge wording like "may not be
+  available", DO NOT collapse it to a
+  categorical "is not available". Either ask
+  for clarification, or write the KB with the
+  same hedge wording so the AI passes the
+  uncertainty through to the customer rather
+  than fabricating certainty in the wrong
+  direction.
+
+  No code change. ast.parse before/after.
+
 v1.4.1 (2026-05-09) -- Claude
   * Z-bump: stop the AI from hallucinating Eclipse
     joystick recalibration steps.
@@ -688,7 +760,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.4.1"
+__version__ = "1.4.2"
 
 import re
 
@@ -4328,7 +4400,7 @@ STRICT RULES - always follow:
 
     b) SHIPPING TIMELINE: The estimated date is indicative — actual ship date may shift due to manufacturing, logistics, or unforeseen circumstances. Customers will be notified via email/SMS in case of major delays. Once the product is shipped, delivery time depends on location and courier partner; tracking details are sent on dispatch.
 
-    c) PAYMENT: Full payment is required at the time of placing the pre-order — orders are only confirmed after successful payment. Cash on Delivery (COD) MAY NOT be available for pre-order products; online payment options work as usual.
+    c) PAYMENT: Standard payment options are available for pre-orders, including Cash on Delivery (COD), UPI, credit / debit cards, and net banking. COD IS available for pre-order products — customers can choose COD at checkout the same way they would for any regular order. For online prepaid orders, the order is confirmed after the payment succeeds; for COD orders, the order is confirmed at placement and the payment is collected at delivery as usual. Specific COD availability may still depend on shipping pincode, courier serviceability, and order value (same constraints as any COD order on the site) — if the customer doesn't see COD as an option at checkout, that's most likely a serviceability constraint for their address rather than a pre-order-specific block.
 
     d) FULFILMENT PRIORITY: Pre-orders are fulfilled on a first-come-first-served basis. Earlier customers get priority in shipment allocation when stock arrives.
 
@@ -4352,13 +4424,13 @@ STRICT RULES - always follow:
       "This product is currently on pre-order. The estimated shipping date is shown on the product page at <product URL> — please check there for the latest date. The date is indicative; you'll receive an email/SMS update if there's a major change to the timeline."
 
     - "Can I pay Cash on Delivery for a pre-order?":
-      "Cash on Delivery is typically not available for pre-order products. Pre-orders require full payment upfront to confirm the reservation. Online payment options (UPI, cards, net banking) work as usual."
+      "Yes — Cash on Delivery is available for pre-orders. You can also pay online via UPI, credit / debit card, or net banking. For COD orders, the order is confirmed at placement and the payment is collected when the product is delivered, same as any regular COD order. If you don't see COD as an option at checkout, that's usually a courier-serviceability constraint for your delivery address rather than a pre-order-specific block — try a different shipping address, or contact customer support."
 
     - "Can I cancel my pre-order?":
       "Yes — pre-orders can be cancelled before dispatch. Email cc@thecosmicbyte.com or call +91 7351615161 (Mon-Sat 10am-6pm) with your order details and we'll process the cancellation. Refunds are issued to the original payment method within 5-7 business days. Once the product has shipped, the standard return policy applies instead."
 
     - "How do pre-orders work?" / "What is a pre-order?" / general inquiry:
-      "A pre-order lets you reserve a Cosmic Byte product before it's officially in stock. Full payment is taken at the time of order, and the product ships on the estimated date shown on the product page. Pre-orders are fulfilled first-come-first-served, so earlier customers get priority. You can cancel anytime before dispatch by contacting customer support."
+      "A pre-order lets you reserve a Cosmic Byte product before it's officially in stock. You can pay online (UPI / credit / debit card / net banking) at the time of order, or choose Cash on Delivery — both are available for pre-orders. The product ships on the estimated date shown on the product page. Pre-orders are fulfilled first-come-first-served, so earlier customers get priority. You can cancel anytime before dispatch by contacting customer support."
 
     - "Will the product look exactly like the picture / will the specs be exactly as listed?":
       "Pre-order product specs, features, colours, and packaging may be updated before the final release. Images on the product page are representational. We'll communicate any major changes — and if you're not happy with a change, you can cancel before dispatch for a full refund."

@@ -87,6 +87,80 @@ Companion service:
 
 CHANGELOG
 ---------
+v1.2.0 (2026-05-09) -- Claude
+  - Y-bump: enable Anthropic prompt caching on the
+    Anthropic API call. Same change as the parallel
+    support_portal.py v2.25.0 bump -- both files
+    share the same call structure (build a system
+    prompt from SYSTEM_PROMPT + product knowledge
+    + optional third-party brand manual, then call
+    client.messages.create), and we want the bot
+    and the portal to benefit from the same input-
+    cost reduction.
+
+  Why:
+    Ronak flagged that current Anthropic API spend
+    is high. Every bot reply re-sent the full
+    system prompt (~15-30K tokens of identical
+    content) as fresh input. Prompt caching
+    addresses this exact pattern.
+
+  How (no quality impact):
+    Anthropic's prompt caching stores the pre-
+    computed key-value cache for the cached portion
+    of the input server-side. On a subsequent
+    request with matching cached content, the model
+    reuses the KV cache instead of recomputing it
+    -- but it still processes the full input
+    identically. Output quality is unchanged. Per-
+    token input price drops on the cached portion:
+    cache reads cost 0.1x base input price, cache
+    writes cost 1.25x (so caching pays off after
+    ~1.25 reuses within the 5-minute TTL window,
+    per Anthropic's published pricing rules).
+
+  Implementation:
+    Refactored the api_kwargs construction in the
+    customer-message handler:
+      - Build the full system text as a string
+        first (same logic as before -- SYSTEM_PROMPT
+        + knowledge + optional brand manual / web
+        search instruction).
+      - Wrap that string in a single text content
+        block with cache_control set to
+        {"type": "ephemeral"}.
+      - Pass system as a list of one block (the
+        list form is required when using
+        cache_control; the bare-string convenience
+        form does not support caching).
+
+    Pure structural change: same model, same
+    max_tokens, same content, same messages. The
+    only difference is that subsequent calls with
+    the same (product, brand) combo within the
+    5-minute TTL will hit the cache.
+
+  Threshold caveat:
+    Haiku 4.5 has a 4096-token minimum for caching
+    to engage. Our system text reliably exceeds
+    this for any production query. If it ever
+    falls below the minimum the API request still
+    succeeds; we just silently pay full price on
+    that one call (cache_creation_input_tokens
+    comes back as 0 in the response usage object).
+
+  Verifying after deploy:
+    Check console.anthropic.com -> Usage. The Cache
+    Read and Cache Write columns should populate
+    after a few bot replies. If Cache Read stays
+    at 0 across many calls, the cache key is
+    changing between calls -- the most common
+    cause is a non-deterministic value sneaking
+    into the system text (timestamp, random ID,
+    dict ordering).
+
+  ast.parse before/after.
+
 v1.1.1 (2026-05-09) -- Claude
   * Z-bump: docs only -- added DEPLOYMENT section to the
     file's top docstring so future Claude sessions
@@ -490,7 +564,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import os
 import sys
@@ -1221,17 +1295,27 @@ async def on_message(message: discord.Message):
         )
 
     # Third-party brand handling: same logic as the web portal.
+    #
+    # v1.2.0: build the full system text as a string first (same logic
+    # as before), then wrap it in a single cache_control text block so
+    # Anthropic caches the system prompt across calls. Cache reads cost
+    # 10% of base input -- 90% savings on the bulk of input tokens.
+    # Cache write costs 1.25x base, breaking even after ~1.25 reuses
+    # within the 5-minute TTL. Bot traffic is typically multi-customer
+    # within short windows (Discord support channel), which is exactly
+    # the pattern caching is designed for.
     third_party = detect_third_party_brand(user_question)
+    system_text = SYSTEM_PROMPT + "\n\nPRODUCT KNOWLEDGE:\n" + knowledge
+
     api_kwargs = dict(
         model=MODEL,
         max_tokens=MAX_TOKENS,
-        system=SYSTEM_PROMPT + "\n\nPRODUCT KNOWLEDGE:\n" + knowledge,
         messages=api_messages,
     )
     if third_party:
         brand_manual = THIRD_PARTY_BRAND_MANUALS.get(third_party)
         if brand_manual:
-            api_kwargs["system"] += (
+            system_text += (
                 f"\n\n=== THIRD-PARTY BRAND MANUAL: {third_party} ===\n"
                 f"The customer is asking about {third_party}, a third-party brand "
                 f"sold on thecosmicbyte.com. Use the manual below as your "
@@ -1244,12 +1328,33 @@ async def on_message(message: discord.Message):
             )
         else:
             api_kwargs["tools"] = [{"type": "web_search_20250305", "name": "web_search"}]
-            api_kwargs["system"] += (
+            system_text += (
                 f"\n\nThe customer is asking about {third_party} -- a third-party "
                 f"brand sold on thecosmicbyte.com. Use web search to find accurate "
                 f"specs, compatibility and support info. Always link back to "
                 f"thecosmicbyte.com for purchasing."
             )
+
+    # v1.2.0: wrap the assembled system text in a single cached text
+    # block. Anthropic caches everything up to and including this block
+    # (tools + system + the implicit prefix), so the first call about
+    # each (product, brand) combo writes the cache and every subsequent
+    # call within the 5-minute TTL hits the cache.
+    #
+    # Haiku 4.5's cache minimum is 4096 tokens. Our system_text
+    # (SYSTEM_PROMPT + product manual slice + optional brand manual)
+    # reliably exceeds this for any production query.
+    #
+    # Output quality is unaffected: the model still processes the full
+    # input identically, the cache only reuses the pre-computed KV
+    # cache for the cached prefix.
+    api_kwargs["system"] = [
+        {
+            "type": "text",
+            "text": system_text,
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
 
     # Show typing indicator while we wait on the API. async with handles the
     # stop-typing correctly even if an exception is raised inside.

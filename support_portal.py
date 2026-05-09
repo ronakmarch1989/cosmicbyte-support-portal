@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.24.6
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.25.0
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,103 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.25.0 (2026-05-09) -- Claude
+  - Y-bump: enable Anthropic prompt caching on the
+    Anthropic API call, cutting input cost for the
+    system prompt + product knowledge by ~90%.
+
+  Why:
+    Ronak flagged that current API spend is high.
+    Looking at the call site, every call sent the
+    full SYSTEM_PROMPT + product manual slice
+    (+ optional third-party brand manual) as fresh
+    input tokens -- typically 15-30K tokens of
+    identical content per call across many calls.
+    Anthropic prompt caching exists exactly for
+    this pattern.
+
+  How caching works (no quality impact):
+    Anthropic stores the pre-computed key-value
+    cache for the cached portion of the input
+    server-side. On a subsequent request with
+    matching cached content, the model reuses the
+    KV cache instead of recomputing it -- but it
+    still processes the full input identically.
+    Output quality is unchanged. Only the per-token
+    input price drops on the cached portion: 0.1x
+    base for cache reads, vs 1.25x base for cache
+    writes (the one-time write surcharge is
+    amortised after ~1.25 reuses).
+
+    Per Anthropic's published pricing rules
+    (https://docs.claude.com/en/about-claude/
+    pricing): "Cache write tokens are 1.25 times
+    the base input tokens price; cache read
+    tokens are 0.1 times the base input tokens
+    price."
+
+    Per Anthropic's prompt-caching docs, the
+    cache covers everything up to and including
+    the cache_control breakpoint (tools + system,
+    in our case), and persists for 5 minutes
+    (ephemeral) -- with the TTL refreshing on
+    every cache hit, so an actively-used cache
+    stays warm indefinitely.
+
+  Implementation:
+    Refactored the api_kwargs construction at the
+    customer-message handler:
+      - Build the full system text as a string
+        first (same logic as before -- SYSTEM_PROMPT
+        + knowledge + optional brand manual / web
+        search instruction).
+      - Wrap that string in a single text content
+        block with cache_control set to
+        {"type": "ephemeral"}.
+      - Pass system as a list of one block (the
+        list form is required when using
+        cache_control; the bare-string convenience
+        form does not support caching).
+
+    The change is purely structural: same model,
+    same max_tokens, same content, same messages.
+    The only difference is that subsequent calls
+    with the same (product, brand) combo within
+    the 5-minute TTL will hit the cache.
+
+  Cache hit pattern in production:
+    Each unique (product, brand) combo gets its
+    own cache entry, keyed by the byte-exact
+    content of the system text. Cosmic Byte's
+    busy-product calls (Lumora / Stellaris /
+    Drakon / Eclipse) will hit the cache often;
+    cold products will pay the cache write
+    overhead on first call and then hit the cache
+    if a second customer asks about the same
+    product within 5 minutes.
+
+  Threshold caveat:
+    Haiku 4.5 has a 4096-token minimum for
+    caching to actually engage. Our system text
+    reliably exceeds this for any production
+    query, but if it ever falls below the
+    minimum the API request still succeeds; we
+    just silently pay full price on that one
+    call (cache_creation_input_tokens comes back
+    as 0 in the response usage object).
+
+  Verifying it's working:
+    After this deploy, check console.anthropic.com
+    -> Usage. The Cache Read and Cache Write
+    columns should both populate. If Cache Read
+    stays at 0 across many calls, something is
+    wrong (cache key keeps changing -- the most
+    common cause is a non-deterministic value
+    sneaking into the system text, e.g. a
+    timestamp or a randomly-ordered dict).
+
+  ast.parse before/after.
 
 v2.24.6 (2026-05-09) -- Claude
   - Y-bump: per-day pagination on the admin
@@ -3964,7 +4061,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.24.6"
+__version__ = "2.25.0"
 
 import streamlit as st
 import anthropic
@@ -6288,18 +6385,30 @@ CUSTOMER MESSAGE: {original_text}
             #     is authoritative for what CB sells; no point paying for a web call.
             #   - If we don't have a manual (e.g. Cherry MX, Brook, Fanatec, Thrustmaster),
             #     fall back to web search so the AI can still answer accurately.
+            #
+            # v2.25.0: build the full system text as a string first (same
+            # logic as before), then wrap it in a single cache_control
+            # text block so Anthropic caches the system prompt across
+            # calls. Cache reads cost 10% of base input -- 90% savings
+            # on the system+knowledge portion, which is the bulk of input
+            # tokens. Cache write costs 1.25x base, breaking even after
+            # ~1.25 reuses within the 5-minute TTL window. Cosmic Byte's
+            # traffic pattern (many customers asking about the same
+            # product within a few minutes) hits this break-even
+            # comfortably for hot products.
             third_party = detect_third_party_brand(user_question)
+            system_text = SYSTEM_PROMPT + "\n\nPRODUCT KNOWLEDGE:\n" + knowledge
+
             api_kwargs = dict(
                 model="claude-haiku-4-5-20251001",
                 max_tokens=600,
-                system=SYSTEM_PROMPT + "\n\nPRODUCT KNOWLEDGE:\n" + knowledge,
                 messages=api_messages,
             )
             if third_party:
                 brand_manual = THIRD_PARTY_BRAND_MANUALS.get(third_party)
                 if brand_manual:
                     # We have authoritative info for this brand -- inject the manual.
-                    api_kwargs["system"] += (
+                    system_text += (
                         f"\n\n=== THIRD-PARTY BRAND MANUAL: {third_party} ===\n"
                         f"The customer is asking about {third_party}, a third-party brand sold on thecosmicbyte.com. "
                         f"Use the manual below as your AUTHORITATIVE source for what CB sells, compatibility, "
@@ -6312,11 +6421,37 @@ CUSTOMER MESSAGE: {original_text}
                 else:
                     # No manual on file -- fall back to web search.
                     api_kwargs["tools"] = [{"type": "web_search_20250305", "name": "web_search"}]
-                    api_kwargs["system"] += (
+                    system_text += (
                         f"\n\nThe customer is asking about {third_party} — a third-party brand sold on thecosmicbyte.com. "
                         f"Use web search to find accurate specs, compatibility and support info. "
                         f"Always link back to thecosmicbyte.com for purchasing."
                     )
+
+            # v2.25.0: wrap the assembled system text in a single cached
+            # text block. Anthropic caches everything up to and including
+            # this block (tools + system + the implicit prefix), so the
+            # first call about each (product, brand) combo writes the
+            # cache (paying 1.25x for that portion) and every subsequent
+            # call within the 5-minute TTL hits the cache (paying 0.1x).
+            #
+            # Haiku 4.5's cache minimum is 4096 tokens. Our system_text
+            # (SYSTEM_PROMPT + product manual slice + optional brand
+            # manual) reliably exceeds this for any production query.
+            # If a query ever produces a system_text below 4096 tokens,
+            # the API request still succeeds and we just silently pay
+            # full price on that one call -- no harm done.
+            #
+            # Output quality is unaffected: the model still processes
+            # the full input identically, the cache only reuses the
+            # pre-computed key-value cache for the cached prefix.
+            api_kwargs["system"] = [
+                {
+                    "type": "text",
+                    "text": system_text,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ]
+
             response = client.messages.create(**api_kwargs)
             # Extract text from response (may contain tool use blocks)
             answer = ""
