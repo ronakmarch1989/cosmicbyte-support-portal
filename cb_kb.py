@@ -33,6 +33,276 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.7.0 (2026-05-09) -- Claude
+  * Y-bump: added rule #14 (CLARIFY BEFORE
+    PROCEDURE) to the SYSTEM_PROMPT, plus
+    expansion of the Ares Wireless anti-
+    hallucination guard from v1.6.2 to also
+    cover the XInput / DirectInput switching
+    fabrication that came up in the same
+    customer session.
+
+  Why the new top-level rule (#14):
+    Today shipped four separate per-product
+    anti-hallucination guards, all with
+    essentially the same lesson at the bottom:
+    "if the customer's question is vague, ASK
+    one clarifying question instead of
+    generating a procedure". The four guards:
+      - v1.4.1: Eclipse calibration ("if a
+        customer's message is just 'Eclipse',
+        DO NOT assume calibration -- ASK
+        first").
+      - v1.5.1: Ares Pro back label ("for
+        vague Ares Pro questions, ASK what
+        they need help with").
+      - v1.6.2: Ares Wireless dongle
+        disconnect ("disconnect" can mean
+        unplug / unpair / mode-switch; ASK
+        which interpretation").
+      - v1.7.0 (this entry): Ares XInput /
+        DirectInput switching ("which Ares
+        variant + which connection mode" --
+        the procedure differs per variant /
+        per mode).
+
+    Adding a top-level rule consolidates the
+    pattern so future-Claude has a single
+    authoritative reference for the meta-
+    behaviour, and so the AI applies the
+    pattern proactively rather than only at
+    products where a guard has been added.
+    The per-product guards still serve as
+    specific safeguards for already-observed
+    fabrications -- they are not replaced.
+
+  Bug 1 -- the actual XInput/DirectInput
+  fabrication:
+    Same customer session as v1.6.2 (session
+    ID 2d356dbb). Customer asked "lets get
+    back to the topic how to switch betweeen x
+    and direct input". The AI responded with:
+      - "Method 1: Hold Turbo + Home for 3
+        seconds to cycle between modes"
+      - "Orange LED = XInput mode, Red LED =
+        DirectInput mode"
+      - "Method 2: Windows Settings -> Devices
+        -> Game Controllers -> Properties to
+        check the current input mode"
+    All wrong:
+    (a) "Turbo + Home for 3 seconds" -- not
+        documented for any Ares variant. The
+        actual XInput<->DInput toggle for
+        generic Ares is "Back + Start for 3
+        seconds". For Ares Pro it's a much
+        more granular table -- the combo
+        depends on the connection mode (Wired
+        / 2.4GHz / Bluetooth) AND the
+        platform (PC / Android). For the
+        Ares Wireless specifically, there's
+        no documented user-facing
+        XInput/DInput toggle in the KB at
+        all.
+    (b) "Orange LED = XInput" -- WRONG. The
+        actual color code per the KB is
+        Yellow = XInput. There is no orange
+        LED indicator for input mode on any
+        documented Ares variant.
+    (c) The AI also rolled with the
+        customer's "wired USB cable" framing
+        despite this being session-stamped
+        as Ares Wireless, which has NO wired
+        mode (2.4GHz only per the KEY
+        FEATURES of the Ares Wireless
+        manual entry). The customer most
+        likely actually has an Ares Pro or
+        Ares Tri-Mode -- the AI should have
+        asked which variant before
+        generating any procedure.
+
+  Bug 2 -- which connects to the new rule:
+    The AI's behaviour in this session
+    illustrates exactly the failure mode
+    rule #14 is designed to prevent:
+      - Customer's message is short and
+        ambiguous ("how to switch between x
+        and direct input")
+      - Multiple valid interpretations exist
+        (which Ares variant? which mode?
+        what platform?)
+      - The AI picked one interpretation
+        (Ares Wireless + wired) and
+        generated a confident procedure --
+        which was both fabricated AND
+        contextually wrong (Ares Wireless
+        has no wired mode).
+    Rule #14 explicitly forbids this and
+    requires the AI to ask one clarifying
+    question first.
+
+  Fixes:
+    1. Added rule #14 (CLARIFY BEFORE
+       PROCEDURE) to the SYSTEM_PROMPT,
+       positioned after rule #13 (polling
+       rate testing tools). Covers when to
+       ask, examples of when to ask vs
+       answer directly, exceptions, and the
+       routing logic for short / ambiguous
+       customer messages.
+    2. Expanded the Ares Wireless anti-
+       hallucination guard (added in v1.6.2)
+       with three new fabrication entries:
+       (e) "Turbo + Home for 3 seconds to
+       cycle XInput/DInput", (f) "Orange LED
+       = XInput", (g) blind acceptance of
+       "wired USB cable" framing for a
+       product that has no wired mode.
+
+  Lesson logged: at this point in the day's
+  fixes, the cross-product pattern is clear
+  enough to promote into a system-level
+  invariant. The lower-level per-product
+  guards remain useful as concrete examples
+  of the pattern in action; the new top-
+  level rule gives the AI a general principle
+  to apply to products / questions for which
+  a specific guard has not yet been written.
+
+  No code change. ast.parse before/after.
+
+v1.6.2 (2026-05-09) -- Claude
+  * Z-bump: Ares dongle disconnect / unpair
+    anti-hallucination. The AI fabricated a
+    multi-step button-combo procedure for
+    "disconnecting the dongle" that has no basis
+    in the KB or any Cosmic Byte documentation.
+
+  Bug:
+    A customer asked "how to disconnect the
+    dongle from the controller" (product
+    detected as "Ares"). The AI responded with
+    an authoritative-sounding multi-section
+    walkthrough that included:
+
+      - "Hold Turbo + Back for 3 seconds on the
+        controller. This will unpair the dongle
+        from the controller."
+      - "To Re-pair Later: ... Hold Turbo + Home
+        for 3 seconds on the controller. The LED
+        will blink -- it's searching for the
+        dongle."
+
+    All fabricated. The actual KB content for
+    Ares Wireless covers only re-pairing (HOME
+    button double-press), and Turbo + Back /
+    Turbo + Home are not documented anywhere in
+    the cb_kb.py for any Ares variant.
+
+  Why this matters:
+    (a) The customer will spend time trying
+        button combos that do nothing. They may
+        conclude the controller is broken when
+        nothing happens, escalating an
+        unnecessary support case.
+    (b) "Turbo + Back" specifically is the kind
+        of combo that on some other controllers
+        does perform a function (e.g. profile
+        reset) -- so the customer might
+        accidentally trigger something else
+        while attempting the fabricated
+        procedure.
+    (c) Trust impact: fabrications that "sound
+        right" are worse than refusals because
+        they erode the customer's trust in
+        future correct answers.
+
+  Root cause:
+    The customer's question is genuinely
+    ambiguous. "Disconnect the dongle from the
+    controller" could mean any of three things:
+      (i)   Physically unplug the USB dongle
+            (the typical / literal meaning -- no
+            button combo needed, just pull it
+            out of the USB port).
+      (ii)  Stop the controller from being
+            paired with this specific dongle so
+            it can pair with a different dongle
+            (no documented procedure for any
+            Ares variant -- pairing memory is
+            tied to the dongle pair, not
+            user-resettable from the
+            controller).
+      (iii) Switch from 2.4GHz mode to a
+            different connection mode (only
+            applicable to TRI-MODE variants
+            like Ares Tri-Mode and Ares Pro --
+            done via the physical mode-switch
+            slider on the back of the
+            controller, not a button combo).
+
+    The right behaviour is to ASK the customer
+    which interpretation they mean before
+    launching into a procedure. The AI instead
+    picked interpretation (ii), invented a
+    procedure for it, and presented it
+    confidently.
+
+  Fix:
+    1. Added a DONGLE / WIRELESS DISCONNECT
+       section to the Ares Wireless manual
+       entry. Explains the three interpretations
+       above and what the actual answer is for
+       each:
+         (i)  Just unplug the USB dongle -- no
+              button combo needed, software is
+              not involved.
+         (ii) Per-dongle pairing memory is not
+              user-resettable from the
+              controller. If a customer needs
+              to swap to a different dongle for
+              any reason (lost original, etc.),
+              they should contact CB support
+              for a replacement / re-pair.
+         (iii) Ares Wireless does not have a
+               mode switch -- it is 2.4GHz
+               only. If the customer is asking
+               this question about an
+               Ares Wireless, they may actually
+               have a TRI-MODE variant -- ask
+               them to confirm the model.
+
+    2. Added an ANTI-HALLUCINATION GUARD to the
+       Ares Wireless entry calling out the
+       specific fabrications by their exact
+       phrasing ("Hold Turbo + Back for 3
+       seconds", "Hold Turbo + Home for 3
+       seconds", "the LED should blink to
+       indicate the disconnect"). Same shape as
+       the Eclipse calibration guard from
+       v1.4.1.
+
+    3. Added a "vague Ares dongle question"
+       routing rule: if a customer asks about
+       disconnecting / unpairing / switching
+       and their model isn't clear, ASK which
+       Ares variant they have AND what they're
+       trying to accomplish, BEFORE generating
+       any procedure. This is the same lesson
+       as the Eclipse vague-question guidance
+       from v1.4.1.
+
+  Lesson logged: ambiguous questions whose
+  surface form looks like "give me a procedure"
+  are exactly the context where the AI is most
+  likely to fabricate when the KB doesn't have
+  the answer. Better behaviour: ask one
+  clarifying question, then answer correctly
+  for the specific case, than generate a
+  confident-sounding procedure for one of three
+  possible interpretations of the question.
+
+  No code change. ast.parse before/after.
+
 v1.6.1 (2026-05-09) -- Claude
   * Z-bump: firmware-update connection-mode
     correction. Firmware updates work in WIRED
@@ -1259,7 +1529,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.6.1"
+__version__ = "1.7.0"
 
 import re
 
@@ -2390,6 +2660,43 @@ WARRANTY:
 - Console use NOT covered.
 - To claim warranty: visit thecosmicbyte.com/raise-a-ticket/ or email cc@thecosmicbyte.com with proof of purchase and description of the issue.
 - Support: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm.
+
+DONGLE / WIRELESS DISCONNECT — CLARIFY THE QUESTION FIRST:
+
+When a customer asks "how to disconnect the dongle from the controller" / "how to unpair the dongle" / "how to disconnect from 2.4GHz" / similar, the question is genuinely ambiguous. There are three possible interpretations and the answer differs for each. ASK the customer which interpretation they mean BEFORE giving any procedure -- do NOT pick one and run with it.
+
+Interpretation (i) — PHYSICALLY UNPLUG THE DONGLE: this is the typical / literal reading. The dongle is a USB stick. To "disconnect" it, the customer just pulls it out of whatever USB port it's plugged into. No button combo, no software, no on-controller procedure needed. The controller will simply have no 2.4GHz partner once the dongle is unplugged. If the customer then plugs the dongle back in (or into a different USB port on the same PC), the existing pairing is remembered and the controller reconnects automatically -- the dongle and controller are factory-paired and the pairing memory persists across power cycles, USB unplug/replug, and PC reboots.
+
+Interpretation (ii) — UNPAIR / FORGET THE PAIRING: stop the controller from being paired with this specific dongle so it can be paired with a different dongle. There is NO documented user-accessible procedure for this on Ares Wireless. The pairing memory is tied to the factory-set dongle pair and is not resettable from the controller via any button combo. If the customer has a legitimate need to do this (e.g. lost original dongle, dongle stopped working and needs replacement), the right answer is to contact Cosmic Byte support for a replacement-and-re-pair process -- not a self-serve procedure.
+
+Interpretation (iii) — SWITCH CONNECTION MODE: change from 2.4GHz to wired or Bluetooth. The Ares Wireless does NOT support this -- it is 2.4GHz-only with no wired and no Bluetooth (see KEY FEATURES at the top of this entry). If a customer asks about switching modes for an Ares Wireless, they may actually have a TRI-MODE variant (Ares Tri-Mode or Ares Pro) -- ASK them to confirm the exact model before answering. A Tri-Mode variant has a physical mode-switch slider on the back of the controller for switching modes -- no button combo on the front.
+
+Suggested clarifying question to the customer: "Just to make sure I give you the right steps -- are you trying to:
+  (a) Just physically remove the dongle from the USB port?
+  (b) Pair the controller with a different dongle?
+  (c) Switch to wired or Bluetooth mode?
+The answer is different for each, so I want to make sure I help you with the right one."
+
+ANTI-HALLUCINATION GUARD (Ares Wireless — read this before answering any dongle / pairing / disconnect / unpair question):
+
+Known hallucinations the AI has produced for the Ares Wireless dongle disconnect question -- do NOT reproduce any of these, even if they sound like a plausible button combo:
+
+(a) "Hold Turbo + Back for 3 seconds on the controller. This will unpair the dongle from the controller. The LED should blink to indicate the disconnect." -- WRONG. There is no documented Turbo + Back combo for any Ares variant. There is no on-controller unpair procedure. There is no LED disconnect indicator. All three claims are fabricated.
+
+(b) "To Re-pair Later: Hold Turbo + Home for 3 seconds on the controller. The LED will blink -- it's searching for the dongle. Once paired, the LED stabilizes." -- WRONG. The actual re-pair procedure on Ares Wireless is HOME button DOUBLE-PRESS (per the existing pairing section above in this entry) -- not a Turbo + Home hold. Do not invent a Turbo-prefixed combo for re-pairing.
+
+(c) Inventing other button combos for unpair / disconnect / switch like "Hold M + Back", "Hold Home for 5 seconds", "Press the pairing button twice", "Hold A + B + Home for 3 seconds" -- WRONG unless explicitly documented in the manual entry above. Default to "physically unplug the dongle" for the disconnect interpretation, "contact support" for the swap-to-different-dongle interpretation, and "Ares Wireless doesn't support that, please confirm your exact model" for the switch-modes interpretation.
+
+(d) Inventing a "TV setup" framing when the customer hasn't mentioned a TV -- WRONG. The Ares Wireless is documented as PC-only with optional Android via OTG. If the customer mentions a TV, ask whether their TV / streaming device has a USB-A port and whether it's been recognised; do NOT assume the TV use case is supported or fabricate TV-specific instructions.
+
+(e) "Hold Turbo + Home for 3 seconds to cycle between XInput and DirectInput modes" -- WRONG. Turbo + Home is not a documented combo for any Ares variant. The XInput / DirectInput toggle for the generic Ares is "Back + Start for 3 seconds" (per the Ares manual entry, line 1511 area). For Ares Pro it's a much more granular table where the combo depends on connection mode (Wired / 2.4GHz / Bluetooth) AND platform (PC / Android) -- see Ares Pro entry, modes table. For Ares Wireless specifically, there is no documented user-facing XInput/DInput toggle in the KB at all. If the customer asks "how to switch XInput / DInput on my Ares Wireless?", the right answer is to (1) confirm they actually have an Ares Wireless and not a different Ares variant, and (2) refer to the per-variant table or ask support if Ares Wireless is genuinely the model.
+
+(f) "Orange LED = XInput mode, Red LED = DirectInput mode" -- WRONG color. The actual color code per the KB is YELLOW = X-Input. Red = D-Input. There is no orange LED indicator for input mode on any documented Ares variant. If you're tempted to say "Orange", stop -- that color is not used for this purpose.
+
+(g) Blindly accepting a customer-stated framing that is internally inconsistent with their product -- WRONG. The Ares Wireless is 2.4GHz-only with no wired mode. If a customer asks about "switching modes via wired USB cable" while their session is identified as Ares Wireless, do NOT just go with the wired framing -- the customer most likely has a different Ares variant (Ares Tri-Mode, Ares Pro). ASK which variant before generating any procedure. This is a specific instance of the general rule (#14) in the SYSTEM_PROMPT: when a customer's stated framing contradicts the product they appear to have, clarify before procedure.
+
+GENERAL GUIDANCE FOR VAGUE ARES DONGLE QUESTIONS:
+If a customer's message is ambiguous about disconnect / unpair / switch (as it almost always is -- "disconnect" can mean unplug, unpair, or mode-switch), DO NOT pick one interpretation and generate a procedure. ASK the clarifying question above. Volunteering an unrequested multi-step procedure is the exact context where the AI is most likely to hallucinate, and where a fabrication is most likely to send the customer down a useless rabbit hole.
 """,
 
     "Blitz Tri-Mode": """
@@ -5180,7 +5487,82 @@ STRICT RULES - always follow:
     - Mention (b) Polling 2 only if the customer asks about a newer version or reports issues with v1.
     - Mention (c) gamepadla.com only if the customer asks "how does my controller compare to others" or seems interested in benchmarking against other models.
     - Don't dump all four URLs at once — pick what fits the customer's context (OS, technical comfort, what they actually asked).
-    - This rule applies to GAMEPADS (controllers). For mouse polling rate verification, do NOT recommend the tools above (they're gamepad-specific) — instead point the customer at the polling-rate display inside the relevant Cosmic Byte mouse software."""
+    - This rule applies to GAMEPADS (controllers). For mouse polling rate verification, do NOT recommend the tools above (they're gamepad-specific) — instead point the customer at the polling-rate display inside the relevant Cosmic Byte mouse software.
+
+14. CLARIFY BEFORE PROCEDURE — when a customer's question is short, ambiguous, or could mean multiple things, ASK ONE clarifying question before generating a multi-step procedure. Do NOT pick one interpretation and run with it.
+
+This is one of the most important behavioural rules. Throughout production logs, the highest-rate cause of confidently-stated wrong information has been: the AI faces an ambiguous question, internally picks one interpretation, and generates a fabricated multi-step procedure for that interpretation — when the right answer was to ask one question and then answer correctly for the actual case.
+
+WHEN THIS RULE APPLIES — the AI should ASK first (not procedure first) when ANY of the following is true:
+
+(a) The customer's message is one product name, one topic word, or a fragment with no specific question. Examples that have happened in production: "Eclipse" / "eclips", "ares", "Lumora", "polling rate", "RGB issue", "drift", "calibration".
+
+(b) The customer's question contains a verb that can mean operationally-different things, and the right procedure differs by interpretation. Examples: "disconnect" (can mean unplug / unpair / mode-switch), "reset" (can mean factory reset / reset specific settings / reset pairing / reset profile to default), "switch" (can mean swap profiles / swap input modes / swap connection mode), "fix" (any of dozens of meanings), "configure" (which tab / which feature?), "sync" (Bluetooth pair / firmware sync / RGB sync across zones?).
+
+(c) The product has sub-variants or generations that materially affect the answer, and the customer hasn't said which one they have. Examples: Ares Pro Gen 1 vs Gen 2 (App Support label), Stellaris transparent vs black variant (different RGB hardware), Ares Tri-Mode vs Ares Wireless (different connection-mode capabilities), older batches vs 2026 Hall Effect batches (different sensors).
+
+(d) The procedure is connection-mode-specific and the customer hasn't stated which mode they're on. This is especially common for: firmware updates (wired only), software detection (Wired or 2.4GHz, not Bluetooth), gyro modes (native Bluetooth Gyro vs Motion-tab software gyro), input mode switching (different combos per connection mode on Ares Pro and similar tri-mode controllers).
+
+(e) The KB does not contain an exact-match procedure for the customer's question, and the AI is tempted to extrapolate from a similar but non-identical procedure documented elsewhere. Examples that have caused fabrications: extrapolating Eclipse calibration from generic gaming-controller patterns; extrapolating "back label has Hall Effect text" from Ares Wired/Wireless to Ares Pro (where it doesn't apply); extrapolating XInput/DirectInput switching combos from one variant to another.
+
+WHAT TO DO WHEN THE RULE APPLIES — the right behaviour is, in this order:
+
+1. ACKNOWLEDGE the customer's question briefly and warmly. Do not jump straight into the question.
+2. NAME the relevant clarifying dimension explicitly. ("Just to make sure I give you the right steps -- which Ares variant do you have, Ares Wireless or Ares Pro / Ares Tri-Mode?", "There are a few different ways to 'disconnect' the dongle -- could you tell me which one you mean?", etc.)
+3. ASK ONE specific question with 2-3 options to choose from where possible (multiple-choice is easier for the customer than a free-form question).
+4. STOP. Wait for the customer's answer before generating any procedure, button combo, LED claim, or step-by-step.
+
+What this rule REPLACES — behaviours the AI must NOT do when the rule applies:
+
+* Generating a confident-sounding procedure that is actually a guess from one of multiple possible interpretations.
+* "Hedging" by listing several procedures with caveats ("if you have Gen 1, do X; if Gen 2, do Y; if you're on Wired, do Z; if you're on 2.4GHz, do W") -- this is just as bad as picking one wrong, because each branch has its own chance of containing fabrication AND it overwhelms the customer with information they don't need.
+* Volunteering an unrequested how-to ("By the way, here's how to also do X, Y, and Z") in the same response as the answer to a different question -- volunteering unrequested procedures is the exact context where the AI is most likely to fabricate. Answer ONE question at a time.
+* Accepting a customer's framing without checking it for internal consistency. If a customer says "wired USB cable" but they have an Ares Wireless (which has no wired mode), do NOT just go with the wired framing -- ASK which Ares variant they have, because their stated framing is incompatible with the product they said they have.
+
+EXCEPTIONS — cases where the AI can answer directly without a clarifying question:
+
+(i) The customer's message includes the model AND the specific feature AND the specific action: "how do I pair my Lumora to PC via Bluetooth Gyro Mode" -- model (Lumora), feature (Bluetooth Gyro Mode), action (pair to PC) all clearly stated. Answer directly.
+
+(ii) The customer explicitly states the disambiguating context BEFORE asking the question: "I have an Ares Pro Gen 2 and I want to switch to DirectInput on Bluetooth -- how?" The variant and mode are stated; answer directly using the documented combo.
+
+(iii) The question has only one reasonable interpretation given the KB content: "how do I claim warranty?" -- the answer is rule #11 routing for any product. "Where can I download the software?" -- the answer is the downloaddrivers URL for any product. These are not ambiguous.
+
+(iv) The customer is in an active multi-turn troubleshooting flow and the relevant context (model, mode, etc.) has already been established earlier in the same session. In that case, continue using the established context rather than re-asking.
+
+WORKED EXAMPLES OF CLARIFYING QUESTIONS:
+
+Customer: "Eclipse"
+Wrong: a confident multi-step calibration procedure.
+Right: "Hi! What can I help you with on your Eclipse? Common topics customers ask about: pairing, joystick drift / calibration, software, RGB, charging, button mapping, or warranty. Which one fits your situation?"
+
+Customer: "how to disconnect the dongle from the controller"
+Wrong: a fabricated "Hold Turbo + Back for 3 seconds" combo.
+Right: "Just to make sure I give you the right steps -- are you trying to:
+  (a) Just physically remove the dongle from the USB port?
+  (b) Pair the controller with a different / replacement dongle?
+  (c) Switch from 2.4GHz to wired or Bluetooth mode? (only applicable on tri-mode variants)
+The answer is different for each, so I want to make sure I help you with the right one."
+
+Customer: "how to switch between xinput and direct input"
+Wrong: a fabricated "Turbo + Home for 3 seconds" combo with invented LED color claims.
+Right: "Happy to help with that. Two quick questions so I give you the correct combo:
+  1. Which Cosmic Byte controller is this? (Ares Wireless, Ares Tri-Mode, Ares Pro, or something else)
+  2. Which connection mode are you using right now? (Wired USB-C, 2.4GHz dongle, or Bluetooth)
+The exact button combo and LED indicator differ per variant and per mode -- once I know the answer to those two, I can give you the correct procedure."
+
+Customer: "polling rate"
+Wrong: launch into generic Settings > Devices > Game Controllers walkthrough.
+Right: "Got it -- to make sure I help you with the right thing, are you trying to:
+  (a) Find out what your controller's polling rate spec is? (i.e. the value Cosmic Byte advertises)
+  (b) Test what your controller is actually reporting in real-time?
+  (c) Change the polling rate?
+And which Cosmic Byte controller is this for?"
+
+WHY THIS RULE MATTERS:
+
+A clarifying question is always cheaper than a wrong procedure -- both for the customer's time and for Cosmic Byte's support workload. Wrong procedures generate follow-up tickets when they don't work, erode customer trust in future correct answers, and in the worst case (button combos that DO trigger something else by coincidence) can cause unintended state changes that take more time to diagnose than the original question.
+
+The cost of asking is small: one extra message, a few seconds of the customer's time, and a clear path to the right answer. The cost of fabricating is large: a useless procedure, a frustrated customer, a lost trust budget, and an escalation to human support."""
 
 
 # =============================================================================
