@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.25.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.26.0
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,153 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.26.0 (2026-05-09) -- Claude
+  - Y-bump: review-risk flagging on the admin
+    conversation list + jump-to-page input on the
+    pagination control. Two related portal-only
+    UX improvements driven by the day's KB-quality
+    work.
+
+  Why:
+    Today's 15 KB fixes all came from individual
+    bad responses Ronak surfaced manually --
+    either by random scroll of the admin list, or
+    by customer escalation. There's no efficient
+    way today to ASK the question "which of the
+    last 200 conversations might be problematic?"
+    -- the operator has to expand each row and
+    judge for themselves. v2.26.0 adds:
+
+  Risk flagging:
+    A new `_score_conversation_risk()` helper
+    runs at row-render time over each
+    (customer_msg, ai_response) pair and applies
+    9 heuristics derived from the fabrication
+    patterns observed in today's cb_kb.py
+    changelog (v1.4.1 Eclipse calibration,
+    v1.5.1 Ares Pro back label, v1.5.2 warranty
+    advocacy, v1.6.2 Ares dongle, v1.7.0 Ares
+    XInput, plus the cross-product Rule #14
+    violations).
+
+    The 9 heuristics, with point values:
+      H1  Button-combo with timing pattern
+          ("Hold X + Y for N seconds")     -> +2
+      H2  LED color claim with high specificity
+          ("Orange LED = XInput")          -> +1
+      H3  Short customer question (<= 4 words)
+          + multi-step response (>= 3
+          numbered items) - the Rule #14
+          violation pattern                -> +3
+      H4  Warranty advocacy patterns
+          (drafted email subject, coaching
+          language, fabricated root causes
+          like "inadequate solder joint") -> +3
+      H5  Categorical warranty pre-judgment
+          ("you'll be covered", "definitely
+          a manufacturing defect")
+            ... un-hedged                  -> +3
+            ... with neutral framing nearby -> +1
+      H6  Severity rating language
+          ("Severity: HIGH")               -> +2
+      H7  Drafted email template (Subject +
+          Body within response)            -> +3
+      H8  Specific known fabrications by
+          exact phrase ("turbo + y for 3
+          seconds", etc.) -- regression
+          safety net                       -> +4
+      H9  Customer-stated framing inconsistent
+          with detected product (Ares
+          Wireless + "wired USB cable")    -> +2
+
+    Score thresholds and badges:
+      0     -> no badge (clean)
+      1-2   -> 🟡 (low risk, possibly worth
+                 a glance)
+      3-4   -> 🟠 (medium, likely worth review)
+      5+    -> 🔴 (high, almost certainly
+                 review-worthy)
+
+    The badge appears at the START of the row
+    label so the operator can scan a long list
+    and spot risky rows without expanding each
+    one. Inside an expanded row, a "🚩 Flagged
+    for review" callout lists exactly which
+    heuristics matched, so the operator
+    immediately knows which part of the
+    response is suspicious.
+
+    A new "Review risk" filter (6th column in
+    the existing filter row) lets the operator
+    filter to a threshold:
+      "All"           - default, show everything
+      "🟡+ Any flag"   - thorough review mode
+      "🟠+ Medium+"    - daily-triage mode
+      "🔴 High only"   - quick spot-check
+
+    Filter is applied AFTER the cheaper exact-
+    match filters (date / product / feedback /
+    source) so the regex evaluation only runs
+    on rows that survived earlier filtering --
+    keeps the dashboard responsive even on
+    large logs.
+
+  Jump-to-page:
+    Replaced the static "Page X of Y" markdown
+    indicator in `_render_paginated_rows()`
+    with an editable st.number_input. The
+    operator can now jump directly to a
+    specific page number instead of click-
+    spamming Next on long days. The widget
+    state is synced bidirectionally:
+      - Typing a new page number updates the
+        page state.
+      - Clicking Prev/Next also updates the
+        widget value (otherwise the input
+        keeps showing the old page after a
+        button click -- known Streamlit gotcha
+        where widget state takes precedence
+        over the value= parameter once the
+        widget has been interacted with).
+
+  Implementation notes:
+    - Pure portal-only change. No bot impact.
+      No cb_kb.py impact.  Zero cache
+      invalidation (the system prompt content
+      is unchanged).
+    - Risk scoring is idempotent and side-
+      effect-free; safe to call repeatedly.
+      Pure regex / substring matching, no LLM
+      calls. Minor CPU cost per row at render.
+    - `re` module added to imports (was not
+      previously imported).
+    - The known-fabrications list (H8) is the
+      "regression safety net": if a fabrication
+      we already added a guard for in cb_kb.py
+      reappears in production, this heuristic
+      will surface it immediately so we know
+      the guard isn't holding.
+
+  Tuning notes for future:
+    The 9 heuristics + thresholds are tuned
+    against today's 5 confirmed-bad responses.
+    First few days of use, monitor for:
+      - False positives (heuristic flags a
+        correct response)
+      - False negatives (heuristic misses a
+        bad response)
+    Adjust point values or add/remove patterns
+    based on actual usage. After a week of
+    operational data, decide whether to
+    promote risk-scoring to server-side at
+    log-write time (Tier 2 -- store score in
+    log row, faster admin rendering) or to
+    AI-meta-evaluation (Tier 3 -- second LLM
+    call per response, most accurate but
+    adds latency + API cost).
+
+  ast.parse before/after.
 
 v2.25.0 (2026-05-09) -- Claude
   - Y-bump: enable Anthropic prompt caching on the
@@ -4061,7 +4208,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.25.0"
+__version__ = "2.26.0"
 
 import streamlit as st
 import anthropic
@@ -4080,6 +4227,7 @@ print(f"[support_portal_v2] starting up — app version {__version__}", flush=Tr
 import uuid
 import json
 import csv
+import re             # v2.26.0: risk-flagging regex patterns in admin
 import base64
 import io
 import zipfile
@@ -5496,6 +5644,150 @@ def _group_log_for_admin(rows_with_idx):
     return result
 
 
+def _score_conversation_risk(customer_msg, ai_response):
+    """Score a conversation pair for review-risk based on heuristics
+    derived from real fabrications observed in the cb_kb.py changelog
+    (2026-05-09: v1.4.1 Eclipse calibration, v1.5.1 Ares Pro back label,
+    v1.5.2 warranty advocacy, v1.6.2 Ares dongle, v1.7.0 Ares XInput,
+    plus Rule #14 violations across the board).
+
+    Returns a dict:
+      {'score': int, 'flags': [(label, points), ...]}
+
+    The score is a sum of points from each heuristic that fires.
+    Higher score = more likely to need operator review. Heuristic
+    points are tuned against today's known fabrications -- the goal
+    is for every confirmed-bad response in today's logs to score >= 3
+    (yellow or higher), and for typical correct responses to score 0.
+
+    Display thresholds (handled by the caller):
+        0       -> no badge
+        1-2     -> yellow (low risk, possibly worth a glance)
+        3-4     -> orange (medium, likely worth review)
+        5+      -> red (high, almost certainly review-worthy)
+
+    All heuristics are pure regex / substring matching, no LLM calls.
+    The function is idempotent and side-effect-free; safe to call at
+    every row render.
+    """
+    flags = []
+    customer_text = (customer_msg or "").strip()
+    customer_lower = customer_text.lower()
+    response_text = ai_response or ""
+    response_lower = response_text.lower()
+    customer_words = customer_lower.split()
+
+    # H1: Button-combo with timing -- "Hold X + Y for N seconds" pattern.
+    # Almost every fabricated procedure today included this shape (Eclipse
+    # Turbo+Y, Ares Turbo+Back / Turbo+Home, etc.). Note that legitimate
+    # Cosmic Byte procedures DO have these patterns too, so this is
+    # informational rather than damning -- but worth a glance.
+    if re.search(r"hold\s+\w+\s*\+\s*\w+(?:\s+\w+)?\s*(?:button(?:s)?)?\s*(?:together)?\s*for\s+\d+\s+second", response_lower):
+        flags.append(("Button combo with timing", 2))
+
+    # H2: LED color claim with high specificity. The Ares Pro fabrication
+    # was "Orange LED = XInput" -- there is no orange LED on Ares Pro.
+    # Catches both the "X LED = ..." form and "LED will turn X" form.
+    if re.search(r"\b(orange|yellow|red|green|blue|white|purple|pink)\s+led\s*(?:[=:]|\bmeans\b|\bindicates\b)", response_lower) or \
+       re.search(r"led\s+(?:will\s+)?(?:turn|be|become|change\s+to|light\s+up)\s+(?:solid\s+)?(orange|yellow|red|green|blue|white|purple|pink)", response_lower):
+        flags.append(("LED color claim", 1))
+
+    # H3: Vague question + multi-step response (Rule #14 violation pattern).
+    # This is the highest-value heuristic -- catches the "AI generated a
+    # procedure for an ambiguous question" failure mode.
+    if 1 <= len(customer_words) <= 4 and len(customer_text) >= 2:
+        # Count numbered list items at start of lines (markdown 1. 2. 3.)
+        numbered_items = len(re.findall(r"^\s*\d+\.\s+\S", response_text, re.MULTILINE))
+        if numbered_items >= 3:
+            flags.append(("Short question + multi-step procedure", 3))
+
+    # H4: Warranty advocacy patterns (the Hades headset case from v1.5.2).
+    # The AI was drafting claim emails, assigning severity ratings, and
+    # coaching customers on how to argue against rejection grounds.
+    advocacy_patterns = [
+        (r"\bsubject\s*:\s*\*?\*?warranty\s+claim", "Drafted email subject"),
+        (r"\b(this|these|all\s+three).{0,40}strengthens?\s+your\s+claim", "Coaching language"),
+        (r"\bmuch\s+harder\s+to\s+argue", "Coaching against rejection"),
+        (r"\bpattern\s+of\s+(?:poor\s+)?manufacturing\s+(?:quality|defects?)", "Case-strength framing"),
+        (r"\binadequate\s+solder\s+joint", "Fabricated root cause"),
+        (r"\bloose\s+internal\s+component", "Fabricated root cause"),
+        (r"\bcapacitor\s+failure", "Fabricated root cause"),
+    ]
+    for pattern, label in advocacy_patterns:
+        if re.search(pattern, response_lower):
+            flags.append((f"Warranty advocacy: {label}", 3))
+            break  # one advocacy flag is enough; don't double-count
+
+    # H5: Categorical warranty pre-judgment (Rule #11/12 violation).
+    # The AI is supposed to be neutral on warranty outcomes -- only the
+    # support team can determine coverage. Flag responses that pre-judge.
+    cat_patterns = [
+        r"\byou(?:'ll|\s+will)\s+(?:definitely\s+)?be\s+covered",
+        r"\bthis\s+(?:is|qualifies)\s+(?:for|as)\s+(?:a\s+)?(?:warranty|replacement|covered)",
+        r"\bdefinitely\s+(?:a\s+)?manufacturing\s+defect",
+        r"\bclear\s+manufacturing\s+defect",
+        r"\bthey(?:'ll|\s+will)\s+have\s+to\s+honour",
+    ]
+    for pattern in cat_patterns:
+        if re.search(pattern, response_lower):
+            # Reduce risk if the response also includes neutral framing nearby
+            if "support team will evaluate" in response_lower or "support team will look" in response_lower:
+                flags.append(("Coverage pre-judgment (with hedge)", 1))
+            else:
+                flags.append(("Coverage pre-judgment", 3))
+            break
+
+    # H6: Severity rating language (advocacy-flavoured)
+    if re.search(r"\bseverity\s*[:*]+\s*\*?\*?\s*(high|medium|low|critical|severe|moderate)", response_lower):
+        flags.append(("Severity rating assigned", 2))
+
+    # H7: Drafted email template (Subject + Body shape inside the response)
+    if "subject:" in response_lower and ("body:" in response_lower or "dear " in response_lower):
+        flags.append(("Drafted email template", 3))
+
+    # H8: Specific fabrication phrases we already caught today. This is
+    # an "exact-match safety net" -- if any of these reappear despite the
+    # anti-hallucination guards in cb_kb.py, that's a regression worth
+    # surfacing immediately. Update this list as new fabrications get
+    # caught and added to per-product anti-hallucination guards.
+    known_fabrications = [
+        ("turbo + y for 3 seconds",     "Eclipse: TURBO + Y combo"),
+        ("turbo + back for 3 seconds",  "Ares: TURBO + Back combo"),
+        ("turbo + home for 3 seconds",  "Ares: TURBO + Home combo"),
+        ("y + home for 3 seconds",      "Lumora: Y + HOME (should be Y + P)"),
+    ]
+    for phrase, label in known_fabrications:
+        if phrase in response_lower:
+            flags.append((f"Known fabrication: {label}", 4))
+
+    # H9: Customer-stated framing inconsistent with detected product.
+    # Cheap approximation: if the response itself acknowledges the
+    # customer's connection mode but the product detection in the row
+    # would suggest a mismatch. We don't have product detection in
+    # scope here, so we use a simpler proxy: response contains both a
+    # connection-mode word AND mentions of multiple Ares variants.
+    # This catches the Ares Wireless + "wired USB cable" case from v1.7.0.
+    if "ares wireless" in response_lower and ("wired usb" in response_lower or "via wired" in response_lower):
+        flags.append(("Possible product-mode mismatch (Ares Wireless + wired)", 2))
+
+    score = sum(points for _, points in flags)
+    return {"score": score, "flags": flags}
+
+
+def _risk_badge(score):
+    """Return a single-emoji badge for a risk score, suitable for inclusion
+    in a row label. Returns empty string for score 0 (no clutter on
+    clean rows).
+    """
+    if score == 0:
+        return ""
+    if score <= 2:
+        return "🟡"
+    if score <= 4:
+        return "🟠"
+    return "🔴"
+
+
 def _render_paginated_rows(rows_with_idx, page_key, page_size):
     """Render a list of (filtered_idx, row_dict) tuples with Prev / Next
     pagination controls.
@@ -5546,8 +5838,15 @@ def _render_paginated_rows(rows_with_idx, page_key, page_size):
     start = current_page * page_size
     end = min(start + page_size, total)
 
-    # Pagination header: Prev | "Page X of Y · showing A–B of N" | Next
-    p1, p2, p3 = st.columns([1, 3, 1])
+    # Pagination header: Prev | "Page [N] of Y · showing A-B of N" | Next
+    # v2.26.0: replaced the static markdown page indicator with an
+    # editable number_input so the operator can jump directly to a page
+    # without click-spamming Next on long days. The number input syncs
+    # with session_state in both directions: typing a new page updates
+    # the page state, and clicking Prev/Next updates the input field
+    # value too (so it stays consistent with the actual current page).
+    p1, p2_input, p2_label, p3 = st.columns([1, 0.7, 2.3, 1])
+    jump_widget_key = f"{page_key}__jump"
     with p1:
         prev_disabled = (current_page == 0)
         if st.button(
@@ -5556,12 +5855,36 @@ def _render_paginated_rows(rows_with_idx, page_key, page_size):
             disabled=prev_disabled,
             use_container_width=True,
         ):
-            st.session_state[page_key] = current_page - 1
+            new_page = current_page - 1
+            st.session_state[page_key] = new_page
+            # Sync the number_input widget state too, otherwise the
+            # input keeps showing the old page after Prev/Next is
+            # clicked (Streamlit gotcha: widget state takes precedence
+            # over the value= initial parameter once the widget has
+            # been interacted with).
+            if jump_widget_key in st.session_state:
+                st.session_state[jump_widget_key] = new_page + 1
             st.rerun()
-    with p2:
+    with p2_input:
+        # Number-input for direct page jumps. Streamlit's number_input
+        # commits on blur or Enter; the value change triggers a rerun
+        # and we read the new value below to update page state.
+        new_page_1based = st.number_input(
+            "Page",
+            min_value=1,
+            max_value=total_pages,
+            value=current_page + 1,
+            step=1,
+            key=jump_widget_key,
+            label_visibility="collapsed",
+        )
+        if int(new_page_1based) - 1 != current_page:
+            st.session_state[page_key] = int(new_page_1based) - 1
+            st.rerun()
+    with p2_label:
         st.markdown(
             f"<div style='text-align:center; padding-top:6px; opacity:0.85'>"
-            f"Page <b>{current_page + 1}</b> of <b>{total_pages}</b> · "
+            f"of <b>{total_pages}</b> · "
             f"showing {start + 1}–{end} of {total}"
             f"</div>",
             unsafe_allow_html=True,
@@ -5574,7 +5897,10 @@ def _render_paginated_rows(rows_with_idx, page_key, page_size):
             disabled=next_disabled,
             use_container_width=True,
         ):
-            st.session_state[page_key] = current_page + 1
+            new_page = current_page + 1
+            st.session_state[page_key] = new_page
+            if jump_widget_key in st.session_state:
+                st.session_state[jump_widget_key] = new_page + 1
             st.rerun()
 
     # Render only the rows for this page.
@@ -5612,12 +5938,40 @@ def _render_admin_conversation_row(i, r):
         # Ronak can see channel mix at a glance when scrolling. Pre-v2.22 rows
         # default to "web" via .get(..., "web").
         source_tag = r.get("Source", "web") or "web"
+
+        # v2.26.0: compute review-risk score for this conversation. Score
+        # is derived from heuristics that match patterns observed in
+        # actual production fabrications (see _score_conversation_risk
+        # docstring). The badge appears at the START of the row label
+        # so the operator can scan a long list and spot risky rows
+        # without expanding each one.
+        risk = _score_conversation_risk(customer_msg, ai_resp)
+        badge = _risk_badge(risk["score"])
+        badge_prefix = f"{badge} " if badge else ""
+
         label = (
-            f"{r.get('Date','?')} {r.get('Time','?')} "
+            f"{badge_prefix}{r.get('Date','?')} {r.get('Time','?')} "
             f"· [{source_tag}] · {r.get('Product','?')} "
             f"· {customer_msg[:55]}{'…' if len(customer_msg) > 55 else ''}"
         )
         with st.expander(label):
+            # v2.26.0: if the row was flagged for review, show a callout
+            # at the top of the expanded content explaining which
+            # heuristics matched. This gives the operator immediate
+            # context for why the row caught the filter -- instead of
+            # having to guess which part of the response was suspicious.
+            if risk["score"] > 0:
+                flag_lines = "\n".join(
+                    f"  - {label_text} *(+{points} pts)*"
+                    for label_text, points in risk["flags"]
+                )
+                st.warning(
+                    f"🚩 **Flagged for review (risk score: {risk['score']})**\n\n"
+                    f"{flag_lines}\n\n"
+                    f"*These heuristics are pattern-matchers, not a verdict — "
+                    f"please review the response below to decide whether the AI's "
+                    f"reply was actually wrong, or whether it's a false positive.*"
+                )
             st.caption(f"Session: {r.get('Session ID','?')}")
             st.markdown("**Customer message**")
             st.text(customer_msg)
@@ -5760,7 +6114,7 @@ def render_admin():
         all_products = ["All Products"]
         all_sources = ["All sources"]
 
-    col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns(5)
+    col_f1, col_f2, col_f3, col_f4, col_f5, col_f6 = st.columns(6)
     with col_f1:
         selected_date = st.selectbox("Date", all_dates, key="admin_date_filter")
     with col_f2:
@@ -5783,6 +6137,23 @@ def render_admin():
             key="admin_page_size",
             help="Conversations to show per page within each day. Use Prev / Next inside each day to move between pages.",
         )
+    with col_f6:
+        # v2.26.0: Risk filter. The 4-level filter lets the operator
+        # choose how aggressive to be about surfacing potentially-risky
+        # responses. "All" shows everything (current default behaviour).
+        # "🟡+ Any flag" shows even low-confidence flags (good for
+        # thorough review). "🟠+ Medium+" filters to medium-and-above
+        # (good for daily triage). "🔴 High only" shows only the most
+        # certain-looking issues (good for quick spot-check). The risk
+        # score is computed by _score_conversation_risk() at render
+        # time, so this filter is consistent across reruns.
+        risk_filter = st.selectbox(
+            "Review risk",
+            options=["All", "🟡+ Any flag", "🟠+ Medium+", "🔴 High only"],
+            index=0,
+            key="admin_risk_filter",
+            help="Filter to conversations that scored above a risk threshold. Risk score is computed from heuristics that match common fabrication patterns (button-combo with timing, LED color claims, vague-question multi-step responses, warranty advocacy language, etc.).",
+        )
 
     # ── Apply filters ──
     try:
@@ -5799,6 +6170,24 @@ def render_admin():
         # that don't have the key (same default as the backfill).
         if selected_source != "All sources":
             filtered = [r for r in filtered if (r.get("Source", "web") or "web") == selected_source]
+        # v2.26.0: risk-score filter. Apply AFTER the other filters so
+        # the score is only computed on rows that survived the cheaper
+        # exact-match filters (date, product, feedback, source) -- this
+        # avoids paying for regex evaluation on rows the operator has
+        # already filtered out by other criteria.
+        if risk_filter != "All":
+            risk_threshold = {
+                "🟡+ Any flag": 1,
+                "🟠+ Medium+":  3,
+                "🔴 High only": 5,
+            }.get(risk_filter, 0)
+            filtered = [
+                r for r in filtered
+                if _score_conversation_risk(
+                    r.get("Customer Message", ""),
+                    r.get("AI Response", "")
+                )["score"] >= risk_threshold
+            ]
     except Exception:
         filtered = list(log)
 
