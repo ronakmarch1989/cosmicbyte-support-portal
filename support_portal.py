@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.28.1
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.29.0
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,133 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.29.0 (2026-05-11) -- Claude
+  - Y-bump: admin dashboard timestamps
+    now display in India Standard Time
+    (IST, UTC+5:30) instead of UTC.
+
+  Background:
+    Log rows are stored on disk with
+    Date/Time fields in the server's
+    local timezone (UTC -- the default
+    for both the Render container and
+    the Hetzner Cloud VPS that hosts
+    the Discord bot). The admin dash-
+    board was showing those raw UTC
+    strings, forcing the operator (in
+    Pune) to mentally add 5h30m to
+    every timestamp -- annoying and
+    a frequent source of "when did
+    this actually happen" confusion.
+
+  Fix architecture:
+    Conversion happens at the read
+    layer (get_merged_log), not at
+    each display site. This means:
+      - Sort by Date+Time still works
+        (IST is monotonic with UTC).
+      - Calendar week/month/day
+        grouping aligns with IST
+        naturally -- a row at 23:45
+        UTC on May 11 is now correctly
+        grouped under May 12 (IST).
+      - Expander labels show IST.
+      - CSV export of displayed values
+        shows IST.
+      - Daily digest aggregation uses
+        IST-aligned day boundaries.
+      - No per-display-site edits
+        required.
+
+  Storage is unchanged:
+    The on-disk log file (support_log.
+    jsonl) still contains UTC strings.
+    This keeps existing log entries
+    valid, avoids any migration step,
+    and crucially means the Discord
+    bot does NOT need a code change
+    -- saving an extra bot restart in
+    today's already-busy deploy queue.
+    Conversion is purely a read-side
+    transformation.
+
+  Implementation pieces:
+    1. New `IST` timezone constant
+       (`timezone(timedelta(hours=5,
+       minutes=30))`) at module load.
+    2. New `_convert_row_to_ist(row)`
+       helper that parses the stored
+       UTC `"%d %b %Y %H:%M"` strings,
+       attaches a UTC tzinfo, converts
+       to IST via `.astimezone()`, and
+       writes the IST strings back into
+       the row. Idempotent via a
+       `_tz_converted` marker so it's
+       safe to call repeatedly. Silent-
+       fail on malformed rows so one
+       bad row can't crash the dash-
+       board.
+    3. `get_merged_log()` now applies
+       this converter to every row
+       before returning, on both the
+       local-only path and the merged
+       local+remote path. Conversion
+       happens BEFORE the sort so the
+       sort key compares IST values
+       consistently across local and
+       remote rows.
+    4. Imported `timezone` from
+       `datetime` (was just `datetime,
+       timedelta` before).
+    5. Small caption at the top of
+       `render_admin()` reading
+       "🕒 Timestamps shown in IST
+       (UTC+5:30). Storage on disk
+       remains in UTC." so the
+       operator has a one-line
+       reminder of the convention.
+
+  Assumption + caveat:
+    Both servers (Render container
+    and Hetzner VPS) are assumed to
+    be running in UTC -- the cloud
+    default. If either ever gets
+    moved to a non-UTC timezone (rare;
+    would require explicit TZ env var
+    or container config), this
+    conversion will produce wrong
+    values for rows logged from that
+    server. The fix is to either set
+    the offending host back to UTC or
+    change the storage code to use
+    `datetime.utcnow()` (or `datetime.
+    now(timezone.utc)`) explicitly.
+    For now, this is documented inline
+    so a future you can spot it
+    quickly.
+
+  Verification after deploy:
+    The screenshot of the admin
+    dashboard showed entries at
+    timestamps like "11 May 2026
+    10:46" (UTC). After this fix,
+    those should show "11 May 2026
+    16:16" (IST, 5h30m later). If
+    a row shows the wrong-by-5h30m
+    time, conversion isn't running.
+    If a row shows the wrong-by-
+    some-other-offset time, the
+    server isn't actually in UTC.
+
+  No changes to:
+    - cb_kb.py
+    - discord_bot.py
+    - Storage format on disk
+    - Any read/write code outside
+      get_merged_log
+
+  ast.parse before/after.
 
 v2.28.1 (2026-05-11) -- Claude
   - Z-bump: log hygiene. The six module-
@@ -4473,7 +4600,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.28.1"
+__version__ = "2.29.0"
 
 import streamlit as st
 
@@ -4507,7 +4634,7 @@ import hmac
 import hashlib
 import threading
 import extra_streamlit_components as stx
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Print version on startup so it appears in deployment logs (Streamlit Cloud, etc.)
 # Helps confirm which version is actually live after a deploy.
@@ -5018,6 +5145,52 @@ def _row_dedup_key(row):
     )
 
 
+# ── IST DISPLAY TIMEZONE (v2.29.0) ──────────────────────────────────
+# All log rows are stored on disk with Date/Time in the server's local
+# timezone (UTC -- the default for the Render container and for the
+# Hetzner Cloud VPS that hosts the Discord bot). For the admin dashboard
+# display we want India Standard Time (UTC+5:30) so the operator (in
+# Pune) doesn't have to do mental arithmetic on every timestamp.
+#
+# Strategy: convert UTC -> IST at the get_merged_log() read layer.
+# Storage on disk stays in UTC -- this keeps existing log rows valid,
+# avoids a migration step, and means the bot doesn't need a code change
+# (so no extra Discord-bot restart). All downstream code (sort, calendar
+# week/month/day grouping, expander labels, CSV export of displayed
+# values) automatically operates in IST because Date/Time fields are
+# already IST by the time anything reads them.
+#
+# If the server ever runs in a non-UTC timezone, this conversion will
+# silently produce wrong values. As a defensive measure each converted
+# row gets a `_tz_converted` marker so the function is idempotent even
+# if get_merged_log() is called multiple times within a single Streamlit
+# rerun.
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def _convert_row_to_ist(row):
+    """Convert one row's Date/Time fields from server-UTC to IST, in place.
+    Idempotent: sets `_tz_converted = True` so re-application is a no-op.
+    Defensive: silently leaves the row unchanged on any parse error so a
+    single malformed row can't crash the dashboard."""
+    if row.get("_tz_converted"):
+        return row
+    date_str = row.get("Date", "")
+    time_str = row.get("Time", "")
+    if not date_str or not time_str:
+        row["_tz_converted"] = True
+        return row
+    try:
+        utc_dt = datetime.strptime(f"{date_str} {time_str}", "%d %b %Y %H:%M")
+        utc_dt = utc_dt.replace(tzinfo=timezone.utc)
+        ist_dt = utc_dt.astimezone(IST)
+        row["Date"] = ist_dt.strftime("%d %b %Y")
+        row["Time"] = ist_dt.strftime("%H:%M")
+    except Exception:
+        pass
+    row["_tz_converted"] = True
+    return row
+
+
 def _row_sort_key(row):
     """Key for chronological sort. Date format is `dd Mon YYYY`,
     Time is `HH:MM`. Falls back to datetime.min on any parse error
@@ -5050,6 +5223,9 @@ def get_merged_log(force_remote=False):
     local = list(get_log())
     remote = _fetch_remote_discord_rows(force=force_remote)
     if not remote:
+        # v2.29.0: convert each row's stored UTC Date/Time to IST for display.
+        for r in local:
+            _convert_row_to_ist(r)
         return local  # no merge needed; preserves identity
     seen_keys = set()
     merged = []
@@ -5061,6 +5237,11 @@ def get_merged_log(force_remote=False):
         if _row_dedup_key(r) in seen_keys:
             continue
         merged.append(r)
+    # v2.29.0: convert each merged row's stored UTC Date/Time to IST.
+    # MUST happen BEFORE the sort so the sort key compares IST values
+    # consistently across local + remote rows.
+    for r in merged:
+        _convert_row_to_ist(r)
     merged.sort(key=_row_sort_key)
     return merged
 
@@ -6371,6 +6552,12 @@ def _render_admin_conversation_row(i, r):
 
 def render_admin():
     st.markdown("## 🎮 Cosmic Byte — Admin Dashboard")
+    # v2.29.0: small operator-facing hint that all timestamps on this
+    # dashboard are India Standard Time (UTC+5:30). The raw log on disk
+    # is still UTC; the conversion happens in get_merged_log() so every
+    # display surface (expander labels, calendar week/month grouping,
+    # CSV export, daily digest) shows IST consistently.
+    st.caption("🕒 Timestamps shown in IST (UTC+5:30). Storage on disk remains in UTC.")
 
     # v2.13.0: top action bar — refresh data without losing session, plus
     # explicit sign-out that clears the auth cookie. Distinct from the
