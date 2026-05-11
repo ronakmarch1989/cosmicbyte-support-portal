@@ -33,6 +33,397 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.9.4 (2026-05-11) -- Claude
+  * Z-bump: factual corrections +
+    failure-mode guardrails for
+    Blitz Tri-Mode.
+
+  Customer report:
+    Operator screenshot of a Discord
+    conversation where a customer
+    asked "Is the Blitz Wireless
+    discontinued?". Bot correctly
+    confirmed yes, then helpfully
+    listed what the current Blitz
+    Tri-Mode adds over the
+    discontinued Blitz Wireless --
+    and got TWO of the listed
+    features wrong:
+
+      WRONG #1: "Macro buttons for
+      custom key sequences" --
+      Blitz Tri-Mode does NOT have
+      dedicated macro buttons. The
+      KB Section 1 already
+      explicitly stated "MACRO
+      BUTTONS: NONE" but the bot
+      pattern-matched "newer model
+      adds macros" and ignored the
+      KB.
+
+      WRONG #2: "Charging dock
+      included" -- the dock is NOT
+      bundled. The Tri-Mode
+      SUPPORTS a charging dock
+      accessory (contacts on the
+      back of the controller) but
+      the dock itself is SOLD
+      SEPARATELY. The KB content
+      here was also stale: it said
+      the dock was "coming soon /
+      not yet launched" and
+      explicitly forbade the bot
+      from saying "sold separately"
+      -- but the operator confirmed
+      the dock has since launched
+      and is now sold separately.
+
+  Fix (three coordinated edits):
+
+  (1) CHARGING DOCK STATUS section
+      rewritten to reflect the dock
+      is now available, sold
+      separately on thecosmicbyte.
+      com, NOT bundled with the
+      controller. The previous
+      "coming soon / do not say
+      sold separately" guidance is
+      replaced with the new
+      "supported as an accessory,
+      sold separately" guidance. The
+      comparison table row also
+      updated from "Coming soon
+      (not yet launched)" to
+      "SUPPORTED (sold separately,
+      NOT included)".
+
+  (2) Brief CHARGING line at the
+      end of the entry updated to
+      match -- removed the "Charging
+      Dock launching soon" wording
+      and replaced with "Charging
+      dock is also supported, sold
+      separately on thecosmicbyte.
+      com".
+
+  (3) NEW Section 4 (Common Failure
+      Modes / AI-Facing Notes)
+      added to the end of the
+      Blitz Tri-Mode entry. The
+      Blitz Tri-Mode entry didn't
+      have one of these blocks
+      before, even though all
+      three product lines that
+      regularly trip the bot
+      (Stellaris, Ares Pro, Blitz
+      Tri-Mode) deserve them. The
+      new block contains five
+      bullets:
+        a. NEVER say Blitz Tri-Mode
+           has macro buttons -- it
+           doesn't. Recommend Lumora
+           or Drakon for dedicated
+           macros.
+        b. NEVER say the charging
+           dock is "included" -- it's
+           supported but sold
+           separately.
+        c. NEVER say Blitz Tri-Mode
+           has RGB -- it doesn't.
+           Recommend Lumora or
+           Drakon for RGB.
+        d. NEVER confuse BTM features
+           with Stellaris / Ares Pro
+           features -- explicit list
+           of what to actually list
+           when asked "what does BTM
+           add over Blitz Wireless".
+        e. NEVER proactively offer
+           buy links or upsell
+           prompts unprompted --
+           "feel free to let me know
+           -- I can share details or
+           a buy link" is the kind
+           of unsolicited sales-y
+           framing the operator has
+           flagged before. Customers
+           asking factual questions
+           want answers, not
+           purchase prompts.
+
+  No procedure changes -- the BTM
+  pairing/connection/RGB-absence
+  /macro-absence facts were
+  correct in Section 1 already.
+  This fix is purely guardrails +
+  the charging-dock factual update.
+
+  ast.parse before/after.
+
+v1.9.3 (2026-05-11) -- Claude
+  * Z-bump: content expansion --
+    The Gen 2 factory reset KB entry
+    listed the procedure (SELECT + L3
+    + R3 for 5 sec) but only said
+    "Clears ALL custom settings" with
+    no specifics. The official user
+    manual page 14 has an explicit
+    12-item list of what gets cleared,
+    plus a post-reset note about
+    re-pairing. Without those specifics
+    in the KB the bot can only give
+    vague answers to customer
+    questions like:
+      - "Will factory reset delete my
+        macros?" (yes -- in list)
+      - "Will it reset my RGB?" (yes
+        -- in list)
+      - "Will it reset my firmware?"
+        (no -- NOT in list; firmware
+        update is a separate operation)
+      - "Will I need to re-pair my
+        phone?" (per manual: maybe)
+
+  Fix:
+    Expanded the FACTORY RESET section
+    with three sub-sections:
+      1. WHAT FACTORY RESET CLEARS --
+         the full 12-item list copied
+         verbatim from manual page 14.
+      2. WHAT FACTORY RESET DOES NOT
+         TOUCH -- a complementary list
+         covering common customer
+         questions whose answer is "no
+         that's not affected" (firmware
+         version, joystick calibration,
+         battery state, host-side
+         Bluetooth pairing entries).
+         Not directly from the manual
+         but inferred from absence in
+         the clear-list + general
+         controller architecture.
+      3. AFTER FACTORY RESET -- the
+         manual's note that the
+         controller restarts with
+         factory defaults and that
+         re-pairing may be required,
+         plus a practical tip for
+         flaky reconnection (delete
+         old entry from host BT list,
+         re-pair from scratch).
+    Plus a one-line AI-facing rule at
+    the end pointing the bot back to
+    the two lists for any "will it
+    delete X?" customer question.
+
+  No procedure change -- the SELECT
+  + L3 + R3 for 5 sec combo is
+  unchanged, just better documented.
+
+  ast.parse before/after.
+
+v1.9.2 (2026-05-11) -- Claude
+  * Z-bump: content addition --
+    cross-referencing the official
+    current-Stellaris (Gen 2) user
+    manual against the KB turned up
+    one real gap: the manual page 12
+    Power Management section lists
+    "Power Off: Press RESET" as the
+    official way to turn the controller
+    off, but the KB never documented
+    this. The KB only mentioned the
+    RESET button in its hardware-reset
+    role (long press), so a customer
+    asking "how do I turn off my
+    controller" would either get
+    Manual Sleep guidance (HOME for
+    5 sec -- which is sleep, not off)
+    or no clear answer.
+
+  Why this matters operationally:
+    The same physical RESET button
+    has two different behaviors based
+    on press duration:
+      - SHORT press: power off the
+        controller (manual p. 12).
+      - LONG press (1+ sec): hardware
+        reset (manual p. 13).
+    Neither press clears user settings.
+    Customer confusion paths if
+    undocumented:
+      - "I pressed RESET briefly and
+        my controller turned off --
+        did I do it right or did I
+        mess up the reset?"
+      - "I held RESET to power off
+        and now my controller is in
+        a weird state -- did the long
+        hold do something different?"
+    Both are normal behaviors of the
+    same button; the bot needs to
+    know the distinction to answer
+    cleanly.
+
+  Fix (two coordinated edits):
+    1. HARDWARE RESET section --
+       updated wording from "Press the
+       RESET button for 1 second" to
+       "Press and hold for MORE than
+       1 second" (matches the manual's
+       exact wording "more than 1
+       second" on page 13), and added
+       "controller enters sleep state
+       automatically after the reset"
+       which was also documented in
+       the manual but absent from KB.
+
+    2. New RESET BUTTON DUAL FUNCTION
+       block immediately below HARDWARE
+       RESET, explicitly contrasting
+       short-press (power off) vs.
+       long-press (hardware reset)
+       behaviors. Includes example
+       customer phrasings + correct
+       answers so the bot doesn't
+       have to infer.
+
+    3. AUTO SLEEP section -- added the
+       official power-off command
+       ("short-press RESET, manual
+       page 12") and cross-referenced
+       the dual-function block above.
+
+  No changes to:
+    - Factory reset procedure
+      (SELECT + L3 + R3 for 5 sec) --
+      manual-verified, was already
+      correct.
+    - All 25 other Gen 2 manual facts
+      verified during this audit
+      (calibration, polling rates, TMR
+      joysticks, Bluetooth/2.4GHz/Wired
+      mode entry combos, RGB modes
+      and brightness levels, vibration
+      levels, console disclaimer, audio
+      jack PC-only note, ABXY swap,
+      D-pad/stick swap, Steam mode
+      procedure, macro programming up
+      to 22 inputs, battery indicator
+      CAPTURE+START, etc.) -- all
+      confirmed already present and
+      accurate.
+
+  ast.parse before/after.
+
+v1.9.1 (2026-05-11) -- Claude
+  * Z-bump: disambiguation hygiene --
+    Customer asked "Factory reset
+    steps" for Stellaris. Bot replied
+    asking which generation, which is
+    correct -- but identified Gen 1 by
+    saying "Has a physical mode switch
+    on the back with 4 positions
+    (Nintendo / Android / iOS /
+    Windows)". The mode switch IS a
+    Gen-1-only feature, but referencing
+    it in a factory-reset context risks
+    the customer thinking the mode
+    switch is part of the reset
+    procedure ("do I need to set it to
+    Nintendo before resetting?"
+    -- no).
+
+  Root cause:
+    Two compounding issues:
+    1. The SYSTEM_PROMPT's "APP SUPPORT
+       BACK-LABEL CHECK" rule -- which
+       is the documented universal
+       Gen 1 vs Gen 2 disambiguator
+       for Ares Pro / Stellaris /
+       Blitz Tri-Mode -- only listed
+       "software, RGB-via-software,
+       button-mapping-via-software,
+       firmware" as the trigger
+       contexts. Factory reset,
+       hardware reset, and calibration
+       weren't in the trigger list, so
+       the bot didn't apply the rule
+       for this query.
+    2. The v1.8.5 and v1.9.0 changes
+       added significant new content
+       describing the 4-position mode
+       switch as a salient Gen 1
+       feature -- making it newly
+       prominent in the bot's context
+       window for any Stellaris query
+       that hits disambiguation. The
+       bot pattern-matched to "most
+       visible Gen 1 feature" and
+       cited the mode switch.
+
+  Fix (two coordinated edits):
+
+  (1) Extended the "App Support" rule
+      trigger list to include FACTORY
+      RESET, HARDWARE RESET, and
+      CALIBRATION queries. These all
+      have generation-specific
+      procedures (e.g. current
+      Stellaris factory reset is
+      SELECT+L3+R3 / Gen 1 is TURBO+
+      BACK), so disambiguating BEFORE
+      answering is correct. The
+      extension also adds a
+      Stellaris-specific alternative
+      disambiguator -- the physical
+      RESET button presence (Gen 2
+      has a small RESET button next
+      to the USB-C port; Gen 1 does
+      not). Either the "App Support"
+      sticker check OR the RESET-
+      button-presence check is
+      acceptable for these queries.
+
+  (2) Added an explicit Section 4
+      AI-facing note in the Stellaris
+      entry forbidding mode-switch
+      references in non-connectivity
+      disambiguation. The bot may
+      still reference the mode switch
+      when answering connection /
+      gyro / Bluetooth pairing /
+      "Pro Controller" / 2.4GHz
+      dongle questions -- those are
+      the contexts where the mode
+      switch is genuinely part of
+      the procedure. For reset /
+      calibration / shortcut / RGB
+      questions, the mode switch is
+      irrelevant and mentioning it
+      misleads the customer.
+
+  Customer-visible impact:
+    Future Stellaris factory-reset
+    queries should now disambiguate
+    using the "App Support" sticker
+    or the RESET button, not the
+    mode switch -- removing the
+    "do I need to do something with
+    the mode switch?" confusion.
+
+  No changes to:
+    - The factory reset procedures
+      themselves (those are correct).
+    - The Gen 1 mode switch
+      documentation (that's correct
+      and necessary for connectivity
+      answers; only the use of it as
+      a disambiguator in non-
+      connectivity contexts changes).
+
+  ast.parse before/after.
+
 v1.9.0 (2026-05-11) -- Claude
   * Y-bump: new capability --
     Added a routing rule for software/
@@ -2420,7 +2811,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.9.0"
+__version__ = "1.9.4"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -2886,11 +3277,38 @@ ABXY/HOME white lighting and joystick RGB are independent groups but the LB+RB m
 
 CALIBRATION: Power off. Hold CAPTURE + HOME. Rotate both sticks 3 times. Press triggers fully 3 times. Press A to confirm.
 
-HARDWARE RESET (current Stellaris): Press the physical RESET button next to the USB-C port for 1 second. Does NOT delete user settings — just recovers from unresponsive state.
+HARDWARE RESET (current Stellaris): Press and hold the physical RESET button next to the USB-C port for MORE than 1 second. Does NOT delete user settings — just recovers from unresponsive state. After the hardware reset, the controller enters sleep state automatically; press HOME to wake.
 
-FACTORY RESET (current Stellaris): Hold SELECT + L3 + R3 simultaneously for 5 seconds. Clears ALL custom settings.
+RESET BUTTON DUAL FUNCTION (current Stellaris) — IMPORTANT, easy to confuse: the small RESET button next to the USB-C port has TWO different behaviors depending on press duration:
+  - SHORT press (release immediately): powers the controller OFF. Settings preserved. This is the OFFICIAL way to power off the controller per the user manual (page 12, "Power Off: Press RESET").
+  - LONG press (more than 1 second): hardware reset — recovers from unresponsive state. Settings preserved. Controller enters sleep state after the reset.
+  Neither press clears user settings; both preserve them. To clear settings the customer must use FACTORY RESET (SELECT + L3 + R3 for 5 seconds, see below). If a customer says "I pressed the RESET button and my controller turned off — did I do it right?", the answer is yes — short press = power off. If they say "I held it and my controller went to sleep — did it reset?", the answer is also yes — that's the hardware reset behavior. Both outcomes are normal for the same button.
 
-AUTO SLEEP: 30 seconds if not connected, 5 minutes if connected but inactive. Wake by pressing HOME. Manual sleep: hold HOME for 5 seconds.
+FACTORY RESET (current Stellaris): Ensure the controller is powered ON. Hold SELECT + L3 + R3 simultaneously for 5 seconds. The controller will reset automatically.
+
+WHAT FACTORY RESET CLEARS (current Stellaris, per user manual page 14):
+  - All TURBO button assignments
+  - TURBO speed level settings
+  - Motor vibration strength settings
+  - All AUTO / continuous input functions
+  - Stick circle / square (45°) mode settings
+  - D-pad and Left Stick swap settings
+  - A / B / X / Y button swap settings
+  - Keyboard & Mouse mode (PC)
+  - Stick center deadzone (restored to default)
+  - All macro definitions (ML / MR)
+  - Mode switching settings (restored to default)
+  - All RGB lighting effects and brightness settings
+
+WHAT FACTORY RESET DOES NOT TOUCH (current Stellaris): firmware version (use the PC companion software's firmware update tool to roll back/update); joystick calibration (use the CALIBRATION shortcut above to redo); battery state (charge level is hardware state, not a setting); paired Bluetooth devices on the host side (the host phone/PC may still show "Pro Controller" in its Bluetooth list, but the controller will need to re-enter pairing mode to reconnect after the reset).
+
+AFTER FACTORY RESET (current Stellaris, per manual page 14):
+  - Controller restarts with default factory settings.
+  - Re-pairing with previously paired devices may be required -- the customer should delete the old "Pro Controller" / "Stellaris" entry from their host device's Bluetooth list and re-pair from scratch if reconnection is flaky.
+
+If a customer asks "will factory reset delete X?", check the WHAT FACTORY RESET CLEARS list above. If X is on that list, the answer is yes. If X is on the WHAT FACTORY RESET DOES NOT TOUCH list (or is something like firmware/calibration/battery), the answer is no.
+
+AUTO SLEEP: 30 seconds if not connected, 5 minutes if connected but inactive. Wake by pressing HOME. Manual sleep: hold HOME for 5 seconds. Power off (different from sleep): short-press the RESET button next to the USB-C port — this is the OFFICIAL power-off command per the user manual page 12. The RESET button has dual function based on press duration; see "RESET BUTTON DUAL FUNCTION" above.
 
 FIRMWARE UPDATE (current Stellaris):
 - Done THROUGH the Cosmic Byte companion software (same software used for RGB/macro/mapping config). There is NO separate firmware updater tool.
@@ -3197,6 +3615,22 @@ SECTION 4: COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
   will browse the archive, not find Stellaris Gen 1, and come back
   frustrated. See "LEGACY / DISCONTINUED PRODUCT SOFTWARE — DROPBOX
   ARCHIVE POLICY" in the system prompt for the broader rule.
+
+- Do NOT use the 4-position mode switch (Nintendo / Android / iOS /
+  Windows) as the Gen 1 identifier when disambiguating Gen 1 vs Gen 2
+  for non-connectivity questions like factory reset, hardware reset,
+  calibration, RGB on-controller shortcuts, turbo speeds, or vibration
+  shortcuts. The mode switch is for connection mode selection and
+  mentioning it in a reset / calibration / shortcut context risks the
+  customer thinking the mode switch is somehow part of their actual
+  procedure (e.g. "do I need to set the mode switch to Nintendo before
+  the factory reset?" -- no, they don't). For these non-connectivity
+  questions, use the "App Support" back-label sticker check (Gen 2 has
+  it, Gen 1 doesn't) OR the physical RESET button presence check (Gen 2
+  has a small RESET button next to the USB-C port; Gen 1 doesn't).
+  Reserve mode-switch references for genuinely connection-related
+  questions: gyro / Bluetooth pairing / Nintendo Switch mode / 2.4GHz
+  dongle setup / "why does my controller show up as 'Pro Controller'".
 
 - Gen 1 has FOUR mode positions on the physical switch, not three. Left-
   to-right: Nintendo / Android / iOS / Windows. The Gen 1 user manual
@@ -3820,18 +4254,20 @@ BLITZ TRI-MODE vs OLD BLITZ WIRELESS — KEY DIFFERENCES:
 | Gyro              | Yes                      | No                       |
 | Software support  | Yes (App Support label)  | No                       |
 | Polling rate      | 1000Hz (wired/2.4GHz)    | 1000Hz (wired/2.4GHz)    |
-| Charging dock     | Coming soon (not yet launched) | No                |
+| Charging dock     | SUPPORTED (sold separately, NOT included) | No |
 
 The Blitz Tri-Mode is NOT just a connectivity upgrade — TMR joysticks, gyro, and software are significant additions. Some functions may not work on Android/iOS. No warranty for unsupported device damage.
 
-CHARGING DOCK STATUS — IMPORTANT:
-The Blitz Tri-Mode charging dock has NOT YET LAUNCHED. It is coming soon and will be available on thecosmicbyte.com on its own separate product page when released.
+CHARGING DOCK STATUS (v1.9.4 update — IMPORTANT):
+The Blitz Tri-Mode supports a charging dock accessory. The dock is SOLD SEPARATELY -- it is NOT included with the controller. Customers who want the dock must purchase it on its own.
 
-Do NOT tell customers the charging dock is "sold separately," "available now," or "in stock." It is not yet listed on the website.
-Do NOT direct customers to the Blitz Tri-Mode controller product page for the dock — that page sells the controller only.
-Do NOT apply ONLINEPAY or any other coupon code to the charging dock — there is no SKU yet to apply it to.
+CRITICAL clarifications for AI:
+- The Blitz Tri-Mode controller itself has the contacts on the back for the charging dock (that's the "supported" part). The dock is a separate accessory product.
+- The dock is NOT in the box with the controller. Anyone telling a customer "charging dock included" is wrong.
+- The dock IS available for purchase -- customers can buy it on thecosmicbyte.com (it has its own product listing now).
+- The dock is an ADDED SUPPORT accessory, not a default-bundled item. Marketing the controller's features should mention "supports a charging dock (sold separately)" rather than "comes with a charging dock" or "charging dock included".
 
-If a customer asks where to find or buy the Blitz Tri-Mode charging dock, the correct response is: "The charging dock for the Blitz Tri-Mode is launching soon and will be available on thecosmicbyte.com on its own product page when released. In the meantime, you can charge your Blitz Tri-Mode using the included USB-C cable — plug it into a 5V/1A adapter or a PC USB port. Avoid fast chargers as they can damage the battery and void your warranty. A full charge takes 2.5–3 hours."
+If a customer asks where to buy the Blitz Tri-Mode charging dock, the correct response is: "The Blitz Tri-Mode supports a charging dock, which is sold separately on thecosmicbyte.com (not included with the controller). Search the site for the Blitz Tri-Mode charging dock product page. In the meantime, the controller charges normally via the included USB-C cable -- use a 5V/1A adapter or PC USB port. Avoid fast chargers as they can damage the battery."
 
 KEY FEATURES (full list — surface these accurately when comparing Blitz Tri-Mode to other CB controllers):
 - JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Newer/more precise than Hall Effect. Same joystick tech tier as Drakon and Stellaris 2nd Gen. The TMR joysticks are a primary selling point of the Blitz Tri-Mode and a real advantage over Lumora (which has Hall Effect joysticks, not TMR) — but NOT an advantage over Drakon, which also has TMR joysticks.
@@ -3915,7 +4351,7 @@ STICK SHAPE: Hold L3 + TURBO -> Circle (default) / Square 45-degree mode.
 CONTROLLER LOCK (bag): Hold SELECT + R3 for 5 seconds until all 4 LEDs light. Unlock: plug in USB charger.
 
 POWER: ON=press HOME (0.5-1 sec). Auto sleep=5 min. OFF=hold HOME 5 sec. Reset (frozen)=hold HOME 8 sec. Factory reset=hold SELECT + L3 + R3 for 5 seconds (clears all settings).
-CHARGING: USB-C cable only for now. Charging Dock launching soon — see CHARGING DOCK STATUS section above. Use 5V/1A adapter or PC USB ONLY. Fast chargers damage battery and void warranty. 2.5-3 hours charge. Battery: 600mAh, 7-15 hours.
+CHARGING: USB-C cable included in the box (use 5V/1A adapter or PC USB ONLY — fast chargers damage battery and void warranty; 2.5-3 hours charge; battery 600mAh, 7-15 hours runtime). Charging dock is also supported, sold separately on thecosmicbyte.com — see CHARGING DOCK STATUS section above for the full policy.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered. Fast charger damage NOT covered.
 
@@ -3931,6 +4367,51 @@ Vibration levels: 100%, 70% (default), 40%, 0% — adjust with TURBO + Right Sti
 Cloud gaming vibration depends on whether the platform and game support haptic feedback for external controllers.
 
 BLUETOOTH POLLING RATE: Up to 500Hz in Bluetooth mode. Actual rate can range 125Hz to 500Hz depending on the connected device and its Bluetooth chip. For the most stable and consistent polling rate, use Wired (USB-C) or 2.4GHz Wireless — both deliver the full 1000Hz.
+
+═══════════════════════════════════════════════════════════════════════
+COMMON FAILURE MODES TO AVOID (BLITZ TRI-MODE AI-FACING NOTES)
+═══════════════════════════════════════════════════════════════════════
+
+- Do NOT say Blitz Tri-Mode has macro buttons. It does NOT. The Tri-Mode
+  has Turbo (with sequence recording, see TURBO SEQUENCE RECORDING
+  section above) but NO dedicated macro buttons -- no ML/MR, no LK/RK,
+  no M1/M2. This is a real bug that has happened: when asked "what does
+  Blitz Tri-Mode add over Blitz Wireless", the bot pattern-matched
+  "newer model = adds macro buttons" and listed macro buttons as a
+  feature. Wrong. Customers buying the Tri-Mode expecting dedicated
+  macro buttons will be disappointed. If a customer needs dedicated
+  macros, recommend Lumora (4 macros) or Drakon (2 macros) -- NOT
+  Blitz Tri-Mode.
+
+- Do NOT say the charging dock is "included" with the Blitz Tri-Mode.
+  It is NOT included in the box. The Tri-Mode SUPPORTS a charging dock
+  accessory (contacts are on the back of the controller), but the dock
+  itself is a separate purchase -- "sold separately" on thecosmicbyte.
+  com. See CHARGING DOCK STATUS section above. This is also a real bug
+  that has happened: bot listed "charging dock included" as a Tri-Mode
+  feature when asked about upgrades over Blitz Wireless. Wrong.
+
+- Do NOT say Blitz Tri-Mode has RGB lighting. It does NOT. The
+  controller is solid black with no RGB customisation in the software.
+  If a customer wants RGB, recommend Lumora (5 zones, Cloak design) or
+  Drakon (7 zones, keyframe animations).
+
+- Do NOT confuse Blitz Tri-Mode features with Stellaris or Ares Pro
+  features. They are different product lines. When listing what the
+  Tri-Mode adds over the discontinued Blitz Wireless, stick to: Bluetooth
+  connectivity (in addition to 2.4GHz + wired), 6-axis gyro (Bluetooth
+  Gyro Mode only), TMR joysticks (replacing Hall Effect), App Support
+  (PC companion software for remapping/profiles/turbo/vibration/firmware),
+  Turbo with sequence recording (NOT dedicated macro buttons),
+  charging-dock support (sold separately, NOT bundled), and DualShock
+  Mode for Android. Do NOT list macro buttons, RGB, replaceable stick
+  tops, or any other Stellaris/Lumora/Drakon feature.
+
+- Do NOT proactively offer a buy link, share product URLs, or invite the
+  customer to ask for "a buy link" unprompted. If a customer explicitly
+  asks where to buy, point them to thecosmicbyte.com or Amazon India,
+  but do NOT volunteer purchase prompts on every related question. The
+  customer is asking for information, not to be sold to.
 """,
 
     "Blitz Wireless": """
@@ -6173,7 +6654,9 @@ These products do not support user firmware updates at all. If a customer asks h
 ──────────────────────────────────────────────────────────────────────
 "APP SUPPORT" BACK-LABEL CHECK — the disambiguator for Categories A vs B
 ──────────────────────────────────────────────────────────────────────
-Three product lines (Ares Pro, Stellaris, Blitz Tri-Mode) have a current generation that is in Category A and an older generation that is in Category B (or C for Stellaris Gen 1). The newer ones have "App Support" printed in the top-left corner of the back label. ALWAYS ask the customer to check the back label for "App Support" text when answering software, RGB-via-software, button-mapping-via-software, or firmware questions for any of these three products. If "App Support" is present → Category A. If absent → Category B (or C for Stellaris).
+Three product lines (Ares Pro, Stellaris, Blitz Tri-Mode) have a current generation that is in Category A and an older generation that is in Category B (or C for Stellaris Gen 1). The newer ones have "App Support" printed in the top-left corner of the back label. ALWAYS ask the customer to check the back label for "App Support" text when answering software, RGB-via-software, button-mapping-via-software, firmware, FACTORY RESET, HARDWARE RESET, or CALIBRATION questions for any of these three products. (Reset and calibration procedures differ across generations -- e.g. current Stellaris factory reset is SELECT+L3+R3 for 5 sec while Gen 1 is TURBO+BACK for 6 sec; the wrong instructions for the wrong gen do nothing and confuse the customer.) If "App Support" is present → Category A. If absent → Category B (or C for Stellaris).
+
+For Stellaris specifically, an additional reset-relevant disambiguator is the small physical RESET button next to the USB-C port: present on current Stellaris (Gen 2), absent on Gen 1. You may use either the "App Support" sticker check OR the RESET-button-presence check, whichever feels more natural for the conversation. Do NOT use the 4-position mode switch as a Gen 1 identifier when the customer is asking about reset/calibration/non-connectivity topics -- the mode switch is for connection mode selection (Nintendo / Android / iOS / Windows / dongle) and mentioning it in a reset context risks the customer thinking the mode switch is involved in their actual question. Reserve mode-switch references for connection / gyro / Bluetooth pairing answers where the mode switch is genuinely part of the procedure.
 
 ──────────────────────────────────────────────────────────────────────
 LEGACY / DISCONTINUED PRODUCT SOFTWARE — DROPBOX ARCHIVE POLICY (v1.9.0)
