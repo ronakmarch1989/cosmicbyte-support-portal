@@ -33,6 +33,164 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.8.5 (2026-05-11) -- Claude
+  * Z-bump: bug fix --
+    The Stellaris Gen 1 section had a
+    bullet "NO Gyro support" that was
+    factually wrong. Customer reported
+    the bot telling them Gen 1 has no
+    gyro, which caused upsell pressure
+    toward Gen 2 when Gen 1 actually
+    has full gyro support.
+
+  Customer-visible impact:
+    A Stellaris Gen 1 customer asking
+    about gyro received: "Gen 1 does NOT
+    have gyro / motion sensing support
+    at all. It's a hardware limitation
+    of that generation -- there's no
+    gyro sensor built in. Upgrade to
+    Gen 2." -- all of which was wrong.
+    Gen 1 ships with a 6-axis gyro
+    chip and works as a Nintendo Switch
+    Pro Controller (gyro included) over
+    Bluetooth.
+
+  Root cause (compound):
+    1. Section 2 (Legacy Gen 1) had the
+       wrong bullet "NO Gyro support" in
+       the DIFFERENCES list.
+    2. The bullet was internally
+       contradicted by other parts of
+       the same file (the Ares Pro KB
+       entry's gyro-alternatives list
+       names "Stellaris" as having
+       6-axis gyro hardware; the
+       SYSTEM_PROMPT's "PRO CONTROLLER"
+       BLUETOOTH NAME block names
+       "Stellaris Gen 1 in WIN PC mode"
+       as having gyro), but the
+       localized wrong bullet won out
+       in the AI's context selection.
+    3. The Gen 1 mode switch was also
+       documented as having 3 positions
+       (Android / WIN PC / iOS), not 4.
+       The 4th position (Nintendo,
+       leftmost) was missing.
+    4. The Gen 1 user manual uses two
+       different names for the same
+       position -- the physical switch
+       is labeled "Nintendo" but the
+       manual's connection sections call
+       it "WIN PC mode". Earlier drafts
+       treated these as separate modes,
+       which compounded the bug.
+
+  Source of truth:
+    Customer-supplied official Gen 1
+    user manual PDF + back-panel photo
+    showing the actual switch labels.
+    All corrections cross-referenced
+    against the manual page-by-page.
+
+  Fix (six related corrections, all
+  shipped under this single Z-bump
+  because they're all variations of
+  "the Gen 1 section had the wrong
+  details"):
+
+  (1) GEN 1 gyro -- now documented
+      correctly:
+      - 6-axis gyro hardware present.
+      - Accessible in NINTENDO mode
+        (leftmost switch position).
+      - Pairs as "Pro Controller" via
+        Bluetooth (Switch protocol).
+      - Compatible with PC (via Steam
+        Switch Pro Controller support),
+        Steam Deck, Android 10+, iOS
+        13.4+.
+      - Not always on -- activation is
+        game-controlled (no on-controller
+        toggle).
+      - No software-side customization
+        (Gen 1 has no PC software at all).
+      - LT/RT are DIGITAL-only in this
+        mode (Switch protocol limit).
+      - For analog triggers + gyro
+        simultaneously, customer needs
+        the current Stellaris (Gen 2).
+      A full "GYRO (Gen 1 Stellaris)"
+      section was added with the step-
+      by-step walkthrough.
+
+  (2) Mode switch position count -- was
+      "3 positions (Android / WIN PC /
+      iOS)", now correctly documented
+      as 4 positions left-to-right:
+      Nintendo / Android / iOS / Windows.
+      A cross-reference table maps
+      physical switch labels to the
+      manual's naming, since the manual
+      uses different names for some
+      positions.
+
+  (3) Windows position (rightmost) --
+      previously not documented at all.
+      Now documented as the 2.4GHz USB
+      dongle mode (Tesla Dongle). NOT
+      Bluetooth, no pairing name, no
+      gyro.
+
+  (4) Turbo speeds for Gen 1 -- the
+      Gen 1 section previously inherited
+      current-Stellaris speeds (5/12/20
+      shots/sec). Per the Gen 1 manual
+      page 4, Gen 1 speeds are 5/15/25
+      shots/sec (Slow/Medium-default/
+      Fast). Corrected.
+
+  (5) Vibration adjustment shortcut for
+      Gen 1 -- previously inherited
+      current-Stellaris shortcut (TURBO
+      + Right Stick). Per Gen 1 manual
+      page 5, Gen 1 uses LEFT Stick
+      (TURBO + Left Stick Up/Down).
+      Corrected.
+
+  (6) SYSTEM_PROMPT cross-reference
+      ("PRO CONTROLLER" BLUETOOTH NAME
+      block) -- previously said
+      "Stellaris Gen 1 in WIN PC mode".
+      Updated to say "NINTENDO mode
+      (the leftmost position on its
+      4-position physical mode switch;
+      the Gen 1 user manual confusingly
+      calls this 'WIN PC mode' because
+      it works with Windows PC via
+      Steam Switch Pro Controller
+      support, but the physical switch
+      is labeled 'Nintendo', same
+      position)" so the AI has both
+      names available.
+
+  Prevention -- Section 4 AI-facing
+  notes:
+    Six new bullets added to "COMMON
+    FAILURE MODES TO AVOID" covering:
+    don't say Gen 1 has no gyro; Gen 1
+    has 4 switch positions not 3; don't
+    confuse Nintendo position with
+    Windows position; don't say LT/RT
+    are pressure-sensitive in Nintendo
+    mode; don't use current-Stellaris
+    vibration shortcut for Gen 1
+    (left vs right stick); don't cite
+    current-Stellaris turbo speeds
+    for Gen 1 (5/15/25 not 5/12/20).
+
+  ast.parse before/after.
+
 v1.8.4 (2026-05-10) -- Claude
   * Z-bump: bug fix --
     detect_products_from_message() was
@@ -2141,7 +2299,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.8.4"
+__version__ = "1.8.5"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -2629,32 +2787,145 @@ Gen 1 is no longer sold. Only switch to this section if the customer signals the
 DIFFERENCES FROM CURRENT STELLARIS:
 - Joysticks: MAGNETIC (not TMR).
 - Triggers: MAGNETIC (no Analog/Digital mode switch).
-- NO Gyro support.
-- NO companion software — configured entirely via gamepad button shortcuts.
-- 3 RGB modes only (vs. current's 4): Mixed Color Wave (default), Color Breathing, Single Color.
-- Has a PHYSICAL mode switch on the back (Android / WIN PC / iOS positions). Current Stellaris does not have this — connection mode is set by button combo.
+- Gyro: 6-axis hardware present. Accessible ONLY in Nintendo mode (the
+  leftmost switch position) over Bluetooth, pairing as "Pro Controller" via
+  the Nintendo Switch Pro Controller protocol. Trigger analog mode is NOT
+  available simultaneously with gyro on Gen 1 -- LT/RT become digital-only
+  in Nintendo mode (Switch protocol limitation). No software-side gyro
+  customization since Gen 1 has no PC software. Current Stellaris (Gen 2)
+  supports gyro AND analog triggers simultaneously, and has software-side
+  Motion tab controls. See "GYRO (Gen 1 Stellaris)" section below for the
+  full walkthrough.
+- NO PC companion software (Windows or otherwise). Configured entirely
+  via gamepad button shortcuts. (Key Linker mobile app handles button
+  remapping + firmware updates only -- NOT RGB, NOT gyro, NOT vibration,
+  NOT turbo, NOT calibration.)
+- 3 RGB modes only (vs. current's 4): Mixed Color Wave (default),
+  Color Breathing, Single Color.
+- Has a PHYSICAL mode switch on the back with FOUR positions (left-to-right):
+  Nintendo / Android / iOS / Windows. Current Stellaris does not have this
+  -- connection mode is set by button combo.
 - Different RGB shortcut combinations (see below).
+- Different turbo speeds: Gen 1 = 5 / 15 (default) / 25 shots/sec. Current
+  Stellaris = 5 / 12 (default) / 20 shots/sec. Do not confuse.
+- Vibration adjustment uses LEFT joystick on Gen 1 (TURBO + Left Stick Up
+  /Down). Current Stellaris uses RIGHT stick. Do not confuse.
+
+GEN 1 MODE SWITCH -- FOUR POSITIONS (this is the most-confused part of
+the Gen 1 manual, read carefully):
+
+The physical slide switch on the back of the controller has FOUR labeled
+positions, left-to-right: Nintendo / Android / iOS / Windows.
+
+The Gen 1 user manual uses DIFFERENT naming for the same positions in its
+"How to connect" sections, which historically caused this KB to document
+only 3 modes and miss the Nintendo / WIN PC duality. Cross-reference:
+
+  PHYSICAL LABEL   | MANUAL'S NAME       | WHAT IT IS
+  -----------------|---------------------|------------------------------------
+  Nintendo         | "WIN PC" mode       | Bluetooth, Pro Controller protocol
+                   | (also "PC Steam     | (Nintendo Switch Pro Controller).
+                   | Analog Trigger BT") | Has gyro. LT/RT are DIGITAL-only.
+                   |                     | Works with PC (via Steam Switch
+                   |                     | Pro Controller support), Steam
+                   |                     | Deck, Android 10+.
+  Android          | "Android" mode      | Bluetooth, D-Input on PC.
+                   |                     | Works with PC, Steam Deck,
+                   |                     | Android 10+.
+  iOS              | "iOS" mode          | Bluetooth, X-Input on PC.
+                   |                     | LT/RT ARE pressure-sensitive on
+                   |                     | PC in this mode. Works with PC,
+                   |                     | Android 10+, iOS 13.4+.
+  Windows          | "Windows mode"      | 2.4GHz USB dongle (Tesla dongle).
+                   | (Tesla Dongle)      | NOT Bluetooth. No gyro.
+
+When customers ask about gyro, they're looking at the physical switch
+labeled "Nintendo" -- BUT the manual tells them to set switch to "WIN PC".
+These are the SAME position. ALWAYS clarify this duality if there's any
+confusion -- the original Gen 1 manual is genuinely poorly worded on this.
 
 GEN 1 CONNECTION (uses physical mode switch + sync button on top):
-- Step 1: Move the mode switch on the back to Android / WIN PC / iOS as needed.
-- Step 2: Make sure controller is OFF. Short-press the sync button on top to power off if needed.
-- Step 3: Press and hold the sync button for 1 second to enter Bluetooth pairing mode. LEDs flash.
+- Step 1: Move the mode switch on the back to the desired position
+  (Nintendo / Android / iOS / Windows -- see table above).
+- Step 2: Make sure controller is OFF. Short-press the sync button on
+  top to power off if needed.
+- Step 3: Press and hold the sync button for 1 second to enter Bluetooth
+  pairing mode. LEDs flash. (Skip this step for Windows position -- that
+  position uses the 2.4GHz dongle, not Bluetooth.)
 - Step 4: On the device, enable Bluetooth and select the controller.
 
 GEN 1 BLUETOOTH PAIRING NAMES (from Gen 1 user manual):
-- PC mode (WIN PC switch position): pairs as "Pro Controller".
-- Android mode: pairs as "CB Stellaris Controller".
-- iOS mode: pairs as "Xbox Wireless Controller".
+- NINTENDO position (manual calls "WIN PC"): pairs as "Pro Controller".
+  THIS is the gyro mode.
+- ANDROID position: pairs as "CB Stellaris Controller".
+- iOS position: pairs as "Xbox Wireless Controller".
+- WINDOWS position: NOT a Bluetooth mode. Uses the 2.4GHz USB dongle.
 
-GEN 1 LED INDICATORS:
-- PC mode: LED 1 steady on connection.
-- Android mode: LEDs 2 and 3 steady on connection.
-- iOS mode: LEDs 1 and 2 steady on connection.
+GEN 1 LED INDICATORS (on successful connection):
+- NINTENDO mode (Pro Controller / gyro): LED 1 steady.
+- ANDROID mode: LEDs 2 and 3 steady.
+- iOS mode: LEDs 1 and 2 steady.
+- WINDOWS mode (2.4GHz dongle): LED 1 steady, after 5-10 seconds.
 
-GEN 1 WIRED:
-- Set mode switch to PC / Android / iOS as desired. Connect via USB-C cable.
+GEN 1 WIRELESS (2.4GHz dongle / Windows position):
+- Set mode switch to the Windows position (rightmost).
+- Insert the USB receiver into the PC's USB port.
+- Wait 5-10 seconds. LED 1 will be static when connected.
+- This mode does NOT use Bluetooth and does NOT pair under any name.
+- No gyro in this mode -- gyro is Nintendo-position-only on Gen 1.
+
+GEN 1 WIRED (USB-C cable):
+- Set mode switch to Nintendo / Android / iOS as desired (Windows position
+  is for the 2.4GHz dongle, not wired). Then connect via USB-C cable.
 - Android wired: LEDs 1 and 4 flash, then steady on connection.
-- iOS / PC wired: LEDs 1 and 3 flash, then steady on connection.
+- iOS / Nintendo (PC) wired: LEDs 1 and 3 flash, then steady on connection.
+- Audio (3.5mm port) works only in wired Nintendo / Pro Controller mode
+  to PC. Wireless Pro Controller mode does NOT support audio (per Gen 1
+  manual function comparison table).
+
+GYRO (Gen 1 Stellaris):
+- Gen 1 HAS 6-axis gyro hardware (same hardware family as current Stellaris).
+  Earlier drafts of this KB incorrectly stated "NO Gyro support" -- that
+  was a bug fixed in v1.8.5. Gen 1 gyro works via the Nintendo Switch Pro
+  Controller protocol.
+- Available ONLY in Nintendo mode (leftmost switch position, called
+  "WIN PC" in the official Gen 1 user manual). NOT available in Android,
+  iOS, or Windows-dongle modes.
+- Activation walkthrough:
+    1. Set the mode switch on the back of the controller to NINTENDO
+       (leftmost position). The Gen 1 manual calls this "WIN PC" mode --
+       same position, different name. If the customer is looking at their
+       controller, the label they see is "Nintendo".
+    2. Power off the controller (short-press sync button on top).
+    3. Press and hold sync button for 1 second to enter Bluetooth pairing.
+       LEDs will flash.
+    4. On the connecting device, scan Bluetooth and pair with "Pro
+       Controller".
+    5. LED 1 goes steady on successful pairing.
+- Compatible devices for Pro Controller / gyro mode:
+    * PC -- via Steam's built-in Nintendo Switch Pro Controller support.
+      Customer must enable "Switch Pro Configuration Support" in
+      Steam Settings -> Controller. Outside Steam, Switch Pro Controller
+      gyro support varies by game/driver and is not guaranteed.
+    * Android 10+ -- via games that support Switch Pro Controller mapping.
+    * iOS 13.4+ -- iOS natively supports Switch Pro Controller as of 13.4.
+- Gyro behavior:
+    * Not always on. Gyro activation is GAME-CONTROLLED, not toggled
+      on the controller. The connecting game/OS decides when gyro input
+      is consumed -- same as how gyro works on a real Nintendo Switch.
+    * No on-controller activation button or shortcut to toggle gyro.
+    * No customization controls (sensitivity, axes, curves, invert)
+      because Gen 1 has NO PC companion software. Whatever the host game
+      offers is what the customer gets.
+- IMPORTANT trigger caveat: in Nintendo / Pro Controller mode, LT and RT
+  are NOT pressure-sensitive -- they act as digital on/off buttons only.
+  This is a Switch Pro Controller protocol limitation, not a hardware
+  defect. Customers who need analog triggers should use iOS mode (X-Input
+  on PC, analog triggers) -- but iOS mode has NO gyro. There is no Gen 1
+  mode that combines analog triggers AND gyro in a single connection.
+- If a customer needs both analog triggers AND gyro simultaneously,
+  recommend the current Stellaris (Gen 2), which supports both at once
+  and adds software-side Motion-tab controls.
 
 GEN 1 RGB ZONES:
 - ABXY button lights.
@@ -2671,10 +2942,44 @@ GEN 1 RGB SHORTCUTS (DIFFERENT from current Stellaris):
 - Brightness down: Hold BACK + D-pad Down.
 - Joystick Operation RGB Mode (joystick lights only on stick movement): Hold BACK + D-pad Left. Note: joystick lights must be ON before activating this mode.
 
-GEN 1 TURBO / VIBRATION / MACRO: Same general patterns as current Stellaris (Turbo + face button to set, Turbo + Right Stick to adjust speed, Turbo + ML/MR for 2 sec to enter macro mode), with these specific Gen-1-only behaviors:
-- Vibration levels: None / Weak / Medium / Strong (default).
-- D-pad and Joystick interchange: double-press the Vib/Capture button.
-- Audio function: 3.5mm port works ONLY in wired Pro Controller (PC) mode.
+GEN 1 TURBO / VIBRATION / MACRO -- similar pattern to current Stellaris
+but several Gen-1-only differences. Read carefully -- do NOT auto-apply
+current-Stellaris shortcuts to Gen 1:
+
+TURBO (Gen 1):
+- Set Turbo: Hold TURBO + (A/B/X/Y/LB/LT/RB/RT). Cycle: Manual Turbo
+  -> Auto Turbo -> Off.
+- Clear all Turbo: Hold TURBO for 6 seconds (Gen 1 manual specifies 6s;
+  current Stellaris is 5s -- different).
+- Turbo speed: Hold TURBO + Right Stick UP (faster) / DOWN (slower).
+  Levels: 5 shots/sec (Slow) / 15 shots/sec (Medium, default) / 25
+  shots/sec (Fast). Per Gen 1 user manual page 4.
+  (Different from current Stellaris's 5 / 12 / 20.)
+
+VIBRATION (Gen 1):
+- Adjust: Hold TURBO + LEFT Stick UP (stronger) / DOWN (weaker).
+  IMPORTANT: Gen 1 uses LEFT stick for vibration adjustment, current
+  Stellaris uses RIGHT stick. Do NOT confuse these -- wrong stick
+  produces no response and the customer will think the shortcut is
+  broken.
+- Levels: None (0%) / Weak (30%) / Medium (70%) / Strong (100%, default).
+
+MACRO PROGRAMMING (ML/MR back buttons, Gen 1):
+- Hold TURBO + ML/MR for 2 seconds. LEDs 2 and 3 will stay on indicating
+  ready-to-record. Press function buttons sequentially -- controller
+  records both the buttons AND the time interval between each press.
+  Press ML/MR again to save. The corresponding LED stays on. Default
+  mappings: ML = B, MR = A.
+- Clear macro: Enter macro mode again (TURBO + ML/MR for 2 seconds),
+  then exit immediately by pressing the same ML/MR button. The slot is
+  cleared and the corresponding LED lights again.
+
+D-PAD AND JOYSTICK INTERCHANGE (Gen 1): Double-press the Vib/Capture button.
+
+AUDIO FUNCTION (Gen 1): 3.5mm port works ONLY when connected wired to
+PC in Nintendo / Pro Controller mode. Per the Gen 1 manual's function
+comparison table, audio is specifically tied to the WIRED Pro Controller
+mode -- wireless Pro Controller mode does NOT support audio.
 
 GEN 1 CALIBRATION:
 - Move the trigger switches on the back to short-distance mode.
@@ -2743,6 +3048,52 @@ Ask about variant ONLY if the customer's question is RGB-related AND the answer 
 ═══════════════════════════════════════════════════════════════════════
 SECTION 4: COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
 ═══════════════════════════════════════════════════════════════════════
+
+- Do NOT say Gen 1 has no gyro. Gen 1 has 6-axis gyro hardware and full
+  gyro support in NINTENDO mode (the leftmost switch position). Earlier
+  drafts of this KB had "NO Gyro support" listed -- that was a bug, fixed
+  in v1.8.5 after cross-referencing the Gen 1 user manual. If a customer
+  asks about Gen 1 gyro, walk them through: switch to NINTENDO position
+  (the physical label they see on the controller -- the manual calls this
+  "WIN PC mode" but the switch is labeled "Nintendo"), pair via Bluetooth
+  (appears as "Pro Controller"), connect from any device that supports the
+  Nintendo Switch Pro Controller protocol (PC via Steam, Android 10+, iOS
+  13.4+). Caveat the customer that LT/RT will be DIGITAL-only in this mode
+  (Switch protocol limitation), and that there's no software-side gyro
+  customization (Gen 1 has no PC software). See "GYRO (Gen 1 Stellaris)"
+  section above for the full walkthrough.
+
+- Gen 1 has FOUR mode positions on the physical switch, not three. Left-
+  to-right: Nintendo / Android / iOS / Windows. The Gen 1 user manual
+  confusingly calls the Nintendo position "WIN PC mode" (because it works
+  with Windows PC via Steam Switch Pro Controller support), but the physical
+  switch label is "Nintendo". When the customer is looking at their
+  controller they see "Nintendo"; when they read the manual they see "WIN
+  PC". ALWAYS clarify this duality if there's any chance of confusion --
+  this is a known wart of the Gen 1 manual.
+
+- Do NOT confuse the Nintendo position (Bluetooth, Pro Controller, has
+  gyro, DIGITAL triggers) with the Windows position (2.4GHz dongle,
+  NO gyro, no pairing name). They are different positions on the same
+  switch with very different behaviors. The Windows position requires the
+  USB receiver dongle; Nintendo position is Bluetooth-only.
+
+- Do NOT tell Gen 1 customers their LT/RT are pressure-sensitive in
+  Nintendo / Pro Controller mode -- they are DIGITAL-only in that mode
+  (Switch Pro Controller protocol limitation, documented in the Gen 1
+  manual). Pressure-sensitive triggers are available in iOS mode and in
+  wired modes that use X-Input. Gen 1 CANNOT combine analog triggers +
+  gyro in a single connection -- this requires the current Stellaris
+  (Gen 2). If a customer needs both at once, recommend the upgrade.
+
+- Do NOT use current-Stellaris shortcuts for Gen 1 vibration adjustment.
+  Gen 1 uses LEFT stick for vibration adjustment (TURBO + Left Stick
+  Up/Down); current Stellaris uses RIGHT stick. Wrong stick = no response,
+  customer thinks the shortcut is broken.
+
+- Do NOT cite current-Stellaris turbo speeds (5/12/20 shots/sec) for
+  Gen 1. Gen 1's documented speeds per the Gen 1 user manual are 5/15/25
+  shots/sec (Slow / Medium-default / Fast).
 
 - Do NOT say Gen 1 has no RGB. Both gens have RGB. Gen 1 has fewer modes (3) and different shortcuts; that is the difference.
 - Do NOT say current Stellaris RGB is software-only. It has gamepad shortcuts AND software — both work, software is additional.
@@ -5690,7 +6041,7 @@ These products do not support user firmware updates at all. If a customer asks h
 Three product lines (Ares Pro, Stellaris, Blitz Tri-Mode) have a current generation that is in Category A and an older generation that is in Category B (or C for Stellaris Gen 1). The newer ones have "App Support" printed in the top-left corner of the back label. ALWAYS ask the customer to check the back label for "App Support" text when answering software, RGB-via-software, button-mapping-via-software, or firmware questions for any of these three products. If "App Support" is present → Category A. If absent → Category B (or C for Stellaris).
 
 ──────────────────────────────────────────────────────────────────────
-"PRO CONTROLLER" BLUETOOTH NAME — multiple Cosmic Byte controllers pair as "Pro Controller" via Bluetooth in their Nintendo Switch-compatible Gyro / NS modes (Stellaris Gen 1 in WIN PC mode, Lumora in PC Gyro mode, and others). This is intentional — the controller replicates the Nintendo Switch Pro Controller Bluetooth protocol so that Gyro works the same way as on a Switch. IMPORTANT: in this mode, the analog triggers (LT/RT) are NOT pressure-sensitive — they act as digital buttons (on/off) only. If a customer mentions "Pro Controller" appearing in their Bluetooth list without specifying which Cosmic Byte product they own, ASK which controller they have before answering — multiple Cosmic Byte products use this Bluetooth name.
+"PRO CONTROLLER" BLUETOOTH NAME — multiple Cosmic Byte controllers pair as "Pro Controller" via Bluetooth in their Nintendo Switch-compatible Gyro / NS modes (Stellaris Gen 1 in NINTENDO mode -- the leftmost position on its 4-position physical mode switch; the Gen 1 user manual confusingly calls this "WIN PC mode" because it works with Windows PC via Steam Switch Pro Controller support, but the physical switch is labeled "Nintendo", same position; Lumora in PC Gyro mode, and others). This is intentional — the controller replicates the Nintendo Switch Pro Controller Bluetooth protocol so that Gyro works the same way as on a Switch. IMPORTANT: in this mode, the analog triggers (LT/RT) are NOT pressure-sensitive — they act as digital buttons (on/off) only. If a customer mentions "Pro Controller" appearing in their Bluetooth list without specifying which Cosmic Byte product they own, ASK which controller they have before answering — multiple Cosmic Byte products use this Bluetooth name.
 
 KEY LINKER MOBILE APP — used by THREE Cosmic Byte products, each with different scope. Do not generalize across them:
   - Stellaris Gen 1: Key Linker = button remapping AND firmware updates (Category C).
