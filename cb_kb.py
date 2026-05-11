@@ -33,6 +33,337 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.9.9 (2026-05-11) -- Claude
+  * Z-bump: structural hardening for
+    Ares Pro -- preemptive fix for
+    the same generation-pair
+    hallucination pattern that bit
+    Blitz Tri-Mode today (fixed in
+    v1.9.5 + v1.9.6).
+
+  Audit context (operator-requested
+  catalog-wide review):
+    The BTM bug was: bot listed
+    fabricated features ("4 macros,"
+    "RGB lighting," "larger battery,"
+    "charging dock included") when
+    asked to compare current model
+    vs older one. Root cause: LLM
+    pattern-matched what a "newer/
+    upgraded" controller should
+    have, borrowing features from
+    sibling products (Lumora,
+    Drakon).
+
+    Ares Pro has the same generation-
+    pair structure (current Gen 2 with
+    App Support label, older Gen 1
+    without) and is therefore vulner-
+    able to the same hallucination
+    pattern. Fixing it preemptively
+    while we have the v1.9.6 BTM
+    template fresh.
+
+  Fix (mirrors v1.9.5 + v1.9.6 BTM
+  structure):
+    Added TWO prominent top-of-entry
+    blocks to the Ares Pro entry,
+    BEFORE the existing ASK-FIRST
+    GUIDANCE section so the LLM sees
+    them first:
+
+    "✗ WHAT ARES PRO DOES NOT HAVE":
+       Eight specific absences -- no
+       gyro hardware, no TMR (it's
+       Hall Effect), no 4 macros
+       (only 2), no replaceable
+       stick tops, no KB/mouse remap,
+       no charging dock support, no
+       console support, plus Gen-1-
+       specific absences (no software,
+       no software-based firmware).
+       Each absence explicitly
+       contrasted against the sibling
+       product that DOES have the
+       feature (Lumora has 4 macros,
+       Stellaris/Drakon/BTM have
+       gyro, etc.) so the LLM can't
+       silently confuse them.
+
+    "✓ WHAT ARES PRO DOES HAVE":
+       Nine specific positive
+       features as Gen 2 upgrades
+       over Gen 1: tri-mode connect-
+       ivity, Hall Effect joysticks,
+       Hall Effect analog triggers
+       with software range adjust,
+       App Support PC software, 2
+       macro paddles, software-
+       customizable RGB, adjustable
+       polling rate (with Bluetooth
+       caveat), software-controlled
+       vibration, software-based
+       firmware updates. Each bullet
+       says what's new vs Gen 1.
+
+  No procedure changes. Underlying
+  Ares Pro features were already
+  documented elsewhere in the entry;
+  this fix just consolidates them at
+  the top in the same NO + YES
+  pattern proven by v1.9.6.
+
+  ast.parse before/after.
+
+
+v1.9.8 (2026-05-11) -- Claude
+  * Z-bump: structural hardening for
+    Stellaris -- same preemptive
+    fix as v1.9.9 but for the
+    Stellaris entry.
+
+  Same audit context as v1.9.9.
+  Stellaris has the same generation-
+  pair structure (current Gen 2,
+  legacy Gen 1) and is vulnerable
+  to the same comparison-induced
+  hallucination pattern that bit
+  Blitz Tri-Mode in production today.
+
+  Fix (mirrors v1.9.6 BTM treatment):
+    Added two prominent top-of-entry
+    blocks at the very start of the
+    Stellaris entry, BEFORE the
+    existing ASK-FIRST GUIDANCE
+    section (variants + generations
+    routing):
+
+    "✗ WHAT STELLARIS DOES NOT HAVE":
+       Seven specific absences,
+       grouped by whether they apply
+       to both gens or only one:
+         - Both gens: no replaceable
+           stick tops, no charging
+           dock support, no console
+           support, no battery
+           difference between gens
+           (both 1000mAh -- preempts
+           "larger battery" hallucin-
+           ation), and the 2-macro-
+           paddle ceiling (preempts
+           "4 macros" hallucination
+           borrowed from Lumora).
+         - Gen 2: no gyro outside
+           Bluetooth Gyro Mode.
+         - Gen 1 specifically: no
+           Windows software, no
+           RESET button, no analog/
+           digital trigger switch,
+           no 4-RGB-mode cycling.
+
+    "✓ WHAT STELLARIS DOES HAVE":
+       Nine specific Gen 2 upgrades
+       over Gen 1: tri-mode connect-
+       ivity, TMR joysticks, analog/
+       digital trigger mode switch,
+       App Support PC software, 4
+       RGB modes, physical RESET
+       button (with dual function),
+       6-axis gyro in Bluetooth Gyro
+       Mode, DualShock mode for
+       iOS/Android, high polling
+       rate, plus the turbo speed
+       distinction (Gen 2 = 5/12/20
+       vs Gen 1 = 5/15/25, do not
+       confuse).
+
+  No procedure changes. The under-
+  lying Stellaris generation
+  differences were already documented
+  across Section 1 and Section 2;
+  this fix consolidates them at the
+  top in the proven NO + YES pattern.
+
+  ast.parse before/after.
+
+
+v1.9.7 (2026-05-11) -- Claude
+  * Z-bump: CRITICAL phone number
+    bug fix.
+
+  Audit finding C1: three locations
+  in the KB listed "07969273222" as
+  the customer-facing support phone
+  number. That number was a print
+  error in the Hypernova manual and
+  is NOT currently operational --
+  the active number is +91 7351615161.
+
+  The KB itself documents this print
+  error in the Hypernova section
+  (lines 1490, 1499, 5575, 5581,
+  5583) with explicit instructions
+  to the bot to NEVER give the
+  wrong number to customers. But
+  three OTHER product entries had
+  the wrong number copied in without
+  the warning, so the bot would
+  silently give the non-operational
+  number when asked for support
+  contact info on those products:
+
+    - Immortal entry, line 6508:
+      "(cc@thecosmicbyte.com /
+      07969273222) -- do NOT invent
+      rules that aren't in the
+      manual." This was an instruction
+      to forward ambiguous Immortal
+      questions to support.
+
+    - Immortal entry, line 6581:
+      Full SUPPORT block listing
+      "Phone: 07969273222 (Mon-Sat,
+      10:00 AM to 6:00 PM)".
+
+    - CosmoBuds X220 entry, line
+      6657: "SUPPORT: cc@thecosmicbyte
+      .com | 07969273222 | Mon-Sat
+      10am-6pm".
+
+  Fix:
+    All three replaced with the
+    correct operational number:
+    +91 7351615161.
+
+  The 5 Hypernova references were
+  NOT changed -- they correctly
+  document the print error with
+  surrounding context telling the
+  bot to never use that number.
+
+  Customer-visible impact:
+    Customers asking for support
+    contact for Immortal or
+    CosmoBuds X220 will now receive
+    the operational +91 7351615161
+    number instead of the dead
+    07969273222 number. Direct
+    avoidance of "I called the
+    number you gave me and nobody
+    picked up" callbacks.
+
+  ast.parse before/after.
+
+
+v1.9.6 (2026-05-11) -- Claude
+  * Z-bump: calibration on v1.9.5
+    over-correction.
+
+  v1.9.5 successfully eliminated the
+  hallucinations (no more "4 macros /
+  RGB / larger battery / charging
+  dock included / buy link prompt"
+  in BTM responses -- verified live
+  in production after the v1.9.5
+  push). But the bot swung too far
+  the other way: when asked the same
+  test query ("Is the Blitz Wireless
+  discontinued?"), the new response
+  only listed 2 specific upgrades
+  (Bluetooth + 6-axis gyro) and then
+  hedged with "Improved features
+  compared to the Wireless generation"
+  -- omitting TMR joysticks, App
+  Support / PC companion software,
+  Turbo with sequence recording,
+  DualShock mode for Android, and
+  charging-dock support (all of which
+  ARE genuine, KB-documented upgrades
+  over Blitz Wireless).
+
+  Diagnosis:
+    The v1.9.5 anti-hallucination
+    rules read like "cite ONLY KB
+    features, never invent or borrow"
+    which is correct -- but the LLM
+    interpreted "be safe" as "list
+    as few features as possible".
+    Combined with the prominent "DOES
+    NOT HAVE" block at the top of the
+    BTM entry (which v1.9.5 added),
+    the bot's anchor shifted toward
+    "what BTM lacks" and away from
+    "what BTM has". Result: technically
+    accurate but uselessly vague.
+
+  Fix:
+    Balanced the negative anchor with
+    an equally prominent POSITIVE
+    anchor at the top of the BTM
+    entry, AND added an explicit rule
+    against vague catch-all phrasings
+    in the SYSTEM_PROMPT.
+
+  Three coordinated edits:
+
+  (1) NEW "✓ WHAT THE BLITZ TRI-MODE
+      *DOES* HAVE" block at top of
+      BTM entry, immediately after
+      the "✗ DOES NOT HAVE" block.
+      Same prominence, same caps,
+      same ✓-bullet structure. Nine
+      specific, KB-grounded YES
+      bullets covering: tri-mode
+      connectivity (USB+2.4GHz+BT),
+      TMR joysticks, 6-axis gyro,
+      Hall Effect analog triggers
+      with software range adjust, App
+      Support / PC companion software,
+      Turbo with sequence recording,
+      DualShock mode for Android,
+      charging-dock support (sold
+      separately), and Bluetooth-
+      flexibility polling-rate note.
+      Each bullet explicitly says
+      what's new vs Blitz Wireless,
+      so the LLM doesn't have to
+      synthesize the comparison.
+
+  (2) Heading text for the YES block
+      contains explicit instruction:
+      "list ALL of these confidently
+      when comparing the two; do NOT
+      shorten to a vague 'improved
+      features' summary, that's also
+      a wrong-answer pattern". This
+      front-loads the anti-vagueness
+      rule into the BTM-specific
+      context.
+
+  (3) New SUBSTITUTE-A-VAGUE-SUMMARY
+      rule appended to the global
+      PRODUCT FEATURE ACCURACY section
+      in SYSTEM_PROMPT, as a 6th
+      bullet alongside the 5 from
+      v1.9.5. Explicit list of the
+      vague hedge phrases ("improved
+      features", "various upgrades",
+      "enhanced performance", "better
+      overall") that count as wrong-
+      answer patterns. Frames vague
+      catch-alls as "as wrong as
+      fabrication, just in the
+      opposite direction" -- not a
+      safe middle ground.
+
+  No procedure changes; the underlying
+  BTM feature facts were already in
+  the KB. This fix is about getting
+  the LLM to confidently surface them
+  instead of hedging.
+
+  ast.parse before/after.
+
 v1.9.5 (2026-05-11) -- Claude
   * Z-bump: level-2 anti-hallucination defense.
 
@@ -2922,7 +3253,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.9.5"
+__version__ = "1.9.9"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -3186,6 +3517,92 @@ If a customer reports a step that isn't in the manual, treat it as a customer mi
 """,
     "Stellaris": """
 COSMIC BYTE STELLARIS - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
+
+═══════════════════════════════════════════════════════════════════════
+⚠️  CRITICAL — READ FIRST: WHAT THE STELLARIS DOES *NOT* HAVE
+═══════════════════════════════════════════════════════════════════════
+The Stellaris is a flagship gamepad but several features customers
+sometimes assume are present are actually ABSENT. Listing any of these
+as "features it has" is a customer-visible WRONG ANSWER. These notes
+apply to BOTH generations unless explicitly called out:
+
+  ✗ NO REPLACEABLE STICK TOPS / D-PAD COVERS. Single fixed set, not in
+    the box. (Lumora ships with 6 stick tops + 2 D-pad covers. Stellaris
+    does NOT.) Same for both Gen 1 and Gen 2.
+  ✗ NO KEYBOARD/MOUSE REMAPPING via software. The Cosmic Byte software
+    on Gen 2 supports gamepad-to-gamepad remap only. (Lumora supports
+    KB/mouse remap. Stellaris does NOT.) Gen 1 has no PC software at all.
+  ✗ NO CHARGING DOCK SUPPORT. Stellaris does not have the back contacts
+    for a charging dock. Charges via USB-C cable only. (Blitz Tri-Mode
+    supports a charging dock — Stellaris does NOT. Do not confuse.)
+  ✗ NO CONSOLE SUPPORT. PC is the primary platform. Does not work on
+    PlayStation / Xbox / Switch (despite the Switch-protocol gyro mode,
+    which is for PC-via-Steam Switch Pro Controller support, not for
+    actually plugging into a Nintendo Switch). Both gens.
+  ✗ NO LARGER BATTERY between generations. Both Gen 1 and Gen 2 are
+    1000mAh. Do NOT say Gen 2 has a "larger battery" or "improved
+    battery life" over Gen 1 — the battery is the SAME size.
+  ✗ NO GYRO ON GEN 2 OUTSIDE BLUETOOTH GYRO MODE. Gyro is exclusively
+    available in Bluetooth Gyro Mode (per the Gen 2 user manual). Not
+    available in wired mode, not in 2.4GHz mode, not in regular
+    Bluetooth X-Input/D-Input modes. (Gen 1 gyro is even more limited
+    — only in NINTENDO switch position, see Section 2.)
+  ✗ GEN 1 SPECIFIC: NO Windows software, NO RESET button on the back,
+    NO analog/digital trigger switch, NO 4-RGB-mode cycling. (Current
+    Stellaris HAS all of these. See "DOES HAVE" block below for what
+    upgrades come with Gen 2.)
+  ✗ NEITHER GEN: NO macro buttons beyond the 2 back paddles (ML / MR).
+    The controller has two macro buttons total. Do NOT say it has 4
+    macros or 6 macros (Lumora has 4, but Stellaris has 2). Both gens
+    have the same 2 macro buttons.
+
+═══════════════════════════════════════════════════════════════════════
+✓  WHAT THE STELLARIS *DOES* HAVE (real features for current Gen 2;
+   real upgrades over Gen 1 — list ALL of these confidently when asked
+   "what does the current Stellaris add over the older one?". Do NOT
+   shorten to a vague "improved features" summary.)
+═══════════════════════════════════════════════════════════════════════
+The CURRENT Stellaris (Gen 2) is a genuine generational upgrade over
+Gen 1. Real, KB-documented Gen 2 features:
+
+  ✓ TRI-MODE CONNECTIVITY: Wired (USB-C) + 2.4GHz wireless dongle +
+    Bluetooth — all three modes present. (Gen 1 was also tri-mode in
+    terms of connectivity types, but used a physical 4-position mode
+    switch on the back; Gen 2 selects via button combos instead.)
+  ✓ TMR JOYSTICKS (Tunnel Magnetoresistance): drift-resistant, high
+    precision. (Gen 1 had magnetic joysticks — TMR is a newer tier,
+    same family as Drakon and Blitz Tri-Mode.)
+  ✓ ANALOG / DIGITAL TRIGGER MODE SWITCH on each trigger (physical
+    switch). Analog for racing/driving (pressure-sensitive); digital
+    for FPS/competitive (instant response). (Gen 1 had Hall Effect
+    magnetic triggers but no analog/digital mode switch.)
+  ✓ APP SUPPORT — PC companion software (download from
+    thecosmicbyte.com/downloaddrivers) for RGB customisation, button
+    mapping, macro programming, vibration, trigger range, firmware
+    updates. The controller back label has "App Support" in the top-
+    left corner. (Gen 1 had NO PC software at all.)
+  ✓ 4 RGB LIGHTING MODES: Rainbow (default), Color Cycle, Single Color
+    Breathing, Fixed Color. Cycle via TURBO + SELECT. Brightness via
+    TURBO + UP/DOWN D-pad. (Gen 1 had 3 modes only and different
+    shortcuts — SELECT + D-pad / BACK + D-pad.)
+  ✓ PHYSICAL RESET BUTTON next to the USB-C port. Dual function: short
+    press = power off the controller; long press (more than 1 sec) =
+    hardware reset. (Gen 1 has NO physical RESET button.)
+  ✓ 6-AXIS GYRO accessible in Bluetooth Gyro Mode (Press Y + HOME for
+    3 seconds to enter). Combines with analog triggers in the same
+    connection. (Gen 1 has gyro hardware too — see Section 2 — but
+    it's only accessible in the NINTENDO switch position and triggers
+    are digital-only in that mode.)
+  ✓ DUALSHOCK MODE for iOS / Android (Bluetooth, Press Turbo + HOME
+    for 3 seconds). PS4-DualShock emulation for mobile games. (Gen 1
+    did not have this mode.)
+  ✓ HIGH POLLING RATE: 1000Hz wired / 1000Hz 2.4GHz / 125Hz Bluetooth.
+    (Gen 1 had the same wired/2.4GHz polling rate; Bluetooth polling
+    rate was not specified.)
+  ✓ TURBO with sequence recording on macro buttons (ML / MR) — record
+    up to 22 inputs on each. Speeds: 5 / 12 (default) / 20 shots/sec.
+    (Gen 1 had macros too but with different turbo speeds: 5 / 15 / 25
+    per the Gen 1 manual — do NOT confuse the two.)
 
 ═══════════════════════════════════════════════════════════════════════
 ASK-FIRST GUIDANCE (READ BEFORE ANSWERING ANY STELLARIS QUESTION):
@@ -3887,6 +4304,93 @@ WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 COSMIC BYTE ARES PRO - TRI-MODE CONTROLLER - FULL MANUAL
 
 ═══════════════════════════════════════════════════════════════════════
+⚠️  CRITICAL — READ FIRST: WHAT THE ARES PRO DOES *NOT* HAVE
+═══════════════════════════════════════════════════════════════════════
+The Ares Pro is a strong mid-range controller but several features
+customers sometimes assume are present are actually ABSENT. Listing any
+of these as "features it has" is a customer-visible WRONG ANSWER:
+
+  ✗ NO GYRO / MOTION SENSING — at all. The Ares Pro does NOT have gyro
+    hardware. There is no gyro chip in the controller. Gyro / motion
+    aim / aim-tilt CANNOT be enabled on any platform (PC, iPad, iPhone,
+    Android, anywhere) because the hardware doesn't exist. (Lumora,
+    Drakon, Stellaris, and Blitz Tri-Mode all have 6-axis gyro
+    hardware. Ares Pro does NOT. If gyro is essential for the customer,
+    recommend one of those instead.)
+  ✗ NO TMR JOYSTICKS. Ares Pro Gen 2 has HALL EFFECT joysticks (not
+    TMR). The back label does NOT carry "TMR" or "HE" markings — Ares
+    Pro doesn't use those badges. (Drakon, Stellaris Gen 2, and Blitz
+    Tri-Mode have TMR. Ares Pro has Hall Effect, which is a different
+    drift-resistant tech — both are drift-resistant but they're not
+    the same thing.)
+  ✗ NO 4 MACRO BUTTONS / SLOTS. Ares Pro has 2 macro slots (ML / MR).
+    (Lumora has 4. Do NOT say Ares Pro has 4 macros.) Both gens have
+    the same 2 macro paddles.
+  ✗ NO REPLACEABLE STICK TOPS / D-PAD COVERS. Single fixed set, not in
+    the box. (Lumora ships with 6 stick tops + 2 D-pad covers. Ares Pro
+    does NOT.)
+  ✗ NO KEYBOARD/MOUSE REMAPPING via software. Gen 2 software (Mappings
+    tab) supports gamepad-to-gamepad remap only. (Lumora supports
+    KB/mouse remap. Ares Pro does NOT.) Gen 1 has no PC software at all.
+  ✗ NO CHARGING DOCK SUPPORT. Ares Pro does not have the back contacts
+    for a charging dock. Charges via USB-C cable only. (Blitz Tri-Mode
+    supports a charging dock — Ares Pro does NOT.)
+  ✗ NO CONSOLE SUPPORT. Windows PC is the primary platform. Does not
+    work on PlayStation / Xbox / Switch. Android via USB-C OTG works
+    but is not covered under warranty. macOS support is not advertised
+    — if a Mac customer asks, refer them to the MAC COMPATIBILITY
+    POLICY in the system prompt.
+  ✗ GEN 1 SPECIFIC: NO companion software, NO software-based RGB or
+    macro programming, NO software-based firmware update path (firmware
+    on Gen 1 uses a manual standalone-file procedure — see SECTION 2).
+    (Current Ares Pro Gen 2 HAS all of these. See "DOES HAVE" block
+    below for what upgrades come with Gen 2.)
+
+═══════════════════════════════════════════════════════════════════════
+✓  WHAT THE ARES PRO *DOES* HAVE (real features for current Gen 2;
+   real upgrades over Gen 1 — list ALL of these confidently when asked
+   "what does the current Ares Pro add over the older one?". Do NOT
+   shorten to a vague "improved features" summary.)
+═══════════════════════════════════════════════════════════════════════
+The CURRENT Ares Pro (Gen 2 with "App Support" label) is a genuine
+generational upgrade over Gen 1. Real, KB-documented Gen 2 features:
+
+  ✓ TRI-MODE CONNECTIVITY: Wired (USB-C) + 2.4GHz wireless dongle +
+    Bluetooth — all three modes present on BOTH generations.
+  ✓ HALL EFFECT JOYSTICKS — drift-resistant magnetic-sensor sticks.
+    (Gen 1 also has Hall Effect joysticks per the Gen 1 manual; if a
+    Gen 1 customer asks, confirm "yes, Hall Effect" — this is NOT a
+    Gen-2-only feature.)
+  ✓ HALL EFFECT ANALOG TRIGGERS — drift-resistant, pressure-sensitive
+    triggers. Range adjustable via software (Initial / Max sliders) on
+    Gen 2. (Gen 1 has Hall Effect triggers too but no software range
+    adjust.)
+  ✓ APP SUPPORT — Cosmic Byte PC companion software (download from
+    thecosmicbyte.com/downloaddrivers) for: RGB customization, button
+    mapping (Mappings tab), macro programming (Macro tab, 2 slots),
+    stick deadzone/curve config, trigger range, vibration, firmware
+    updates, auto-shutdown timing. The controller back label has
+    "App Support" in the top-left corner. (Gen 1 had NO PC software.)
+  ✓ 2 MACRO PADDLES on the back (ML / MR), programmable to single
+    actions, button sequences, or full macros via the software's Macro
+    tab. (Both gens have the 2 paddles physically; only Gen 2 can
+    program them via software.)
+  ✓ RGB LIGHTING — customizable via Gen 2 software on the RGB tab.
+    Gen 1 RGB is fixed (no customization since there's no software).
+  ✓ ADJUSTABLE POLLING RATE — up to 1000Hz on wired and 2.4GHz. Lower
+    on Bluetooth (Bluetooth is a chipset/spec limit, NOT a defect —
+    do NOT tell customers Bluetooth should be 1000Hz). Polling rate
+    can be configured via the Gen 2 software's Extended Settings tab.
+  ✓ SOFTWARE-CONTROLLED VIBRATION STRENGTH on Gen 2 (Vibration tab).
+    Gen 1 has the vibration motors but no software control over
+    intensity.
+  ✓ FIRMWARE UPDATES — Gen 2 firmware updates run THROUGH the
+    companion software (Extended Settings → Firmware Update). Gen 1
+    firmware updates use a manual standalone-file procedure (see
+    SECTION 2 of this entry for the Gen 1 process). Either path
+    works for its respective generation; do not cross them.
+
+═══════════════════════════════════════════════════════════════════════
 ASK-FIRST GUIDANCE (READ BEFORE ANSWERING SOFTWARE / FIRMWARE / RGB QUESTIONS):
 ═══════════════════════════════════════════════════════════════════════
 
@@ -4387,6 +4891,49 @@ Failure Modes at the bottom of this entry):
   ✗ NO CONSOLE SUPPORT. PC is the primary platform. Does not work on
     PlayStation / Xbox / Switch. (Some Android/iOS support exists for
     specific connection modes; see CONNECTIVITY section below.)
+
+═══════════════════════════════════════════════════════════════════════
+✓  WHAT THE BLITZ TRI-MODE *DOES* HAVE (real, KB-documented upgrades
+   over the discontinued Blitz Wireless — list ALL of these confidently
+   when comparing the two; do NOT shorten to a vague "improved features"
+   summary, that's also a wrong-answer pattern)
+═══════════════════════════════════════════════════════════════════════
+The Blitz Tri-Mode is a genuine generational upgrade over Blitz Wireless.
+When a customer asks "what does the Tri-Mode add over the old Wireless?"
+or any equivalent comparison question, list ALL of the following that
+are confirmed in this KB entry (do not omit; do not paraphrase as
+"improved features"):
+
+  ✓ TRI-MODE CONNECTIVITY: USB-C wired + 2.4GHz wireless + Bluetooth.
+    (Old Blitz Wireless was dual-mode only: USB + 2.4GHz, no Bluetooth.)
+  ✓ TMR JOYSTICKS: Tunnel Magnetoresistance, drift-resistant, high
+    precision. (Old Blitz Wireless had Hall Effect joysticks. TMR is a
+    newer tech tier — same tier as Drakon and Stellaris Gen 2.)
+  ✓ 6-AXIS GYRO (motion sensing): available in Bluetooth Gyro Mode
+    only. (Old Blitz Wireless had no gyro at all.)
+  ✓ HALL EFFECT ANALOG TRIGGERS with software-adjustable range
+    (Initial / Max sliders in the companion software). (Old Blitz
+    Wireless had Hall Effect triggers too, but no software adjustment.)
+  ✓ APP SUPPORT — PC companion software for button remapping, profiles,
+    turbo, vibration adjust, trigger range, firmware updates. The
+    controller has the "App Support" badge on its back label. (Old
+    Blitz Wireless had no software.)
+  ✓ TURBO WITH SEQUENCE RECORDING — record a sequence onto the Turbo
+    button (this is NOT the same as dedicated macro buttons, but it is
+    a real Turbo-button-based macro-style feature; explain it this way
+    if asked). (Old Blitz Wireless had basic Turbo only.)
+  ✓ DUALSHOCK MODE for Android — Bluetooth pairing mode that emulates a
+    PS4 DualShock for Android games. (Old Blitz Wireless had no
+    DualShock emulation.)
+  ✓ CHARGING DOCK SUPPORT — controller has contacts on the back for an
+    optional charging dock. The dock itself is SOLD SEPARATELY on
+    thecosmicbyte.com (NOT included in the box — see the explicit NO
+    above). (Old Blitz Wireless had no charging dock support at all.)
+  ✓ HIGHER POLLING RATE FLEXIBILITY — up to 1000Hz on wired/2.4GHz, up
+    to 500Hz on Bluetooth (varies 125–500Hz by device). (Old Blitz
+    Wireless was 1000Hz wired/2.4GHz too — so this isn't a polling-
+    rate UPGRADE on the high end, just feature parity with Bluetooth
+    flexibility added.)
 
 PC primary platform. Consoles NOT supported.
 
@@ -6353,7 +6900,7 @@ gesture's effect depends on context (whether music is playing, whether a call is
 incoming, etc.), but the manual does NOT make this explicit. If a customer is
 confused or reports unexpected behaviour from the Mode button, acknowledge that the
 documentation is ambiguous on this point and forward the question to support
-(cc@thecosmicbyte.com / 07969273222) — do NOT invent rules that aren't in the manual.
+(cc@thecosmicbyte.com / +91 7351615161) — do NOT invent rules that aren't in the manual.
 
 Volume control wheel (volume roller on the right earcup):
 - Scroll upward = volume up
@@ -6426,7 +6973,7 @@ WARRANTY:
 - Regular wear and tear from battery usage (gradual capacity reduction over time) is NOT covered under warranty.
 
 SUPPORT:
-- Phone: 07969273222 (Mon–Sat, 10:00 AM to 6:00 PM)
+- Phone: +91 7351615161 (Mon–Sat, 10:00 AM to 6:00 PM)
 - Email: cc@thecosmicbyte.com
 - FAQ portal: support.thecosmicbyte.com
 """
@@ -6502,7 +7049,7 @@ Q: Low volume?
 A: Remove volume limit (see above)
 
 WARRANTY: 1 year against manufacturing defects. Physical/water damage, tampered products, and battery wear and tear not covered.
-SUPPORT: cc@thecosmicbyte.com | 07969273222 | Mon–Sat 10am–6pm
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
 """
 
 # ── ACCESSORIES / COMBOS ───────────────────────────────────────────────────────
@@ -6843,6 +7390,19 @@ features explicitly stated in THAT product's KB entry. You MUST NOT:
     customer explicitly asks where to purchase. Do not append "I can
     share a buy link if you'd like" / "feel free to ask for a buy link"
     / coupon-code promos to factual answers.
+
+  - SUBSTITUTE A VAGUE SUMMARY FOR THE ACTUAL FEATURES. Equally wrong
+    is the opposite failure: hedging with "improved features",
+    "various upgrades", "enhanced performance", "better overall",
+    "various enhancements compared to the older model", etc. instead
+    of listing the actual KB-documented features. If the KB entry
+    lists TMR joysticks, App Support, DualShock mode, and charging-
+    dock support as upgrades, you MUST list them by name -- "improved
+    features compared to the older generation" is a hedge that lets
+    the customer down. The rule is: cite specific KB features, list
+    them all, but do not invent or borrow ones that aren't in the KB.
+    Vague catch-alls are NOT a safe middle ground — they're as wrong
+    as fabrication, just in the opposite direction.
 
 This rule has a specific failure-mode history: the Blitz Tri-Mode was
 particularly prone to invented features (macros borrowed from Lumora,
