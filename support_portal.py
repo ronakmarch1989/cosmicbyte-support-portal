@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.28.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.28.1
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,98 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.28.1 (2026-05-11) -- Claude
+  - Z-bump: log hygiene. The six module-
+    level print() calls used for startup
+    banners (version banner, persistent-
+    disk OK/WARNING, bot API merge enabled
+    /WARNING/disabled) were firing on
+    every Streamlit script rerun, not
+    just on actual worker-process startup.
+
+  Observed symptom:
+    Render log stream showed ~30+ copies
+    of the same three startup banners in
+    a 75-second window during normal
+    concurrent traffic (~1 user action
+    every 2.2s). The banners themselves
+    are useful on real startup but the
+    duplicates were burying real events
+    (errors, OOM restarts, deploy
+    transitions) under repetitive noise,
+    making the logs effectively unusable
+    for triage.
+
+  Root cause:
+    Streamlit's execution model re-runs
+    the entire script top-to-bottom on
+    every user interaction. Any plain
+    `print()` at module scope therefore
+    fires on every rerun, not once per
+    process as one might assume. Module-
+    level globals reset each rerun too,
+    so a simple "did_log = True" flag
+    wouldn't work as a guard.
+
+  Fix:
+    Added a small helper
+    `_log_once_per_process(msg: str)`
+    decorated with `@st.cache_resource`,
+    placed right after `import streamlit
+    as st` so it's defined before any
+    module-level print site. The decorator
+    caches the function's return value
+    across reruns AND across sessions,
+    meaning the body (which prints)
+    executes exactly ONCE per worker
+    process for each unique `msg` string.
+
+    Then routed all 6 startup print
+    sites through the helper:
+      1. Version banner ("starting up
+         — app version X.Y.Z")
+      2. Persistent disk OK banner
+      3. Persistent disk WARNING (when
+         /var/data is not mounted)
+      4. Bot API merge enabled
+      5. Bot API merge HALF-CONFIGURED
+         warning
+      6. Bot API merge disabled
+
+  Behaviour:
+    Identical at the application level.
+    Render logs are now cleaner -- each
+    startup banner appears exactly once
+    per worker process, then never again
+    until the worker is replaced (deploy,
+    crash, OOM restart, scale event).
+
+    Side benefit: future OOM restart
+    cycles will now show up as distinct
+    fresh banner blocks in the logs,
+    making them immediately diagnosable
+    (today's incident took several
+    minutes to identify because the
+    legitimate restart banner was lost
+    in 30+ duplicate banners from normal
+    traffic in the same window).
+
+  Code paths NOT changed:
+    The surrounding module-level setup
+    code (env var parsing, disk-write
+    probe, BOT_API_URL/SECRET reading)
+    still runs on every rerun -- that's
+    needed to keep module-level globals
+    like LOG_FILE_PATH, BOT_API_URL etc.
+    in scope for the rest of the script.
+    Streamlit's design assumes this is
+    cheap, which it is. Only the print
+    calls were generating user-visible
+    noise, so only the prints were
+    moved behind the cache.
+
+  ast.parse before/after.
 
 v2.28.0 (2026-05-10) -- Claude
   - Y-bump: added QUICK_QUESTIONS entries
@@ -4381,9 +4473,34 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.28.0"
+__version__ = "2.28.1"
 
 import streamlit as st
+
+
+# v2.28.1: helper to suppress per-rerun log spam.
+#
+# Streamlit re-executes the entire script top-to-bottom on every user
+# interaction (button click, dropdown change, message send, etc.). That
+# means any plain `print()` at module scope fires on every rerun — under
+# modest concurrent load (~30 user actions per 75s) this floods the
+# Render log stream with duplicate startup banners and makes real events
+# (OOM restarts, errors) hard to spot.
+#
+# Routing those prints through this helper makes them fire ONCE per
+# worker process for each unique message string. `@st.cache_resource`
+# caches the return value across reruns AND across sessions; the first
+# call with a given `msg` runs the body (which prints), subsequent calls
+# with the same `msg` return the cached True without re-running.
+#
+# Use for startup banners and one-time config-state messages only.
+# Do NOT use for per-request logging where you want every event recorded.
+@st.cache_resource(show_spinner=False)
+def _log_once_per_process(msg: str) -> bool:
+    print(msg, flush=True)
+    return True
+
+
 import anthropic
 import os
 import hmac
@@ -4394,7 +4511,9 @@ from datetime import datetime, timedelta
 
 # Print version on startup so it appears in deployment logs (Streamlit Cloud, etc.)
 # Helps confirm which version is actually live after a deploy.
-print(f"[support_portal_v2] starting up — app version {__version__}", flush=True)
+# v2.28.1: routed through _log_once_per_process (was bare print, fired
+# on every script rerun).
+_log_once_per_process(f"[support_portal_v2] starting up — app version {__version__}")
 
 # ── PRODUCT BUY LINKS ──
 import uuid
@@ -4586,12 +4705,13 @@ if _disk_persistence_enabled():
     LOG_FILE_PATH = os.path.join(PERSISTENT_DATA_DIR, "support_log.jsonl")
     DIGEST_STATE_PATH = os.path.join(PERSISTENT_DATA_DIR, "digest_state.json")
     HISTORY_FILE_PATH = os.path.join(PERSISTENT_DATA_DIR, "chat_history.json")  # v2.18.0
-    print(f"[support_portal_v2] persistent disk OK at {PERSISTENT_DATA_DIR} -- conversation log and chat history will survive restarts", flush=True)
+    # v2.28.1: routed through _log_once_per_process to avoid per-rerun spam.
+    _log_once_per_process(f"[support_portal_v2] persistent disk OK at {PERSISTENT_DATA_DIR} -- conversation log and chat history will survive restarts")
 else:
     LOG_FILE_PATH = None
     DIGEST_STATE_PATH = None
     HISTORY_FILE_PATH = None  # v2.18.0
-    print(f"[support_portal_v2] WARNING: persistent disk NOT mounted at {PERSISTENT_DATA_DIR} -- conversation log AND chat history will be LOST on restart. To enable persistence, attach a Render persistent disk at this mount path (Render dashboard -> Settings -> Disks -> Add Disk).", flush=True)
+    _log_once_per_process(f"[support_portal_v2] WARNING: persistent disk NOT mounted at {PERSISTENT_DATA_DIR} -- conversation log AND chat history will be LOST on restart. To enable persistence, attach a Render persistent disk at this mount path (Render dashboard -> Settings -> Disks -> Add Disk).")
 
 # v2.24.0: optional fetch of new Discord rows from the bot's HTTP API.
 # Set both to enable; leave either unset to fall back to local-only
@@ -4602,19 +4722,19 @@ BOT_API_TIMEOUT_S = float(os.environ.get("BOT_API_TIMEOUT_S", "10") or "10")
 BOT_API_CACHE_TTL_S = float(os.environ.get("BOT_API_CACHE_TTL_S", "30") or "30")
 BOT_API_FETCH_LIMIT = int(os.environ.get("BOT_API_FETCH_LIMIT", "1000") or "1000")
 if BOT_API_URL and BOT_API_SECRET:
-    print(f"[support_portal_v2] bot API merge enabled -> {BOT_API_URL}", flush=True)
+    # v2.28.1: routed through _log_once_per_process to avoid per-rerun spam.
+    _log_once_per_process(f"[support_portal_v2] bot API merge enabled -> {BOT_API_URL}")
 elif BOT_API_URL or BOT_API_SECRET:
     # Half-configured: log loudly because partial config silently disables
     # the merge layer and is easy to miss.
-    print(
+    _log_once_per_process(
         "[support_portal_v2] WARNING: bot API merge is HALF-CONFIGURED. "
         "Set BOTH BOT_API_URL and BOT_API_SECRET, or NEITHER. "
         "Discord rows from the VPS bot will NOT be visible in the admin "
-        "dashboard until this is fixed.",
-        flush=True,
+        "dashboard until this is fixed."
     )
 else:
-    print("[support_portal_v2] bot API merge disabled (BOT_API_URL/BOT_API_SECRET not set)", flush=True)
+    _log_once_per_process("[support_portal_v2] bot API merge disabled (BOT_API_URL/BOT_API_SECRET not set)")
 
 # Lock guarding ALL disk reads/writes for the log files. Concurrent
 # Streamlit reruns can call log_conversation / update_feedback at the
