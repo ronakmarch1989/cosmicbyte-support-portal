@@ -33,6 +33,127 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.9.0 (2026-05-11) -- Claude
+  * Y-bump: new capability --
+    Added a routing rule for software/
+    driver/firmware requests covering
+    Cosmic Byte's discontinued / legacy
+    products. These products are no
+    longer on thecosmicbyte.com but
+    their software is hosted on a
+    Dropbox archive provided by the
+    operator. Without this rule, the
+    bot was either:
+      - Telling legacy-product customers
+        their product didn't exist
+      - Sending them to the website
+        where their product isn't listed
+      - Telling them to contact support
+        directly (which wastes a ticket
+        for a self-service-fixable issue)
+
+  Customer-visible impact:
+    Customers asking about software for
+    any of 38 discontinued Cosmic Byte
+    products (Equinox family, Kilonova
+    family, Hyperion, Black Star, etc.)
+    now get a direct Dropbox archive
+    link rather than a dead end. Self-
+    service ticket deflection for a
+    long-tail of older customers.
+
+  Implementation:
+    Added a new section to the SYSTEM_
+    PROMPT, positioned in the firmware/
+    software-policy area (right after
+    "APP SUPPORT" BACK-LABEL CHECK,
+    before "PRO CONTROLLER" BLUETOOTH
+    NAME). The section is titled
+    "LEGACY / DISCONTINUED PRODUCT
+    SOFTWARE — DROPBOX ARCHIVE POLICY".
+
+    Contents of the new section:
+      1. The Dropbox archive URL, hard-
+         coded inline (one place, easy
+         to update).
+      2. Full inventory of 38 legacy
+         products, grouped by category
+         (Mice / Keyboards / Headsets /
+         Gamepads / Drivers&Utilities)
+         so the AI has clean pattern-
+         matching surface area for any
+         customer query that mentions
+         one of these names.
+      3. WHEN TO SHARE rules: explicit
+         trigger phrases + the catch-
+         all "old Cosmic Byte product I
+         can't match to current catalog
+         + software/driver question".
+      4. WHEN NOT TO SHARE rules with
+         the four CRITICAL exclusions:
+           a. Any current PRODUCTS
+              catalog member (use that
+              product's own software
+              path).
+           b. Stellaris Gen 1 -- the
+              biggest trap. Gen 1 is
+              legacy AND overlaps with
+              a current product family,
+              tempting the bot to apply
+              the rule. But Gen 1 has
+              NO Windows software
+              anywhere -- archive does
+              NOT contain Stellaris
+              Gen 1 files. Sharing the
+              archive would mislead.
+              Correct answer: Key
+              Linker mobile app only.
+           c. Lumora -- its KB entry
+              mentions "LEGACY
+              ACTIVATION MODES" but
+              that refers to older
+              shortcuts within current
+              software, NOT a
+              discontinued Lumora.
+              Lumora is current.
+           d. Current Proteus headset
+              -- a different "Cosmic
+              Byte Proteus Headset"
+              used to be in the
+              archive but was removed
+              by the operator before
+              this fix shipped. Default
+              "Proteus" queries to
+              current.
+      5. HOW TO SHARE guidance: framing
+         sentence + URL, warranty
+         disclaimer, offer to help
+         locate by model number.
+
+  Companion change:
+    Section 4 of the Stellaris entry got
+    a new AI-facing failure-mode bullet
+    explicitly forbidding sharing the
+    archive link for Stellaris Gen 1.
+    The cross-reference to the system-
+    prompt policy ensures future Claude
+    instances see this when working on
+    Stellaris-related content.
+
+  Curated list source:
+    Customer-supplied Dropbox folder
+    listing screenshot (revised list,
+    after the operator removed
+    "Cosmic Byte Proteus Headset" to
+    resolve the name overlap with the
+    current catalog and "Tecknet
+    GM299 Mouse Driver" as a 3rd-party
+    driver). Final count: 38 legacy
+    products, zero name conflicts with
+    the current 38-product catalog.
+
+  ast.parse before/after.
+
 v1.8.5 (2026-05-11) -- Claude
   * Z-bump: bug fix --
     The Stellaris Gen 1 section had a
@@ -2299,7 +2420,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.8.5"
+__version__ = "1.9.0"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -3062,6 +3183,20 @@ SECTION 4: COMMON FAILURE MODES TO AVOID (AI-FACING NOTES)
   (Switch protocol limitation), and that there's no software-side gyro
   customization (Gen 1 has no PC software). See "GYRO (Gen 1 Stellaris)"
   section above for the full walkthrough.
+
+- Do NOT share the LEGACY SOFTWARE ARCHIVE Dropbox link for Stellaris
+  Gen 1 software requests. Stellaris Gen 1 has NO Windows software
+  anywhere -- not on the website, not in the legacy archive. Its only
+  "software" is the Key Linker mobile app for firmware updates and
+  button remapping (see Gen 1 firmware update section above). If a
+  Stellaris Gen 1 customer asks "where do I download the software", the
+  correct answer is: "Stellaris Gen 1 doesn't have PC software -- it's
+  configured via on-controller button shortcuts. For firmware updates
+  and button remapping, use the Key Linker mobile app from your phone's
+  app store." Sharing the legacy archive link will mislead them -- they
+  will browse the archive, not find Stellaris Gen 1, and come back
+  frustrated. See "LEGACY / DISCONTINUED PRODUCT SOFTWARE — DROPBOX
+  ARCHIVE POLICY" in the system prompt for the broader rule.
 
 - Gen 1 has FOUR mode positions on the physical switch, not three. Left-
   to-right: Nintendo / Android / iOS / Windows. The Gen 1 user manual
@@ -6039,6 +6174,127 @@ These products do not support user firmware updates at all. If a customer asks h
 "APP SUPPORT" BACK-LABEL CHECK — the disambiguator for Categories A vs B
 ──────────────────────────────────────────────────────────────────────
 Three product lines (Ares Pro, Stellaris, Blitz Tri-Mode) have a current generation that is in Category A and an older generation that is in Category B (or C for Stellaris Gen 1). The newer ones have "App Support" printed in the top-left corner of the back label. ALWAYS ask the customer to check the back label for "App Support" text when answering software, RGB-via-software, button-mapping-via-software, or firmware questions for any of these three products. If "App Support" is present → Category A. If absent → Category B (or C for Stellaris).
+
+──────────────────────────────────────────────────────────────────────
+LEGACY / DISCONTINUED PRODUCT SOFTWARE — DROPBOX ARCHIVE POLICY (v1.9.0)
+──────────────────────────────────────────────────────────────────────
+Cosmic Byte maintains a Dropbox archive containing setup files, drivers,
+and software for older / discontinued Cosmic Byte products that are NO
+LONGER hosted on the main website (thecosmicbyte.com/downloaddrivers).
+This archive is for products OUTSIDE the current PRODUCTS catalog.
+
+Archive link to share with customers (share as a plain URL, do not
+shorten, do not paraphrase):
+https://www.dropbox.com/scl/fo/u664rfeihvph7h56sroi3/ABcXiAkWnRt2qT70OkuLozU?rlkey=hvtdfgageoqugaa2yt4pux7pt&dl=0
+
+PRODUCTS IN THE ARCHIVE (share the link if the customer's query mentions
+any of these names, or any close variation -- e.g. "Equinox Polaris" /
+"I have an old Equinox" / "Kilonova mouse driver" / "where's the software
+for my Hyperion mouse"):
+
+  Mice (legacy):
+    - Black Star Mouse
+    - CB Neutron Gaming Mouse
+    - Cosmic Byte Gravity Mouse
+    - Cosmic Byte Hydra Mouse
+    - Cosmic Byte Zero-G Mouse
+    - Hyperion Mouse
+    - Kilonova 3325IC Wired Mouse
+    - Kilonova 3335IC Wireless Mouse
+    - Kilonova 3370 Pro X Light Wired
+    - Kilonova 3370 Pro X Light Wireless
+    - Kilonova PRO 3389IC Wired Mouse
+    - Lightning Mouse
+    - Orcus Wired Mouse
+    - Pulsar V2 Mouse
+    - Sentinel Mouse
+
+  Keyboards (legacy):
+    - Cosmic Byte Themis Keyboard
+    - Equinox Alturas Keyboard
+    - Triton Gaming Keyboard
+
+  Headsets (legacy):
+    - Cosmic Byte Oberon Headset
+    - G1500 RGB USB Headset
+    - Kotion Each G2200 USB Headphone
+    - Kotion Each G7000 USB Headphone
+
+  Gamepads / controllers (legacy):
+    - Cosmic Byte Interstellar Gamepad
+    - Cosmic Byte Nebula Gamepad
+    - Equinox Alpha
+    - Equinox Beta
+    - Equinox Ceres
+    - Equinox Europa
+    - Equinox Gamma
+    - Equinox Kronos
+    - Equinox Neutrino
+    - Equinox Orion
+    - Equinox Polaris
+
+  Drivers / utilities (legacy):
+    - Black Eye PRO Software
+    - Cosmic Byte Black Eye Software (Mac upgrade)
+    - Cosmic Byte Supernova Driver
+    - Callisto Drivers for Dinput Vibration
+    - Equinox Quasar Dinput Vibration Drivers
+
+WHEN TO SHARE THE ARCHIVE LINK:
+- Customer explicitly mentions any product from the list above and asks
+  about software, drivers, setup files, firmware, or "where do I download".
+- Customer describes an OLD Cosmic Byte product that you cannot match to
+  the current PRODUCTS catalog AND they're asking about software/drivers.
+  When in doubt, share the link and add: "the archive contains software
+  for older Cosmic Byte products that are no longer sold -- check if your
+  product is listed inside".
+- Customer says something like "I bought this Cosmic Byte mouse a few
+  years ago, where's the software?" -- if you can't match the description
+  to a current product, share the archive.
+
+WHEN NOT TO SHARE THE ARCHIVE LINK (CRITICAL -- do not get these wrong):
+
+  1. ANY product in the current PRODUCTS catalog. These have their own
+     documented software path (almost always thecosmicbyte.com
+     /downloaddrivers, or the Key Linker mobile app for Eclipse / Starforge,
+     or no software at all for Category D products). The archive does
+     NOT contain current-catalog products.
+
+  2. Stellaris Gen 1 -- this is the BIGGEST trap. Stellaris Gen 1 is
+     legacy/discontinued AND it overlaps with a current product family
+     (Stellaris Gen 2), so the bot is naturally tempted to think "legacy
+     Stellaris -> archive". DO NOT DO THIS. Stellaris Gen 1 has NO
+     Windows software anywhere -- not on the website, not in this archive.
+     Its only "software" is the Key Linker mobile app for firmware updates
+     and button remapping (see Stellaris entry, Section 2). If you share
+     the archive link for a Stellaris Gen 1 customer, they will browse
+     the archive, not find Stellaris Gen 1, and come back frustrated.
+     Use the Stellaris entry's existing Gen 1 instructions instead.
+
+  3. Lumora -- NOT a legacy product despite the "LEGACY ACTIVATION MODES"
+     references in its KB entry (those refer to older shortcut behaviour
+     within current Lumora software, not to a discontinued Lumora). Lumora
+     is current; its software is on the website. Do not route Lumora
+     customers to the archive.
+
+  4. The current Proteus headset -- the current Proteus IS in the catalog.
+     Send Proteus customers to the standard software path. (An older
+     "Cosmic Byte Proteus Headset" used to be in the archive but has been
+     removed -- if a customer asks about Proteus, default to the current
+     Proteus.)
+
+HOW TO SHARE:
+- Use a brief framing sentence before the URL, e.g.:
+  "Cosmic Byte hosts software for discontinued products on a Dropbox
+  archive (the main website only carries current products). You can find
+  the [product name] folder here: <URL>"
+- Politely note that legacy products are out of warranty and don't
+  receive new updates -- the archive provides the last-known-good
+  software/drivers, not the latest.
+- If the customer's exact product isn't obvious from your conversation,
+  offer to help locate it: "if you don't see your product in the archive,
+  send me the model number printed on the product label and I'll check
+  if it's in the inventory".
 
 ──────────────────────────────────────────────────────────────────────
 "PRO CONTROLLER" BLUETOOTH NAME — multiple Cosmic Byte controllers pair as "Pro Controller" via Bluetooth in their Nintendo Switch-compatible Gyro / NS modes (Stellaris Gen 1 in NINTENDO mode -- the leftmost position on its 4-position physical mode switch; the Gen 1 user manual confusingly calls this "WIN PC mode" because it works with Windows PC via Steam Switch Pro Controller support, but the physical switch is labeled "Nintendo", same position; Lumora in PC Gyro mode, and others). This is intentional — the controller replicates the Nintendo Switch Pro Controller Bluetooth protocol so that Gyro works the same way as on a Switch. IMPORTANT: in this mode, the analog triggers (LT/RT) are NOT pressure-sensitive — they act as digital buttons (on/off) only. If a customer mentions "Pro Controller" appearing in their Bluetooth list without specifying which Cosmic Byte product they own, ASK which controller they have before answering — multiple Cosmic Byte products use this Bluetooth name.
