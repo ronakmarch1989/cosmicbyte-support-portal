@@ -33,6 +33,117 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.9.5 (2026-05-11) -- Claude
+  * Z-bump: level-2 anti-hallucination defense.
+
+  v1.9.4 (charging dock fix + BTM
+  Section 4 guardrails) was deployed
+  live at 20:02 IST per Render's log
+  ("Your service is live 🎉" at
+  14:32:49 UTC). The same Blitz Tri-
+  Mode test query was re-run after
+  deploy and the bot STILL listed
+  fabricated features:
+    - "4 macro buttons" (borrowed
+       from Lumora, which has 4)
+    - "RGB lighting with software
+       control" (borrowed from
+       Lumora/Drakon)
+    - "Larger battery" (invented;
+       both are 600mAh per the KB)
+    - "Charging dock included" (read
+       the v1.9.4 "supported, sold
+       separately" and elided the
+       negative qualifier)
+    - Volunteered buy link + ONLINEPAY
+       coupon prompt (v1.9.4 forbade
+       this; LLM did it anyway)
+
+  Diagnosis:
+    Section 4 guardrails at the END
+    of the entry don't catch this --
+    by the time the LLM has read that
+    far, it's already pattern-matched
+    a comparison-shaped answer. The
+    fix needs to be at the TOP of the
+    entry, not the bottom. Additionally,
+    the LLM is borrowing features from
+    SIBLING products (Lumora, Drakon)
+    when generating BTM comparisons,
+    and eliding negative qualifiers
+    ("NOT included" → "included"). Both
+    are general failure modes worth a
+    global SYSTEM_PROMPT rule.
+
+  Fix (three coordinated edits):
+
+  (1) TOP-OF-ENTRY "WHAT THE BLITZ
+      TRI-MODE DOES NOT HAVE" block,
+      inserted right after the title
+      so the LLM sees it BEFORE
+      wandering. Format: prominent
+      heading + ✗ bullets, each
+      explicitly contrasting BTM
+      against the sibling product
+      that has the feature (Lumora
+      has 4 macros / Drakon has 7-
+      zone RGB / etc) so the LLM
+      can't subconsciously confuse
+      them. Eight absences listed:
+      macros, RGB, replaceable stick
+      tops, KB/mouse remap, dock-in-
+      box, analog/digital trigger
+      switch, larger battery,
+      console support.
+
+  (2) BLITZ TRI-MODE vs BLITZ WIRELESS
+      comparison table expanded. Added
+      explicit NO rows for: battery
+      ("600mAh -- SAME, not larger"),
+      macro buttons, RGB, replaceable
+      stick tops. Previously the table
+      only listed YES features which
+      let the LLM imagine YES features
+      where none existed. Now absence
+      is as visible as presence.
+
+  (3) NEW SYSTEM_PROMPT section:
+      "PRODUCT FEATURE ACCURACY -- NO
+      INVENTING, NO BORROWING". Five
+      explicit rules:
+        a. Don't INVENT features by
+           pattern-matching premium-
+           controller archetypes.
+        b. Don't BORROW features from
+           sibling products. Each KB
+           entry is authoritative for
+           that product alone.
+        c. Don't ELIDE negative
+           qualifiers. "Sold separately,
+           NOT included" is the fact,
+           not just "supports a dock".
+        d. Don't ASSUME upgrades scale.
+           Same-size battery is NOT a
+           "larger battery" upgrade.
+        e. Don't VOLUNTEER buy links
+           or coupon codes on factual
+           questions. Only on explicit
+           purchase intent.
+      The section closes with a
+      specific call-out that BTM is
+      the known offender and the new
+      top-of-entry block must be read
+      first.
+
+  No procedure changes -- the
+  underlying facts (no macros, no
+  RGB, 600mAh, dock sold separately)
+  were already in the KB before. The
+  fix is purely about getting the LLM
+  to read and respect them.
+
+  ast.parse before/after.
+
 v1.9.4 (2026-05-11) -- Claude
   * Z-bump: factual corrections +
     failure-mode guardrails for
@@ -2811,7 +2922,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.9.4"
+__version__ = "1.9.5"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -4244,17 +4355,55 @@ If a customer's message is ambiguous about disconnect / unpair / switch (as it a
     "Blitz Tri-Mode": """
 COSMIC BYTE BLITZ TRI-MODE CONTROLLER - FULL MANUAL
 
+═══════════════════════════════════════════════════════════════════════
+⚠️  CRITICAL — READ FIRST: WHAT THE BLITZ TRI-MODE DOES *NOT* HAVE
+═══════════════════════════════════════════════════════════════════════
+The Blitz Tri-Mode is a focused mid-range controller. Several features that
+sibling Cosmic Byte products have are ABSENT here. Listing any of these as
+"features it has" is a customer-visible WRONG ANSWER (this exact failure
+mode has happened in production — see Blitz Tri-Mode Section 4 / Common
+Failure Modes at the bottom of this entry):
+
+  ✗ NO MACRO BUTTONS. Zero dedicated macro buttons. Not 2, not 4, ZERO.
+    No ML / no MR / no LK / no RK / no M1 / no M2. (Lumora has 4 macros.
+    Drakon has 2 macros. Blitz Tri-Mode has NONE. Do not confuse.)
+  ✗ NO RGB LIGHTING. The controller is solid BLACK with no RGB at all.
+    No RGB zones, no joystick rings, no software-controlled lights, no
+    breathing modes, no colour cycling. (Lumora has 5-zone RGB. Drakon
+    has 7-zone RGB. Blitz Tri-Mode has NONE.)
+  ✗ NO REPLACEABLE STICK TOPS / D-PAD COVERS. Single fixed set, not in
+    the box. (Lumora ships with 6 stick tops + 2 D-pad covers.)
+  ✗ NO KEYBOARD/MOUSE REMAPPING via software. Software supports gamepad-
+    to-gamepad remap only. (Lumora supports KB/mouse remap.)
+  ✗ NO CHARGING DOCK IN THE BOX. The controller SUPPORTS a charging dock
+    accessory (contacts on the back) but the dock itself is SOLD
+    SEPARATELY on thecosmicbyte.com — it is NOT included.
+  ✗ NO ANALOG/DIGITAL TRIGGER SWITCH. Triggers are Hall Effect analog
+    only. Range is adjustable via software (Initial/Max sliders) but
+    there's no physical trigger-mode switch like Stellaris or Lumora have.
+  ✗ NO LARGER BATTERY than the discontinued Blitz Wireless. Both are
+    600mAh. Do NOT say the Blitz Tri-Mode has a "larger battery" or
+    "bigger battery" -- it does not.
+  ✗ NO CONSOLE SUPPORT. PC is the primary platform. Does not work on
+    PlayStation / Xbox / Switch. (Some Android/iOS support exists for
+    specific connection modes; see CONNECTIVITY section below.)
+
 PC primary platform. Consoles NOT supported.
 
 BLITZ TRI-MODE vs OLD BLITZ WIRELESS — KEY DIFFERENCES:
-| Feature           | Blitz Tri-Mode (current) | Blitz Wireless (old)     |
-|-------------------|--------------------------|--------------------------|
-| Joystick type     | TMR (Tunnel MR)          | Hall Effect              |
-| Connectivity      | USB + 2.4GHz + Bluetooth | USB + 2.4GHz only        |
-| Gyro              | Yes                      | No                       |
-| Software support  | Yes (App Support label)  | No                       |
-| Polling rate      | 1000Hz (wired/2.4GHz)    | 1000Hz (wired/2.4GHz)    |
-| Charging dock     | SUPPORTED (sold separately, NOT included) | No |
+| Feature              | Blitz Tri-Mode (current) | Blitz Wireless (old)     |
+|----------------------|--------------------------|--------------------------|
+| Joystick type        | TMR (Tunnel MR)          | Hall Effect              |
+| Connectivity         | USB + 2.4GHz + Bluetooth | USB + 2.4GHz only        |
+| Gyro                 | Yes (Bluetooth Gyro Mode only) | No                 |
+| Software support     | Yes (App Support label)  | No                       |
+| Polling rate         | 1000Hz (wired/2.4GHz)    | 1000Hz (wired/2.4GHz)    |
+| Battery              | 600mAh                   | 600mAh (SAME, not larger)|
+| Macro buttons        | NO                       | NO                       |
+| RGB lighting         | NO                       | NO                       |
+| Replaceable stick tops| NO                      | NO                       |
+| Charging dock        | SUPPORTED (sold separately, NOT included) | No |
+| DualShock mode (Android) | YES (Bluetooth)      | No                       |
 
 The Blitz Tri-Mode is NOT just a connectivity upgrade — TMR joysticks, gyro, and software are significant additions. Some functions may not work on Android/iOS. No warranty for unsupported device damage.
 
@@ -6650,6 +6799,59 @@ CATEGORY D — Products with NO user firmware updates
 Products: Raptor Mouse, Nexus, Ares basic wired-only, CryoCore, Proteus, CosmoBuds X220, Cyclone RGB, membrane keyboards.
 
 These products do not support user firmware updates at all. If a customer asks how to update firmware on one of these, the correct answer is: "This product does not support user firmware updates." Do not invent a workaround or direct them to a non-existent tool.
+
+──────────────────────────────────────────────────────────────────────
+PRODUCT FEATURE ACCURACY — NO INVENTING, NO BORROWING (v1.9.5)
+──────────────────────────────────────────────────────────────────────
+When you list features of a Cosmic Byte product, you MUST cite ONLY
+features explicitly stated in THAT product's KB entry. You MUST NOT:
+
+  - INVENT features by pattern-matching what a "premium controller" or
+    "newer model" typically has. The Cosmic Byte catalog is not uniform:
+    some newer products have FEWER features than older flagship ones.
+    The Blitz Tri-Mode (current Blitz line) does NOT have macros and
+    does NOT have RGB, even though Lumora (a different Cosmic Byte
+    product) has both. The Ares wired (older) has features the Ares Pro
+    (newer) doesn't. Do not assume.
+
+  - BORROW features from a sibling product. When a customer asks about
+    Blitz Tri-Mode, you may NOT silently import features from Lumora,
+    Drakon, or Stellaris into your answer. Each KB entry is the
+    authoritative spec for that product alone. If a feature you want
+    to cite is not in that product's KB entry, OMIT it -- do not say it.
+
+  - ELIDE negative qualifiers. If a KB entry says "supports a charging
+    dock (sold separately, NOT included)", the answer to the customer
+    is "supports a charging dock, sold separately" -- NOT "charging dock
+    included". The qualifier carries the meaning; dropping it changes
+    the fact. Same applies to "NOT pressure-sensitive", "NOT analog",
+    "Bluetooth only", "PC only", etc.
+
+  - ASSUME upgrades scale across features. When a customer asks "what
+    does the newer model add over the older one?", list ONLY the
+    upgrades that are documented in BOTH product entries. Do not pad
+    the list with generic upgrade-shaped claims like "larger battery,"
+    "more buttons," "improved ergonomics," "better wireless range"
+    unless those are EXPLICITLY documented as upgrades. If two products
+    have the same battery size (e.g. Blitz Tri-Mode and Blitz Wireless
+    are both 600mAh), you may NOT say "larger battery" -- the battery
+    is the SAME size.
+
+  - VOLUNTEER buy links, coupon codes, or "would you like a buy link?"
+    prompts on factual questions. The customer is asking for
+    information, not to be sold to. Share a buy link ONLY if the
+    customer explicitly asks where to purchase. Do not append "I can
+    share a buy link if you'd like" / "feel free to ask for a buy link"
+    / coupon-code promos to factual answers.
+
+This rule has a specific failure-mode history: the Blitz Tri-Mode was
+particularly prone to invented features (macros borrowed from Lumora,
+RGB borrowed from Lumora/Drakon, "larger battery" invented from
+upgrade-shaped pattern matching, "charging dock included" from eliding
+"sold separately"). The Blitz Tri-Mode entry now starts with a
+prominent "WHAT THE BLITZ TRI-MODE DOES NOT HAVE" block -- read that
+block before answering ANY Blitz Tri-Mode question, especially
+comparison questions.
 
 ──────────────────────────────────────────────────────────────────────
 "APP SUPPORT" BACK-LABEL CHECK — the disambiguator for Categories A vs B
