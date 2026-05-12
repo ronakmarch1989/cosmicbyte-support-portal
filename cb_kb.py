@@ -33,6 +33,487 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.10 (2026-05-12) -- Claude
+  * Z-bump: pure style refactor.
+    Zero behavior change. No
+    customer-facing impact.
+
+  Audit context (operator-requested
+  cleanup pass after the v1.10.9
+  structural audit surfaced a
+  stylistic inconsistency):
+    The KNOWLEDGE_BASE dict had two
+    styles of entry coexisting:
+      - 38 entries defined inline
+        inside the main
+        `KNOWLEDGE_BASE = { ... }`
+        dict literal (lines 5386
+        through 8875 in v1.10.9).
+      - 6 entries appended AFTER
+        the dict literal via
+        assignment syntax of the
+        form `KNOWLEDGE_BASE[key]
+        = (triple-quote)...(triple-
+        quote)`.
+        These were CryoCore,
+        Proteus, Immortal,
+        CosmoBuds X220, Cyclone
+        RGB, and Dragonfly —
+        accessories / non-
+        controller products
+        added incrementally
+        after the dict literal
+        was first defined.
+    Both styles work identically
+    at runtime (Python evaluates
+    them to the same dict), but
+    the inconsistency made
+    structural audits harder
+    (the v1.10.9 audit had to
+    grep for BOTH patterns to
+    confirm KB coverage). Ronak
+    requested a normalization
+    pass.
+
+  Fix (pure refactor — text moved
+  verbatim, no content edits):
+
+  (1) The 6 assignment-style
+      entries were extracted from
+      their post-dict locations
+      (lines 8886-9335 in v1.10.9)
+      and re-inserted INTO the
+      main dict literal, right
+      before the closing
+      `"All Products": ""`
+      sentinel and the `}` that
+      closes the dict.
+
+  (2) The category-divider
+      header comment block that
+      preceded the assignment
+      entries ("KNOWLEDGE_BASE
+      additions — moved here
+      from support_portal_v2.py
+      in cb_kb v1.1.0 ...") was
+      removed since it's no
+      longer descriptive — there
+      are no longer any
+      "additions" outside the
+      main dict.
+
+  (3) Verification: post-cleanup
+      audit confirms 44 dict-
+      literal KB entries, 0
+      assignment-style entries,
+      ast.parse OK, all 6
+      migrated entries present
+      and content-identical to
+      v1.10.9, all 6 third-party
+      brand entries (Cammus,
+      Cherry MX, Gateron, Kailh,
+      Moza, Outemu) still
+      present, every dropdown
+      product still has a KB
+      entry. Line count 11359 →
+      11351 (delta -8, from the
+      removed divider comment).
+
+  Behavioural verification:
+    Pre-cleanup and post-cleanup
+    dict contents are identical
+    when compared as Python dict
+    objects. KNOWLEDGE_BASE.keys()
+    is identical. KNOWLEDGE_BASE
+    [key] for every key returns
+    byte-identical strings. The
+    cleanup is a text-level
+    reorganisation only.
+
+  Why this is safe to push as a
+  standalone version:
+    No customer-facing logic
+    changed. No system-prompt
+    text changed. No KB content
+    changed. Only the syntactic
+    form by which 6 entries are
+    added to the KNOWLEDGE_BASE
+    dict was normalised. The
+    Discord bot and Streamlit
+    portal both import the same
+    KNOWLEDGE_BASE dict from
+    cb_kb.py; that dict has the
+    same keys and values
+    post-cleanup as pre-cleanup,
+    so neither service will
+    behave differently after
+    this deploy.
+
+  Open items for future cleanup
+  passes (NOT addressed in this
+  version):
+    - Wider anti-hallucination
+      guard coverage: only 7 of
+      14 controllers currently
+      have explicit ✗/✓ blocks
+      (Stellaris, Ares Pro, Blitz
+      Tri-Mode, Eclipse, Ares
+      Tri-Mode, Starforge, and
+      Ares Pro post-v1.10.8).
+      Unguarded: Lumora, Drakon,
+      Ares Wired, Ares Wireless,
+      Nexus, Blitz Wireless,
+      Quantum, Stratos Xenon
+      (though Stratos Xenon was
+      audit-confirmed accurate
+      in v1.10.9). A full guard
+      sweep is a separate project,
+      too large for one batch.
+    - Stellaris URL slug stale
+      ("hall-effect-trigger-and-
+      joystick" — actually TMR
+      now per Ronak): website-
+      side issue, not a KB bug.
+      Ronak instructed to ignore.
+    - Blitz Tri-Mode + Blitz
+      Wireless share a URL:
+      confirmed intentional by
+      Ronak (single product page
+      for both Blitz variants).
+
+v1.10.9 (2026-05-12) -- Claude
+  * Z-bump: two related data
+    corrections triggered by a
+    production sanity check on the
+    BUYING GUIDE TMR list.
+
+  Audit context (operator-driven
+  test, 2026-05-13 ~01:30 IST):
+    Ronak asked the deployed bot
+    "Which cosmic byte controller
+    has TMR Joysticks?" The reply
+    listed only Stellaris 2nd Gen,
+    Blitz Tri-Mode, and Drakon —
+    missing both Eclipse (fixed in
+    the staged v1.10.1 but not
+    yet deployed) and Starforge
+    (never explicitly fixed; the
+    catalogue still claimed Hall
+    Effect, contradicting the
+    Starforge product URL slug
+    "replaceable-tmr-joysticks").
+
+  Ronak's feedback in two parts:
+    Part 1: "Why didn't it mention
+    Eclipse and Starforge?" —
+    surfaced that Starforge's TMR
+    status had never been
+    explicitly captured in the KB,
+    and asked it to be added.
+    Part 2 (immediate follow-up):
+    "Starforge has Optical Triggers
+    and TMR Joysticks" — confirmed
+    Starforge sensors. Note: this
+    introduces a NEW trigger
+    sensor type (Optical) to the
+    KB's sensor-tech vocabulary;
+    Starforge is the only CB
+    controller with optical
+    triggers.
+    Part 3 (separate follow-up):
+    "Drakon does not have TMR
+    Triggers. I had mentioned TMR
+    Joysticks and Hall effect
+    Triggers in Drakon" — surfaced
+    that Claude had introduced a
+    wrong claim about Drakon
+    trigger sensor tech in v1.10.1
+    (Eclipse entry's anti-
+    hallucination block called
+    Drakon's triggers a "3-position
+    physical trigger lock", treating
+    the mechanical lock as the
+    sensor type when actually the
+    underlying sensor is Hall
+    Effect).
+
+  Root cause:
+    Two unrelated KB-data gaps
+    surfaced by the same test:
+
+    PROBLEM 1 — Starforge sensor
+    types never explicitly
+    documented. The Starforge
+    entry body had no JOYSTICKS:
+    or TRIGGERS: self-claim line
+    (same gap that caused the
+    Eclipse bug pre-v1.10.1).
+    The catalogue line said
+    "Hall Effect" which is wrong
+    on both axes (sticks are TMR
+    per URL slug; triggers are
+    Optical per Ronak). The
+    BUYING GUIDE TMR-precision
+    list didn't include
+    Starforge.
+
+    PROBLEM 2 — Drakon trigger
+    sensor type had been hedged
+    or misstated in FIVE places
+    in the KB:
+      (i) Drakon entry's own
+          TRIGGERS line: "sensor
+          type is not specified
+          in the manual — offer
+          to confirm with
+          support rather than
+          guess".
+      (ii) Eclipse v1.10.1 anti-
+          hallucination block:
+          "Drakon, which pairs
+          TMR sticks with a 3-
+          position physical
+          trigger lock" — treats
+          the mechanical lock as
+          the sensor.
+      (iii) TMR matrix near
+          BUYING GUIDE: "Trigger
+          sensor type is NOT
+          specified in the
+          Drakon manual" hedge.
+      (iv) Drakon vs Lumora
+          comparison: "analog/
+          digital software-
+          switchable Hall Effect
+          triggers vs Drakon's
+          3-position physical
+          trigger lock" —
+          implies false either/
+          or between Hall Effect
+          AND mechanical lock.
+      (v) Drakon catalogue line
+          (TRI-MODE WITH ADVANCED
+          FEATURES section):
+          "Tri-mode, TMR
+          joysticks (drift-
+          resistant precision),
+          3-position physical
+          trigger lock" — same
+          implicit conflation.
+    Per Ronak: Drakon's trigger
+    SENSOR is Hall Effect
+    analog; the 3-position
+    physical lock is a SEPARATE
+    mechanical feature for
+    travel-range adjustment on
+    top of the Hall Effect
+    sensor. Both descriptions
+    are true simultaneously —
+    the sensor is Hall Effect
+    AND the trigger has a
+    mechanical lock. The KB had
+    been describing them as
+    either/or.
+
+  Fix (eight coordinated edits
+  across two SKUs and several
+  cross-reference locations):
+
+  STARFORGE (3 edits):
+    (1) Inserted explicit
+        JOYSTICKS + TRIGGERS
+        self-claim block at the
+        top of the Starforge
+        entry (mirrors Eclipse
+        v1.10.1 / Ares Tri-Mode
+        v1.10.2 pattern):
+        - JOYSTICKS: TMR
+          (Tunnel Magneto-
+          resistance), with note
+          that Starforge sticks
+          are also physically
+          modular / replaceable
+          (4 force-rating modules
+          included: 60gf / 70gf /
+          120gf / 150gf — sensor
+          tech across all four
+          is TMR; the swap
+          changes spring force
+          feel only, not sensor
+          tech).
+        - TRIGGERS: Optical
+          (infrared LED + photo-
+          detector) — a NEW
+          sensor mechanism in
+          the KB's vocabulary.
+          Explicit note that
+          optical is distinct
+          from Hall Effect and
+          TMR but is drift-
+          resistant for the
+          same end-result
+          reason (no contact
+          wear). Starforge is
+          the ONLY Cosmic Byte
+          controller with
+          optical triggers.
+    (2) Corrected the Starforge
+        catalogue line. Was:
+        "Tri-mode, Hall Effect,
+        gyro, 600mAh. Budget
+        flagship." Now: "Tri-
+        mode, TMR joysticks
+        (replaceable/modular —
+        4 force-rating modules
+        included: 60gf / 70gf /
+        120gf / 150gf), Optical
+        triggers (drift-resistant
+        via light-based sensors
+        — unique in the lineup),
+        gyro, 600mAh, 4 macros
+        (M1-M4), companion mobile
+        app (Key Linker). Budget
+        flagship."
+    (3) Extended the BUYING
+        GUIDE TMR-precision line
+        to include Starforge:
+        "→ Blitz Tri-Mode,
+        Stellaris 2nd Gen,
+        Drakon, Eclipse, or
+        Starforge". Previously
+        Starforge was missing
+        from the TMR list
+        despite being TMR.
+
+  DRAKON (5 edits, one per
+  affected location):
+    (4) Drakon entry's TRIGGERS
+        line: was hedging
+        "sensor type not
+        specified in manual".
+        Now explicitly: "Hall
+        Effect analog sensors,
+        with an ADDITIONAL 3-
+        position physical
+        trigger lock for travel-
+        length adjustment ...
+        The sensor underneath
+        the lock is Hall Effect
+        in all three positions
+        — the lock changes the
+        mechanical travel range,
+        not the sensor type."
+    (5) Eclipse v1.10.1 anti-
+        hallucination block:
+        rewrote the cross-
+        reference from
+        "different from Drakon,
+        which pairs TMR sticks
+        with a 3-position
+        physical trigger lock"
+        to "the same sensor
+        combo as Stellaris 2nd
+        Gen AND Drakon — all
+        three have TMR sticks
+        + Hall Effect analog
+        triggers. Drakon
+        additionally has a 3-
+        position physical
+        trigger lock that
+        mechanically adjusts
+        trigger travel range,
+        but the underlying
+        trigger sensor on
+        Drakon is still Hall
+        Effect."
+    (6) TMR matrix entry for
+        Drakon: replaced the
+        hedge ("Trigger sensor
+        type is NOT specified
+        in the Drakon manual
+        ... do NOT guess —
+        offer to confirm with
+        support") with explicit
+        Hall Effect + mechanical
+        lock description.
+    (7) Drakon vs Lumora
+        comparison: rewrote the
+        trigger-flexibility
+        framing to reflect that
+        both have Hall Effect
+        sensors; the difference
+        is in HOW the mode is
+        changed (Lumora =
+        software-switchable;
+        Drakon = mechanical
+        3-position lock).
+    (8) Drakon catalogue line
+        (TRI-MODE WITH ADVANCED
+        FEATURES section): added
+        explicit "Hall Effect
+        analog triggers with"
+        before the 3-position
+        lock mention, so the
+        catalogue line reads
+        the trigger combo as
+        "Hall Effect analog
+        triggers WITH 3-position
+        physical trigger lock"
+        rather than treating the
+        lock as the sensor type.
+
+  Locked-in facts:
+    - Starforge: TMR sticks
+      (replaceable modules,
+      all TMR) + Optical
+      triggers + gyro + 4
+      macros + Key Linker app.
+    - Drakon: TMR sticks +
+      Hall Effect analog
+      triggers + 3-position
+      mechanical trigger lock
+      (lock is on TOP of HE
+      sensor, not a separate
+      sensor type).
+    - Eclipse: TMR sticks +
+      Hall Effect analog
+      triggers (v1.10.1 fix —
+      unchanged).
+    - TMR-stick controllers
+      complete list now:
+      Blitz Tri-Mode,
+      Stellaris 2nd Gen,
+      Drakon, Eclipse,
+      Starforge.
+    - Sensor-tech lineup
+      summary by trigger type:
+        Hall Effect triggers:
+          Lumora, Ares Pro,
+          Ares Tri-Mode, Ares
+          Wired, Ares Wireless
+          (2026 batch), Blitz
+          Tri-Mode, Blitz
+          Wireless, Stellaris
+          2nd Gen, Drakon,
+          Eclipse, Quantum (per
+          implied "magnetic"
+          framing).
+        Optical triggers:
+          Starforge only.
+        Standard / unconfirmed:
+          Nexus (entry doesn't
+          claim sensor tech),
+          older Ares Wired /
+          Wireless batches
+          (standard joysticks
+          + standard triggers
+          on 2025-and-older).
+        Stratos Xenon: per
+          earlier audit not
+          re-checked in this
+          version — flag for
+          future audit.
+
 v1.10.8 (2026-05-12) -- Claude
   * Z-bump: correct two long-
     standing KB-data errors in the
@@ -4993,7 +5474,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.8"
+__version__ = "1.10.10"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -5956,7 +6437,7 @@ PACKAGE: Controller, 2.4G USB dongle (stored in magnetic dongle slot under top c
 
 KEY FEATURES (full list — surface these accurately when comparing Drakon to other CB controllers):
 - JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Confirmed by Cosmic Byte; the product page URL itself contains "tmr-joysticks". Same joystick tech tier as Blitz Tri-Mode and Stellaris 2nd Gen. (Lumora, Ares Pro, and current Ares Tri-Mode have Hall Effect joysticks — different sensor tech.)
-- TRIGGERS: 3-position physical trigger lock (Position 1 = shortest, digital on/off; Position 2 = medium analog ~50%; Position 3 = full analog 100%), independent for LT and RT. Trigger sensor type is not specified in the manual — if a customer asks specifically about Hall Effect / TMR triggers on the Drakon, offer to confirm with support rather than guess.
+- TRIGGERS: Hall Effect analog sensors, with an ADDITIONAL 3-position physical trigger lock for travel-length adjustment (Position 1 = shortest travel, digital on/off feel; Position 2 = medium analog ~50% travel; Position 3 = full analog 100% travel), independent per trigger (LT and RT lock separately). The sensor underneath the lock is Hall Effect in all three positions — the lock changes the mechanical travel range, not the sensor type. So Drakon's trigger combo is "TMR joysticks + Hall Effect analog triggers with mechanical 3-position lock". If a customer asks whether Drakon triggers are Hall Effect, the answer is YES; if they ask about TMR triggers, the answer is NO (Drakon's TMR is on the sticks only, not the triggers).
 - MACRO BUTTONS: 2 dedicated programmable macro buttons (ML / MR), each records up to 22 inputs with delays. (NOTE: Cosmic Byte software displays these buttons as "L4 / R4" — same physical buttons, different label in software vs on the controller. This is a known display-label mismatch; do not tell the customer their controller is wrong.) Lumora has 4 macros; Blitz Tri-Mode has 0.
 - RGB LIGHTING: 7 customisable zones, up to 8 keyframe animations per zone via Cosmic Byte software. Plus on-controller modes: Rainbow / 7-colour gradient / Breathing / Fixed (cycle with FNL + SELECT). Brightness adjustable. RGB can be turned off entirely (Hold LT + RT 5 seconds). More granular than Lumora's 5-zone preset-animation RGB.
 - GYRO: 6-axis. Native Bluetooth Gyro Mode (press Y + HOME for 3 seconds, LED4 on) appears as "Pro Controller". Plus on-the-fly software gyro (via Cosmic Byte software, works in wired or 2.4GHz mode) — assignable to any button, with three activation modes (Always On / Toggle / Press and Hold). Output mimics joystick movement so it works in any game with joystick support.
@@ -6917,7 +7398,7 @@ COSMIC BYTE ECLIPSE - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
 
 JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Confirmed by Cosmic Byte; the product page URL itself contains "tmr-joysticks". Same joystick tech tier as Blitz Tri-Mode, Stellaris 2nd Gen, and Drakon. (Lumora and Ares Pro have Hall Effect joysticks — different sensor tech.) If a customer asks whether the Eclipse has TMR / Hall Effect / drift-resistant joysticks, the answer is YES — TMR. Do NOT say "Hall Effect joysticks" for the Eclipse, and do NOT say "the manual doesn't specify".
 
-TRIGGERS: Hall Effect (analog). Drift-resistant magnetic-sensor triggers. NOT TMR — the Eclipse pairs TMR sticks with Hall Effect triggers (the same combo as Stellaris 2nd Gen; different from Drakon, which pairs TMR sticks with a 3-position physical trigger lock).
+TRIGGERS: Hall Effect (analog). Drift-resistant magnetic-sensor triggers. NOT TMR — the Eclipse pairs TMR sticks with Hall Effect triggers (the same sensor combo as Stellaris 2nd Gen AND Drakon — all three have TMR sticks + Hall Effect analog triggers. Drakon additionally has a 3-position physical trigger lock that mechanically adjusts trigger travel range, but the underlying trigger sensor on Drakon is still Hall Effect, same as Eclipse and Stellaris 2nd Gen).
 
 CONNECTIVITY:
 - Physical mode switch: Left=Bluetooth, Middle=2.4G, Right=NS (Gyro Bluetooth mode).
@@ -7053,6 +7534,10 @@ If a customer's message is just "Eclipse" or "eclips" with no specific question 
 
     "Starforge": """
 COSMIC BYTE STARFORGE - TRI-MODE CONTROLLER - FULL MANUAL
+
+JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. The Starforge joysticks are ALSO physically MODULAR / REPLACEABLE (Starforge ships with 4 force-rating modules in the box: 60gf / 70gf / 120gf / 150gf — the customer can swap them to change stick feel). The "replaceable" aspect is unique to the Starforge among Cosmic Byte controllers; the underlying sensor tech across all four modules is TMR. The product page URL itself contains "replaceable-tmr-joysticks" — that's authoritative. Same joystick tech tier as Blitz Tri-Mode, Stellaris 2nd Gen, Drakon, and Eclipse. (Lumora, Ares Pro, and the Ares Tri-Mode / Wired / Wireless family have Hall Effect joysticks — different sensor tech.) If a customer asks whether the Starforge has TMR / drift-resistant joysticks, the answer is YES — TMR. If they ask whether the modular sticks change the sensor tech, the answer is NO — all four modules are TMR; the swap changes the spring force feel only.
+
+TRIGGERS: Optical (infrared LED + photodetector). This is a DIFFERENT sensor tech from both Hall Effect and TMR — optical triggers detect position via light interruption. Like Hall Effect and TMR, optical triggers are drift-resistant and have no contact wear, but the mechanism is different: Hall Effect uses magnetic sensors, TMR uses tunnel magnetoresistance, optical uses light. The Starforge is the ONLY Cosmic Byte controller with optical triggers — every other TMR-stick controller (Blitz Tri-Mode, Stellaris 2nd Gen, Drakon, Eclipse) pairs TMR sticks with Hall Effect triggers. If a customer asks whether the Starforge has Hall Effect triggers, the answer is NO — Optical. If they ask whether the Starforge triggers are drift-resistant or have no wear, the answer is YES — same end-result drift-resistance as Hall Effect/TMR, just a different sensor mechanism.
 
 Compatible: PC (XInput/DInput), Android 8.0+, iOS 13+, Smart TVs, Tesla vehicles (2.4GHz).
 
@@ -8534,19 +9019,7 @@ ANTI-HALLUCINATION GUARD (Ares Tri-Mode — read before answering)
 ✓ VAGUE QUESTION GUIDANCE: If a customer's message is just "Ares" (without specifying Tri-Mode, Pro, Wired, or Wireless), ASK them which Ares variant they have BEFORE answering — there are four distinct SKUs in the Ares family with materially different specs. Example: "Which Ares are you using — Ares Tri-Mode, Ares Pro, Ares Wired, or Ares Wireless? They have different connectivity and features, so the answer depends on the model." Once they confirm, proceed with the relevant entry's content.
 """,
 
-    "All Products": ""  # Filled dynamically
-}
-
-# =============================================================================
-# KNOWLEDGE_BASE additions (moved here from support_portal_v2.py in cb_kb v1.1.0)
-# Mutating the KNOWLEDGE_BASE dict at module scope keeps the discord_bot's
-# imported reference in sync (dicts are shared by reference). These were
-# accidentally left in support_portal_v2.py during the v2.22.0 extraction;
-# fixed in v2.23.0 / cb_kb v1.1.0 so the Discord bot also sees them.
-# =============================================================================
-
-# ── HEADSETS ──────────────────────────────────────────────────────────────────
-KNOWLEDGE_BASE["CryoCore"] = """
+    "CryoCore": """
 PRODUCT: Cosmic Byte CryoCore — 7.1 USB Wired Gaming Headset
 
 SPECS:
@@ -8595,9 +9068,9 @@ CARE: Keep away from moisture. Store in cool dry place. Avoid bending cable. Do 
 
 WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
+""",
 
-KNOWLEDGE_BASE["Proteus"] = """
+    "Proteus": """
 PRODUCT: Cosmic Byte Proteus — Gaming Headset (Dual Input USB + 3.5mm)
 
 SPECS:
@@ -8639,10 +9112,9 @@ A: Plug the USB cable into a USB power source (power bank, charger) while using 
 
 WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
+""",
 
-# ── WIRELESS HEADSETS ─────────────────────────────────────────────────────────
-KNOWLEDGE_BASE["Immortal"] = """
+    "Immortal": """
 PRODUCT: Cosmic Byte Immortal — Tri-Mode (Wi-Fi 2.4GHz / Bluetooth 5.3 / Wired) Wireless Gaming Headset
 
 CONNECTION MODES (3 modes, one device):
@@ -8827,10 +9299,9 @@ SUPPORT:
 - Phone: +91 7351615161 (Mon–Sat, 10:00 AM to 6:00 PM)
 - Email: cc@thecosmicbyte.com
 - FAQ portal: support.thecosmicbyte.com
-"""
+""",
 
-# ── EARBUDS ────────────────────────────────────────────────────────────────────
-KNOWLEDGE_BASE["CosmoBuds X220"] = """
+    "CosmoBuds X220": """
 PRODUCT: Cosmic Byte CosmoBuds X220 — True Wireless Gaming Earbuds
 
 SPECS:
@@ -8901,10 +9372,9 @@ A: Remove volume limit (see above)
 
 WARRANTY: 1 year against manufacturing defects. Physical/water damage, tampered products, and battery wear and tear not covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
+""",
 
-# ── ACCESSORIES / COMBOS ───────────────────────────────────────────────────────
-KNOWLEDGE_BASE["Cyclone RGB"] = """
+    "Cyclone RGB": """
 PRODUCT: Cosmic Byte Cyclone RGB — Laptop Cooling Pad
 
 SPECS:
@@ -8940,9 +9410,9 @@ A: Increase fan speed to max. Ensure laptop vents are not blocked. Clean laptop 
 
 WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
+""",
 
-KNOWLEDGE_BASE["Dragonfly"] = """
+    "Dragonfly": """
 PRODUCT: Cosmic Byte Dragonfly — RGB Membrane Keyboard + Mouse Combo (CB-GKM-19)
 
 KEYBOARD SPECS:
@@ -8990,8 +9460,15 @@ A: Use FN + function key combinations (e.g., FN+F7 for Play/Pause).
 
 WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
-"""
+""",
 
+    "All Products": ""  # Filled dynamically
+}
+
+# ── HEADSETS ──────────────────────────────────────────────────────────────────
+# ── WIRELESS HEADSETS ─────────────────────────────────────────────────────────
+# ── EARBUDS ────────────────────────────────────────────────────────────────────
+# ── ACCESSORIES / COMBOS ───────────────────────────────────────────────────────
 # "All Products" is intentionally lean — only the matched product KB is injected
 # at query time via detect_product_from_message(). Sending 27K tokens every call
 # was 8x more expensive and unnecessary since the system prompt already instructs
@@ -9029,7 +9506,7 @@ Other CB controllers with Hall Effect (for reference):
 - Stratos Xenon: Hall Effect joystick + Hall Effect triggers (confirmed in product manual).
 - Stellaris 2nd Gen: TMR joysticks (Tunnel Magnetoresistance — different and superior tech to Hall Effect for joysticks specifically) + Hall Effect analog triggers.
 - Blitz Tri-Mode: TMR joysticks + Hall Effect analog triggers.
-- Drakon: TMR joysticks (confirmed by Cosmic Byte; the Drakon product page URL contains "tmr-joysticks", and the Drakon manual's joystick calibration shortcut is labeled "JOYSTICK CALIBRATION (TMR)"). Same joystick tech tier as Blitz Tri-Mode and Stellaris 2nd Gen. Trigger sensor type is NOT specified in the Drakon manual — the manual describes a 3-position physical trigger lock for digital / mid-analog / full-analog modes, but does not state Hall Effect / TMR / standard for the trigger sensor itself. If a customer asks specifically about Drakon trigger sensor tech, do NOT guess — offer to confirm with support (cc@thecosmicbyte.com).
+- Drakon: TMR joysticks (confirmed by Cosmic Byte; the Drakon product page URL contains "tmr-joysticks", and the Drakon manual's joystick calibration shortcut is labeled "JOYSTICK CALIBRATION (TMR)"). Same joystick tech tier as Blitz Tri-Mode, Stellaris 2nd Gen, Eclipse, and Starforge. TRIGGERS: Hall Effect analog (confirmed by Cosmic Byte), with an additional 3-position physical trigger lock for travel-range adjustment (digital / mid-analog / full-analog mechanical positions). The lock is a mechanical feature on top of the Hall Effect sensors — the sensor itself is Hall Effect in all three lock positions. So Drakon's combo is TMR sticks + Hall Effect analog triggers + mechanical 3-position trigger lock (the lock is exclusive to Drakon among Cosmic Byte controllers).
 - Lumora: Hall Effect joysticks + Hall Effect analog/digital switchable triggers (confirmed by Cosmic Byte). Lumora is NOT TMR despite being a current-generation product with software / "App Support" — do not infer TMR from generation or positioning.
 - Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
 
@@ -9143,7 +9620,7 @@ PRODUCT COMPARISON GUIDANCE — when a customer asks "should I upgrade from X to
 
   3. Do NOT default to a "newer = better" or "different = upgrade" framing. Many CB cross-product comparisons are SIDE-GRADES with different strengths, not hierarchical upgrades. Specifically:
      - Lumora vs Blitz Tri-Mode is a SIDE-GRADE. Blitz wins on TMR joystick precision; Lumora wins on macro count (4 vs 0), RGB customisation (Cloak design + 5 zones vs no RGB), button mapping flexibility (gamepad/keyboard/mouse vs gamepad-only), replaceable accessories (6 stick tops + 2 D-pad covers vs none), and onboard profiles (4 vs 3). Both have comparable gyro capability. Recommend based on what the customer values: precision-focused gaming = Blitz; customisation/macros/RGB = Lumora.
-     - Drakon vs Lumora is a SIDE-GRADE with different strengths. Drakon wins on TMR joysticks (Lumora has Hall Effect — different sensor tech, both drift-resistant but TMR is newer and more precise), RGB granularity (7 zones with up to 8 keyframe animations vs Lumora's 5 zones with preset animations), and the dragon artwork design + 3 swappable face plates. Lumora wins on macro count (4 vs 2), button mapping flexibility (gamepad/keyboard/mouse mapping vs gamepad-only), trigger flexibility (analog/digital software-switchable Hall Effect triggers vs Drakon's 3-position physical trigger lock), and battery (1300mAh vs 600mAh). Both have TMR or HE drift-resistant joysticks, both are Tri-Mode, both have 6-axis gyro with software customisation. Recommend based on customer priority: TMR + RGB granularity + dragon design = Drakon; macros + keyboard/mouse mapping + bigger battery = Lumora.
+     - Drakon vs Lumora is a SIDE-GRADE with different strengths. Drakon wins on TMR joysticks (Lumora has Hall Effect — different sensor tech, both drift-resistant but TMR is newer and more precise), RGB granularity (7 zones with up to 8 keyframe animations vs Lumora's 5 zones with preset animations), and the dragon artwork design + 3 swappable face plates. Lumora wins on macro count (4 vs 2), button mapping flexibility (gamepad/keyboard/mouse mapping vs gamepad-only), trigger mode flexibility (analog/digital software-switchable on Lumora's Hall Effect triggers vs Drakon's mechanical 3-position lock on Hall Effect triggers — both have Hall Effect trigger sensors, the difference is in HOW the mode is changed, not the sensor tech), and battery (1300mAh vs 600mAh). Both have drift-resistant joysticks (TMR vs HE), both are Tri-Mode, both have 6-axis gyro with software customisation, both have Hall Effect analog triggers. Recommend based on customer priority: TMR sticks + RGB granularity + dragon design + tactile mechanical trigger lock = Drakon; macros + keyboard/mouse mapping + bigger battery + software-switchable trigger modes = Lumora.
 
   4. When asked "what's the best CB controller?", do NOT pick one. Ask the customer what they're looking for (precision / macros / RGB / mobile / console / budget) and recommend based on their stated priorities. Different controllers win in different categories.
 
@@ -10754,8 +11231,8 @@ TRI-MODE WITH ADVANCED FEATURES:
 PREMIUM / FLAGSHIP:
 - Lumora: Tri-mode, Hall Effect joysticks, Hall Effect analog/digital switchable triggers, 6-axis gyro, 4 macro buttons, 5-zone Cloak RGB, full keyboard/mouse mapping, replaceable joystick tops + D-pad covers, 1300mAh. Most feature-rich CB controller.
 - Stellaris: Tri-mode, TMR joysticks, Hall Effect analog triggers, gyro, RGB, 1000mAh. Premium build (transparent variant has additional outer RGB ring).
-- Drakon: Tri-mode, TMR joysticks (drift-resistant precision), 3-position physical trigger lock, gyro, 7-zone RGB with up to 8 keyframe animations, 2 macros (ML/MR), dragon artwork design with 3 swappable magnetic face plates (plain black / doodle / dragon), 6 swappable joystick tops in 3 styles, 2 D-pads, charging dock + carrying case included, 600mAh.
-- Starforge: Tri-mode, Hall Effect, gyro, 600mAh. Budget flagship.
+- Drakon: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers with 3-position physical trigger lock (digital / mid-analog / full-analog mechanical positions — sensor is Hall Effect throughout), gyro, 7-zone RGB with up to 8 keyframe animations, 2 macros (ML/MR), dragon artwork design with 3 swappable magnetic face plates (plain black / doodle / dragon), 6 swappable joystick tops in 3 styles, 2 D-pads, charging dock + carrying case included, 600mAh.
+- Starforge: Tri-mode, TMR joysticks (replaceable/modular — 4 force-rating modules included: 60gf / 70gf / 120gf / 150gf), Optical triggers (drift-resistant via light-based sensors — unique in the lineup), gyro, 600mAh, 4 macros (M1-M4), companion mobile app (Key Linker). Budget flagship.
 - Stratos Xenon: Tri-mode, Hall Effect, large grip. Comfort-focused.
 - Quantum: Tri-mode, Hall Effect, gyro. Mid-premium.
 - Eclipse: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, Joystick Resistance Roller (stiffness adjust). Entry flagship.
@@ -10764,7 +11241,7 @@ BUYING GUIDE:
 - Just PC gaming, budget-friendly → Nexus (Hall Effect, wired)
 - Wireless PC + mobile, software-customisable → Ares Pro (Hall Effect) or Blitz Tri-Mode (TMR, no macros/RGB) — recommend based on whether customer wants TMR precision (Blitz) or HE switchable triggers + balance (Ares Pro)
 - Maximum customisation (macros, RGB, mappings, replaceable parts) → Lumora
-- Best joystick precision (TMR) → Blitz Tri-Mode, Stellaris 2nd Gen, Drakon, or Eclipse
+- Best joystick precision (TMR) → Blitz Tri-Mode, Stellaris 2nd Gen, Drakon, Eclipse, or Starforge
 - Distinctive RGB design → Lumora (Cloak) or Drakon (dragon artwork + 7-zone keyframes)
 - Best value wireless → Blitz Wireless or Ares Pro
 """
