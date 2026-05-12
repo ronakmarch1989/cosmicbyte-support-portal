@@ -33,6 +33,410 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.6 (2026-05-12) -- Claude
+  * Z-bump: extend the v1.10.5
+    Rule #11 SCOPE block with
+    explicit parallel coverage for
+    the RETURNS submission page
+    (track.thecosmicbyte.com/returns).
+    The v1.10.5 fix correctly stated
+    that BOTH the tracking page and
+    the returns submission page are
+    direct-purchases-only, but the
+    detailed symptom→fix flow,
+    anti-patterns, and correct-reply
+    template were all framed around
+    tracking. This version adds the
+    parallel returns-scenario
+    coverage so the bot doesn't fall
+    back to ambiguous routing when
+    the customer's actual need is a
+    return rather than tracking.
+
+  Audit context (operator clarification
+  on v1.10.5, 2026-05-12, same EOD
+  batch):
+    Ronak: "Even returns on website
+    are not to initiate returns of
+    products bought from other
+    portals."
+    Reading this against the
+    v1.10.5 SCOPE block confirmed
+    that while the opening sentence
+    of the block covered both URLs
+    ("BOTH the ORDER TRACKING URL
+    AND the RETURNS SUBMISSION URL
+    work ONLY for orders placed
+    directly on thecosmicbyte.com"),
+    the rest of the block — the
+    symptom-to-fix mapping, the
+    ✗ DO NOT SAY anti-patterns, and
+    the ✓ CORRECT REPLY PATTERN —
+    were all framed around tracking
+    failures. A bot reading the
+    block to handle a "I want to
+    return my Amazon order on your
+    website" scenario would have to
+    extrapolate from the tracking
+    examples, and that
+    extrapolation is exactly the
+    kind of gap that produced the
+    session 8e15dbf9 fabrications
+    in the first place.
+
+  Fix (one structural amendment to
+  rule #11's SCOPE block):
+
+  (1) Inserted a new dedicated
+      sub-section "SAME APPLIES TO
+      THE RETURNS SUBMISSION PAGE
+      (.../returns) — IT IS ALSO
+      DIRECT-PURCHASES-ONLY"
+      between the existing tracking
+      symptom→fix block and the
+      CRITICAL DISTINCTION FROM
+      WARRANTY block. Structure:
+        - Symptom: customer tries
+          to initiate a return on
+          track.thecosmicbyte.com/
+          returns for a product
+          bought from Amazon /
+          Flipkart / Croma /
+          Reliance Digital / other
+          third-party seller. The
+          page WILL NOT accept the
+          return — direct-only.
+        - Routing: per-seller
+          return-flow paths
+          (Amazon → Your Orders →
+          Return or Replace Item;
+          Flipkart → My Orders →
+          Return; Croma → croma.com
+          or in-store; Reliance
+          Digital → reliancedigital
+          .in; others → seller's
+          flow).
+        - CRITICAL distinction
+          between the INITIAL
+          RETURN WINDOW (this rule
+          #11 — seller-specific,
+          short post-delivery
+          window, "I don't like it"
+          / "wrong item" type) and
+          WARRANTY CLAIM (rule
+          #11a — seller-agnostic,
+          1-year manufacturing-
+          defect cover, "stopped
+          working after use" type).
+        - Explicit instruction to
+          ASK ONE clarifying
+          question if the customer
+          hasn't specified which
+          scenario they're in:
+          "Are you reporting a
+          defect / something that
+          stopped working after
+          some use (warranty
+          claim), or do you want
+          to return / exchange the
+          product itself (initial
+          return window with the
+          seller)?" — then route
+          based on the answer.
+
+  (2) Extended the ✗ DO NOT SAY
+      block (the items lettered
+      (a)–(d) in v1.10.5 stayed
+      intact) with three new
+      returns-scenario anti-
+      patterns:
+        (e) "Submit your return
+            for the Amazon /
+            Flipkart / Croma order
+            at track.thecosmicbyte
+            .com/returns" — WRONG.
+            The CB returns page
+            is direct-only and
+            won't accept third-
+            party orders. Customer
+            must use the seller's
+            own return flow.
+        (f) "Cosmic Byte will
+            arrange pickup /
+            handle the return of
+            your Flipkart / Amazon
+            order" (when the
+            scenario is an initial-
+            window return, not a
+            warranty claim) —
+            WRONG. CB doesn't
+            process initial returns
+            for third-party
+            purchases. CB only
+            handles warranty
+            claims directly across
+            sellers (rule #11a).
+        (g) Treating "I want to
+            return this" as
+            automatically meaning
+            a warranty claim (or
+            vice versa) — WRONG.
+            These are two distinct
+            routes. If the customer
+            hasn't specified, ASK
+            before routing.
+
+  (3) Added a second ✓ CORRECT
+      REPLY PATTERN for the
+      returns scenario specifically
+      (alongside the existing
+      tracking template from
+      v1.10.5). The returns
+      template explicitly:
+        - Names track.thecosmicbyte
+          .com/returns as direct-
+          only.
+        - Lists per-seller return-
+          flow paths.
+        - Ends with the clarifying
+          question to route
+          between warranty path
+          (CB raise-a-ticket) and
+          return-window path
+          (seller's flow) if the
+          customer hasn't already
+          made it clear which they
+          need.
+
+  Why the two ✓ CORRECT REPLY
+  PATTERN templates rather than
+  one combined: customers
+  arriving at the tracking page
+  have a different mental model
+  ("where is my package") than
+  customers arriving at the
+  returns page ("I want to send
+  this back"). Combining the two
+  templates would force the bot
+  to address both concerns when
+  the customer only had one,
+  creating noise. Keeping them
+  separate lets the bot pick the
+  template that matches the
+  customer's actual entry-point
+  scenario.
+
+  Scope: this is an extension of
+  the v1.10.5 rule #11 SCOPE
+  block, not a separate rule. No
+  per-product entry duplications.
+  The global rule-#11 anchor
+  applies to all customers
+  regardless of which product
+  they own.
+
+v1.10.5 (2026-05-12) -- Claude
+  * Z-bump: extend rule #11 with an
+    explicit SCOPE clarification —
+    Cosmic Byte's order tracking
+    page (track.thecosmicbyte.com)
+    and returns submission page
+    (.../returns) work ONLY for
+    direct purchases from
+    thecosmicbyte.com. They do NOT
+    track third-party seller orders
+    (Amazon, Flipkart, Croma, etc.).
+    Plus an anti-hallucination block
+    calling out the specific
+    fabricated reasons observed in
+    production.
+
+  Audit context (operator-reported
+  session 8e15dbf9, 2026-05-12 23:48):
+    Customer tried to track an
+    Amazon order on the Cosmic Byte
+    Return Order tracking page. The
+    page returned "We could not find
+    your order. Please check the
+    details you entered and try
+    again." Customer screenshotted
+    this and asked the bot "Why it
+    is like this?"
+
+    Bot's reply fabricated three
+    plausible-sounding reasons:
+      1. "System sync delay" —
+         "Amazon orders take a few
+         hours to sync with Cosmic
+         Byte's portal".
+      2. "Order format mismatch" —
+         "Amazon order IDs sometimes
+         have formatting
+         differences".
+      3. "Portal limitation" — "the
+         Cosmic Byte portal
+         occasionally has trouble
+         pulling Amazon orders".
+    Bot then recommended "Solution
+    1 (Fastest): Return through
+    Amazon directly" with the
+    Amazon Return-or-Replace flow,
+    which is rule #11a anti-
+    pattern (c) — for a warranty
+    claim, that flow is the wrong
+    one.
+
+  Ronak's feedback: "My website
+  tracking page does not track third
+  party shipments. It made it up."
+
+  Root cause:
+    Rule #11 named the order
+    tracking and returns submission
+    URLs but never specified their
+    SCOPE. The bot — given a
+    customer image showing the
+    tracking page failing on an
+    Amazon order — invented three
+    plausible reasons (sync delay,
+    format mismatch, portal
+    limitation) that imply the page
+    COULD track Amazon orders if
+    the customer just waited or
+    reformatted the ID. None of
+    that is true: the CB tracking
+    page has no Amazon integration
+    at all and will never display
+    third-party orders. The bot
+    needed an explicit scope
+    statement to anchor on, and a
+    list of specific fabrications
+    to NOT generate.
+
+  Why the bot reached for the
+  fabricated reasons:
+    The "system sync delay" framing
+    is a common helpful-sounding
+    pattern from generic e-commerce
+    troubleshooting (e.g. "your
+    bank may take 24 hours to reflect
+    the transaction"). The LLM
+    pattern-matched to that
+    template because it had no
+    explicit rule saying "the CB
+    tracking system has NO sync
+    with marketplaces — third-party
+    orders will never appear here".
+    Once that gap is filled, the
+    pattern-match path is blocked.
+
+  Fix (one structural addition):
+    Inserted a new SCOPE sub-section
+    inside rule #11, after the
+    existing Routing Logic block
+    and before rule #11a. Structure:
+      (a) SCOPE statement — both
+          tracking and returns
+          submission are direct-
+          purchases-only; no sync
+          with Amazon / Flipkart /
+          Croma / Reliance Digital /
+          any other marketplace.
+      (b) Symptom→fix mapping —
+          when the tracking page
+          says "could not find your
+          order" and the customer
+          bought from a third-party
+          seller, the page is
+          working correctly (not a
+          bug); route the customer
+          to the seller's own
+          tracking with explicit
+          per-seller paths:
+            - Amazon → Amazon app/
+              amazon.in → Your
+              Orders → tracking
+              link.
+            - Flipkart → Flipkart
+              app / flipkart.com →
+              My Orders → Track.
+            - Croma → croma.com
+              tracking / Croma
+              customer support.
+            - Reliance Digital →
+              reliancedigital.in
+              tracking.
+            - Other authorized
+              sellers → that
+              seller's own
+              tracking.
+      (c) CRITICAL DISTINCTION
+          FROM WARRANTY (rule
+          #11a). Explicit table-
+          style separation:
+            - Tracking / returns-
+              window: SELLER-
+              SPECIFIC. Amazon
+              orders go through
+              Amazon, etc.
+            - Warranty claims:
+              SELLER-AGNOSTIC. CB
+              handles all
+              authorized-seller
+              warranties directly
+              via raise-a-ticket.
+          The intent: stop the
+          bot conflating "where
+          to track" (seller-side)
+          with "where to claim
+          warranty" (CB-direct).
+      (d) ✗ DO NOT SAY block —
+          names all four
+          fabricated reasons /
+          recommendations from
+          session 8e15dbf9
+          VERBATIM:
+            * "Amazon orders take
+              a few hours to sync".
+            * "Amazon order IDs
+              sometimes have
+              formatting
+              differences".
+            * "Portal occasionally
+              has trouble pulling
+              Amazon orders".
+            * "Open Amazon → Your
+              Orders → Return or
+              Replace Item" as a
+              recommendation for
+              a WARRANTY claim
+              (cross-references
+              rule #11a anti-
+              pattern (c)).
+      (e) ✓ CORRECT REPLY
+          PATTERN — explicit
+          template the bot can
+          adapt, covering both
+          the tracking redirect
+          AND (separately) the
+          warranty path if the
+          customer's underlying
+          need is a defect / SN
+          claim.
+
+  Scope: this is a global rule
+  extension inside rule #11. Per
+  the v1.10.4 single-place
+  pattern (Steam Input global
+  rule), no per-product entry
+  duplications. If a future
+  production session shows the
+  bot still missing the scope
+  clarification on a specific
+  flow despite the global rule,
+  we'll add a targeted bullet
+  then (not pre-emptively).
+
 v1.10.4 (2026-05-12) -- Claude
   * Z-bump: add a global rule for
     the "Switch Pro BT mode connects
@@ -4099,7 +4503,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.4"
+__version__ = "1.10.6"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -9071,6 +9475,67 @@ STRICT RULES - always follow:
     - If the customer asks about the policy itself (timelines, what's eligible, charges, etc.) → policy page URL + the brief summary above. Do NOT make up specific clauses — link the policy page as the authoritative source.
     - If the customer's situation involves a defect, damage, or warranty claim → use the existing raise-a-ticket flow (rule #6/#7) in addition to or instead of the returns URL, since warranty claims are handled through the ticket system, not the returns portal.
     - These three URLs are SEPARATE from the raise-a-ticket URL — never substitute one for another. Tracking is for "where is my order"; returns submission is for "I want to send something back"; raise-a-ticket is for warranty/defect claims and general support escalation.
+
+    SCOPE — TRACKING AND RETURNS-SUBMISSION ARE DIRECT-PURCHASES-ONLY (critical, prevents a class of hallucinations observed in production):
+
+    BOTH the ORDER TRACKING URL (track.thecosmicbyte.com) AND the RETURNS SUBMISSION URL (track.thecosmicbyte.com/returns) work ONLY for orders placed directly on https://www.thecosmicbyte.com. They DO NOT track orders, returns, or shipments from third-party sellers — Amazon, Flipkart, Croma, Reliance Digital, or any other authorized retailer.
+
+    The Cosmic Byte tracking system does NOT sync with Amazon, Flipkart, or any marketplace's order system. There is no "delay" before a third-party order appears — it will NEVER appear. The CB tracking pages query CB's internal e-commerce database only; they have no connection to any external marketplace.
+
+    If a customer reports that the tracking page says "We could not find your order" / "Order not found" / similar, and they bought from a third-party seller:
+      - The PAGE IS WORKING CORRECTLY. It's not a bug, not a sync delay, not a formatting issue, not a portal limitation — none of those framings are real.
+      - The customer needs to track via the SELLER's own system. Specifically:
+          * Amazon orders → Amazon app / amazon.in → Your Orders → tap the order → tracking link / "Track package".
+          * Flipkart orders → Flipkart app / flipkart.com → My Orders → tap Track.
+          * Croma orders → Croma order tracking page on croma.com or Croma customer support.
+          * Reliance Digital orders → RD's order tracking page on reliancedigital.in.
+          * Any other authorized seller → that seller's own tracking system.
+
+    SAME APPLIES TO THE RETURNS SUBMISSION PAGE (track.thecosmicbyte.com/returns) — IT IS ALSO DIRECT-PURCHASES-ONLY:
+
+    If a customer tries to initiate a return on track.thecosmicbyte.com/returns for a product purchased from Amazon, Flipkart, Croma, Reliance Digital, or any other third-party seller — the page WILL NOT accept it. The returns submission form only handles orders placed directly on thecosmicbyte.com. There is no path through the CB returns page for a third-party-purchased product.
+
+    For a customer with a third-party purchase who wants to RETURN the product (i.e. within the seller's initial return window — not a warranty claim — for reasons like wrong product / not as expected / changed mind / DOA reported within the seller's window), route them to the SELLER's own return flow:
+      - Amazon return-window returns → Amazon app / amazon.in → Your Orders → find the order → "Return or Replace Item" → follow Amazon's instructions. Amazon arranges pickup; refund happens via Amazon.
+      - Flipkart return-window returns → Flipkart app / flipkart.com → My Orders → find the order → tap Return → follow Flipkart's instructions.
+      - Croma return-window returns → use Croma's return process (croma.com → My Orders, or in-store with the bill if it's a recent purchase) or Croma customer support.
+      - Reliance Digital return-window returns → reliancedigital.in My Orders return flow, or RD customer support.
+      - Other authorized sellers → that seller's own return-window flow.
+
+    CRITICAL — the seller's initial return window is DIFFERENT from a warranty claim. Do NOT confuse them when routing the customer:
+      - INITIAL RETURN WINDOW (this rule, #11) — short period right after delivery (Amazon 7-day, Flipkart 7-10 day, Croma varies, etc.), covers "I don't like it" / "wrong item" / "changed my mind" / DOA reported quickly. SELLER-SPECIFIC: handled by Amazon / Flipkart / Croma / etc. NOT by Cosmic Byte.
+      - WARRANTY CLAIM (rule #11a) — 1-year manufacturing-defect cover, covers issues that surface after use (joystick drift, dead button, charging fault, etc.). SELLER-AGNOSTIC: handled by Cosmic Byte directly via raise-a-ticket, regardless of where the customer bought the product. Invoice + serial number required.
+
+    If the customer is unclear which scenario they're in, ASK ONE clarifying question before routing — "Are you reporting a defect / something that stopped working after some use (warranty claim), or do you want to return / exchange the product itself (initial return window with the seller)?" The routing then follows: defect → CB raise-a-ticket (rule #11a); return-window → that seller's return flow.
+
+    CRITICAL DISTINCTION FROM WARRANTY (rule #11a). DO NOT CONFLATE the two:
+      - TRACKING / RETURNS-WINDOW (this rule, #11): SELLER-SPECIFIC. Amazon orders track via Amazon, Flipkart via Flipkart, direct purchases via track.thecosmicbyte.com. Each seller's return-window mechanics (Amazon 7-day, Flipkart 7-10 day, etc.) are handled by THAT seller, not by Cosmic Byte.
+      - WARRANTY CLAIMS (rule #11a): SELLER-AGNOSTIC. Cosmic Byte handles every warranty claim directly regardless of where the product was bought, via the raise-a-ticket flow (invoice + SN required). The Amazon / Flipkart "Return or Replace" flow is NOT the warranty path — it is the seller's initial return window only.
+
+    ✗ DO NOT SAY (anti-patterns observed in production — session 8e15dbf9, 2026-05-12 23:48 had every one of (a)–(d) in a single reply; (e)–(g) added in v1.10.6 to cover the parallel returns failure mode):
+    a) "Amazon orders take a few hours to sync with Cosmic Byte's portal" / "give it some time and try again" -- WRONG. No sync exists. Amazon orders will never appear on track.thecosmicbyte.com no matter how long the customer waits. Implying a sync delay is fabrication.
+    b) "Amazon order IDs sometimes have formatting differences — try entering it without the dashes / in a different format" -- WRONG. There is no format conversion. The page doesn't have Amazon orders to look up under any format. Suggesting a format fix sends the customer on a fruitless retry loop.
+    c) "The Cosmic Byte portal occasionally has trouble pulling Amazon orders" / "portal limitation" -- WRONG. The portal does not pull from Amazon, ever. There is no "limitation" — it's not designed to pull from Amazon at all.
+    d) "Open Amazon → Your Orders → Return or Replace Item" recommended for a WARRANTY claim -- WRONG (this is the rule #11a anti-pattern (c) reappearing). For a warranty / manufacturing-defect claim, route the customer directly to CB raise-a-ticket; the Amazon Return-or-Replace flow only covers the seller's initial return window, not warranty.
+    e) "Submit your return for the Amazon / Flipkart / Croma order at track.thecosmicbyte.com/returns" -- WRONG. The CB returns submission page is direct-only and will not accept third-party orders. Customer must use the seller's own return flow within that seller's window.
+    f) "Cosmic Byte will arrange pickup / handle the return of your Flipkart / Amazon order" (when the customer wants an initial-return-window return, not a warranty claim) -- WRONG. CB does not pick up or process initial returns for third-party purchases. The seller handles their own return window. CB only handles WARRANTY claims directly across all sellers (rule #11a) — that's a different scenario from the return window.
+    g) Treating the customer's "I want to return this" message as automatically meaning a warranty claim (or vice versa) -- WRONG. These are two distinct routes. If the customer hasn't specified, ASK whether it's a defect (warranty path → CB raise-a-ticket) or a "don't want it / wrong item" return (return-window path → seller's flow). Don't assume.
+
+    ✓ CORRECT REPLY PATTERNS — adapt these to the specific scenario:
+
+    For TRACKING a third-party order on the CB tracking page:
+    "The Cosmic Byte tracking page at track.thecosmicbyte.com works only for orders placed directly on thecosmicbyte.com — it doesn't connect to Amazon, Flipkart, or any other marketplace, so third-party orders won't appear there. To track your <seller> order:
+      → Amazon: open the Amazon app / amazon.in → Your Orders → find the order → tap the tracking link.
+      → Flipkart: open the Flipkart app / flipkart.com → My Orders → tap Track.
+      → Croma / Reliance Digital / other authorized sellers: use that seller's own order-tracking page or app.
+    Separately, if your product has a manufacturing defect or you need a warranty claim, that part IS handled by Cosmic Byte directly regardless of where you bought it — raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/, email cc@thecosmicbyte.com, or call +91 7351615161. Have your <seller> invoice and the product's serial number ready to start the claim."
+
+    For RETURNING a third-party order (within the seller's return window, not a defect):
+    "The returns submission page at track.thecosmicbyte.com/returns handles only orders placed directly on thecosmicbyte.com — it can't process returns for Amazon, Flipkart, Croma, or any other marketplace. For your <seller> purchase:
+      → Amazon: open the Amazon app / amazon.in → Your Orders → find the order → 'Return or Replace Item' → follow Amazon's flow. Amazon arranges pickup and refund.
+      → Flipkart: open the Flipkart app / flipkart.com → My Orders → tap Return → follow Flipkart's flow.
+      → Croma / Reliance Digital / other authorized sellers: use that seller's return process.
+    Just to make sure I route you correctly — is this a manufacturing defect or something that stopped working after some use? If yes, that's a warranty claim and Cosmic Byte handles it directly regardless of where you bought it (raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/ with your invoice and serial number). If it's a 'wrong item / don't want it / changed my mind' style return, the seller's return window above is the right path."
 
 11a. SELLER-AGNOSTIC WARRANTY POLICY — Cosmic Byte's manufacturing-defect warranty applies to purchases from ALL authorized sellers, online and offline. NOT direct-only. This is the canonical policy; any reply that contradicts it is wrong.
 
