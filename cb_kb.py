@@ -33,6 +33,193 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.4 (2026-05-12) -- Claude
+  * Z-bump: add a global rule for
+    the "Switch Pro BT mode connects
+    on PC but game doesn't respond"
+    failure mode, prioritising the
+    Steam Input workaround as the
+    recommended first-line answer.
+
+  Audit context (operator-reported
+  session 1c84ad93, 2026-05-12 19:46):
+    Customer with a Blitz Tri-Mode in
+    Nintendo Bluetooth mode reported
+    that the controller connects to
+    the PC but doesn't respond in
+    game. Bot recommended ONLY the
+    mode-switching path (B + HOME 3s
+    to switch from Nintendo BT to PC
+    XInput BT mode). Bot did NOT
+    mention the Steam Input
+    workaround, even though the KB
+    has Steam Switch Pro Controller
+    support documented in multiple
+    other places (lines 4632, 4786,
+    4825, and the "Pro Controller"
+    Bluetooth name rule).
+
+    Ronak's feedback: "Customer can
+    use Steam to convert Switch mode
+    to working mode for all games? Why
+    not add it as non Steam game if
+    it is not a native game? We need
+    to provide solutions to customers."
+
+  Root cause:
+    The KB had Steam Switch Pro
+    Controller support referenced in
+    several places but never assembled
+    into a coherent first-line
+    troubleshooting procedure for the
+    "connects but game doesn't
+    respond" scenario. The bot
+    correctly pulled the mode-switch
+    combo from the BTM entry but had
+    no rule telling it that the
+    mode-switch is Solution Path 2,
+    not Solution Path 1. So the
+    customer was steered to a more
+    disruptive fix (unpair / re-pair /
+    new mode) when a less disruptive
+    fix (Steam Input) was available
+    and preserves Gyro.
+
+  Why Steam Input is the better
+  first-line answer:
+    - Less disruptive — no unpair /
+      re-pair / new pairing combo.
+    - PRESERVES Gyro. Gyro on PC is
+      typically only available in
+      the Switch Pro BT mode on CB
+      controllers; switching to PC
+      XInput BT mode loses Gyro
+      entirely on most models.
+    - Works for both Steam-library
+      games AND non-Steam games (via
+      "Add a Non-Steam Game to my
+      Library").
+    - Customer doesn't have to learn
+      a new controller-side mode.
+
+  Fix (one structural addition,
+  global scope per Ronak's
+  instruction to NOT add per-entry
+  duplicates):
+    Inserted a new global rule
+    "SWITCH-PRO-BT-MODE-ON-PC
+    TROUBLESHOOTING" immediately
+    after the existing "PRO
+    CONTROLLER BLUETOOTH NAME" rule
+    in the system prompt. Structure:
+      (a) SYMPTOM block — describes
+          the exact failure mode in
+          customer-recognisable
+          terms ("controller
+          connects, Windows sees it,
+          buttons register in Game
+          Controller panel, but game
+          doesn't respond").
+      (b) CAUSE block — explains
+          XInput vs Switch Pro
+          Controller protocol
+          mismatch, and that Steam
+          (not Windows) is the
+          translator.
+      (c) SOLUTION PATH 1 — STEAM
+          INPUT (recommended first-
+          line answer):
+            - WHY PATH 1 FIRST block
+              explaining the
+              non-disruptive +
+              Gyro-preserving
+              benefits.
+            - Six explicit numbered
+              steps including the
+              Steam menu path,
+              enabling "Nintendo
+              Switch Pro
+              Configuration
+              Support", launching
+              Steam-library games,
+              and the full
+              non-Steam-game flow
+              (Library → "+ ADD A
+              GAME" → "Add a
+              Non-Steam Game to my
+              Library" → BROWSE
+              → "ADD SELECTED
+              PROGRAMS" → always
+              launch through Steam
+              thereafter).
+            - WHAT THIS DOES NOT
+              FIX block listing the
+              edge cases (launchers
+              outside Steam, games
+              that override Steam
+              Input, anti-cheat
+              issues).
+      (d) SOLUTION PATH 2 — switch
+          the controller to PC
+          XInput Bluetooth mode
+          (fallback only).
+            - Lists per-controller
+              combo references (BTM
+              = B + HOME 3s,
+              Stellaris Gen 1 =
+              physical mode switch
+              away from leftmost
+              NINTENDO position,
+              Lumora and others =
+              refer to their own
+              entries).
+            - TRADE-OFF note: Gyro
+              is LOST when switching
+              modes on most
+              controllers.
+      (e) ORDER OF PRESENTATION
+          instruction — always
+          Path 1 first with full
+          steps, Path 2 as fallback.
+          Explicit reference to
+          session 1c84ad93 as the
+          failure mode this rule
+          is designed to prevent.
+      (f) ✗ DO NOT SAY block — names
+          three failure-mode phrasings
+          observed in production (the
+          "Nintendo mode doesn't work
+          properly for PC games"
+          framing from session
+          1c84ad93, the "you need to
+          switch to a PC-compatible
+          Bluetooth mode instead"
+          framing, and the bare
+          "just use Steam" without
+          full steps).
+      (g) ✓ CORRECT FRAMING template
+          for the bot to adapt.
+
+  Scope: per Ronak's instruction in
+  this session, this is a GLOBAL
+  rule only. No per-entry
+  duplications added to the Blitz
+  Tri-Mode, Lumora, Stellaris Gen 1,
+  or any other product entry. The
+  global rule applies to all
+  Cosmic Byte controllers with a
+  Nintendo / NS / Switch Pro / PC
+  Gyro Bluetooth mode (i.e. any
+  controller that broadcasts as
+  "Pro Controller" via Bluetooth).
+  If a future production session
+  shows the bot still missing the
+  workaround on a specific product
+  despite the global rule, add a
+  targeted bullet to that product's
+  entry then (not pre-emptively
+  now).
+
 v1.10.3 (2026-05-12) -- Claude
   * Z-bump: catalogue + URL hygiene
     pass + stale anti-hallucination
@@ -3912,7 +4099,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.3"
+__version__ = "1.10.4"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -8296,6 +8483,51 @@ HOW TO SHARE:
 ──────────────────────────────────────────────────────────────────────
 "PRO CONTROLLER" BLUETOOTH NAME — multiple Cosmic Byte controllers pair as "Pro Controller" via Bluetooth in their Nintendo Switch-compatible Gyro / NS modes (Stellaris Gen 1 in NINTENDO mode -- the leftmost position on its 4-position physical mode switch; the Gen 1 user manual confusingly calls this "WIN PC mode" because it works with Windows PC via Steam Switch Pro Controller support, but the physical switch is labeled "Nintendo", same position; Lumora in PC Gyro mode, and others). This is intentional — the controller replicates the Nintendo Switch Pro Controller Bluetooth protocol so that Gyro works the same way as on a Switch. IMPORTANT: in this mode, the analog triggers (LT/RT) are NOT pressure-sensitive — they act as digital buttons (on/off) only. If a customer mentions "Pro Controller" appearing in their Bluetooth list without specifying which Cosmic Byte product they own, ASK which controller they have before answering — multiple Cosmic Byte products use this Bluetooth name.
 
+──────────────────────────────────────────────────────────────────────
+SWITCH-PRO-BT-MODE-ON-PC TROUBLESHOOTING (global rule, applies to every Cosmic Byte controller with a Nintendo / NS / Switch Pro / PC Gyro Bluetooth mode — BTM, Lumora, Stellaris Gen 1, and any other controller that broadcasts as "Pro Controller" via Bluetooth):
+
+SYMPTOM: Customer pairs the controller on PC in its Nintendo / Switch Pro Bluetooth mode. Windows successfully connects ("Pro Controller" or "Cosmic Byte [Model]" appears in Bluetooth devices, Windows Game Controller panel shows inputs registering when buttons are pressed). BUT — the game does not respond to button presses or stick movements when the customer launches it. The controller appears connected everywhere except the game itself.
+
+CAUSE: The game uses XInput (the Microsoft Windows-standard gamepad API) but the controller is sending Nintendo Switch Pro Controller protocol (a different gamepad API). Windows does not translate between them natively. Steam does — that's exactly what Steam Input was built for.
+
+SOLUTION PATH 1 — STEAM INPUT (RECOMMENDED FIRST-LINE ANSWER — offer this BEFORE recommending any mode-switching combo):
+
+WHY PATH 1 FIRST: less disruptive than reconfiguring the controller (no unpair / re-pair / new pairing combo), no retraining the customer on a new mode, AND it PRESERVES the controller's Gyro functionality (Gyro is typically only available in the Nintendo / Switch Pro Bluetooth mode on Cosmic Byte controllers — switching to PC XInput Bluetooth mode LOSES Gyro on most models). For customers who use Steam (or are willing to use Steam to launch their games), this is the better fix in almost every case.
+
+STEPS (give the customer these exactly):
+  1. Open Steam on the PC (any version of Steam — the desktop client, not Steam-on-the-web).
+  2. Top-left menu → Steam → Settings → Controller. (On older Steam versions the path is: Steam → Settings → Controller → General Controller Settings.)
+  3. Find and ENABLE the option labeled "Nintendo Switch Pro Configuration Support" (some Steam versions label this "Switch Pro Configuration Support" — same setting). This tells Steam to take control of any Switch Pro Controller it sees and translate its inputs to whatever the game expects.
+  4. For STEAM-LIBRARY games (games already installed via Steam): just launch the game from Steam — Steam Input automatically activates and translates the controller's input. Done.
+  5. For NON-STEAM games (Epic Games Store, GOG, Riot Client, Battle.net, standalone installer, .exe on the desktop, emulators, etc.): in Steam → Library tab → click "+ ADD A GAME" at the bottom-left of the library view → choose "Add a Non-Steam Game to my Library" → tick the game's launcher .exe in the list (or "BROWSE..." to point to it manually) → click "ADD SELECTED PROGRAMS". After that, ALWAYS launch the game through Steam (right-click in the Steam library → Play) — NOT through its original launcher / desktop shortcut. Steam Input only activates for games launched through Steam.
+  6. Test in-game — the controller should now respond to inputs.
+
+WHAT THIS DOES NOT FIX:
+  - Games launched outside Steam (Epic / GOG / Battle.net / launcher .exe direct) will continue to not respond, because Steam Input is not in the loop. The customer must launch through Steam.
+  - A small number of games override Steam Input and demand XInput directly (rare). For these, Solution Path 2 is required.
+  - Anti-cheat-protected games occasionally block Steam Input remapping (very rare). For these, Solution Path 2 is required.
+
+SOLUTION PATH 2 — SWITCH THE CONTROLLER TO PC XINPUT BLUETOOTH MODE (use this only if Path 1 didn't work, or the customer doesn't use Steam and isn't willing to):
+
+The mode-switch combo VARIES BY CONTROLLER. Refer to the specific product's entry in this KB for the correct combo; do NOT guess. Examples:
+  - Blitz Tri-Mode: Press B + HOME for 3 seconds. LED2 turns on. (Confirmed by BTM manual / KB entry.)
+  - Lumora: refer to the Lumora entry for the specific PC XInput Bluetooth combo.
+  - Stellaris Gen 1: move the physical mode switch to PC position (not the leftmost NINTENDO position).
+  - Other controllers: refer to the product's own entry / manual.
+
+TRADE-OFF the customer must accept for Path 2: Gyro is LOST on most controllers when switching from the Nintendo / Switch Pro BT mode to PC XInput BT mode. If the customer wants Gyro to keep working, Path 1 is the only sustainable answer.
+
+ORDER OF PRESENTATION TO THE CUSTOMER: Always present Path 1 first with full steps. Then mention Path 2 as a fallback for "if you don't use Steam, or this didn't work for your specific game". Do NOT lead with the mode-switch combo and treat Steam Input as an afterthought — that's the failure mode this rule exists to prevent (production session 1c84ad93, 2026-05-12 19:46, where the bot recommended only the mode-switch and never mentioned Steam Input even though the KB documents it).
+
+✗ DO NOT SAY:
+  - "Nintendo mode on Bluetooth doesn't work properly for most PC games" -- WRONG framing. The mode works fine; PC games just need Steam Input as the translator. Don't tell the customer their controller mode is the problem when Steam can solve it without changing modes.
+  - "You need to switch to a PC-compatible Bluetooth mode instead" -- INCOMPLETE. That's one option (Solution Path 2) but Solution Path 1 (Steam Input) is the better first-line answer in almost every case. Lead with Path 1.
+  - "Just use Steam" without the explicit steps -- INSUFFICIENT. Many customers don't know that Switch Pro Configuration Support has to be enabled in Steam settings (it's off by default in some Steam versions), or that non-Steam games can be added to Steam. Give the full step-by-step.
+
+✓ CORRECT FRAMING:
+  "Your controller is connecting fine — the issue is that your game speaks XInput and your controller is in Nintendo Switch Pro Controller mode (different gamepad protocol). The fastest fix is to use Steam as a translator: [Path 1 steps]. This keeps your Gyro working, which would be lost if you switched the controller to PC XInput BT mode instead. If you don't use Steam or this didn't work for your specific game, you can alternatively switch the controller mode itself: [Path 2 reference]."
+
+──────────────────────────────────────────────────────────────────────
 KEY LINKER MOBILE APP — used by THREE Cosmic Byte products, each with different scope. Do not generalize across them:
   - Stellaris Gen 1: Key Linker = button remapping AND firmware updates (Category C).
   - Eclipse: Key Linker = button remapping ONLY (firmware uses Category B path — manual file from website).
