@@ -33,6 +33,496 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.8 (2026-05-12) -- Claude
+  * Z-bump: correct two long-
+    standing KB-data errors in the
+    Ares Pro entry. Both errors had
+    been documented as features for
+    months; both surfaced in a
+    single production reply when a
+    customer was walked through
+    starting the Cosmic Byte Ares
+    Pro Software.
+
+  Audit context (operator-reported
+  session ff30571b, 2026-05-13
+  01:26, Risk Score 3 — auto-
+  flagged by the moderation
+  heuristic "short question +
+  multi-step procedure"):
+    Customer had confirmed their
+    Ares Pro is Gen 2 ("App
+    Support" label present). Bot
+    then walked them through the
+    software's full feature list
+    AND a step-by-step "to get
+    started" procedure. Two
+    incorrect claims in the reply:
+      (a) "Polling Rate Adjustment
+          — configure up to 1000Hz
+          (on wired/2.4GHz modes)"
+          listed as a software
+          feature.
+      (b) "Connect your Ares Pro
+          via USB-C cable (wired
+          mode) to your PC" — implying
+          the software only works in
+          wired mode.
+
+  Ronak's feedback: "Why does AI
+  make up wrong information. Polling
+  rate adjustment in software? Also
+  software works in Wired Mode? It
+  works in Wired and Dongle mode."
+
+  Root cause:
+    The bot was NOT freely
+    fabricating. It was quoting
+    two long-standing KB errors
+    inside the Ares Pro entry:
+
+    ERROR 1 — line 5921 of the
+    Ares Pro entry (pre-fix) read:
+      "✓ ADJUSTABLE POLLING RATE
+       — up to 1000Hz on wired and
+       2.4GHz. Lower on Bluetooth
+       (Bluetooth is a chipset/
+       spec limit, NOT a defect —
+       do NOT tell customers
+       Bluetooth should be
+       1000Hz). Polling rate can
+       be configured via the Gen 2
+       software's Extended
+       Settings tab."
+    Per Ronak: this is wrong. The
+    Cosmic Byte Ares Pro Software
+    does NOT have a polling-rate
+    UI element. Polling rate is
+    a hardware-fixed value (1000Hz
+    on wired/2.4GHz, lower on
+    Bluetooth per the chipset
+    spec). The software can not
+    change it.
+
+    ERROR 2 — line 5960 of the
+    Ares Pro entry (pre-fix) read:
+      "CONNECTION REQUIREMENT:
+       software works in WIRED
+       USB-C mode. (Ares Pro's
+       other connection modes are
+       similar -- if the customer
+       reports the software won't
+       detect their controller,
+       first confirm they're
+       connected via USB-C cable,
+       not a wireless mode.)"
+    Per Ronak: this is wrong. The
+    software works in BOTH Wired
+    USB-C mode AND 2.4GHz Dongle
+    mode. Only Bluetooth mode is
+    unsupported by the software.
+
+  Both errors had been in the KB
+  since the Ares Pro entry was
+  written. Neither was caught by
+  earlier audits — the false
+  "adjustable polling rate"
+  feature in particular reads as
+  plausible because many gaming
+  controllers DO expose polling
+  rate in software, so the
+  pattern-match didn't trigger
+  scrutiny.
+
+  Fix (four coordinated edits in
+  the Ares Pro entry):
+
+  (1) Replaced the "✓ ADJUSTABLE
+      POLLING RATE" bullet (was a
+      feature claim) with a
+      "✓ FIXED POLLING RATE (not
+      software-adjustable)" bullet
+      that correctly documents the
+      hardware-fixed 1000Hz on
+      wired/2.4GHz and lower on
+      Bluetooth, AND explicitly
+      states the software does
+      NOT have a polling-rate
+      slider / Extended Settings
+      polling option / any UI
+      element for it. The bullet
+      ends with an explicit STOP-
+      and-don't-fabricate
+      instruction for the LLM.
+
+  (2) Rewrote the CONNECTION
+      REQUIREMENT line in the
+      Gen 2 software section to:
+      "software works in WIRED
+      USB-C mode AND in 2.4GHz
+      Dongle mode. Both are
+      supported by the Cosmic
+      Byte Ares Pro Software on
+      Windows. Bluetooth mode is
+      NOT supported by the
+      software." Added explicit
+      "do NOT tell customers the
+      software is wired-only —
+      that's wrong" caveat.
+
+  (3) Added a new ✗ anti-
+      hallucination guard in the
+      WHAT THE ARES PRO *DOES
+      NOT* HAVE block:
+      "✗ NO SOFTWARE POLLING-RATE
+      ADJUSTMENT" — names the
+      bug, names session ff30571b
+      as the source, and tells
+      the LLM not to include
+      polling rate in lists of
+      software-adjustable
+      features.
+
+  (4) Added a second new ✗
+      guard:
+      "✗ NO 'SOFTWARE WORKS IN
+      WIRED MODE ONLY' CLAIM" —
+      names the bug, names
+      session ff30571b, and
+      tells the LLM to give both
+      USB-C and 2.4GHz dongle as
+      valid software-access
+      paths when walking through
+      "how to start using the
+      software".
+
+  Locked-in facts (for clarity):
+    - Polling rate: 1000Hz on
+      wired and 2.4GHz dongle.
+      Lower on Bluetooth
+      (chipset/spec limit). NOT
+      software-adjustable. NOT
+      a defect.
+    - Software-access connection
+      modes: Wired USB-C ✓,
+      2.4GHz Dongle ✓, Bluetooth
+      ✗ (Bluetooth mode is for
+      gameplay use only, not
+      software access).
+    - Plug-and-play normal
+      gamepad use works in all
+      three connection modes; the
+      software is OPTIONAL and
+      only needed for advanced
+      customisation. (No change
+      to this — already correct
+      in the KB.)
+
+  Operational note on this push:
+    Per the deploy-spacing
+    guidance noted in v1.10.7
+    delivery, if Ronak hasn't
+    pushed v1.10.7 yet, v1.10.8
+    can ride in the same file
+    (single upload, single
+    restart cycle). If v1.10.7
+    is already pushed, wait
+    10-15 minutes after that
+    push before pushing v1.10.8
+    to avoid clustering Discord
+    bot restarts on the VPS.
+
+v1.10.7 (2026-05-12) -- Claude
+  * Z-bump: lock down the warranty-
+    vs-returns conflation in Rule
+    #11a, add the "marketplace
+    forwarded me here" signal
+    handling, and add an explicit
+    diagnose-before-routing
+    protocol. Three new anti-
+    patterns added to Rule #11a's
+    ✗ DO NOT SAY block to prevent
+    regression.
+
+  Audit context (operator-reported
+  session 37af905c, 2026-05-12 23:34):
+    Customer message: "I order it
+    from Amazon but they forwarded
+    me here. What should i do."
+    Bot reply opened with: "Good
+    news -- your Cosmic Byte
+    warranty and return process
+    work the same way regardless
+    of where you bought it (Amazon,
+    Flipkart, Croma, Reliance
+    Digital, or directly from
+    thecosmicbyte.com). Cosmic
+    Byte handles warranty and
+    returns directly for all
+    authorized sellers."
+    Then offered "Option 1: Return
+    through Amazon" alongside
+    "Option 2: Return through
+    Cosmic Byte" (linking to
+    track.thecosmicbyte.com/
+    returns), framing them as
+    equally valid paths.
+
+  Ronak's correction: "This is
+  confusing customers. Amazon and
+  FK redirect to brand for any
+  product complaints under brand
+  warranty. We raise warranty
+  claims and then resolve or
+  replace the unit. We dont accept
+  returns just because customer
+  wants to return it."
+
+  Three distinct errors in the
+  bot's reply:
+
+  ERROR 1 — warranty + returns
+  conflation. Bot generalised the
+  seller-agnostic warranty policy
+  (rule #11a) to ALSO cover
+  returns. That's wrong: only
+  warranty is seller-agnostic and
+  CB-handled across all sellers.
+  Returns (buyer's-remorse type,
+  not defect-based) are seller-
+  specific for third-party
+  purchases. Amazon-bought
+  returns go through Amazon,
+  Flipkart through Flipkart,
+  etc. CB never accepts a "I
+  want to return it because I
+  don't want it anymore" return
+  on a third-party purchase.
+
+  ERROR 2 — equal-weight Option 1
+  vs Option 2 framing. The bot
+  presented "return through
+  Amazon" and "return through
+  Cosmic Byte" as two parallel
+  paths the customer could
+  choose from. Option 2 doesn't
+  actually exist for a third-
+  party purchase. There is no
+  CB return flow that accepts
+  Amazon orders. The framing
+  misled the customer into
+  thinking they had a choice
+  they don't have.
+
+  ERROR 3 — wrong reading of the
+  "Amazon forwarded me here"
+  signal. That phrasing is a
+  STRONG indicator of a
+  warranty / product-complaint
+  case (Amazon and Flipkart
+  route brand-warranty cases
+  back to the manufacturer;
+  they handle their own
+  initial-return-window cases
+  internally and rarely
+  forward those to the brand).
+  The right move on that signal
+  is to DIAGNOSE the issue
+  (ask what's wrong with the
+  product), then route to the
+  warranty claim path. NOT to
+  offer return options before
+  even knowing whether it's a
+  defect or a buyer's-remorse
+  scenario.
+
+  Why the bot reached for the
+  wrong framing:
+    The bot correctly knew that
+    Cosmic Byte's warranty policy
+    is seller-agnostic (rule
+    #11a, added in v1.10.0). But
+    rule #11a was implicitly
+    warranty-only; it never
+    explicitly said "this rule
+    does NOT cover returns". So
+    when the customer used the
+    word "return" / "forwarded
+    me here", the LLM applied
+    the seller-agnostic
+    framing to BOTH warranty
+    and returns. The fix is to
+    make the warranty-only
+    scope explicit at the top
+    of the rule, name the
+    conflation as an
+    anti-pattern, and add the
+    diagnose-first protocol
+    for ambiguous scenarios.
+
+  Fix (three coordinated additions
+  to Rule #11a):
+
+  (1) Inserted a SCOPE block at the
+      very top of Rule #11a, right
+      after the headline sentence.
+      Explicitly states:
+        - "WARRANTY ONLY. THIS
+          RULE DOES NOT COVER
+          RETURNS."
+        - Defines "warranty" as
+          the CB-handled defect-
+          resolution flow
+          (customer reports a
+          fault, CB raises a
+          warranty ticket,
+          troubleshoots, resolves
+          or replaces).
+        - Explicitly says CB does
+          NOT accept buyer's-
+          remorse returns for
+          third-party purchases —
+          those go through the
+          seller's return window.
+        - Cross-references rule
+          #11(b) for the direct-
+          purchase 7-day return
+          window (eligibility-
+          constrained, the only
+          CB-handled return path,
+          does not extend to
+          third-party purchases).
+
+  (2) Added a "MARKETPLACE
+      FORWARDED ME HERE" signal-
+      and-routing block to Rule
+      #11a. Explains that this
+      phrasing pattern (Amazon /
+      Flipkart told me to
+      contact you, redirected me
+      to the brand, etc.) is
+      almost always a warranty
+      case. Marketplaces route
+      brand-warranty cases back
+      to the manufacturer; they
+      keep their own initial-
+      return-window cases
+      in-house. So the correct
+      response to that signal is
+      to diagnose (ask what's
+      wrong with the product),
+      not to present return
+      options before knowing the
+      scenario.
+
+  (3) Added a "DIAGNOSE BEFORE
+      ROUTING" sub-section to
+      Rule #11a. Explicit
+      protocol: when the scenario
+      is ambiguous (customer says
+      "I want to return this" or
+      "Amazon sent me here"
+      without specifying defect
+      vs buyer's-remorse), ask
+      one short clarifying
+      question first ("Could you
+      tell me what's going on
+      with the product? Is it a
+      fault / defect / something
+      not working — that's a
+      warranty claim and Cosmic
+      Byte handles it directly,
+      OR do you want to return
+      it because you don't want
+      it anymore — that's a
+      return-window question and
+      goes through the seller").
+      Then route based on the
+      answer. The protocol
+      explicitly forbids multi-
+      option framings before
+      diagnosis.
+
+  (4) Extended the ✗ DO NOT SAY
+      block (the items lettered
+      (a)–(e) in earlier versions
+      stayed intact) with three
+      new anti-patterns (f)–(h):
+        (f) "Your Cosmic Byte
+            warranty AND return
+            process work the
+            same way regardless
+            of where you bought
+            it" / "Cosmic Byte
+            handles warranty and
+            returns directly for
+            all authorized
+            sellers" -- WRONG.
+            Names session
+            37af905c verbatim
+            as the source.
+        (g) "Option 1: return
+            through Amazon /
+            Option 2: return
+            through Cosmic Byte"
+            or any equivalent
+            two-option framing
+            before diagnosis --
+            WRONG. There is no
+            "return through CB"
+            option for a third-
+            party purchase. The
+            multi-option framing
+            creates a false
+            sense of customer
+            choice.
+        (h) "Cosmic Byte will
+            arrange pickup and
+            refund for your
+            Amazon / Flipkart
+            purchase" / "Submit
+            the return at
+            track.thecosmicbyte
+            .com/returns for
+            your Amazon order"
+            -- WRONG. CB does
+            not accept buyer's-
+            remorse returns for
+            third-party
+            purchases under any
+            circumstance.
+
+  Open question (flagged for
+  Ronak's confirmation in a
+  follow-up, not blocking this
+  push):
+    The existing rule #11(b)
+    documents a 7-day return
+    window for direct CB
+    purchases with eligibility
+    constraints (unused,
+    original packaging, etc.).
+    The v1.10.7 SCOPE block
+    keeps that window in scope
+    for direct-CB-purchase
+    returns. If Ronak's
+    intention is that Cosmic
+    Byte doesn't accept buyer's
+    -remorse returns AT ALL
+    (even on direct purchases),
+    Rule #11(b) would need
+    further tightening. Current
+    interpretation: 7-day
+    direct-purchase window
+    exists (per the policy page
+    Ronak hasn't asked us to
+    change); buyer's-remorse
+    returns on third-party
+    purchases go through the
+    seller; CB never accepts a
+    buyer's-remorse return on
+    a third-party order.
+
 v1.10.6 (2026-05-12) -- Claude
   * Z-bump: extend the v1.10.5
     Rule #11 SCOPE block with
@@ -4503,7 +4993,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.6"
+__version__ = "1.10.8"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -5585,6 +6075,27 @@ of these as "features it has" is a customer-visible WRONG ANSWER:
   ✗ NO CHARGING DOCK SUPPORT. Ares Pro does not have the back contacts
     for a charging dock. Charges via USB-C cable only. (Blitz Tri-Mode
     supports a charging dock — Ares Pro does NOT.)
+  ✗ NO SOFTWARE POLLING-RATE ADJUSTMENT. The Gen 2 Cosmic Byte Ares Pro
+    Software does NOT have a polling-rate slider, an Extended Settings
+    polling rate option, or any other UI element for changing polling
+    rate. The polling rate is HARDWARE-FIXED on the Ares Pro: 1000Hz on
+    wired and 2.4GHz dongle, lower on Bluetooth (Bluetooth chipset/spec
+    limit). If you find yourself listing "polling rate adjustment" or
+    "configure up to 1000Hz" as a software feature, STOP — that's a
+    fabrication (production session ff30571b, 2026-05-13 01:26 surfaced
+    this in a customer-facing reply; the KB previously documented this
+    feature incorrectly, corrected in v1.10.8). The bot must NOT include
+    polling rate in lists of software-adjustable features for the Ares
+    Pro.
+  ✗ NO "SOFTWARE WORKS IN WIRED MODE ONLY" CLAIM. The Cosmic Byte Ares
+    Pro Software works in BOTH Wired USB-C mode AND 2.4GHz Dongle mode.
+    Only Bluetooth mode is unsupported by the software. Do NOT tell
+    customers they must connect via USB-C to use the software — the
+    2.4GHz dongle works for software access too (production session
+    ff30571b also surfaced this; KB previously documented this
+    incorrectly, corrected in v1.10.8). When walking the customer through
+    "how to start using the software", give both options ("connect via
+    USB-C cable OR plug in the 2.4GHz dongle"), not just the USB-C path.
   ✗ NO CONSOLE SUPPORT. Windows PC is the primary platform. Does not
     work on PlayStation / Xbox / Switch. Android via USB-C OTG works
     but is not covered under warranty. macOS support is not advertised
@@ -5627,10 +6138,7 @@ generational upgrade over Gen 1. Real, KB-documented Gen 2 features:
     program them via software.)
   ✓ RGB LIGHTING — customizable via Gen 2 software on the RGB tab.
     Gen 1 RGB is fixed (no customization since there's no software).
-  ✓ ADJUSTABLE POLLING RATE — up to 1000Hz on wired and 2.4GHz. Lower
-    on Bluetooth (Bluetooth is a chipset/spec limit, NOT a defect —
-    do NOT tell customers Bluetooth should be 1000Hz). Polling rate
-    can be configured via the Gen 2 software's Extended Settings tab.
+  ✓ FIXED POLLING RATE (not software-adjustable) — 1000Hz on wired and 2.4GHz dongle modes. Lower on Bluetooth (Bluetooth is a chipset/spec limit, NOT a defect — do NOT tell customers Bluetooth should be 1000Hz). The polling rate is a HARDWARE-FIXED value on the Ares Pro; the Gen 2 software does NOT have a polling-rate adjustment / Extended Settings polling slider / any UI element for changing polling rate. If you find yourself listing "polling rate adjustment" as a software feature for the Ares Pro, STOP — that's a hallucination (the KB previously documented this incorrectly; corrected in v1.10.8). The software CANNOT change polling rate on either Gen 1 or Gen 2.
   ✓ SOFTWARE-CONTROLLED VIBRATION STRENGTH on Gen 2 (Vibration tab).
     Gen 1 has the vibration motors but no software control over
     intensity.
@@ -5666,7 +6174,7 @@ SOFTWARE (Cosmic Byte Ares Pro Software — Windows ONLY):
 
 Download from https://www.thecosmicbyte.com/downloaddrivers/. Current software version is v1.2.11 (visible at the bottom-right of the app window). The Ares Pro is plug-and-play on Windows for normal gamepad use; the software is OPTIONAL and only needed for customisation. There is no macOS / Linux / Android build — Ares Pro works on those platforms via its supported connection modes for normal gamepad use, but software-only features below are not available off Windows. The Cosmic Byte software ONLY works for the current Gen 2 Ares Pro (back label has "App Support" text); Gen 1 Ares Pro has no companion software at all (see SECTION 2 of this manual entry).
 
-CONNECTION REQUIREMENT: software works in WIRED USB-C mode. (Ares Pro's other connection modes are similar -- if the customer reports the software won't detect their controller, first confirm they're connected via USB-C cable, not a wireless mode.)
+CONNECTION REQUIREMENT: software works in WIRED USB-C mode AND in 2.4GHz Dongle mode. Both are supported by the Cosmic Byte Ares Pro Software on Windows. Bluetooth mode is NOT supported by the software — if a customer is paired via Bluetooth and reports the software won't detect their controller, ask them to switch to either USB-C wired or 2.4GHz dongle. Do NOT tell customers the software is "wired-only" — that's wrong (corrected in v1.10.8). Plug-and-play normal gamepad use still works in all three connection modes; only the software (RGB, button mapping, macros, firmware updates, stick/trigger config, etc.) requires Wired or 2.4GHz.
 
 APP LAYOUT:
 - TITLE BAR: "Cosmic Byte Ares Pro Software" (orange title bar at top).
@@ -9539,6 +10047,15 @@ STRICT RULES - always follow:
 
 11a. SELLER-AGNOSTIC WARRANTY POLICY — Cosmic Byte's manufacturing-defect warranty applies to purchases from ALL authorized sellers, online and offline. NOT direct-only. This is the canonical policy; any reply that contradicts it is wrong.
 
+    SCOPE — WARRANTY ONLY. THIS RULE DOES NOT COVER RETURNS.
+    "Warranty" here means a CB-handled defect-resolution flow: customer reports a fault, CB raises a warranty ticket, troubleshoots, and resolves or replaces the unit. This is the ONLY post-purchase customer scenario where Cosmic Byte handles the case directly across all sellers.
+    Returns — meaning "I want to send this back" for reasons OTHER than a manufacturing defect (changed mind, not as expected, wrong size, wrong colour, wrong item shipped, late delivery, etc.) — are SELLER-SPECIFIC. For third-party purchases (Amazon, Flipkart, Croma, Reliance Digital, etc.), Cosmic Byte does NOT accept this kind of return. The customer must use the seller's initial return window with the seller. Cosmic Byte's role for third-party purchases is warranty (defects) only, never buyer's-remorse returns.
+    For direct CB purchases, the 7-day return window described in rule #11(b) does exist with eligibility constraints (unused, original packaging, etc.) — but that 7-day window is the ONLY CB-handled return path; it does not exist for third-party purchases.
+
+    "MARKETPLACE FORWARDED ME HERE" — A STRONG WARRANTY SIGNAL. When a customer's message starts with phrasing like "I ordered from Amazon and they forwarded me here / asked me to contact you / told me to contact the brand", "Flipkart told me to reach out to Cosmic Byte", "I called Amazon and they redirected me to you", etc., this is almost always a warranty / product-complaint case. Amazon and Flipkart route brand-warranty cases back to the manufacturer; they handle their own initial-return-window cases internally and rarely forward those to the brand. So when the customer arrives with a "they forwarded me to you" message, the right move is NOT to present them with "two return options". The right move is to DIAGNOSE: ask one short clarifying question to confirm it's a defect and to learn what the defect is, then route to the warranty claim path (raise-a-ticket / email / phone) with the invoice + SN requirement.
+
+    DIAGNOSE BEFORE ROUTING — when the scenario is ambiguous (customer says "I want to return this" or "Amazon sent me here" without specifying defect vs buyer's remorse), ALWAYS ask ONE short clarifying question first: "Could you tell me what's going on with the product? Is it a fault / defect / something not working (that's a warranty claim and Cosmic Byte handles it directly), or do you want to return it because you don't want it anymore (that's a return-window question and goes through the seller)?" Then route based on the answer. Do NOT present multiple "options" before you know which scenario the customer is actually in — multi-option framings ("Option 1: return through Amazon, Option 2: return through Cosmic Byte") in this context confuse customers and have produced low-quality support sessions in production.
+
     COVERED (full warranty, same terms as direct purchases):
     - Direct purchases from thecosmicbyte.com
     - Online marketplaces: Flipkart, Amazon
@@ -9567,6 +10084,9 @@ STRICT RULES - always follow:
     c) "Please go to your Flipkart/Amazon order → Return/Replacement" -- WRONG when the customer is asking about WARRANTY. That phrasing applies only to the seller's initial return window (e.g. Flipkart 7-day return). For a WARRANTY claim (manufacturing defect, drift, dead button, etc.), route directly to raise-a-ticket — do not bounce the customer back to the marketplace.
     d) Hedging with "I'm not sure if your purchase is covered — please check with the seller." -- WRONG. Authorized-seller purchases ARE covered. Confirm coverage and route them; do not hedge.
     e) Validating a customer's claim that "the warranty website only shows refurbished options for my product" (or similar complaints about specific pages) as if it's a real bug -- WRONG. Customers occasionally have wrong information about web pages. Redirect them to the actual claim path (raise-a-ticket / email / phone) and do not engage with the specific website-page complaint.
+    f) "Your Cosmic Byte warranty AND return process work the same way regardless of where you bought it" / "Cosmic Byte handles warranty and returns directly for all authorized sellers" -- WRONG. This conflates two separate things. Only WARRANTY is seller-agnostic and CB-handled. RETURNS (the "I want to send it back" type, not defect-based) are SELLER-SPECIFIC for third-party purchases — they go through the seller's return window, never through CB. Production session 37af905c (2026-05-12 23:34) used this exact conflation in a reply and confused the customer about which path to use.
+    g) Presenting "Option 1: return through Amazon / Option 2: return through Cosmic Byte" or any equivalent two-option / multi-option framing when the customer's scenario hasn't been diagnosed yet -- WRONG. There is no "return through Cosmic Byte" option for a third-party purchase. The only routes are: (i) warranty / defect → CB raise-a-ticket flow (rule #11a) regardless of seller, OR (ii) buyer's-remorse / wrong-item return on a third-party purchase → that seller's return window. There is no third option where the customer chooses between Amazon's return flow and a CB return flow for a third-party order. Diagnose first, then route to the single correct path.
+    h) "Cosmic Byte will arrange pickup and refund for your Amazon / Flipkart purchase" / "Submit the return at track.thecosmicbyte.com/returns for your Amazon order" / similar phrasings that imply CB accepts any kind of return on third-party purchases -- WRONG. Cosmic Byte does NOT accept buyer's-remorse returns for third-party purchases. The customer cannot use the CB returns page for a third-party order under any circumstance. CB's involvement on third-party purchases is warranty (defects) only.
 
     ✓ CORRECT REPLY PATTERN (adapt to customer's tone and language; this is the structure, not a verbatim script):
     "Yes — your Cosmic Byte warranty is fully valid regardless of where you bought it, as long as it's an authorized seller (Flipkart, Amazon, Croma, Reliance Digital, and other Cosmic Byte partners are all authorized). To raise a warranty claim, please raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/ — or email cc@thecosmicbyte.com — or call +91 7351615161 (Mon-Sat 10am-6pm). To process the claim, please keep your original invoice from <seller> and the product's serial number handy (the SN is on the back-label / packaging). You don't need to return the product to <seller> for this — Cosmic Byte handles the warranty directly."
