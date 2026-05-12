@@ -33,6 +33,665 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.3 (2026-05-12) -- Claude
+  * Z-bump: catalogue + URL hygiene
+    pass + stale anti-hallucination
+    guard cleanup. All driven by
+    fresh info Ronak provided in
+    this session (Ares Wired + Ares
+    Wireless user manuals, plus
+    corrected Atlas Mouse and Nexus
+    product URLs).
+
+  Audit context (operator-requested
+  cross-check of the wider KB after
+  the Ares Tri-Mode rename in
+  v1.10.2):
+    The Ares Tri-Mode rename
+    surfaced a wider class of
+    "wrong-product-URL" and "stale-
+    catalogue" issues affecting
+    Nexus, Atlas Mouse, and the
+    Ares Wireless line. Ronak
+    confirmed the correct URLs and
+    sent the Wired and Wireless
+    user manuals so the catalogue
+    descriptions could be aligned
+    with reality.
+
+  Fixes (six coordinated):
+
+  (1) PRODUCT_URLS["Atlas Mouse"]:
+      changed from the gaming-mouse
+      category page (.../product-
+      category/gamingmouse/) to the
+      actual dedicated product page
+      (.../cosmic-byte-atlas-
+      wireless-bluetooth-wired-tri-
+      mode-mouse/). Atlas is a tri-
+      mode mouse — the category-page
+      URL was misleading customers
+      to the wrong page entirely.
+
+  (2) PRODUCT_URLS["Nexus"]: changed
+      from the gaming-controllers
+      category page (.../product-
+      category/gaming-controllers/)
+      to the actual dedicated
+      product page (.../cosmic-byte-
+      nexus-wireless-controller-
+      for-pc-aaa-removable-battery/).
+      URL slug confirms Nexus is
+      wireless with AAA batteries.
+
+  (3) CATALOGUE_CONTROLLERS line for
+      Ares Wired: previously read
+      "Basic wired, dual vibration,
+      works on PC/Android. Entry
+      level." -- silent on Hall
+      Effect status, missing the
+      Hall-Effect / older-batch
+      distinction. Now reads
+      "USB wired, PC-only (XInput /
+      DirectInput modes), Hall Effect
+      joysticks + Hall Effect analog
+      triggers on the 2026 batch
+      (older batches have standard
+      joysticks -- see Ares Wired
+      entry for batch
+      identification), dual
+      vibration, ABXY LED + V LED."
+      Matches the Ares Wired manual.
+
+  (4) CATALOGUE_CONTROLLERS line for
+      Ares Wireless: previously read
+      "2.4GHz + Bluetooth, 600mAh,
+      no gyro, no software. Basic
+      wireless." -- BOTH the
+      Bluetooth claim and the
+      600mAh battery figure were
+      wrong per the Ares Wireless
+      user manual. Manual confirms:
+      "Wireless connectivity via USB
+      dongle" only, NO Bluetooth, and
+      battery is 700mAh (not 600).
+      Now reads: "2.4GHz wireless
+      via USB dongle (NO Bluetooth
+      -- dongle-only), Hall Effect
+      joysticks + Hall Effect analog
+      triggers on the 2026 batch
+      (older batches have standard
+      joysticks -- see Ares Wireless
+      entry for batch
+      identification), 700mAh
+      rechargeable battery, 6-8m
+      range, RGB LED lighting, dual
+      vibration. PC-only. Basic
+      rechargeable wireless."
+
+  (5) CATALOGUE_CONTROLLERS line for
+      Nexus: previously read
+      "Wired, Hall Effect joysticks
+      (drift-resistant), dual
+      vibration. Best wired value."
+      -- BOTH the "Wired" claim and
+      the "Hall Effect joysticks"
+      claim were wrong. Nexus entry
+      body itself says "2.4GHz
+      WIRELESS CONTROLLER. Powered
+      by 2x AAA batteries", and
+      makes no Hall Effect claim
+      anywhere. Now reads: "2.4GHz
+      wireless via USB dongle, 2x
+      AAA non-rechargeable batteries,
+      dual vibration, PC-only. NO
+      Bluetooth, NO rechargeable
+      battery. Budget wireless option
+      for customers who prefer
+      replaceable batteries over
+      rechargeable." Also moved
+      Nexus from the "WIRED (budget)"
+      section to a new "WIRELESS
+      (budget to mid range, no
+      Bluetooth)" section that
+      groups it with Ares Wireless
+      and Blitz Wireless.
+
+  (6) CATALOGUE_MICE line for Atlas
+      Mouse: previously read
+      "Wired, 3200 DPI, basic
+      gaming. Entry level." -- wrong
+      on connectivity AND DPI. Atlas
+      entry body confirms tri-mode
+      (USB-C wired + 2.4GHz + BT)
+      and 5 DPI levels up to 12000
+      DPI. Now moved from the
+      "BASIC / OFFICE" section to
+      the "FLAGSHIP" section and
+      rewritten as: "Tri-mode (USB-C
+      wired + 2.4GHz + Bluetooth), 5
+      DPI levels up to 12000 DPI
+      (colour-coded: 800 Red / 1600
+      Green / 2400 Blue / 5000
+      Purple / 12000 Yellow), 1000Hz
+      polling on wired and 2.4GHz
+      (133Hz on Bluetooth -- hardware
+      limit), Windows software
+      customisation. Multi-platform
+      tri-mode flagship."
+
+  (7) Stale anti-hallucination
+      guards in the Ares Wireless
+      entry's section (e) and (f).
+      These guards were written
+      back when the KB had a
+      single ambiguous "Ares" entry
+      that mixed wired-only content
+      with Tri-Mode notes (the
+      pre-v1.10.2 state). After
+      the Ares Tri-Mode rename
+      they contained two stale /
+      contradictory claims:
+        - Guard (e) claimed "the
+          XInput / DirectInput
+          toggle for the generic
+          Ares is 'Back + Start for
+          3 seconds'" and that
+          "for Ares Wireless
+          specifically, there is
+          no documented user-facing
+          XInput/DInput toggle in
+          the KB at all." Both are
+          wrong post the manual:
+          Ares Wireless DOES have
+          a documented toggle
+          (HOME for 5 seconds per
+          the manual), and the
+          "generic Ares" no longer
+          exists. The Back+Start-3s
+          combo is specifically
+          the Ares Tri-Mode toggle.
+        - Guard (f) claimed "the
+          actual color code per
+          the KB is YELLOW = X-
+          Input. Red = D-Input."
+          Per the Ares Wireless
+          and Ares Wired manuals,
+          BLUE = X-Input, Red =
+          D-Input, Yellow = PC
+          Analog, Green = Android.
+          The Yellow=X-Input claim
+          contradicted the entry's
+          own LED INDICATORS
+          section.
+      Both guards rewritten with
+      per-SKU clarity: explicit
+      per-SKU LED scheme (Wired /
+      Wireless use Blue-Red-Yellow-
+      Green; Tri-Mode uses Orange-
+      Red-Green-Blue) and per-SKU
+      mode-switch combo (Wired /
+      Wireless = HOME 5s; Tri-Mode =
+      Back+Start 3s; Ares Pro =
+      per-mode table).
+
+  Specs locked in from the Wired
+  and Wireless manuals (not
+  extrapolated):
+    - Ares Wired: USB only, XInput /
+      DirectInput, Hall Effect
+      joysticks, Hall Effect
+      triggers, 220g, 156x105x55mm,
+      USB 2.0/3.0. LED scheme
+      Blue/Red/Yellow/Green for
+      XInput/DInput/PC-Analog/
+      Android. Mode toggle: HOLD
+      HOME 5s. Joystick/D-pad swap:
+      L3+Back. LED toggles: X+Back
+      (ABXY), A+Back (V LED).
+    - Ares Wireless: 2.4GHz dongle
+      ONLY (no Bluetooth), Hall
+      Effect joysticks, Hall Effect
+      triggers, RGB LED lighting,
+      dual vibration motors, Plug
+      & Play, 700mAh, 6-8m range,
+      220g, 3.7-4.2V, <150mA
+      working current. LED scheme
+      same as Wired (Blue/Red/
+      Yellow/Green). Power off:
+      B+Back 5s. Mode toggle: HOLD
+      HOME 5s. Pairing: insert
+      receiver, press Home, press
+      Home twice quickly. Charging:
+      5V/1A only, NO fast charging
+      (voids warranty).
+
+  Items NOT addressed in this
+  version (still open for tomorrow's
+  batch):
+    - Starforge sensor type
+      discrepancy (URL says TMR
+      joysticks, catalogue says
+      Hall Effect, entry body has
+      no explicit sensor claim).
+      Same pattern as the Eclipse
+      bug fixed in v1.10.1.
+      Awaiting Ronak's confirmation
+      on whether Starforge is TMR
+      or Hall Effect.
+    - Blitz Tri-Mode and Blitz
+      Wireless sharing a URL:
+      confirmed intentional by
+      Ronak in this session
+      (single product page for
+      both Blitz variants).
+      No fix needed.
+    - Stellaris URL slug
+      ("hall-effect-trigger-and-
+      joystick" but actually TMR):
+      Ronak instructed to ignore
+      this — it's a website-side
+      stale slug, not a KB bug.
+      No KB fix.
+    - Wider anti-hallucination
+      guard coverage gap (8 of 14
+      controllers still unguarded:
+      Lumora, Drakon, Ares Wired,
+      Ares Wireless, Nexus, Blitz
+      Wireless, Quantum, Stratos
+      Xenon — though Eclipse and
+      Ares Tri-Mode were brought
+      into the guarded set in
+      v1.10.1 / v1.10.2). Too
+      large for one batch;
+      surfaced for prioritisation.
+
+v1.10.2 (2026-05-12) -- Claude
+  * Z-bump: Ares Tri-Mode SKU rename
+    + entry rewrite from the official
+    Ares Tri-Mode user manual. This
+    is a structural correction
+    affecting product naming
+    consistency across the KB.
+
+  Audit context (operator-reported
+  session 569e2fb5, 2026-05-12 17:24):
+    Customer selected "Ares" from the
+    dropdown and asked about vibration
+    control on their controller with
+    Hall Effect joystick + triggers.
+    Bot replied "Bilkul sahi! ... agar
+    aapke paas Hall Effect joystick
+    AND triggers hain, toh aapke paas
+    NAYA 2026 Ares Tri-Mode hai!" --
+    i.e. it renamed the customer's
+    product mid-conversation to a
+    name the customer didn't pick
+    from the dropdown and couldn't
+    verify on the website.
+
+  Root cause:
+    The KB internally used "Ares
+    Tri-Mode" as a disambiguator
+    name for the 2026 batch of the
+    "Ares" SKU. The dropdown only
+    had "Ares" though, and the
+    PRODUCT_URLS mapping for "Ares"
+    incorrectly pointed to the
+    Ares Wired/Wireless variations
+    page (cosmic-byte-ares-wireless
+    -controller-for-pc/) instead of
+    the dedicated Ares Tri-Mode page.
+
+    Underlying SKU structure clarified
+    by Ronak: the Ares product family
+    has FOUR distinct SKUs:
+    - Ares Wired (variations page)
+    - Ares Wireless (variations page,
+      shared with Wired)
+    - Ares Tri-Mode (dedicated page:
+      .../ares-tri-mode-wireless-
+      bluetooth-wired-controller-
+      hall-effect-joystick/)
+    - Ares Pro (dedicated page)
+    The KB only had three of these as
+    dropdown entries (Wired / Wireless
+    / Pro); the bare "Ares" entry was
+    standing in for Ares Tri-Mode with
+    the wrong URL and a partially-
+    wired-only entry body that had
+    Tri-Mode notes bolted on.
+
+  Fix (six coordinated edits):
+    (1) PRODUCT_URLS dict: key renamed
+        "Ares" → "Ares Tri-Mode", URL
+        updated to the correct
+        dedicated product page
+        (.../cosmic-byte-ares-tri-
+        mode-wireless-bluetooth-wired-
+        controller-hall-effect-
+        joystick/).
+    (2) PRODUCTS list (the dropdown
+        used by both the Streamlit
+        portal and the Discord bot):
+        "Ares" → "Ares Tri-Mode".
+        Customers now see and pick
+        "Ares Tri-Mode" directly --
+        no more bot-side rename in
+        replies.
+    (3) KNOWLEDGE_BASE entry key:
+        "Ares" → "Ares Tri-Mode".
+        Entry body REWRITTEN from
+        scratch using the official
+        Cosmic Byte Ares Tri-Mode
+        User Manual (PDF provided by
+        Ronak in this session). The
+        old entry body was a hybrid
+        wired-only + Tri-Mode-notes
+        artefact that contradicted
+        itself ("CONNECTIVITY: Wired
+        USB only" alongside "LED
+        INDICATORS (upgraded 2026
+        tri-mode model): Orange,
+        Red, Green, Blue"); the new
+        entry is internally
+        consistent and Tri-Mode-only.
+    (4) Keyword detection maps (two
+        copies in the file): rerouted
+        bare "ares" keyword to "Ares
+        Tri-Mode" (the new dropdown
+        name). Also added explicit
+        keyword routes for "ares
+        tri-mode" / "ares tri mode" /
+        "ares trimode" / "tri-mode
+        ares" / "tri mode ares" so
+        customer wording variations
+        all resolve correctly.
+    (5) CATALOGUE_CONTROLLERS:
+        added a dedicated Ares
+        Tri-Mode line in the TRI-MODE
+        WITH ADVANCED FEATURES
+        section (between Ares Pro
+        and Blitz Tri-Mode), so the
+        AI has a self-claim line to
+        cross-reference when
+        comparing Ares variants.
+    (6) New entry includes an
+        explicit ✗ / ✓ anti-
+        hallucination block listing
+        the most likely fabrications
+        (macros, gyro, RGB, TMR
+        joysticks, console support,
+        companion software, older
+        125Hz batch) — mirrors the
+        pattern that worked for BTM
+        (v1.9.5/6), Stellaris
+        (v1.9.8), Ares Pro (v1.9.9),
+        and Eclipse (v1.10.1).
+
+  Specs locked in from the manual
+  (not extrapolated):
+    - Tri-mode connectivity (2.4GHz
+      dongle / Bluetooth 5.0 / USB-C
+      wired), 1000Hz polling, 8-10m
+      range, 210g, 156x105x60mm,
+      3.7-4.2V battery, <150mA
+      working current.
+    - Hall Effect joysticks AND Hall
+      Effect analog triggers (URL
+      slug confirms; Ronak confirmed
+      all four current 2026 Ares
+      SKUs are HE).
+    - NO gyro, NO macros, NO RGB
+      customization, NO console
+      support, NO companion PC
+      software.
+    - LED mode indicators:
+      Orange=XInput, Red=DInput,
+      Green=Android, Blue=iOS.
+    - Bluetooth pairing combos:
+      X+Home (PC XInput), A+Home
+      (Android), B+Home (iOS).
+    - XInput/DInput toggle: Back+
+      Start (3s). 4/8-way D-pad
+      toggle: Up D-pad + Back.
+      Joystick/D-pad swap: L3+Back.
+      Power off: B+Back (3s).
+    - Vibration enable/disable:
+      A+Back. Intensity: R3 + Left
+      Joystick Up/Down. PC XInput
+      only (no Android/iOS rumble).
+    - 1-year warranty, manufacturing
+      defects only.
+
+  What the rewrite DROPPED (and why):
+    - "ASK-FIRST GUIDANCE: There are
+      TWO generations of Ares" with
+      2026 Tri-Mode vs older 125Hz
+      wired-only batch. WHY: per
+      Ronak, the dual-batch (2026 HE
+      vs older standard joysticks)
+      applies to Ares Wired and Ares
+      Wireless SKUs only. The Ares
+      Tri-Mode itself is a 2026 SKU
+      with no older non-HE variant.
+      The Ares Wired and Ares
+      Wireless entries already
+      correctly handle their own
+      dual-batch guidance.
+    - "CONNECTIVITY: Wired USB only.
+      No wireless or Bluetooth
+      support." WHY: this was
+      content from the old wired-
+      only Ares product, not the
+      Tri-Mode. The Tri-Mode is
+      explicitly 2.4GHz + BT + USB-C.
+
+  No changes to Ares Wired / Ares
+  Wireless / Ares Pro entries in
+  this version — those are already
+  correctly structured. Cross-
+  references in changelog notes
+  (v1.4.1, v1.7.0, etc.) still
+  refer to "Ares" / "Ares variant"
+  in historical context; those
+  notes were left intact since
+  they document past fixes and
+  rewriting them would obscure
+  history.
+
+v1.10.1 (2026-05-12) -- Claude
+  * Z-bump: fix Eclipse joystick
+    sensor-type misinformation.
+    Production bot was telling
+    customers the Eclipse has Hall
+    Effect joysticks; actual is TMR
+    joysticks + Hall Effect analog
+    triggers (confirmed by Ronak,
+    consistent with the Eclipse
+    product page URL slug which
+    contains "tmr-joysticks").
+
+  Audit context (operator-reported
+  session, 2026-05-12 14:35):
+    Customer asked about future
+    Eclipse roadmap including TMR
+    joysticks. Bot replied that the
+    Eclipse has "Hall Effect
+    joysticks (drift-resistant
+    sensor technology)" and "Hall
+    Effect analog triggers", and
+    suggested Stellaris 2nd Gen,
+    Blitz Tri-Mode, or Drakon as
+    "alternatives if TMR precision
+    is a priority." Both joystick
+    claims were wrong — Eclipse
+    already has TMR joysticks.
+
+  Root cause:
+    The Eclipse main entry body
+    (line 5145+) did not explicitly
+    state the joystick or trigger
+    sensor type anywhere in the
+    manual. With no self-claim in
+    the entry, the LLM pulled from
+    the catalogue summary at line
+    8752, which said simply
+    "Eclipse: Tri-mode, Hall Effect.
+    Entry flagship." That catalogue
+    line was wrong, and the LLM
+    extrapolated "Hall Effect" to
+    BOTH joysticks AND triggers in
+    the reply.
+
+  Fix (three coordinated edits):
+    (1) Inserted an explicit
+        JOYSTICKS: TMR + TRIGGERS:
+        Hall Effect block at the
+        very top of the Eclipse
+        entry body — mirrors the
+        anti-hallucination "GYRO:
+        NONE" pattern that worked
+        for Ares Pro in v1.9.9.
+    (2) Corrected the catalogue
+        summary line 8752 to read:
+        "Eclipse: Tri-mode, TMR
+        joysticks (drift-resistant
+        precision), Hall Effect
+        analog triggers, Joystick
+        Resistance Roller (stiffness
+        adjust). Entry flagship."
+    (3) Added Eclipse to the
+        BUYING GUIDE TMR-precision
+        line: "Best joystick
+        precision (TMR) → Blitz
+        Tri-Mode, Stellaris 2nd Gen,
+        Drakon, or Eclipse".
+
+  After this fix the Eclipse joins
+  the same self-claim + catalogue
+  + buying-guide consistency
+  triangle that BTM / Stellaris /
+  Ares Pro now have.
+
+v1.10.0 (2026-05-12) -- Claude
+  * Y-bump: new policy rule.
+    Added Rule #11a (Seller-Agnostic
+    Warranty Policy) to the system
+    prompt, sitting between rule
+    #11 (order tracking / returns /
+    shipping policy) and rule #12
+    (pre-order policy).
+
+  Audit context (operator-reported
+  session 70865fa6, 2026-05-12 21:25):
+    Customer bought a new Raptor
+    Mouse from Flipkart, visited
+    the warranty claim website,
+    and reported that only
+    refurbished options were
+    available there. Bot replied
+    that "Cosmic Byte's warranty
+    claim website is for direct
+    purchases from Cosmic Byte's
+    store only", and that "when
+    you buy from a third-party
+    retailer like Flipkart, the
+    warranty and claims process
+    goes through Flipkart's
+    return/warranty system, not
+    Cosmic Byte's." Both claims
+    were wrong — Cosmic Byte
+    covers warranty for purchases
+    from all authorized sellers
+    (online + offline) and handles
+    those claims DIRECTLY without
+    bouncing the customer back to
+    the marketplace.
+
+  Root cause:
+    The KB had no explicit policy
+    on seller-agnostic warranty
+    coverage. The existing rule
+    #11 routing (raise-a-ticket
+    URL, email, phone) was
+    correct but seller-neutral —
+    nothing in the KB instructed
+    the LLM that Flipkart, Amazon,
+    Croma, Reliance Digital, etc.
+    are all covered by CB warranty
+    directly. So when the customer
+    framed the question around a
+    third-party purchase, the LLM
+    filled the gap with a
+    plausible-sounding wrong
+    answer ("third-party = third-
+    party warranty system").
+
+  Fix (one structural addition):
+    Inserted Rule #11a defining:
+    (a) COVERED sellers — explicit
+        list: direct
+        thecosmicbyte.com, Flipkart,
+        Amazon, Croma, Reliance
+        Digital, "and other CB-
+        authorized sellers".
+    (b) NOT COVERED — grey-market /
+        parallel-import stock and
+        unauthorized resellers.
+    (c) CLAIM PROCESS — same
+        raise-a-ticket / email /
+        phone flow regardless of
+        seller. CB handles
+        directly; customer does
+        NOT need to go back to
+        the marketplace.
+    (d) PROOF OF PURCHASE — BOTH
+        invoice from seller AND
+        serial number from product
+        are required.
+    (e) TRIGGER PHRASES — exhaustive
+        list including "bought from
+        Flipkart", "purchased on
+        Amazon", "warranty for
+        marketplace order",
+        "warranty website doesn't
+        show my product", etc.
+    (f) ✗ DO NOT SAY block — five
+        named anti-patterns,
+        including the EXACT
+        wording from session
+        70865fa6 ("Cosmic Byte's
+        warranty website is for
+        direct purchases only" and
+        "the warranty and claims
+        process goes through
+        Flipkart's return/warranty
+        system"). Each anti-pattern
+        is paired with a "WRONG.
+        <correct framing>"
+        rebuttal.
+    (g) ✓ CORRECT REPLY PATTERN —
+        a structural template
+        (not a verbatim script)
+        that the LLM can adapt to
+        the customer's language /
+        tone / specific seller.
+
+  Note on customer's "warranty
+  website only shows refurbished
+  options" claim (session 70865fa6):
+    Ronak confirmed the customer
+    had wrong information about
+    the website page — there is no
+    real bug there. Rule #11a anti-
+    pattern (e) explicitly
+    instructs the LLM not to
+    validate such website-page
+    complaints as real bugs;
+    instead redirect to the actual
+    claim path.
+
 v1.9.9 (2026-05-11) -- Claude
   * Z-bump: structural hardening for
     Ares Pro -- preemptive fix for
@@ -3253,7 +3912,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.9.9"
+__version__ = "1.10.3"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -3269,10 +3928,10 @@ PRODUCT_URLS = {
     "Stellaris": "https://www.thecosmicbyte.com/product/cosmic-byte-stellaris-tri-mode-wireless-bluetooth-wired-controller-for-pc-ios-android-hall-effect-trigger-and-joystick/",
     "Drakon": "https://www.thecosmicbyte.com/product/cosmic-byte-drakon-tri-mode-controller-with-charging-dock-case-tmr-joysticks-mechanical-buttons-rgb-for-pc-ios-android/",
     "Ares Pro": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-pro-tri-mode-wireless-bluetooth-wired-controller-for-pc/",
-    "Ares": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
+    "Ares Tri-Mode": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-tri-mode-wireless-bluetooth-wired-controller-hall-effect-joystick/",
     "Ares Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
     "Ares Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
-    "Nexus": "https://www.thecosmicbyte.com/product-category/gaming-controllers/",
+    "Nexus": "https://www.thecosmicbyte.com/product/cosmic-byte-nexus-wireless-controller-for-pc-aaa-removable-battery/",
     "Artemis Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-cb-gk-40-artemis-wired-wireless-bluetooth-68-key-per-key-rgb-mechanical-gaming-keyboard/",
     "Artemis": "https://www.thecosmicbyte.com/product/cosmic-byte-artemis-68-key-per-key-rgb-mechanical-gaming-keyboard/",
     "Firefly TKL": "https://www.thecosmicbyte.com/product/cosmic-byte-firefly-tkl-per-key-rgb-mechanical-keyboard/",
@@ -3297,7 +3956,7 @@ PRODUCT_URLS = {
     "Velox": "https://www.thecosmicbyte.com/product/cosmic-byte-velox-tri-mode-mouse-pixart-3395-sensor-39-grams/",
     "Hypernova Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-hypernova-wireless-bluetooth-wired-tri-mode-gaming-mouse/",
     "Helios Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-helios-tri-mode-mouse-with-software-support-1000hz-polling-rate/",
-    "Atlas Mouse": "https://www.thecosmicbyte.com/product-category/gamingmouse/",
+    "Atlas Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-atlas-wireless-bluetooth-wired-tri-mode-mouse/",
     "Aether Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-aether-tri-mode-gaming-mouse-pixart-3311-sensor-optical-switches-replaceable-battery/",
     "Umbra Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-umbra-tri-mode-gaming-mouse-1000hz-polling-pixart-a3104-sensor-software-support/",
     "Firestorm Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-firestorm-rgb-wired-gaming-mouse/",
@@ -4846,9 +5505,21 @@ Known hallucinations the AI has produced for the Ares Wireless dongle disconnect
 
 (d) Inventing a "TV setup" framing when the customer hasn't mentioned a TV -- WRONG. The Ares Wireless is documented as PC-only with optional Android via OTG. If the customer mentions a TV, ask whether their TV / streaming device has a USB-A port and whether it's been recognised; do NOT assume the TV use case is supported or fabricate TV-specific instructions.
 
-(e) "Hold Turbo + Home for 3 seconds to cycle between XInput and DirectInput modes" -- WRONG. Turbo + Home is not a documented combo for any Ares variant. The XInput / DirectInput toggle for the generic Ares is "Back + Start for 3 seconds" (per the Ares manual entry, line 1511 area). For Ares Pro it's a much more granular table where the combo depends on connection mode (Wired / 2.4GHz / Bluetooth) AND platform (PC / Android) -- see Ares Pro entry, modes table. For Ares Wireless specifically, there is no documented user-facing XInput/DInput toggle in the KB at all. If the customer asks "how to switch XInput / DInput on my Ares Wireless?", the right answer is to (1) confirm they actually have an Ares Wireless and not a different Ares variant, and (2) refer to the per-variant table or ask support if Ares Wireless is genuinely the model.
+(e) "Hold Turbo + Home for 3 seconds to cycle between XInput and DirectInput modes" -- WRONG. Turbo + Home is not a documented combo for any Ares variant. The correct XInput / DirectInput toggle DIFFERS BY SKU:
+    * Ares Wired AND Ares Wireless (per the manuals — same combo on both):
+        Hold the HOME button for 5 seconds. LED colour changes: Blue = XInput, Red = DirectInput, Yellow = PC Analog, Green = Android (auto).
+    * Ares Tri-Mode (different combo — confirmed by the Ares Tri-Mode manual):
+        Press Back + Start together for 3 seconds. LED colour changes: Orange = XInput, Red = DirectInput, Green = Android, Blue = iOS.
+    * Ares Pro: granular per-mode table — the combo depends on connection mode (Wired / 2.4GHz / Bluetooth) AND platform (PC / Android). See the Ares Pro entry's modes table.
+    If you find yourself writing "Turbo + Home" or "Hold X + Y for 3 seconds" as a mode-switch combo for an Ares Wireless or Ares Wired, stop — that's a hallucination. The correct answer is HOME 5 seconds for both.
 
-(f) "Orange LED = XInput mode, Red LED = DirectInput mode" -- WRONG color. The actual color code per the KB is YELLOW = X-Input. Red = D-Input. There is no orange LED indicator for input mode on any documented Ares variant. If you're tempted to say "Orange", stop -- that color is not used for this purpose.
+(f) "Orange LED = XInput mode" for an Ares Wireless or Ares Wired -- WRONG colour. Orange = XInput is the Ares TRI-MODE LED scheme (a different SKU). The LED colour scheme on the Ares Wireless (and the matching scheme on the Ares Wired) per their manuals is:
+    * BLUE LED solid = XInput mode (default on PC).
+    * Red LED solid = DirectInput mode.
+    * Yellow LED solid = PC Analog mode (a separate state — NOT XInput).
+    * Green LED solid = Android mode.
+    If a customer with an Ares Wireless reports their LED is "yellow" and asks if that's XInput, the answer is NO — yellow is PC Analog, not XInput. To switch them to XInput, they hold HOME for 5 seconds until the LED turns Blue.
+    DO NOT borrow LED colours from the Ares Tri-Mode (Orange / Red / Green / Blue for XInput / DInput / Android / iOS) when answering an Ares Wireless or Ares Wired question — those are different SKUs with different LED schemes.
 
 (g) Blindly accepting a customer-stated framing that is internally inconsistent with their product -- WRONG. The Ares Wireless is 2.4GHz-only with no wired mode. If a customer asks about "switching modes via wired USB cable" while their session is identified as Ares Wireless, do NOT just go with the wired framing -- the customer most likely has a different Ares variant (Ares Tri-Mode, Ares Pro). ASK which variant before generating any procedure. This is a specific instance of the general rule (#14) in the SYSTEM_PROMPT: when a customer's stated framing contradicts the product they appear to have, clarify before procedure.
 
@@ -5144,6 +5815,10 @@ WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
 
     "Eclipse": """
 COSMIC BYTE ECLIPSE - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
+
+JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Confirmed by Cosmic Byte; the product page URL itself contains "tmr-joysticks". Same joystick tech tier as Blitz Tri-Mode, Stellaris 2nd Gen, and Drakon. (Lumora and Ares Pro have Hall Effect joysticks — different sensor tech.) If a customer asks whether the Eclipse has TMR / Hall Effect / drift-resistant joysticks, the answer is YES — TMR. Do NOT say "Hall Effect joysticks" for the Eclipse, and do NOT say "the manual doesn't specify".
+
+TRIGGERS: Hall Effect (analog). Drift-resistant magnetic-sensor triggers. NOT TMR — the Eclipse pairs TMR sticks with Hall Effect triggers (the same combo as Stellaris 2nd Gen; different from Drakon, which pairs TMR sticks with a 3-position physical trigger lock).
 
 CONNECTIVITY:
 - Physical mode switch: Left=Bluetooth, Middle=2.4G, Right=NS (Gyro Bluetooth mode).
@@ -6610,77 +7285,154 @@ RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
 """,
 
-    "Ares": """
-COSMIC BYTE ARES - WIRED GAMEPAD - FULL MANUAL
+    "Ares Tri-Mode": """
+COSMIC BYTE ARES TRI-MODE CONTROLLER - FULL MANUAL
 
-═══════════════════════════════════════════════════════════════════════
-ASK-FIRST GUIDANCE: There are TWO generations of Ares in customer hands.
-═══════════════════════════════════════════════════════════════════════
-- CURRENT 2026 model: Tri-Mode (USB Wired / 2.4GHz dongle / Bluetooth), Hall Effect joysticks AND Hall Effect analog triggers, 1000Hz polling rate.
-- PREVIOUS model: USB-wired only (no dongle, no Bluetooth), 125Hz polling rate, standard joysticks (not Hall Effect).
+CUSTOMER-FACING NAME: The customer's controller is branded "Ares Tri-Mode" on thecosmicbyte.com (URL slug: cosmic-byte-ares-tri-mode-wireless-bluetooth-wired-controller-hall-effect-joystick). The dropdown product entry is "Ares Tri-Mode". In replies use "Ares Tri-Mode" or "your Ares Tri-Mode" — do NOT abbreviate to just "Ares" (ambiguous given the four-SKU Ares lineup: Ares Wired, Ares Wireless, Ares Tri-Mode, Ares Pro). Do NOT call this product "Tri-Mode Ares" or "the new 2026 Ares" — the official SKU name is "Ares Tri-Mode".
 
-How to identify which one the customer has:
-- If the customer's Ares connects via dongle or Bluetooth → current 2026 tri-mode.
-- If wired-only with no dongle in the box → older model.
-- If unsure, ask "does your Ares have a USB dongle or just a USB cable?"
+JOYSTICKS: Hall Effect — drift-resistant magnetic-sensor sticks. Per Cosmic Byte, ALL four current-generation Ares controllers (Ares Wired, Ares Wireless, Ares Tri-Mode, Ares Pro) have Hall Effect joysticks on their current 2026 batches. The Ares Tri-Mode is a 2026 SKU; there is NO older "non-Hall-Effect" batch of the Ares Tri-Mode specifically. The dual-batch (2026 Hall Effect vs older standard joysticks) only applies to Ares Wired and Ares Wireless — see their separate entries. If a customer asks whether the Ares Tri-Mode has Hall Effect joysticks, the answer is YES.
 
-When answering connectivity / polling rate / Hall Effect questions, default to current 2026 if customer is silent on which they have. Switch to "previous model" answers only when customer signals (no dongle, says it's an older purchase, etc.). Don't ask proactively on every query — only when the answer materially differs.
+TRIGGERS: Hall Effect (analog). Both LT and RT use the same drift-resistant magnetic-sensor tech as the joysticks. If a customer asks whether the Ares Tri-Mode has Hall Effect triggers, the answer is YES.
 
-CONNECTIVITY:
-- Wired USB only. Plug the USB cable into PC or Android device.
-- No wireless or Bluetooth support - this is a wired-only controller.
-- PC: Auto-detects as X-Input (compatible with most games). No drivers needed.
-- Android: Requires OTG support. Use a USB OTG adapter if needed. Android use not covered under warranty.
-- Not compatible with PlayStation, Xbox, or Nintendo Switch.
+GYRO: NONE. The Ares Tri-Mode does NOT have a gyro / motion sensor. This is a HARDWARE FACT — there is no gyro chip in the controller, so gyro / motion-aim cannot be enabled on any platform (PC, Android, iOS). If a customer asks about gyro / motion control / tilt-aim for the Ares Tri-Mode, the answer is NO, full stop. If gyro matters to them, recommend Lumora, Drakon, Stellaris, Blitz Tri-Mode, or Eclipse (BT mode only) — all of which have gyro hardware.
+
+MACROS: NONE. The Ares Tri-Mode does NOT have macro buttons (no M1/M2/M3/M4) and no macro recording feature. Only TURBO and AUTO TURBO functions exist (see TURBO section below). If a customer asks about macros / programmable back buttons / button recording for the Ares Tri-Mode, the answer is NO. If macros matter, recommend Lumora (4 macros), Starforge (4 macros via M1-M4), Drakon (2 macros ML/MR), or Quantum (2 macros ML/MR).
+
+RGB: NONE customizable. The controller has ABXY button LEDs and a mode-indicator LED only (Orange/Red/Green/Blue for the four modes). No RGB zones, no software-controlled lights, no breathing/rainbow effects. The ABXY LEDs can be toggled on/off (X + Back) but cannot be colour-customized. If a customer asks about RGB customization / lighting effects / colour control for the Ares Tri-Mode, the answer is NO.
+
+PACKAGE CONTENTS:
+- Ares Tri-Mode Controller
+- 2.4GHz USB Dongle
+- USB Type-C Cable
+- User Manual
+
+CONNECTIVITY (three modes — confirmed by the manual title "Tri Mode Controller"):
+- 2.4GHz Wireless (recommended for PC): plug the 2.4GHz USB dongle into the PC. Hold the Home button for 3 seconds to power on the controller. Controller vibrates once and LED blinks. When connected, LED stays solid. Ensure a clear line of sight between controller and dongle for optimal connectivity.
+- Wired (USB Type-C, PC only): connect the controller to the PC via the USB Type-C cable. Windows auto-detects and installs drivers. No additional setup.
+- Bluetooth 5.0: pairing combo varies by target device:
+  * PC (XInput via Bluetooth): hold X + Home for 3 seconds. Orange LED = pairing mode.
+  * Android (with OTG): hold A + Home for 3 seconds. Green LED = pairing mode.
+  * iOS (MFI-supported games only): hold B + Home for 3 seconds. Blue LED = pairing mode.
+
+LED MODE INDICATORS:
+- Orange LED solid = XInput mode (PC default).
+- Red LED solid = DirectInput mode (PC).
+- Green LED solid = Android mode.
+- Blue LED solid = iOS mode.
+- LED slow blink = charging.
+- LED off (after being on) = fully charged.
+- LED slow flash (irregular) = low battery warning.
 
 PLATFORM COMPATIBILITY:
-- Designed for Windows PC and Android (OTG).
-- NOT compatible with any gaming console. No warranty or support for console use.
+- PC (Windows): primary platform, full support across all three modes.
+- Android: limited support; requires OTG cable for wired or 2.4GHz dongle use. Bluetooth 5.0 also supported. Android compatibility issues are NOT covered under warranty.
+- iOS: Bluetooth only; supports MFI-enabled games only. iOS compatibility issues are NOT covered under warranty.
+- NOT compatible with PlayStation, Xbox, Nintendo Switch, or any console. No warranty or support for console usage.
 
-LED INDICATORS (upgraded 2026 tri-mode model):
-- Orange LED = XInput mode (PC).
-- Red LED = DirectInput mode (PC).
-- Green LED = Android mode.
-- Blue LED = iOS/Bluetooth pairing mode.
-- Older 125Hz batch: LED indicates player slot (1-4) only.
+XINPUT / DIRECTINPUT SWITCHING (PC only, 2.4GHz dongle or wired mode):
+- Press Back + Start together for 3 seconds. Orange LED = XInput, Red LED = DirectInput. Always relaunch the game after switching modes.
 
-VIBRATION ON ANDROID/iOS: NOT SUPPORTED — vibration only works on PC (XInput mode).
-- On PC: enable with A + Back if accidentally turned off. Vibration auto-disables at low battery.
-- Vibration will not function on Android or iOS regardless of connection mode.
+4-WAY / 8-WAY D-PAD TOGGLE:
+- Press and hold Up D-pad, then press the Back button.
 
-NOTE — Two generations exist:
-- 2026 model: Tri-Mode (2.4GHz/Bluetooth/Wired), Hall Effect joysticks AND Hall Effect analog triggers, 1000Hz polling rate.
-- Previous model: Wired only, 125Hz polling rate (hardware limitation — cannot be changed).
-If you have lag on cloud gaming with an older Ares, switching to wired or 2.4GHz on the new model resolves it.
+JOYSTICK / D-PAD SWAP:
+- Press L3 + Back to toggle the left joystick and the D-pad's functions. Press the same combo again to restore.
 
-HALL EFFECT (2026 BATCH):
-- Both joysticks AND both analog triggers are Hall Effect on the current 2026 Ares Tri-Mode.
-- Hall Effect = magnetic sensors, drift-resistant, no physical wear.
-- Older Ares models (wired-only, 125Hz batch) have standard joysticks and standard triggers — drift from wear is NOT covered under warranty.
-
-TURBO:
-- Enable: hold Turbo button + desired face button simultaneously.
-- Disable: press Turbo + same button again.
-- Supported buttons: A, B, X, Y, LB, RB, LT, RT (varies by model).
+TURBO FUNCTION:
+- Set Turbo: hold the desired button (A, B, X, Y, L1, L2, R1, R2), then press the Turbo button. The held button now turbo-fires on press.
+- Cancel Turbo: repeat the same procedure (hold the same button + press Turbo).
+- Set Auto Turbo: hold the desired button, then press the Auto button. The held button now auto-fires continuously.
+- Cancel Auto Turbo: repeat the same procedure.
+- Adjust Turbo Speed: hold Turbo + Right Joystick Up (increase) or Turbo + Right Joystick Down (decrease).
+- Turbo and Auto Turbo are customizable on all main action buttons (A/B/X/Y/L1/L2/R1/R2). D-pad and joystick clicks (L3/R3) are NOT supported for Turbo.
 
 VIBRATION:
-- Dual rumble motors. Works in PC X-Input mode with compatible games.
-- Vibration may not work in all Android games or games without rumble support.
+- Enable / disable vibration: press A + Back. The vibration LED toggles to reflect the current state.
+- Increase vibration intensity: press R3 + Left Joystick Up.
+- Decrease vibration intensity: press R3 + Left Joystick Down.
+- The controller automatically disables vibration when battery is critically low (to save power).
+- IMPORTANT — VIBRATION PLATFORM SUPPORT: Vibration works on PC (XInput mode) only. Android and iOS do NOT support vibration on this controller. Game support is also required — even on PC, the game must implement rumble for vibration to function.
 
-TROUBLESHOOTING:
-- Not detected on PC: Try a different USB port. Avoid USB hubs. Unplug and replug.
-- Not detected in game: Check if game supports X-Input. Use X360ce for D-Input games.
-- Buttons not working correctly: Check in-game controller settings and remap if needed.
-- Vibration not working: Check game settings - vibration must be enabled in game.
-- Android not detecting: Confirm device supports OTG. Try a different OTG adapter.
-- Joystick drift: Calibrate via Windows Settings -> Devices -> Game Controllers -> Properties -> Calibrate.
+ABXY LED CONTROL:
+- Turn the ABXY button LEDs on / off: press X + Back.
+
+POWER OFF:
+- Hold B + Back for 3 seconds. Controller powers off.
+
+RESET:
+- Use a thin pin to press the reset pin-hole on the back of the controller. Re-pair the controller after reset.
+
+BATTERY & CHARGING:
+- Charge via the USB Type-C cable plugged into a PC USB port or a standard USB source. Do not use a wall adapter — use a PC USB port or a standard USB source.
+- LED slowly blinks while charging.
+- Fully charged: LED turns off.
+- Low battery warning: LED slowly flashes.
+- Battery voltage: 3.7V - 4.2V.
+- Vibration auto-disables at critically low battery.
+
+TECHNICAL SPECIFICATIONS (from the manual):
+- Polling Rate: 1000Hz.
+- Working Current: <150mA.
+- Working Distance (2.4GHz / Bluetooth): 8-10 metres.
+- Operating Temperature: -10°C to +60°C.
+- Humidity tolerance: 20% to 80%.
+- Weight: 210g.
+- Dimensions: 156mm x 105mm x 60mm.
+- Interface: USB 2.0 / 3.0.
+
+TROUBLESHOOTING (from the manual's Q&A section):
+- Controller not turning on: charge the battery, then hold Home for 3 seconds.
+- Controller won't connect: verify it's in the correct mode (LED colour matches the target device — Orange/Red for PC, Green for Android, Blue for iOS), restart the pairing process, ensure the dongle or Bluetooth on the device is active and functioning.
+- Connected to PC but not responding: try switching between XInput and DirectInput (Back + Start for 3 seconds). Ensure Windows has finished installing drivers.
+- Controller keeps disconnecting: ensure a clear line of sight between controller and the 2.4GHz dongle, recharge the battery, avoid interference from nearby wireless devices (other 2.4GHz peripherals, microwave ovens, etc.).
+- Some buttons not responding: use the reset pin-hole on the back of the controller to reset it. Ensure the connection is solid.
+- Vibration not working: confirm it's enabled (A + Back), check battery level (vibration auto-disables on low battery), confirm the game supports rumble. Android and iOS do NOT support vibration on this controller.
+- Turbo function not working: reconfirm the setup procedure (hold the button + press Turbo, or hold the button + press Auto for Auto Turbo).
+- Not pairing with Android: confirm the pairing combo (A + Home for 3 seconds, Green LED). Ensure the Android device supports OTG (required for wired or dongle mode).
+- Not pairing with iOS: confirm the pairing combo (B + Home for 3 seconds, Blue LED). Ensure the iOS game supports MFI controllers.
+
+JOYSTICK DRIFT:
+- The Ares Tri-Mode has Hall Effect joysticks (drift-resistant by design). Drift on a Hall Effect Ares Tri-Mode MAY indicate a manufacturing defect — covered under standard 1-year warranty per rule #11 (raise-a-ticket flow) and rule #11a (seller-agnostic — covers Flipkart / Amazon / Croma / etc. purchases too). Customer needs to provide BOTH invoice (from any authorized seller) AND the controller's serial number.
+- Do NOT assume wear-and-tear and decline warranty. The wear-and-tear disclaimer applies to the OLDER non-Hall-Effect Ares Wired / Ares Wireless 2025-and-earlier batches — NOT to the Ares Tri-Mode (which is a 2026 SKU with HE joysticks).
 
 WARRANTY:
 - 1 year against manufacturing defects only.
-- Physical damage, water damage, tampered or modified products NOT covered.
-- Damage from improper use, drops, or liquid exposure NOT covered.
-- Console use NOT covered under warranty.
-- To claim warranty: Visit thecosmicbyte.com/raise-a-ticket/ or email cc@thecosmicbyte.com with proof of purchase and description of the issue.
+- Physical damage, water damage, and tampered / modified products NOT covered.
+- Console use NOT covered.
+- Android / iOS compatibility issues NOT covered (per the manual's IMPORTANT DISCLAIMER section).
+- For warranty claim path, see rule #11 (raise-a-ticket) and rule #11a (seller-agnostic warranty — Flipkart / Amazon / Croma / Reliance Digital / etc. all covered, CB handles directly).
+
+SUPPORT:
+- Customer Care Phone: +91 7351615161 (Mon-Sat 10am-6pm).
+- WhatsApp Support: +91 7351615161.
+- Email: cc@thecosmicbyte.com.
+- Raise a Ticket: https://www.thecosmicbyte.com/raise-a-ticket/.
+
+═══════════════════════════════════════════════════════════════════════
+ANTI-HALLUCINATION GUARD (Ares Tri-Mode — read before answering)
+═══════════════════════════════════════════════════════════════════════
+
+✗ WHAT THE ARES TRI-MODE DOES *NOT* HAVE — do not invent these:
+  ✗ NO macros / programmable back buttons / M1 / M2 / M3 / M4. Only Turbo and Auto Turbo exist. If you find yourself describing macro recording for the Ares Tri-Mode, stop — that's a hallucination borrowed from Starforge / Lumora / Drakon.
+  ✗ NO gyro / motion sensor / tilt-aim. Hardware fact — no gyro chip exists. Do NOT say "gyro works on PC but not iPad" — there is no gyro hardware on any platform.
+  ✗ NO RGB customization, no RGB zones, no breathing/rainbow effects, no software-controlled lighting. Only the ABXY button LEDs (toggleable on/off) and the mode-indicator LED (Orange/Red/Green/Blue). Do NOT describe RGB customization for the Ares Tri-Mode.
+  ✗ NO TMR joysticks. The Ares Tri-Mode has Hall Effect joysticks, not TMR. TMR is on Stellaris 2nd Gen, Blitz Tri-Mode, Drakon, Eclipse, and Starforge.
+  ✗ NO console support. Not compatible with PS4, PS5, Xbox, Nintendo Switch, or any console. PC-only (with limited Android / iOS Bluetooth support). Do NOT recommend it for console gaming.
+  ✗ NO companion PC software / no app for RGB / no firmware-updater app. Configuration is via on-controller button combos only. The Key Linker mobile app is for OTHER CB controllers (Eclipse, Starforge, Stellaris Gen 1) — NOT the Ares Tri-Mode.
+  ✗ NO older 125Hz wired-only batch of the Ares Tri-Mode. The Ares Tri-Mode is a 2026 SKU only. The 125Hz wired-only / standard-joystick dual-batch issue applies to Ares Wired and Ares Wireless (separate SKUs with their own entries). Do NOT carry the dual-batch ASK-FIRST framing into Ares Tri-Mode replies.
+
+✓ WHAT THE ARES TRI-MODE *DOES* HAVE — confidently affirm these:
+  ✓ Hall Effect joysticks AND Hall Effect analog triggers — both confirmed.
+  ✓ Tri-mode connectivity: 2.4GHz dongle (PC) + Bluetooth 5.0 (PC/Android/iOS) + USB-C wired (PC). All confirmed by manual title and Product Overview section.
+  ✓ 1000Hz polling rate. Confirmed in Technical Specifications.
+  ✓ XInput / DirectInput switching on PC via Back + Start (3 seconds). Always relaunch the game after.
+  ✓ Turbo and Auto Turbo on A/B/X/Y/L1/L2/R1/R2. Speed adjustable with Turbo + Right Joystick Up/Down.
+  ✓ Vibration on PC XInput only — adjustable intensity via R3 + Left Joystick Up/Down. Enable/disable via A + Back. NOT on Android/iOS.
+  ✓ 4-way / 8-way D-pad toggle (Up + Back). Left-Joystick / D-pad swap (L3 + Back).
+  ✓ 8-10m wireless range. 210g weight. USB-C charging from PC USB port.
+  ✓ 1-year manufacturing-defect warranty. CB handles warranty directly regardless of authorized seller (Flipkart, Amazon, Croma, Reliance Digital, etc. — per rule #11a). Both invoice and serial number required.
+
+✓ VAGUE QUESTION GUIDANCE: If a customer's message is just "Ares" (without specifying Tri-Mode, Pro, Wired, or Wireless), ASK them which Ares variant they have BEFORE answering — there are four distinct SKUs in the Ares family with materially different specs. Example: "Which Ares are you using — Ares Tri-Mode, Ares Pro, Ares Wired, or Ares Wireless? They have different connectivity and features, so the answer depends on the model." Once they confirm, proceed with the relevant entry's content.
 """,
 
     "All Products": ""  # Filled dynamically
@@ -7152,7 +7904,7 @@ KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 # =============================================================================
 # PRODUCTS
 # =============================================================================
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
 
 
 # =============================================================================
@@ -8088,6 +8840,40 @@ STRICT RULES - always follow:
     - If the customer's situation involves a defect, damage, or warranty claim → use the existing raise-a-ticket flow (rule #6/#7) in addition to or instead of the returns URL, since warranty claims are handled through the ticket system, not the returns portal.
     - These three URLs are SEPARATE from the raise-a-ticket URL — never substitute one for another. Tracking is for "where is my order"; returns submission is for "I want to send something back"; raise-a-ticket is for warranty/defect claims and general support escalation.
 
+11a. SELLER-AGNOSTIC WARRANTY POLICY — Cosmic Byte's manufacturing-defect warranty applies to purchases from ALL authorized sellers, online and offline. NOT direct-only. This is the canonical policy; any reply that contradicts it is wrong.
+
+    COVERED (full warranty, same terms as direct purchases):
+    - Direct purchases from thecosmicbyte.com
+    - Online marketplaces: Flipkart, Amazon
+    - Offline retailers: Croma, Reliance Digital, and other authorized brick-and-mortar partners
+    - Any other Cosmic Byte-authorized seller
+
+    NOT COVERED (no warranty):
+    - Grey-market / parallel-import stock
+    - Unauthorized / unverified third-party resellers (random marketplace listings from sellers not on Cosmic Byte's authorized list, social-media sales, etc.)
+
+    CLAIM PROCESS (identical regardless of authorized seller):
+    - Cosmic Byte handles troubleshooting and warranty claims DIRECTLY for all authorized-seller purchases.
+    - Customer does NOT need to return the product to Flipkart, Amazon, Croma, or any other reseller for the warranty claim.
+    - Customer raises a ticket at https://www.thecosmicbyte.com/raise-a-ticket/, OR emails cc@thecosmicbyte.com, OR calls +91 7351615161 (Mon-Sat 10am-6pm). Same channels as direct-purchase customers. No separate "warranty website" or seller-specific portal to use.
+
+    PROOF OF PURCHASE — both required to process the claim:
+    - Original invoice (Flipkart order PDF, Amazon order PDF, Croma bill, etc.)
+    - Serial number from the product (back-of-controller label, packaging, or product itself)
+    Without BOTH, the claim cannot proceed. Tell the customer up front so they have time to locate the invoice/SN before raising the ticket.
+
+    TRIGGER PHRASES requiring this policy: "bought from Flipkart", "purchased on Amazon", "got it from Croma / Reliance Digital", "third-party seller", "do you cover Flipkart purchases", "warranty for Amazon order", "claim warranty on a marketplace purchase", "can you help if I didn't buy directly from your site", "warranty website doesn't show my product", or any variant where the customer references an authorized retailer.
+
+    ✗ DO NOT SAY (anti-patterns observed in production logs — these EXACT failure modes have hurt customers):
+    a) "Cosmic Byte's warranty website is for direct purchases from Cosmic Byte's store only." -- WRONG. Warranty covers all authorized sellers.
+    b) "When you buy from a third-party retailer like Flipkart, the warranty and claims process goes through Flipkart's return/warranty system, not Cosmic Byte's." -- WRONG. Cosmic Byte handles warranty directly for authorized-seller purchases.
+    c) "Please go to your Flipkart/Amazon order → Return/Replacement" -- WRONG when the customer is asking about WARRANTY. That phrasing applies only to the seller's initial return window (e.g. Flipkart 7-day return). For a WARRANTY claim (manufacturing defect, drift, dead button, etc.), route directly to raise-a-ticket — do not bounce the customer back to the marketplace.
+    d) Hedging with "I'm not sure if your purchase is covered — please check with the seller." -- WRONG. Authorized-seller purchases ARE covered. Confirm coverage and route them; do not hedge.
+    e) Validating a customer's claim that "the warranty website only shows refurbished options for my product" (or similar complaints about specific pages) as if it's a real bug -- WRONG. Customers occasionally have wrong information about web pages. Redirect them to the actual claim path (raise-a-ticket / email / phone) and do not engage with the specific website-page complaint.
+
+    ✓ CORRECT REPLY PATTERN (adapt to customer's tone and language; this is the structure, not a verbatim script):
+    "Yes — your Cosmic Byte warranty is fully valid regardless of where you bought it, as long as it's an authorized seller (Flipkart, Amazon, Croma, Reliance Digital, and other Cosmic Byte partners are all authorized). To raise a warranty claim, please raise a ticket at https://www.thecosmicbyte.com/raise-a-ticket/ — or email cc@thecosmicbyte.com — or call +91 7351615161 (Mon-Sat 10am-6pm). To process the claim, please keep your original invoice from <seller> and the product's serial number handy (the SN is on the back-label / packaging). You don't need to return the product to <seller> for this — Cosmic Byte handles the warranty directly."
+
 12. PRE-ORDER POLICY — when a customer asks about pre-orders, future stock, upcoming product availability, or "when will this ship":
 
     HOW TO IDENTIFY A PRE-ORDER PRODUCT: Cosmic Byte runs pre-orders on selected products that have incoming stock. Pre-order products display an "estimated shipping date" on their product page on https://www.thecosmicbyte.com/. If you don't know whether a specific product is currently on pre-order, ask the customer to check the product page for an estimated shipping date — that's the source of truth. Do NOT make up dates for any product.
@@ -8307,7 +9093,12 @@ def match_product_from_title(title: str) -> str:
         ("ares pro",              "Ares Pro"),
         ("ares wireless",         "Ares Wireless"),
         ("ares wired",            "Ares Wired"),
-        ("ares",                  "Ares"),
+        ("ares tri-mode",         "Ares Tri-Mode"),
+        ("ares tri mode",         "Ares Tri-Mode"),
+        ("ares trimode",          "Ares Tri-Mode"),
+        ("tri-mode ares",         "Ares Tri-Mode"),
+        ("tri mode ares",         "Ares Tri-Mode"),
+        ("ares",                  "Ares Tri-Mode"),
         ("blitz tri",             "Blitz Tri-Mode"),
         ("blitz wireless",        "Blitz Wireless"),
         ("blitz",                 "Blitz Tri-Mode"),
@@ -8731,15 +9522,16 @@ CATALOGUE_CONTROLLERS = """
 COSMIC BYTE CONTROLLERS — Quick Comparison Guide
 
 WIRED (budget):
-- Ares Wired: Basic wired, dual vibration, works on PC/Android. Entry level.
-- Nexus: Wired, Hall Effect joysticks (drift-resistant), dual vibration. Best wired value.
+- Ares Wired: USB wired, PC-only (XInput / DirectInput modes), Hall Effect joysticks + Hall Effect analog triggers on the 2026 batch (older batches have standard joysticks — see Ares Wired entry for batch identification), dual vibration, ABXY LED + V LED. Entry-level wired.
 
-WIRELESS/TRI-MODE (mid range):
-- Ares Wireless: 2.4GHz + Bluetooth, 600mAh, no gyro, no software. Basic wireless.
-- Blitz Wireless: 2.4GHz + Bluetooth, Hall Effect, RGB, 600mAh. Wireless upgrade over Ares.
+WIRELESS (budget to mid range, no Bluetooth):
+- Nexus: 2.4GHz wireless via USB dongle, 2x AAA non-rechargeable batteries, dual vibration, PC-only. NO Bluetooth, NO rechargeable battery. Budget wireless option for customers who prefer replaceable batteries over rechargeable.
+- Ares Wireless: 2.4GHz wireless via USB dongle (NO Bluetooth — dongle-only), Hall Effect joysticks + Hall Effect analog triggers on the 2026 batch (older batches have standard joysticks — see Ares Wireless entry for batch identification), 700mAh rechargeable battery, 6-8m range, RGB LED lighting, dual vibration. PC-only. Basic rechargeable wireless.
+- Blitz Wireless: 2.4GHz + Bluetooth, Hall Effect, RGB, 600mAh. Wireless upgrade over Ares Wireless (adds Bluetooth).
 
 TRI-MODE WITH ADVANCED FEATURES:
 - Ares Pro: Tri-mode (2.4GHz/BT/Wired), Hall Effect joysticks, Hall Effect analog/digital switchable triggers, software customisation (Gen 2 with "App Support" label). NO gyro — for gyro/motion control, recommend Lumora, Drakon, Stellaris, or Blitz Tri-Mode instead.
+- Ares Tri-Mode: Tri-mode (2.4GHz/BT/Wired-USB-C), Hall Effect joysticks + Hall Effect analog triggers, 1000Hz polling, 8-10m range, 210g, Turbo / Auto Turbo (no macros), vibration on PC XInput only. NO gyro, NO RGB customization (only ABXY LEDs), NO macros, NO console support. Mid-range PC-first option below Ares Pro.
 - Blitz Tri-Mode: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, robust gyro, 1000Hz polling, 600mAh. NO RGB, NO dedicated macro buttons. Precision-focused choice.
 
 PREMIUM / FLAGSHIP:
@@ -8749,13 +9541,13 @@ PREMIUM / FLAGSHIP:
 - Starforge: Tri-mode, Hall Effect, gyro, 600mAh. Budget flagship.
 - Stratos Xenon: Tri-mode, Hall Effect, large grip. Comfort-focused.
 - Quantum: Tri-mode, Hall Effect, gyro. Mid-premium.
-- Eclipse: Tri-mode, Hall Effect. Entry flagship.
+- Eclipse: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, Joystick Resistance Roller (stiffness adjust). Entry flagship.
 
 BUYING GUIDE:
 - Just PC gaming, budget-friendly → Nexus (Hall Effect, wired)
 - Wireless PC + mobile, software-customisable → Ares Pro (Hall Effect) or Blitz Tri-Mode (TMR, no macros/RGB) — recommend based on whether customer wants TMR precision (Blitz) or HE switchable triggers + balance (Ares Pro)
 - Maximum customisation (macros, RGB, mappings, replaceable parts) → Lumora
-- Best joystick precision (TMR) → Blitz Tri-Mode, Stellaris 2nd Gen, or Drakon
+- Best joystick precision (TMR) → Blitz Tri-Mode, Stellaris 2nd Gen, Drakon, or Eclipse
 - Distinctive RGB design → Lumora (Cloak) or Drakon (dragon artwork + 7-zone keyframes)
 - Best value wireless → Blitz Wireless or Ares Pro
 """
@@ -8764,7 +9556,6 @@ CATALOGUE_MICE = """
 COSMIC BYTE MICE — Quick Comparison Guide
 
 BASIC / OFFICE:
-- Atlas Mouse: Wired, 3200 DPI, basic gaming. Entry level.
 - Umbra Mouse: Wired, 3200 DPI, lightweight. Entry level.
 - Raptor Mouse: Dual-mode (wired + 2.4GHz, no Bluetooth), 4800 DPI. Entry-level wireless option.
 
@@ -8776,6 +9567,7 @@ MID RANGE:
 FLAGSHIP:
 - Helios Mouse: Wired, 10000 DPI, RGB, 7 buttons. Best CB mouse.
 - Velox: Wired, 6400 DPI, honeycomb shell, ultra-lightweight. Speed-focused.
+- Atlas Mouse: Tri-mode (USB-C wired + 2.4GHz + Bluetooth), 5 DPI levels up to 12000 DPI (colour-coded: 800 Red / 1600 Green / 2400 Blue / 5000 Purple / 12000 Yellow), 1000Hz polling on wired and 2.4GHz (133Hz on Bluetooth — hardware limit), Windows software customisation. Multi-platform tri-mode flagship.
 
 BUYING GUIDE:
 - Budget gaming → Ignis or Firestorm
@@ -8930,7 +9722,12 @@ def detect_products_from_message(messages: list) -> tuple:
         ("ares pro",             "Ares Pro"),
         ("ares wireless",        "Ares Wireless"),
         ("ares wired",           "Ares Wired"),
-        ("ares",                 "Ares"),
+        ("ares tri-mode",        "Ares Tri-Mode"),
+        ("ares tri mode",        "Ares Tri-Mode"),
+        ("ares trimode",         "Ares Tri-Mode"),
+        ("tri-mode ares",        "Ares Tri-Mode"),
+        ("tri mode ares",        "Ares Tri-Mode"),
+        ("ares",                 "Ares Tri-Mode"),
         ("blitz tri",            "Blitz Tri-Mode"),
         ("blitz wireless",       "Blitz Wireless"),
         ("blitz",                "Blitz Tri-Mode"),
