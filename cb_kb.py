@@ -33,6 +33,353 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.11 (2026-05-12) -- Claude
+  * Z-bump: lockdown for a Stellaris
+    power-off hallucination pattern.
+    Pulled the official power-off
+    procedure up to a top-of-entry
+    self-claim block (so the bot
+    doesn't have to scan 6000+
+    chars to find it) and added
+    four explicit ✗ anti-
+    hallucination items in the
+    DOES-NOT-HAVE block to block
+    the specific fabrications
+    observed in production.
+
+  Audit context (operator-reported
+  session 52e2e3b4, 2026-05-13
+  13:00, Risk Score 3, auto-flagged
+  by the moderation heuristic
+  "short question + multi-step
+  procedure"):
+    Customer had previously
+    confirmed their Stellaris is
+    Gen 2 (the bot's preceding turn
+    had asked for the variant; the
+    customer replied "Gen 2"). The
+    bot's reply walked them
+    through a fabricated power-off
+    procedure:
+      "1. Press and hold the HOME
+       button for about 3 seconds.
+       2. A power menu will appear
+       on the controller's LED
+       display.
+       3. Select the power-off
+       option (the controller will
+       guide you through the LED
+       indicators).
+       4. The controller will shut
+       down completely.
+       Alternative (Quick Power
+       Off): If you just want to
+       power it down quickly
+       without the menu, you can
+       also hold HOME + SELECT
+       together for 3 seconds —
+       this triggers an immediate
+       shutdown."
+    Every claim in that reply is
+    fabricated. The Stellaris has
+    no LED display, no power
+    menu, no menu-driven UI, no
+    HOME-hold-3s power-off, and
+    no HOME+SELECT-3s shutdown
+    combo. None of these exist
+    in any Stellaris manual or
+    KB entry section.
+
+  Ronak's feedback: "Controller
+  LED display? Why do i have to
+  continously do corrections for
+  same products?"
+
+  Root cause:
+    The Stellaris entry IS the
+    largest single product entry
+    in the KB (49,000 characters)
+    and DOES have the correct
+    power-off procedure
+    documented — but the official
+    procedure is at character
+    position ~12,200 (line 322
+    of the v1.10.10 entry,
+    "AUTO SLEEP: 30 seconds if
+    not connected...power off
+    (different from sleep):
+    short-press the RESET button
+    next to the USB-C port —
+    this is the OFFICIAL power-
+    off command per the user
+    manual page 12"). Same
+    info also at character
+    position ~10,500 (line 294,
+    "RESET BUTTON DUAL FUNCTION:
+    SHORT press = powers the
+    controller OFF").
+    Both correct mentions are
+    deep in the entry. When the
+    bot processes a "how do I
+    power off my Stellaris Gen
+    2" query, it tends to
+    surface the most prominent
+    content near the top of the
+    entry — and the top of the
+    entry historically had the
+    DOES-NOT-HAVE block, the
+    DOES-HAVE block, the ASK-
+    FIRST GUIDANCE, and the
+    VARIANTS section — none of
+    which mention power-off.
+    With no power-off content at
+    the top, the LLM filled the
+    gap by pattern-matching to
+    generic "modern controller
+    with menu-driven power" UX
+    that doesn't exist on this
+    SKU. Same failure mode as
+    v1.10.8 Ares Pro polling
+    rate: the KB had the right
+    info but it was invisible
+    to the bot's typical
+    summarisation path.
+
+  Why this is a recurring class
+  of issue (Ronak's "why do I
+  have to continuously do
+  corrections for same
+  products?"):
+    The 4 largest entries
+    (Stellaris 49K, Ares Pro
+    31K, Lumora 21K, Blitz Tri-
+    Mode 18K) carry a
+    proportionally higher
+    hallucination risk per
+    query, NOT lower — because
+    information density buries
+    the most-asked facts deeper
+    in the entry. The bot
+    samples the top of each
+    entry for most queries,
+    finds plausible-looking
+    descriptions, and confidently
+    fills in procedural details
+    by pattern-matching to
+    generic controller UX. The
+    longer the entry, the more
+    likely the actual procedure
+    for any given question is
+    outside the bot's typical
+    reading window.
+    The fix pattern that's been
+    emerging across v1.10.1
+    (Eclipse JOYSTICKS/TRIGGERS
+    top-block), v1.10.2 (Ares
+    Tri-Mode rewrite with top-
+    of-entry self-claim block),
+    v1.10.8 (Ares Pro polling
+    rate corrections at source),
+    v1.10.9 (Starforge JOYSTICKS/
+    TRIGGERS top-block) is the
+    right one for THIS file:
+    pull the highest-friction
+    facts to the top of each
+    entry as self-claim blocks,
+    and add explicit ✗ anti-
+    hallucination items naming
+    the exact fabrication
+    patterns to avoid. v1.10.11
+    follows that pattern for
+    Stellaris power-off.
+
+  Fix (two coordinated additions
+  to the Stellaris entry):
+
+  (1) Inserted a new top-of-entry
+      "POWER OFF / SLEEP / RESET
+      — OFFICIAL PROCEDURES"
+      section, positioned between
+      the existing DOES-NOT-HAVE
+      block and the DOES-HAVE
+      block. Six labelled
+      procedures, each one-or-
+      two-sentence concise:
+        - POWER OFF (current /
+          Gen 2): short-press the
+          rear RESET button next
+          to USB-C port. Single
+          step. Per user manual
+          page 12.
+        - SLEEP: HOLD HOME 5
+          seconds. Auto-sleep
+          timings.
+        - HARDWARE RESET: HOLD
+          the rear RESET button
+          > 1 second.
+        - FACTORY RESET: HOLD
+          SELECT + L3 + R3
+          together for 5
+          seconds.
+        - REAR RESET BUTTON DUAL
+          FUNCTION explanation
+          (short vs long press).
+        - LEGACY GEN 1 power-off:
+          short-press the SYNC
+          button on TOP of the
+          controller. Explicitly
+          notes that HOLD HOME
+          10s is the Gen 1
+          HARDWARE RESET, NOT
+          power off — two
+          different Gen 1
+          buttons, two different
+          procedures, both
+          previously documented
+          deep in the entry but
+          now surfaced near the
+          top with the explicit
+          warning not to
+          conflate them.
+
+  (2) Added FOUR new ✗ items at
+      the end of the DOES-NOT-
+      HAVE block (right after
+      the existing "✗ NEITHER
+      GEN: NO macro buttons
+      beyond the 2 back paddles"
+      item):
+        (a) "✗ NO LED DISPLAY /
+            NO SCREEN / NO ON-
+            CONTROLLER UI" —
+            enumerates the
+            actual LED indicators
+            (V-bar, corner LEDs,
+            charging LED, outer
+            RGB ring on
+            transparent variant)
+            and explicitly says
+            these are STATUS
+            INDICATORS, not a
+            screen, not a display,
+            not a menu UI.
+            Explicit STOP-and-
+            don't-fabricate
+            instruction naming
+            the session
+            52e2e3b4 phrasings
+            verbatim ("a menu
+            will appear on the
+            LED display", "the
+            controller will
+            guide you through
+            the LED indicators",
+            "select the power-
+            off option").
+        (b) "✗ NO 'HOLD HOME
+            FOR 3 SECONDS =
+            POWER OFF'" —
+            documents the
+            REAL HOME button
+            durations (short
+            press = HOME
+            function per game;
+            HOLD 5s = SLEEP,
+            not power off) and
+            explicitly says
+            no 3-second HOME
+            behaviour exists.
+            Redirects to the
+            official rear-
+            RESET procedure.
+        (c) "✗ NO 'HOME +
+            SELECT FOR 3
+            SECONDS = SHUTDOWN'
+            combo" — names
+            the fabrication
+            from session
+            52e2e3b4
+            ("Alternative
+            Quick Power Off")
+            and rejects it
+            as not documented.
+        (d) "✗ NO POWER MENU /
+            NO MENU-DRIVEN
+            POWER OFF" —
+            single-action
+            procedure framing
+            so the bot doesn't
+            present multi-step
+            menu UX.
+
+  Per-Gen accuracy verified:
+    The new top-of-entry block
+    correctly distinguishes Gen
+    2 power-off (rear RESET
+    button short-press, per
+    user manual page 12) from
+    Gen 1 power-off (SYNC
+    button on TOP, per the
+    existing entry content at
+    line 538). An initial draft
+    of the new block had Gen 1
+    power-off wrong (said
+    "HOLD HOME 10 seconds" —
+    that's actually Gen 1
+    HARDWARE RESET, not power
+    off, per existing entry
+    content at line 632);
+    corrected before commit.
+
+  Scope: per the v1.10.4 /
+  v1.10.5 / v1.10.7 pattern,
+  this fix is in the Stellaris
+  entry only. No proactive
+  similar guards added to
+  other large entries (Ares
+  Pro, Lumora, Blitz Tri-Mode).
+  If/when production sessions
+  surface analogous issues on
+  those, they get the same
+  pattern then. Pre-emptive
+  guards on top-N entries
+  would be a structural project
+  rather than a same-day
+  bugfix; flagged for separate
+  scoping.
+
+  Operator note (for Ronak):
+    The "continuously doing
+    corrections" pattern is real
+    and per-entry, not random.
+    Large entries (Stellaris,
+    Ares Pro especially) have a
+    higher hallucination risk
+    per query than small
+    entries, exactly because
+    their information density
+    buries the most-asked-about
+    facts deeper than the bot
+    typically reads. The
+    sustainable answer is a
+    structural project: for
+    each large entry, identify
+    the top-5 most-asked
+    procedures (power off, mode
+    switch, pairing, factory
+    reset, software install)
+    and lift them to top-of-
+    entry self-claim blocks
+    with matching ✗ anti-
+    hallucination items. That's
+    too large for an EOD batch
+    but small enough to do
+    one-entry-at-a-time
+    starting tomorrow. Stellaris
+    gets this treatment in
+    v1.10.11; Ares Pro is the
+    obvious next candidate.
+
 v1.10.10 (2026-05-12) -- Claude
   * Z-bump: pure style refactor.
     Zero behavior change. No
@@ -5474,7 +5821,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.10"
+__version__ = "1.10.11"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -5776,6 +6123,104 @@ apply to BOTH generations unless explicitly called out:
     The controller has two macro buttons total. Do NOT say it has 4
     macros or 6 macros (Lumora has 4, but Stellaris has 2). Both gens
     have the same 2 macro buttons.
+
+  ✗ NO LED DISPLAY / NO SCREEN / NO ON-CONTROLLER UI on the Stellaris
+    body — neither gen. The Stellaris has LED INDICATORS (the V-shaped
+    front LED bar, the four corner LEDs near HOME, the rear charging
+    LED, plus the outer RGB ring on the transparent variant). These
+    are STATUS INDICATORS — they show mode, battery, charging state,
+    RGB lighting. They are NOT a screen, NOT a display, NOT a menu UI.
+    There is no "power menu" appearing on any LED. There is no "select
+    an option" interaction. If you find yourself describing "a menu
+    will appear on the LED display" or "the controller will guide you
+    through the LED indicators" or "select the power-off option" —
+    STOP. The Stellaris has no such UI. There is nothing to navigate.
+    (Production session 52e2e3b4, 2026-05-13 13:00, surfaced this
+    fabrication in a power-off walkthrough; this guard added in
+    v1.10.11 to prevent recurrence.)
+
+  ✗ NO "HOLD HOME FOR 3 SECONDS = POWER OFF" on Stellaris (either gen).
+    The HOME button has documented behaviours at OTHER durations on
+    current Stellaris: short press = HOME function (per game); HOLD
+    HOME for 5 seconds = SLEEP (NOT power off — sleep preserves
+    connection state); but there is NO documented "hold HOME for 3
+    seconds = power off" or any 3-second HOME behaviour. The OFFICIAL
+    Stellaris power-off command per the user manual page 12 is a
+    SHORT-PRESS of the rear RESET button next to the USB-C port — NOT
+    a HOME button hold of any duration. See the POWER OFF / SLEEP /
+    RESET section below for the full procedure.
+
+  ✗ NO "HOME + SELECT FOR 3 SECONDS = SHUTDOWN" combo on Stellaris
+    (either gen). This combination is not documented anywhere in the
+    Stellaris manuals and does not trigger any power-off behaviour.
+    Do not present it as an "alternative quick power-off" — it is a
+    fabrication.
+
+  ✗ NO POWER MENU / NO MENU-DRIVEN POWER OFF on Stellaris (either gen).
+    Power off is a single-action procedure: short-press the rear RESET
+    button. No menu appears, no options are presented, no selection is
+    made. If a customer asks "how do I turn off my Stellaris", the
+    answer is a single sentence (the short-press of the rear RESET
+    button), not a multi-step menu navigation.
+
+═══════════════════════════════════════════════════════════════════════
+POWER OFF / SLEEP / RESET — OFFICIAL PROCEDURES (top-of-entry self-claim
+block so the bot doesn't have to scan 6000+ chars to find these — added
+in v1.10.11 after session 52e2e3b4 surfaced a power-off hallucination.)
+═══════════════════════════════════════════════════════════════════════
+
+POWER OFF (current Stellaris / Gen 2 — also applies to transparent variant):
+  Single step: SHORT-PRESS the rear RESET button next to the USB-C port.
+  The controller powers off. Settings preserved. That is the COMPLETE
+  procedure — there is no menu, no LED guide, no second step. This is
+  the OFFICIAL power-off command per the Stellaris Gen 2 user manual,
+  page 12 ("Power Off: Press RESET").
+
+  What the LED does after power off: all LEDs turn off. The controller
+  enters a deep low-power state. To turn the controller back on, press
+  ANY button (HOME, a face button, or a trigger).
+
+SLEEP (separate from power off):
+  HOLD the HOME button for 5 seconds = manual sleep. Wake by pressing
+  HOME. AUTO-SLEEP also exists: 30 seconds idle if not connected,
+  5 minutes idle if connected but inactive. Sleep PRESERVES connection
+  state (Bluetooth pairing, mode); power off does NOT.
+
+HARDWARE RESET (recovers from unresponsive state — different from power off):
+  HOLD the rear RESET button for MORE THAN 1 second. Does NOT delete
+  user settings — just recovers from frozen / unresponsive state.
+  After hardware reset the controller enters sleep automatically;
+  press HOME to wake.
+
+FACTORY RESET (deletes user settings — different from hardware reset):
+  HOLD SELECT + L3 + R3 together for 5 seconds. This clears all user
+  settings (button mapping, macros, RGB profiles, etc.) and restores
+  factory defaults. Use this only when the customer specifically wants
+  to wipe settings.
+
+THE REAR RESET BUTTON HAS DUAL FUNCTION based on press duration:
+  - SHORT press (release immediately) = power off (preserves settings).
+  - LONG press (more than 1 second) = hardware reset (preserves settings,
+    recovers from unresponsive state).
+  - Both outcomes are normal. If a customer says "I pressed RESET and
+    it turned off — did I do it right?" → yes, that's power off. If they
+    say "I held RESET and it went to sleep" → yes, that's hardware
+    reset; they can press HOME to wake.
+
+LEGACY GEN 1 — different power-off:
+  Gen 1 has a physical SYNC BUTTON on the TOP of the controller (Gen 2
+  does not have this — Gen 2 uses the rear RESET button). To power off
+  a Gen 1: SHORT-PRESS the sync button on top. NOT the procedure above
+  (the rear-RESET procedure is Gen 2 only — Gen 1 doesn't have a rear
+  RESET button next to the USB-C port).
+  Do NOT confuse with the Gen 1 HARDWARE RESET, which is a separate
+  procedure: HOLD the HOME button for 10 seconds = hardware reset on
+  Gen 1 (recovers from unresponsive state, does not delete settings).
+  Two different Gen 1 buttons, two different procedures — sync-button-
+  short-press = power off; HOME-hold-10s = hardware reset.
+  If the customer signals they have a Gen 1 (see the GENERATIONS
+  section below for Gen 1 identification cues), use the sync-button-
+  on-top procedure for power off.
 
 ═══════════════════════════════════════════════════════════════════════
 ✓  WHAT THE STELLARIS *DOES* HAVE (real features for current Gen 2;
