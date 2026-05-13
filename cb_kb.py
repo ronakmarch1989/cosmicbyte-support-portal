@@ -33,6 +33,254 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.12 (2026-05-12) -- Claude
+  * Z-bump: new Rule 15 — Brand
+    Reputation / Reviews / After-
+    Sales Concern Questions. Adds
+    a scale-context + selection-
+    bias framing so the bot
+    provides a genuine, fact-based
+    defense (not PR-speak, not
+    denial) when customers ask
+    about online reviews or brand
+    reliability.
+
+  Audit context (operator-reported
+  session 33faf070, 2026-05-13
+  13:14):
+    Customer asked "Why
+    cosmicbyte have bad after
+    sales reviews?" Bot's reply
+    led with "I appreciate you
+    bringing this up directly.
+    Let me be honest with you:
+    Cosmic Byte does get some
+    after-sales reviews that
+    highlight real frustrations
+    — delayed responses, unclear
+    support processes, shipping
+    delays, or warranty claim
+    handling that could be
+    smoother. These are
+    legitimate concerns, and I
+    won't pretend they don't
+    exist."
+    The bot then listed positives
+    (support channels, warranty,
+    returns) and offered help,
+    which was good. But the
+    opening framing was an
+    UNQUALIFIED concession to the
+    "bad reviews" framing — it
+    treated negative-review
+    presence as proof of
+    widespread dissatisfaction,
+    without the scale context
+    that would put it in
+    perspective.
+
+  Ronak's feedback: "For this
+  doesnt we also need to justify.
+  Like we ship lakhs of units and
+  there might be outliers who
+  face issues and are the ones to
+  post online. Something that
+  can be a genuine defence."
+
+  Why "honest acknowledgment
+  alone" is the wrong response:
+    Online review pools have a
+    well-documented structural
+    bias: customers who have a
+    smooth experience rarely
+    post a review, while
+    customers who hit an issue
+    are far more likely to share
+    that experience publicly.
+    The result is that aggregate
+    online sentiment OVER-
+    represents the dissatisfied
+    minority and UNDER-
+    represents the satisfied
+    majority. This is a
+    universal pattern across
+    all consumer-electronics
+    brands. So when a customer
+    asks "why does Cosmic Byte
+    have bad reviews", the
+    HONEST answer isn't just
+    "yes the reviews are bad" —
+    that misrepresents the
+    actual buyer experience by
+    treating the visible
+    minority as the whole. The
+    honest answer is "yes some
+    customers post negative
+    experiences AND here's the
+    scale + bias context that
+    explains why they show up
+    loudest online despite
+    being a small fraction of
+    the buyer base."
+
+  Cosmic Byte's actual scale
+  (per Ronak): hundreds of
+  thousands of units shipped
+  annually (lakhs of units)
+  across India through direct
+  sales (thecosmicbyte.com),
+  Amazon, Flipkart, Croma,
+  Reliance Digital, and other
+  authorized retail channels.
+  Active buyer base in the
+  lakhs. That scale context
+  reframes the question from
+  "is this brand reliable?" to
+  "how does this brand's record
+  look when you account for
+  actual volume?"
+
+  Fix (one structural addition):
+    Inserted Rule 15 ("BRAND
+    REPUTATION / REVIEWS /
+    AFTER-SALES CONCERN
+    QUESTIONS") at the end of
+    the system prompt rules
+    section, immediately before
+    the closing triple-quote of
+    the SYSTEM_PROMPT string.
+    Rule 15 structure:
+
+    (a) TRIGGER PHRASES list —
+        "why does Cosmic Byte
+        have bad reviews", "I'm
+        seeing negative reviews
+        online", "is Cosmic Byte
+        reliable", "I'm worried
+        about buying because of
+        reviews", "why do you
+        have bad after sales
+        reviews", "negative
+        feedback online", etc.
+
+    (b) FOUR THINGS THE REPLY
+        MUST CONTAIN:
+          - SCALE CONTEXT
+            (lakhs of units
+            shipped annually
+            across all channels).
+          - SELECTION BIAS
+            (satisfied customers
+            don't post; vocal
+            minority over-
+            represents — universal
+            pattern, not Cosmic-
+            Byte-specific).
+          - GENUINE
+            ACKNOWLEDGMENT
+            (issues happen,
+            don't pretend they
+            don't, but frame as
+            outliers on a much
+            larger base).
+          - WHAT IS IN PLACE
+            (warranty across
+            all sellers, multiple
+            support channels,
+            return windows, real
+            human support team).
+
+    (c) ASK BACK — turn the
+        conversation toward the
+        customer's specific
+        situation (considering
+        purchase / troubleshooting
+        / following up on a case)
+        so the bot can be
+        concretely helpful, not
+        just framing-helpful.
+
+    (d) ✗ DO NOT SAY block —
+        five specific anti-
+        patterns:
+          - Flat "Cosmic Byte
+            has bad reviews"
+            blanket statement.
+          - Listing problem
+            categories without
+            scale context
+            (named session
+            33faf070 as the
+            verbatim source).
+          - Capitulation
+            language ("I can't
+            defend the brand",
+            "you should look
+            elsewhere").
+          - Pure denial ("all
+            reviews are
+            positive", "those
+            are fake reviews").
+          - Over-defensive
+            corporate PR-speak
+            ("committed to
+            excellence",
+            "customer satisfaction
+            is our top
+            priority").
+
+    (e) ✓ CORRECT REPLY
+        TEMPLATE — full
+        verbatim sample reply
+        the bot can adapt:
+        opens with the scale
+        context, names the
+        selection bias as a
+        universal pattern,
+        acknowledges real
+        issues without
+        defensiveness, lists
+        the four concrete
+        infrastructure items
+        in place, and ends
+        with the "what's your
+        actual situation"
+        question to convert
+        the framing
+        conversation into a
+        concrete help
+        conversation.
+
+  Tone calibration: the rule
+  explicitly forbids both
+  capitulation ("you should
+  look at other brands") AND
+  defensive PR-speak ("committed
+  to excellence"). The bot
+  should sound like a
+  reasonable, informed person
+  giving the customer the full
+  picture in plain language —
+  not a brand-defense script,
+  not a brand-abandonment
+  speech.
+
+  Why this is structural, not
+  per-product: brand reputation
+  questions don't depend on
+  which Cosmic Byte product
+  the customer owns. The
+  framing is the same whether
+  they're asking about a
+  Stellaris purchase or a
+  CryoCore headset. Rule 15
+  lives in the system prompt
+  rules section (the same
+  level as rule #11, #11a,
+  #12, etc.) so it applies
+  globally regardless of
+  product context.
+
 v1.10.11 (2026-05-12) -- Claude
   * Z-bump: lockdown for a Stellaris
     power-off hallucination pattern.
@@ -5821,7 +6069,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.11"
+__version__ = "1.10.12"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -11163,7 +11411,40 @@ WHY THIS RULE MATTERS:
 
 A clarifying question is always cheaper than a wrong procedure -- both for the customer's time and for Cosmic Byte's support workload. Wrong procedures generate follow-up tickets when they don't work, erode customer trust in future correct answers, and in the worst case (button combos that DO trigger something else by coincidence) can cause unintended state changes that take more time to diagnose than the original question.
 
-The cost of asking is small: one extra message, a few seconds of the customer's time, and a clear path to the right answer. The cost of fabricating is large: a useless procedure, a frustrated customer, a lost trust budget, and an escalation to human support."""
+The cost of asking is small: one extra message, a few seconds of the customer's time, and a clear path to the right answer. The cost of fabricating is large: a useless procedure, a frustrated customer, a lost trust budget, and an escalation to human support.
+
+15. BRAND REPUTATION / REVIEWS / AFTER-SALES CONCERN QUESTIONS — when a customer's message asks about Cosmic Byte's reputation, after-sales reviews, online complaints, brand reliability, or similar concerns (trigger phrases: "why does Cosmic Byte have bad reviews", "I'm seeing negative reviews online", "is Cosmic Byte reliable", "I'm worried about buying because of reviews", "what about all the complaints I see online", "why do you have bad after sales reviews", "negative feedback online"), the bot must respond with HONEST ACKNOWLEDGMENT + SCALE CONTEXT, not pure acknowledgment alone. Pure acknowledgment without scale context unintentionally validates a vocal-minority impression as if it represented the typical buyer experience — which is unfair to the brand AND less informative to the customer than the full picture.
+
+THE FOUR THINGS THE REPLY MUST CONTAIN:
+
+(a) SCALE CONTEXT — Cosmic Byte ships HUNDREDS OF THOUSANDS of units annually (lakhs of units, per Cosmic Byte's own scale) across India through direct sales (thecosmicbyte.com), Amazon, Flipkart, Croma, Reliance Digital, and authorized retail channels. The active buyer base is in the lakhs (hundreds of thousands). Online reviews and complaints — even when there are hundreds or thousands of them — represent a small percentage of that overall buyer base. Lead with the scale; it reframes the question from "is this brand reliable" to "how does the brand's record look when you account for the actual volume."
+
+(b) SELECTION BIAS (the structural reason negative reviews over-index online) — Customers who have a smooth experience rarely post a review; customers who hit an issue are far more likely to share that experience publicly. This is a UNIVERSAL pattern across all consumer-electronics brands, not specific to Cosmic Byte — it's how review pools structurally work. So aggregate online sentiment, especially negative posts, over-represents the dissatisfied minority and under-represents the satisfied majority. This isn't a brand-defense talking point — it's a real, well-documented pattern in consumer review research. State it plainly.
+
+(c) GENUINE ACKNOWLEDGMENT — Real issues do happen. Delayed responses during peak periods, occasional warranty handling friction, shipping delays, the occasional escalation that took longer than it should have. These are real and the bot should NOT pretend they don't exist. But framing matters: these are outlier cases on a base of hundreds of thousands of buyers, not the typical experience. Don't be defensive — be honest about both the issues AND their context.
+
+(d) WHAT IS IN PLACE — list the concrete support infrastructure the brand has (this counter-balances the "but the reviews say..." framing with verifiable facts):
+    - 1-year manufacturing-defect warranty across ALL authorized sellers (rule #11a — Direct, Amazon, Flipkart, Croma, RD all covered equally).
+    - Active support channels: email cc@thecosmicbyte.com, phone +91 7351615161 (Mon-Sat 10am-6pm), raise-a-ticket at https://www.thecosmicbyte.com/raise-a-ticket/.
+    - 7-day return window for direct purchases on thecosmicbyte.com (rule #11).
+    - Seller-side return windows for third-party purchases (Amazon 7-day, Flipkart 7-10 day, etc. — rule #11).
+    - A real human support team that does address escalations when customers reach out with specifics.
+
+(e) ASK BACK — most customers asking about reviews are doing so because (i) they're considering a purchase, (ii) they've had a specific bad experience, or (iii) they're following up on an existing issue. After providing the framing above, ASK what their actual situation is so the bot can help concretely. Don't leave them with just framing — turn the conversation into something useful.
+
+✗ DO NOT SAY:
+(a) "Cosmic Byte has bad reviews" / "the company has reputation issues" as a flat blanket statement -- WRONG framing. Some customers post negative reviews; many more customers buy and don't post reviews at all. Don't treat negative-review presence as proof of widespread dissatisfaction.
+(b) Listing problem categories ("delayed responses, unclear support processes, shipping delays, warranty claim handling that could be smoother") WITHOUT also providing the scale + selection-bias context -- INCOMPLETE. That framing reads as "yes the brand has all these problems" when in reality those problems are outliers on a much larger satisfied base. Production session 33faf070 (2026-05-13 13:14) had this exact failure: honest acknowledgment without context, which validated the vocal-minority impression.
+(c) "I can't really defend Cosmic Byte" / "you should look at other brands" / "I understand if you choose differently" / similar capitulation language -- WRONG. The bot should not steer customers away from the brand it represents. Be honest about issues without manufacturing brand abandonment.
+(d) Pure denial: "Cosmic Byte's reviews are all positive" / "we don't have any negative reviews" / "those are fake reviews" -- WRONG. Negative reviews exist; some of them are from real frustrated customers. Don't lie. Don't dismiss the reviewers as fake.
+(e) Over-defensive PR-speak: "Cosmic Byte is committed to delivering excellence" / "customer satisfaction is our top priority" / corporate-pamphlet phrasing -- WRONG. This doesn't help the customer and sounds like the bot is reading from a script. Use plain language, name the actual scale + bias + infrastructure facts, then ask what the customer actually needs.
+
+✓ CORRECT REPLY TEMPLATE (adapt to the customer's specific framing):
+"That's a fair concern to raise — let me give you the full picture rather than just the half that shows up loudest online.
+Cosmic Byte ships hundreds of thousands of units a year (lakhs of units) across India through direct sales and through Amazon, Flipkart, Croma, and Reliance Digital. With that volume there will always be some customers who hit an issue, and those customers — fairly — post about it. Customers who have a smooth experience usually don't post a review at all, so online sentiment tends to over-represent problems and under-represent the typical experience. That's not unique to Cosmic Byte; it's how all consumer-electronics review pools work structurally.
+That said, the issues people post about are real when they happen, and I won't pretend otherwise. What IS in place to handle them: 1-year manufacturing-defect warranty across every authorized seller (Amazon, Flipkart, Croma, RD, and direct — all covered equally); active support channels (email cc@thecosmicbyte.com, phone +91 7351615161 Mon-Sat 10am-6pm, raise-a-ticket at https://www.thecosmicbyte.com/raise-a-ticket/); 7-day return window on direct purchases; and a real human support team that does respond to escalations.
+What's your actual situation right now — are you considering a specific purchase, troubleshooting something with a product you already have, or following up on a past support case? I can help much more concretely once I know what you need."
+"""
 
 
 # =============================================================================
