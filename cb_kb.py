@@ -33,6 +33,294 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.13 (2026-05-12) -- Claude
+  * Z-bump: lockdown for a Blitz
+    Tri-Mode TURBO button location
+    hallucination. Pulled the
+    physical button layout up to a
+    top-of-entry self-claim block
+    and added an explicit ✗ guard
+    against the specific grip /
+    vibration-motor / rear-side
+    fabrications observed in
+    production.
+
+  Audit context (operator-reported
+  session 6677fd75, 2026-05-13
+  17:24):
+    Customer asked "which is the
+    turbo key in it?" (referring
+    to the Blitz Tri-Mode). Bot
+    replied: "On the Blitz Tri-
+    Mode, the TURBO button is a
+    dedicated button on the
+    controller — it's typically
+    located on the right side of
+    the grip (you'll find it near
+    the vibration motor area)."
+    All TURBO function content
+    that followed (Hold TURBO +
+    button = rapid fire, TURBO +
+    same button = Auto Fire,
+    Hold TURBO 5s = clear, speed
+    levels 5/12/20 per sec, Right
+    Stick Right/Left to adjust,
+    sequence recording with up
+    to 22 inputs, double-press
+    TURBO to execute) was
+    correct and matched the KB
+    perfectly. Only the PHYSICAL
+    LOCATION of the TURBO button
+    was fabricated.
+
+  Ronak's feedback: "Wrong
+  description of button placement.
+  Controller images attached with
+  button markings and placement."
+  (Image showed the Blitz Tri-
+  Mode front face: HOME button in
+  the center top, BACK (three-dot
+  icon) and START (three-bar icon)
+  flanking HOME, SHARE / CAPTURE
+  button directly below HOME, and
+  TURBO button below SHARE — all
+  on the front face, all in the
+  center column.)
+
+  Root cause:
+    The KB had complete and
+    accurate TURBO functional
+    documentation (combos,
+    speeds, sequence recording,
+    timing, vibration confirmation
+    feedback, etc. — every
+    function the bot listed was
+    KB-correct). But it had ZERO
+    documentation of WHERE the
+    TURBO button physically sits
+    on the controller. No button
+    layout section, no front-
+    face description, no
+    physical-placement
+    reference for ANY button.
+    When the customer asked
+    "which is the turbo key in
+    it" (i.e. where is it
+    located, not what it does),
+    the bot had a gap to fill —
+    so it pattern-matched to a
+    generic "rapid-fire button
+    placement" template
+    (typically near grip / under
+    paddle area on third-party
+    controllers) and invented
+    "right side of the grip near
+    the vibration motor area."
+    Same failure mode as v1.10.8
+    (Ares Pro polling rate fact
+    missing from prominent
+    position) and v1.10.11
+    (Stellaris power-off fact
+    deep in the entry, invisible
+    to bot's typical reading
+    window).
+
+  Why this pattern keeps
+  surfacing on the same large
+  entries:
+    Per the v1.10.11 root-cause
+    analysis, the 4 largest
+    entries (Stellaris, Ares
+    Pro, Lumora, Blitz Tri-Mode)
+    carry proportionally HIGHER
+    hallucination risk than
+    small entries, because
+    information density buries
+    the most-asked-about facts
+    outside the bot's typical
+    reading window. The
+    Blitz Tri-Mode entry is
+    18,000 chars; the TURBO
+    FUNCTIONS section is at
+    character position ~5,600
+    (line 171), but it
+    documents what TURBO does,
+    not where it is. Physical
+    location was never
+    documented at all — a 0-
+    information gap, not a
+    deep-information gap. The
+    bot filled the gap with a
+    plausible-sounding
+    fabrication. The structural
+    fix is the same pattern:
+    surface the missing fact
+    at the top of the entry
+    with an explicit ✗ guard
+    against the specific
+    fabrication observed.
+
+  Fix (two coordinated additions
+  to the Blitz Tri-Mode entry):
+
+  (1) Inserted a new top-of-entry
+      "BUTTON LAYOUT — PHYSICAL
+      PLACEMENT ON THE BLITZ TRI-
+      MODE FRONT FACE" section,
+      positioned between the DOES-
+      NOT-HAVE block and the DOES-
+      HAVE block. Structure:
+
+      (a) Layout overview —
+          Xbox-style face layout
+          with offset analog
+          sticks, D-pad bottom-
+          left, ABXY cluster
+          right, system buttons
+          in the center column.
+
+      (b) FRONT-FACE CENTER
+          COLUMN (top to bottom)
+          — three rows of system
+          buttons:
+            - Top row: BACK (...
+              icon, LEFT of HOME),
+              HOME (center, CB
+              logo, lit orange),
+              START (≡ icon,
+              RIGHT of HOME).
+            - Middle row: SHARE
+              / CAPTURE button
+              (small round button
+              directly below
+              HOME).
+            - Bottom row: TURBO
+              button (oval button
+              below SHARE, still
+              in the center
+              column — explicitly
+              named as the
+              bottom-most of the
+              system buttons,
+              positioned between
+              the D-pad area and
+              the right analog
+              stick area, roughly
+              centered horizontally).
+
+      (c) LEFT / RIGHT side of
+          front face — left
+          analog stick + D-pad
+          (left side); ABXY +
+          right analog stick
+          (right side).
+
+      (d) Top edge (shoulder
+          buttons / triggers) —
+          LB / LT (left), RB /
+          RT (right).
+
+      (e) Back / rear — explicit
+          statement that the
+          Blitz Tri-Mode has NO
+          back paddles, NO
+          macro buttons on the
+          rear, AND the
+          vibration motors are
+          inside the grips (not
+          user-accessible
+          buttons). USB-C port
+          location noted on
+          the TOP edge for
+          completeness.
+
+      (f) "WHEN A CUSTOMER ASKS
+          'WHERE IS [BUTTON]?'"
+          subsection — six
+          ready-made answers
+          for the most-likely-
+          asked buttons (TURBO,
+          HOME, BACK / START,
+          SHARE / CAPTURE,
+          macros [doesn't have
+          them — redirect to
+          turbo sequence
+          recording or to
+          Lumora / Drakon
+          alternatives]).
+
+  (2) Added a new ✗ anti-
+      hallucination item at the
+      end of the DOES-NOT-HAVE
+      block:
+      "✗ NO TURBO BUTTON ON THE
+      GRIP / NEAR VIBRATION
+      MOTOR / ON THE BACK /
+      UNDER THE PADDLE AREA"
+      — explicitly names the
+      session 6677fd75 wording
+      verbatim ("on the right
+      side of the grip", "near
+      the vibration motor
+      area"), explicitly says
+      the controller has no
+      back paddles, and
+      redirects to the BUTTON
+      LAYOUT section for the
+      correct location.
+
+  Why this is structurally
+  important (the third instance
+  this batch):
+    v1.10.11 fixed a Stellaris
+    fabrication where the bot
+    invented a "power menu on
+    the LED display" because
+    the official power-off
+    procedure was deep in the
+    entry. v1.10.8 fixed an
+    Ares Pro fabrication where
+    the bot invented a "polling
+    rate slider" feature
+    because the polling-rate
+    fact was documented
+    incorrectly. v1.10.13 fixes
+    a Blitz Tri-Mode
+    fabrication where the bot
+    invented a TURBO button
+    grip-side location because
+    the physical button layout
+    was not documented at all.
+    Three different entries,
+    three different exact
+    fabrications, ONE root
+    cause: when a customer
+    asks a question that the
+    KB does not address with
+    a prominent top-of-entry
+    fact, the bot fabricates
+    something plausible-
+    sounding. The sustainable
+    fix is the structural
+    project mentioned in
+    v1.10.11's operator note:
+    proactively lift the
+    top-5 most-asked
+    procedures / facts to
+    each large entry's top
+    section, with matching
+    ✗ guards naming common
+    fabrication patterns.
+    Stellaris got this
+    treatment in v1.10.11
+    (power-off). Blitz Tri-
+    Mode gets it now in
+    v1.10.13 (button layout).
+    Ares Pro and Lumora still
+    need the same proactive
+    treatment — flagged for
+    tomorrow's batch.
+
 v1.10.12 (2026-05-12) -- Claude
   * Z-bump: new Rule 15 — Brand
     Reputation / Reviews / After-
@@ -6069,7 +6357,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.12"
+__version__ = "1.10.13"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -7835,6 +8123,103 @@ Failure Modes at the bottom of this entry):
   ✗ NO CONSOLE SUPPORT. PC is the primary platform. Does not work on
     PlayStation / Xbox / Switch. (Some Android/iOS support exists for
     specific connection modes; see CONNECTIVITY section below.)
+  ✗ NO TURBO BUTTON ON THE GRIP / NEAR VIBRATION MOTOR / ON THE BACK /
+    UNDER THE PADDLE AREA. The TURBO button is NOT on the grip side. It
+    is NOT near the vibration motor (the motors are inside the grips,
+    not user-accessible). It is NOT a back-paddle button (this controller
+    has no back paddles). It is NOT under the controller. The TURBO
+    button is on the FRONT FACE of the controller, in the center area
+    below the HOME button — see BUTTON LAYOUT section below for the
+    exact position. If you find yourself describing the TURBO button as
+    being "on the right side of the grip", "near the vibration motor
+    area", "on the back of the controller", or any similar grip-side or
+    rear-side location, STOP — that's a fabrication (production session
+    6677fd75, 2026-05-13 17:24 surfaced this exact wording; guard added
+    in v1.10.13 to prevent recurrence).
+
+═══════════════════════════════════════════════════════════════════════
+BUTTON LAYOUT — PHYSICAL PLACEMENT ON THE BLITZ TRI-MODE FRONT FACE
+(top-of-entry self-claim block so the bot doesn't fabricate button
+locations; added in v1.10.13 after session 6677fd75 surfaced a TURBO
+button location hallucination.)
+═══════════════════════════════════════════════════════════════════════
+
+The Blitz Tri-Mode follows an Xbox-style face layout (offset analog
+sticks — left stick top-left, right stick bottom-right; D-pad
+bottom-left; ABXY cluster on the right). All system buttons are on
+the FRONT FACE in the center column between the two analog sticks /
+D-pad / ABXY cluster.
+
+FRONT-FACE CENTER COLUMN (top to bottom — describe in this order if a
+customer asks "where is the X button"):
+
+  [Top row, three buttons across]
+  - BACK button: small oval button, LEFT of HOME, labelled with a
+    three-dot icon ("..."). Sometimes called the VIEW button on
+    Xbox-style layouts.
+  - HOME button: round button in the EXACT CENTER of the controller's
+    top area, with the Cosmic Byte diamond/CB logo on it. Lights up
+    orange / RGB. This is the central anchor of the layout — when
+    describing other button positions, reference them relative to
+    HOME.
+  - START button: small oval button, RIGHT of HOME, labelled with a
+    three-horizontal-line icon ("≡"). Sometimes called the MENU
+    button on Xbox-style layouts.
+
+  [Middle row, just below HOME]
+  - SHARE / CAPTURE button: small round button directly below HOME,
+    center column. Slightly smaller than HOME itself.
+
+  [Bottom row, just below SHARE]
+  - TURBO button: oval-shaped button BELOW the SHARE button, still in
+    the center column. The TURBO button is on the FRONT FACE — not on
+    the grip, not on the back, not under the controller. It is the
+    bottom-most button in the center column between the two analog
+    sticks. Customers can find it by looking at the front of the
+    controller — it is the small oval button positioned between the
+    D-pad area and the right analog stick area, roughly centered
+    horizontally on the front face.
+
+LEFT SIDE OF FRONT FACE:
+  - LEFT analog stick (top-left position).
+  - D-pad (bottom-left position, below the left stick).
+
+RIGHT SIDE OF FRONT FACE:
+  - ABXY button cluster (top-right position) in Xbox layout —
+    Y top, X left, B right, A bottom.
+  - RIGHT analog stick (bottom-right position, below the ABXY cluster).
+
+TOP EDGE (shoulder buttons / triggers):
+  - LB (Left Bumper) — top-left shoulder, digital.
+  - LT (Left Trigger) — below LB, analog Hall Effect.
+  - RB (Right Bumper) — top-right shoulder, digital.
+  - RT (Right Trigger) — below RB, analog Hall Effect.
+
+BACK / REAR OF CONTROLLER:
+  - NO back paddles, NO macro buttons of any kind on the rear (see
+    DOES-NOT-HAVE block above — Blitz Tri-Mode has zero macro buttons).
+  - USB-C charging port: TOP edge, center, between LB and RB.
+  - Vibration motors: inside the two grips — these are NOT user-
+    facing buttons, NOT accessible from outside, and NOT to be
+    confused with the TURBO button.
+
+WHEN A CUSTOMER ASKS "WHERE IS [BUTTON]?":
+  - For TURBO: "On the front face of the controller, in the center
+    column below the HOME button (the orange/RGB-lit button with the
+    Cosmic Byte logo). It's the small oval button positioned between
+    the D-pad and the right analog stick area, roughly horizontally
+    centered."
+  - For HOME: "The round button in the exact center of the front
+    face, with the Cosmic Byte logo on it. Lights up orange / RGB."
+  - For BACK / START: "Small oval buttons on either side of the HOME
+    button — BACK (three-dot icon) on the left of HOME, START
+    (three-bar icon) on the right of HOME."
+  - For SHARE / CAPTURE: "Small round button directly below HOME,
+    above the TURBO button."
+  - For macro buttons: "The Blitz Tri-Mode does NOT have dedicated
+    macro buttons. If you need macros, use the Turbo button's
+    sequence recording feature (see TURBO SEQUENCE RECORDING) — or
+    consider the Lumora (4 macros) or Drakon (2 macros) instead."
 
 ═══════════════════════════════════════════════════════════════════════
 ✓  WHAT THE BLITZ TRI-MODE *DOES* HAVE (real, KB-documented upgrades
