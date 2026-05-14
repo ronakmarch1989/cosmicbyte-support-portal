@@ -33,6 +33,664 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.15 (2026-05-14) -- Claude
+  * Z-bump: lockdown for the
+    "return charges vary by city/
+    weight/courier" hallucination
+    pattern. Replaced the vague
+    "return charges may apply"
+    rule #11(c) summary with
+    specific, KB-anchored
+    numbers (₹150 flat for cash
+    refund, waived for store
+    credit) AND added a dedicated
+    RETURN CHARGES sub-section
+    with explicit ✗/✓ guards.
+
+  Audit context (operator-reported
+  session 8722d2ad, 2026-05-14
+  07:17):
+    Customer (on Ares Tri-Mode
+    dropdown) asked "When you say
+    Return charges may apply and
+    could be deducted from your
+    refund or offered as store
+    credit. What does this mean
+    in detail."
+    Bot replied with a four-step
+    fabricated breakdown:
+      "1. Cosmic Byte arranges
+       the pickup — they send a
+       courier to your address
+       to collect the refurbished
+       joystick.
+       2. Courier charges apply —
+       the logistics partner
+       charges a fee for this
+       pickup and return
+       shipment. This varies by:
+         - Your city/pincode
+           (remote areas may
+           have higher charges)
+         - Package weight
+         - The courier partner
+           used
+       3. The charge is deducted
+       from your refund — instead
+       of getting your full
+       purchase amount back, the
+       return shipping cost is
+       subtracted.
+         - Example: If you paid
+           ₹500 for the refurbished
+           joystick and return
+           charges are ₹80, you
+           get ₹420 refunded.
+       4. OR offered as store
+       credit — alternatively,
+       Cosmic Byte may offer you
+       the full ₹500 as store
+       credit on thecosmicbyte
+       .com instead of a cash
+       refund, which avoids the
+       deduction.
+       KEY POINT: The exact
+       return charges depend on
+       your location — you'll
+       know the specific amount
+       when you submit your
+       return request at
+       https://track.thecosmicbyte
+       .com/returns. The system
+       will show you the estimated
+       charge before you confirm
+       the return, so you won't
+       be surprised."
+
+  Ronak's three corrections:
+    "Return charges for refund
+     is Rs.150."
+    "No return charges are
+     deducted if store credit
+     is accepted by customer."
+    "This policy is for the
+     website 7 days return
+     policy."
+
+  Three specific errors in the
+  bot's reply:
+
+  ERROR 1 — variable-fee
+  fabrication. Bot invented:
+    "varies by city/pincode
+     (remote areas may have
+     higher charges), package
+     weight, the courier
+     partner used".
+    Reality: the return charge
+    is a FLAT ₹150 across
+    India, regardless of city,
+    weight, or courier. The
+    customer-facing figure is
+    a single number, not a
+    variable formula.
+
+  ERROR 2 — fake example
+  amount. Bot used ₹80 as the
+  illustrative return-charge
+  figure. Reality: the figure
+  is ALWAYS ₹150 (when cash
+  refund is chosen). The ₹80
+  was a pure invention.
+
+  ERROR 3 — store-credit
+  framing under-stated the
+  incentive. Bot said "OR
+  offered as store credit —
+  alternatively, Cosmic Byte
+  may offer you the full ₹500
+  as store credit, which
+  avoids the deduction".
+  Phrased that way, store
+  credit sounds like an
+  optional alternative.
+  Reality: store credit ALWAYS
+  waives the ₹150 charge (it's
+  the customer's choice, not a
+  conditional offer). The
+  ✓ correct framing is to
+  state this incentive up
+  front: "If you take store
+  credit, the return is free —
+  no ₹150 deduction".
+
+  Plus a smaller framing nit:
+  "system will show you the
+  estimated charge before you
+  confirm" implies the figure
+  is unknown until then.
+  Reality: the figure is known
+  and fixed (₹150 cash / ₹0
+  store credit). The bot can
+  state it directly without
+  the customer needing to
+  start a return submission
+  first.
+
+  Root cause:
+    The pre-fix rule #11(c)
+    summary said only "return
+    charges may apply (deducted
+    from refund or store
+    credit)" — no specific
+    amount, no clarity that
+    store credit waives the
+    charge entirely. When the
+    customer asked "what does
+    this mean in detail", the
+    bot had a near-zero-info
+    KB anchor and pattern-
+    matched to generic
+    e-commerce return-shipping
+    UX (variable by city +
+    weight + courier), inventing
+    a plausible-sounding
+    breakdown that's plausible
+    everywhere EXCEPT for
+    Cosmic Byte's actual flat-
+    fee policy. Same root cause
+    as v1.10.8 (Ares Pro polling
+    rate fact wrong), v1.10.11
+    (Stellaris power-off fact
+    buried), v1.10.13 (Blitz
+    Tri-Mode button placement
+    missing), v1.10.14 (Velox
+    switch attribution
+    ambiguous): when the KB
+    has a vague / wrong / missing
+    fact, the bot fabricates
+    something plausible. This
+    is the fifth instance this
+    batch on the same root-
+    cause pattern.
+
+  Fix (two coordinated edits to
+  rule #11(c)):
+
+  (1) Replaced the vague "return
+      charges may apply (deducted
+      from refund or store
+      credit)" phrase in the
+      "What to say" template
+      with specific numbers:
+        "return charges of ₹150
+         (flat) apply when the
+         customer chooses a
+         cash refund — deducted
+         from the refund
+         amount. Return charges
+         are WAIVED if the
+         customer chooses store
+         credit instead of a
+         cash refund (full
+         purchase amount
+         credited to
+         thecosmicbyte.com
+         store wallet)."
+      Also added explicit
+      direct-purchase scope
+      note to remind the bot
+      this 7-day return policy
+      is DIRECT thecosmicbyte
+      .com purchases only —
+      third-party purchases
+      follow the seller's own
+      return window (already
+      established in v1.10.5
+      / v1.10.6 / v1.10.7 but
+      reinforced here at the
+      policy-summary level
+      too).
+
+  (2) Inserted a new "RETURN
+      CHARGES — SPECIFIC POLICY"
+      sub-section after rule
+      #11(c)'s What-to-say
+      template, before the
+      Routing Logic block.
+      Structure:
+        - Headline statement:
+          ₹150 FLAT, not
+          variable by city /
+          pincode / package
+          weight / courier
+          partner / product
+          type. Same ₹150
+          regardless of where
+          in India the customer
+          is shipping from or
+          what product is
+          being returned.
+        - TWO REFUND OPTIONS
+          subsection:
+            (1) CASH REFUND
+                back to original
+                payment method
+                with ₹150
+                deduction —
+                example: ₹500
+                purchase →
+                ₹350 refund.
+            (2) STORE CREDIT
+                to thecosmicbyte
+                .com store
+                wallet with
+                ZERO charge —
+                example: ₹500
+                purchase → ₹500
+                store credit.
+            - Customer choice
+              note: store credit
+              is economically
+              better if they're
+              likely to buy
+              from Cosmic Byte
+              again; cash refund
+              is for getting
+              money back outside
+              the ecosystem.
+        - ✗ DO NOT SAY block
+          with 6 specific anti-
+          patterns naming each
+          fabrication from
+          session 8722d2ad:
+            (a) "Return charges
+                vary by city/
+                pincode" — names
+                the session
+                verbatim.
+            (b) "Vary by package
+                weight".
+            (c) "Depends on the
+                courier partner
+                used".
+            (d) Inventing
+                example amounts
+                other than ₹150
+                — explicitly
+                calls out the
+                fake ₹80 figure
+                from session
+                8722d2ad.
+            (e) "The system
+                will show you
+                the estimated
+                charge before
+                you confirm"
+                framed as if
+                the figure is
+                unknown — the
+                figure is known
+                and fixed; bot
+                can state it
+                directly.
+            (f) Framing store
+                credit as
+                "alternatively"
+                without
+                emphasizing the
+                ZERO-CHARGE
+                incentive.
+        - ✓ CORRECT REPLY
+          PATTERN — full
+          verbatim template
+          the bot can adapt,
+          with the flat ₹150
+          stated up front, two
+          options clearly
+          enumerated with
+          worked examples,
+          recommendation
+          guidance, and the
+          direct-purchase
+          scope note.
+
+  Scope: per the v1.10.4 /
+  v1.10.5 / v1.10.6 / v1.10.7
+  single-place-for-global-rules
+  pattern, this is a rule #11
+  extension in the system
+  prompt only. No per-product
+  entry duplications.
+
+  Operator note (continuing
+  the pattern theme):
+    This is the FIFTH
+    fabrication this batch
+    where the underlying KB
+    content was vague /
+    incomplete in a way that
+    invited a confident-
+    sounding hallucination
+    (v1.10.8, v1.10.11,
+    v1.10.13, v1.10.14, and
+    now v1.10.15). All five
+    resolved with the same
+    pattern: source-level
+    specific fact + ✗ anti-
+    hallucination block + ✓
+    correct framing template.
+    The sustainable next-day
+    project remains: pre-
+    emptively audit each
+    large entry and each
+    rule with vague phrasing
+    for similar ambiguities
+    before production
+    sessions surface them.
+
+v1.10.14 (2026-05-14) -- Claude
+  * Z-bump: lockdown for the
+    "primary mouse click switch
+    applies to Left only" failure
+    mode. Velox entry source line
+    rewritten + ✗/✓ guards added
+    + global mouse-switch
+    convention principle added
+    at the top of CATALOGUE_MICE.
+
+  Audit context (operator-reported
+  session c4963efb, 2026-05-14
+  08:33):
+    Customer asked about Velox
+    click lifespan and switch
+    type. Bot replied with:
+      "Left Click button uses
+       Huano switches with a
+       rated lifespan of 100
+       million clicks (100M).
+       The other buttons (Right
+       Click, Scroll Click, Side
+       buttons) — the manual
+       doesn't specify individual
+       lifespan ratings for these.
+       The Huano spec of 100M
+       applies to the primary
+       Left Click; the rest are
+       standard gaming-mouse
+       switches but exact
+       durability specs aren't
+       published."
+    Bot then gave correct context
+    on 100M being mid-range, the
+    industry comparison (50M-80M
+    typical), and product URL.
+    But the framing artificially
+    constrained the Huano 100M
+    rating to "Left Click only"
+    and implied Right Click might
+    be a lower-tier switch.
+
+  Ronak's feedback: "Mouse
+  Switches are same for left and
+  right click unless specified."
+
+  Why this is a real correction,
+  not just framing nuance:
+    Industry convention across
+    every consumer-mouse brand
+    is that when a primary-click
+    switch spec is published
+    (e.g. "Huano 100M", "Omron
+    50M", "Kailh GM 8.0"), the
+    rating covers BOTH the Left
+    Click AND the Right Click —
+    they share the same switch
+    component. Side buttons
+    (Forward / Backward) and
+    scroll click use a separate,
+    lower-tier switch and are
+    typically not rated to the
+    same lifespan as the primary
+    clicks. But the LEFT vs
+    RIGHT distinction within
+    primary clicks is not real:
+    both share the spec by
+    convention, unless an entry
+    explicitly distinguishes
+    them (which Cosmic Byte
+    entries do not — neither
+    for Velox nor for any
+    other mouse).
+    The bot's reply suggested
+    to the customer that their
+    Right Click might be a
+    lower-tier or undocumented
+    switch, which understates
+    the durability the customer
+    actually got. From a
+    purchase-confidence
+    standpoint, this is a real
+    miscommunication, not just
+    pedantic.
+
+  Root cause:
+    The Velox entry's BUTTONS
+    line (line 8901 pre-fix)
+    read:
+      "BUTTONS: Left Click
+       (Huano, 100M clicks),
+       Right Click, Scroll
+       Click, Side Button 1
+       (Forward), Side Button 2
+       (Backward)."
+    This phrasing attributes
+    the Huano 100M spec ONLY
+    to "Left Click" in
+    parentheses, with Right
+    Click listed without
+    qualifier. The bot
+    interpreted this asymmetry
+    as a real spec distinction
+    rather than a documentation
+    shorthand, and built the
+    "Left rated, others
+    unspecified" frame around
+    it.
+    Comparison: every other
+    Cosmic Byte mouse uses
+    GENERIC switch wording
+    (Helios "Huano 10M click
+    switches", Firestorm
+    "SWITCHES: Huano (10M
+    clicks).", Raptor
+    "Switches: Huano (10M
+    clicks).", Hypernova
+    "Switches: Omron 100
+    million click rated").
+    None of those split the
+    rating by button. Velox
+    is the only entry with
+    the asymmetric per-button
+    phrasing — and it's the
+    only entry that surfaced
+    this hallucination. The
+    fix is to rewrite the
+    Velox BUTTONS line to
+    match the convention of
+    the other mice.
+
+  Fix (three coordinated edits):
+
+  (1) Rewrote the Velox
+      BUTTONS line. Now reads
+      explicitly: "Left Click
+      AND Right Click — both
+      use Huano switches with
+      a 100M click lifespan
+      rating (this rating
+      applies to BOTH primary
+      clicks equally; the
+      Huano spec is not 'left
+      only' — Cosmic Byte's
+      convention, like all
+      consumer-mouse brands,
+      is that the published
+      switch spec covers
+      BOTH primary clicks
+      unless explicitly
+      stated otherwise).
+      Scroll Click + Side
+      Button 1 (Forward) +
+      Side Button 2 (Backward)
+      use standard mouse-
+      grade switches at a
+      different tier..."
+
+  (2) Added a Velox-entry-
+      level ✗ DO NOT SAY
+      block listing three
+      specific anti-
+      patterns:
+        - "The Huano 100M
+          spec applies to
+          the primary Left
+          Click; the rest
+          are standard
+          gaming-mouse
+          switches" -- the
+          verbatim session
+          c4963efb framing.
+        - "The manual doesn't
+          specify individual
+          lifespan ratings for
+          the other buttons"
+          framed as casting
+          doubt on the Right
+          Click — true for
+          side/scroll, NOT
+          true for Right
+          Click (Right Click
+          shares the Left's
+          spec).
+        - "Right Click uses
+          a different switch
+          than Left Click" /
+          "Right Click
+          durability is
+          unknown" -- explicit
+          rejection of the
+          artificial split.
+
+  (3) Added a Velox-entry-
+      level ✓ CORRECT FRAMING
+      template the bot can
+      adapt verbatim:
+        "The Velox uses Huano
+         switches rated for
+         100 million clicks
+         on both the Left
+         Click AND the Right
+         Click — that's solid
+         mid-range gaming
+         durability (most
+         gaming mice
+         advertise 50M to 80M
+         for their primary
+         clicks, so 100M is
+         competitive). Side
+         buttons and scroll
+         click use standard
+         mouse-grade switches;
+         individual lifespan
+         ratings for those
+         aren't separately
+         published, which is
+         normal for non-
+         primary mouse
+         buttons across the
+         industry."
+
+  (4) Inserted a global MOUSE
+      SWITCH CONVENTION
+      principle block at the
+      top of CATALOGUE_MICE
+      so the rule applies to
+      EVERY Cosmic Byte mouse,
+      not just Velox. The
+      principle explicitly
+      states: published switch
+      spec covers BOTH Left
+      and Right primary
+      clicks; side buttons +
+      scroll click are a
+      separate lower tier
+      that's typically not
+      individually rated; do
+      not artificially split
+      a primary-click spec
+      between Left and Right.
+      Even though Velox is
+      currently the only
+      mouse with the
+      asymmetric source
+      phrasing, this prevents
+      future entries from
+      drifting into the same
+      pattern and gives the
+      bot a global anchor.
+
+  Risk scan:
+    Other Cosmic Byte mice
+    audited for similar
+    asymmetric switch
+    wording — none found.
+    Helios, Firestorm,
+    Raptor, Aether, Umbra,
+    Ignis, Atlas, Hypernova
+    all use generic switch
+    phrasing already. The
+    fix is therefore narrow
+    (Velox source line) +
+    structural (global
+    principle). No other
+    entries need updating.
+
+  Operator note (continuing
+  the v1.10.11 / v1.10.13
+  theme):
+    This is the fourth
+    fabrication this EOD
+    batch where the
+    underlying KB content
+    was either wrong or
+    asymmetrically phrased
+    in a way that
+    invited a hallucination
+    (v1.10.8 Ares Pro polling
+    rate, v1.10.11 Stellaris
+    power-off, v1.10.13 Blitz
+    Tri-Mode button layout,
+    v1.10.14 Velox switch
+    split). The pattern
+    keeps validating the
+    same root-cause
+    framing: when the KB
+    has a gap, an ambiguity,
+    or a wrong claim, the
+    bot doesn't say "I
+    don't know" — it
+    fabricates something
+    plausible-sounding.
+    The sustainable fix
+    remains the structural
+    project: audit each
+    large or oft-asked
+    entry for similar
+    ambiguities BEFORE
+    production sessions
+    surface them.
+
 v1.10.13 (2026-05-12) -- Claude
   * Z-bump: lockdown for a Blitz
     Tri-Mode TURBO button location
@@ -6357,7 +7015,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.13"
+__version__ = "1.10.15"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -8898,7 +9556,15 @@ GENERAL SOFTWARE NOTES:
 - All settings made in the software are stored on the mouse itself (not just in the software), so they persist across PCs and across power cycles. The customer doesn't need to keep the software running for the settings to take effect.
 - Multiple profiles are supported via the bottom-right Profile selector — each profile stores independent button mappings / DPI / polling rate / debounce / LOD / sleep settings. Useful for switching between, e.g., a gaming profile and a productivity profile.
 
-BUTTONS: Left Click (Huano, 100M clicks), Right Click, Scroll Click, Side Button 1 (Forward), Side Button 2 (Backward).
+BUTTONS: Left Click AND Right Click — both use Huano switches with a 100M click lifespan rating (this rating applies to BOTH primary clicks equally; the Huano spec is not "left only" — Cosmic Byte's convention, like all consumer-mouse brands, is that the published switch spec covers BOTH primary clicks unless explicitly stated otherwise). Scroll Click + Side Button 1 (Forward) + Side Button 2 (Backward) use standard mouse-grade switches at a different tier — individual click-life ratings for these are not separately published, which is the industry norm for non-primary mouse buttons (side buttons and scroll click typically use lower-tier switches and are not rated to the 100M lifespan of the primary clicks). Do NOT fabricate a number for them; do NOT split the Huano rating to "left only".
+
+✗ DO NOT SAY about the Velox buttons:
+- "The Huano 100M spec applies to the primary Left Click; the rest are standard gaming-mouse switches" -- WRONG, the rating covers BOTH Left and Right Click. (Production session c4963efb, 2026-05-14 08:33 had this exact split — the bot artificially constrained the Huano rating to Left Click only, which understates the durability of the mouse to the customer.)
+- "The manual doesn't specify individual lifespan ratings for the other buttons" framed as an INDIVIDUAL question — true for side buttons and scroll click, but DO NOT extend that doubt to the Right Click. The Right Click is a PRIMARY click and uses the same Huano 100M switch as the Left Click by convention.
+- "Right Click uses a different switch than Left Click" / "Right Click durability is unknown" -- WRONG by Cosmic Byte's documentation convention. If the spec is unstated, the convention is that both primary clicks share the spec, not that the Right Click is an unknown tier.
+
+✓ CORRECT FRAMING when a customer asks about Velox click lifespan:
+"The Velox uses Huano switches rated for 100 million clicks on both the Left Click AND the Right Click — that's solid mid-range gaming durability (most gaming mice advertise 50M to 80M for their primary clicks, so 100M is competitive). Side buttons and scroll click use standard mouse-grade switches; individual lifespan ratings for those aren't separately published, which is normal for non-primary mouse buttons across the industry."
 
 WARRANTY:
 - 1 year against manufacturing defects only.
@@ -11530,7 +12196,32 @@ STRICT RULES - always follow:
 
     c) SHIPPING & RETURN POLICY — https://www.thecosmicbyte.com/?page_id=2248
        Trigger phrases: "what is your return policy", "return policy", "shipping policy", "how many days do I have to return", "return timeline", "return window", "return charges", "shipping charges", "delivery time", "is shipping free", "COD available", "exchange policy", "refund policy", or any typo variant.
-       What to say: "The full Shipping and Return Policy is published here: https://www.thecosmicbyte.com/?page_id=2248. Quick summary of the key points (always link the policy page for the authoritative source): 7 days return window from delivery date, original packaging + box + all accessories required, unused condition required, return charges may apply (deducted from refund or store credit), some products are not eligible for return (check the policy page for the current exclusion list). For exact eligibility on a specific product or order, the policy page is the source of truth."
+       What to say: "The full Shipping and Return Policy is published here: https://www.thecosmicbyte.com/?page_id=2248. Quick summary of the key points (always link the policy page for the authoritative source): 7 days return window from delivery date for direct purchases on thecosmicbyte.com, original packaging + box + all accessories required, unused condition required, return charges of ₹150 (flat) apply when the customer chooses a cash refund — deducted from the refund amount. Return charges are WAIVED if the customer chooses store credit instead of a cash refund (full purchase amount credited to thecosmicbyte.com store wallet). Some products are not eligible for return (check the policy page for the current exclusion list). For exact eligibility on a specific product or order, the policy page is the source of truth. This 7-day return policy applies to DIRECT thecosmicbyte.com purchases only — third-party purchases (Amazon, Flipkart, Croma, Reliance Digital) follow the seller's own return window, not Cosmic Byte's."
+
+    RETURN CHARGES — SPECIFIC POLICY (added v1.10.15 after a production fabrication; before quoting this section, confirm the customer is asking about a DIRECT thecosmicbyte.com purchase return — this section does NOT apply to third-party seller returns):
+
+    The return charge for the website's 7-day return policy is ₹150, FLAT. NOT variable by city / pincode / package weight / courier partner / product type. The same ₹150 applies regardless of where in India the customer is shipping from or what product is being returned.
+
+    Two refund options for the customer:
+      (1) CASH REFUND (back to original payment method): ₹150 return charge is deducted from the refund amount. Example: customer paid ₹500 → refund after the ₹150 deduction is ₹350.
+      (2) STORE CREDIT (credited to the customer's thecosmicbyte.com store wallet for use on future purchases): NO return charge deducted. Customer receives the FULL original purchase amount as store credit. Example: customer paid ₹500 → full ₹500 credited to store wallet.
+
+    The customer chooses which option they want when submitting the return at track.thecosmicbyte.com/returns. Store credit is the strictly-better economic option if the customer is going to buy from Cosmic Byte again; cash refund is the choice if they want the money back outside the Cosmic Byte ecosystem.
+
+    ✗ DO NOT SAY about return charges:
+    a) "Return charges vary by city/pincode" / "remote areas have higher charges" / "depends on your location" -- WRONG. The charge is a flat ₹150 regardless of where the customer is shipping from in India. Production session 8722d2ad (2026-05-14 07:17) fabricated this location-variable framing.
+    b) "Return charges vary by package weight" / "heavier products cost more to return" -- WRONG. Flat ₹150 regardless of product weight or size.
+    c) "Return charges depend on the courier partner used" -- WRONG. Customer doesn't pick the courier; charge is flat ₹150 regardless of which logistics partner Cosmic Byte arranges.
+    d) Inventing example amounts other than ₹150 -- WRONG. The session 8722d2ad reply gave a fake "₹80 return charge" example; the actual figure is always ₹150. Do not invent any other number.
+    e) "The system will show you the estimated charge before you confirm" framed as if the figure is unknown until then -- MISLEADING. The figure is known and fixed: ₹150 for cash refund, ₹0 (waived) for store credit. The customer doesn't need to wait to find out — the bot can state it directly.
+    f) Framing store credit as "alternatively" without explicitly noting the WAIVED CHARGE benefit -- INCOMPLETE. Store credit waives the ₹150 entirely, which is a meaningful incentive. Don't bury that detail.
+
+    ✓ CORRECT REPLY PATTERN when a customer asks about return charges on a direct CB purchase:
+    "For returns on direct thecosmicbyte.com purchases (within the 7-day window), the return charge is a flat ₹150 — same across India regardless of location, weight, or courier. You have two refund options when you submit the return at track.thecosmicbyte.com/returns:
+      • Cash refund to your original payment method: ₹150 return charge is deducted. (Example: ₹500 purchase → ₹350 refund.)
+      • Store credit to your thecosmicbyte.com store wallet: NO return charge — you get the FULL purchase amount credited for future use on the site. (Example: ₹500 purchase → ₹500 store credit.)
+    Store credit is the better economic option if you're likely to buy from Cosmic Byte again; cash refund is for when you want the money back outside the Cosmic Byte ecosystem. You choose which one when you submit the return.
+    (Note: this 7-day return policy applies to direct thecosmicbyte.com purchases only. If you bought from Amazon, Flipkart, Croma, or another reseller, their return window and charges apply, not this one.)"
 
     Routing logic:
     - If the customer asks ONLY where their order is or when it'll arrive → tracking URL only.
@@ -12359,6 +13050,30 @@ BUYING GUIDE:
 
 CATALOGUE_MICE = """
 COSMIC BYTE MICE — Quick Comparison Guide
+
+────────────────────────────────────────────────────────────────────
+GLOBAL CONVENTION — APPLIES TO EVERY COSMIC BYTE MOUSE BELOW
+────────────────────────────────────────────────────────────────────
+When a Cosmic Byte mouse entry specifies a primary-click switch brand
+and click-life rating (e.g. "Huano 100M clicks" on Velox, "Huano 10M"
+on Helios / Firestorm / Raptor, "Omron 100M" on Hypernova), the rating
+covers BOTH the Left Click AND the Right Click switches. These two
+primary clicks share the same switch brand and the same click-life
+rating by convention, unless an entry explicitly states otherwise.
+Do NOT artificially split a primary-click spec ("Huano 100M applies
+to Left Click only, Right Click is unspecified") — that's a hallucination
+pattern, not a real product detail. Side buttons (Forward / Backward)
+and scroll click use a separate, lower-tier switch and are typically
+not rated to the same lifespan as the primary clicks — but that's a
+DIFFERENT distinction from "left vs right click", which share the
+spec.
+
+When in doubt about a non-primary mouse switch's spec, the right
+answer is "the manufacturer doesn't separately publish a click-life
+rating for side buttons and scroll click — that's industry-standard
+for non-primary mouse buttons" — NOT "the Right Click might be a
+different switch from the Left Click."
+────────────────────────────────────────────────────────────────────
 
 BASIC / OFFICE:
 - Umbra Mouse: Wired, 3200 DPI, lightweight. Entry level.

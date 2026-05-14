@@ -87,6 +87,96 @@ Companion service:
 
 CHANGELOG
 ---------
+v1.3.0 (2026-05-14) -- Claude
+  - Y-bump: switch the Anthropic
+    prompt-cache TTL from the
+    default 5 minutes to 1 hour.
+    Single-line edit at line ~1429
+    in the cache_control breakpoint
+    inside the system-prompt
+    construction.
+
+  This is the discord_bot.py
+  half of a coordinated change
+  with support_portal.py v2.30.0
+  — both files must deploy
+  together to apply 1-hour
+  cache TTL across the full
+  support surface. The two
+  files use independent
+  cache_control breakpoints
+  (the portal's API call site
+  is at support_portal.py
+  line ~7378; the bot's at
+  discord_bot.py line ~1429),
+  but both target the same
+  cb_kb.py system prompt and
+  benefit from the same TTL
+  extension.
+
+  Cost / amortization rationale
+  is documented in detail in
+  the support_portal.py v2.30.0
+  changelog — short version:
+  at current ~14 conversations
+  per hour averaged across the
+  day, 1-hour TTL writes
+  amortize across 5-7x more
+  reads than 5-minute TTL,
+  cutting daily cost from
+  ~$14/day to ~$5-7/day at
+  current traffic levels.
+
+  Safety:
+    1. Pure config change. No
+       SDK upgrade, no new
+       beta header. 1-hour
+       TTL is GA on Claude
+       Haiku 4.5 (and the rest
+       of the 4.5 family) per
+       Anthropic docs.
+    2. Cache content
+       unchanged. Same system-
+       prompt text cached, just
+       persists 12x longer
+       between writes.
+    3. One-line reversion if
+       unexpected issues
+       arise: remove the
+       "ttl" key and the
+       default 5-min behavior
+       resumes.
+
+  Cron-deploy specific:
+    No discord_bot.py
+    structural changes — the
+    cron-driven git pull and
+    systemd restart cycle on
+    the Hetzner VPS picks up
+    this version like any
+    other patch. No procedure
+    differences. Verify the
+    deployed version with:
+      ssh root@5.223.52.60 \\
+        'grep __version__ \\
+         /home/cosmic/bot/\\
+         discord_bot.py'
+    Expected output:
+      __version__ = "1.3.0"
+
+  Coordinated change:
+    support_portal.py v2.30.0
+    ships the same one-line
+    edit on its parallel
+    cache_control breakpoint
+    at line ~7378. Push both
+    files in the same commit
+    if possible (Render auto-
+    deploys the portal, VPS
+    cron picks up the bot —
+    both happen within ~5
+    minutes of the commit).
+
 v1.2.1 (2026-05-10) -- Claude
   - Z-bump: cosmetic-only updates to two
     operator-facing error messages that
@@ -635,7 +725,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 
 import os
 import sys
@@ -1426,7 +1516,7 @@ async def on_message(message: discord.Message):
         {
             "type": "text",
             "text": system_text,
-            "cache_control": {"type": "ephemeral"},
+            "cache_control": {"type": "ephemeral", "ttl": "1h"},
         }
     ]
 

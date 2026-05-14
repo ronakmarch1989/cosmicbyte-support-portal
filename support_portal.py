@@ -139,6 +139,153 @@ CHANGELOG FORMAT:
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
 
+v2.30.0 (2026-05-14) -- Claude
+  - Y-bump: switch the Anthropic
+    prompt-cache TTL from the
+    default 5 minutes to 1 hour.
+    Single-line code change inside
+    the system-prompt cache_control
+    breakpoint construction (line
+    ~7378). Zero behavior change for
+    customers; this is a cost /
+    cache-amortization optimization
+    only.
+
+  Background:
+    The Anthropic API supports two
+    prompt-cache lifetimes:
+      - 5-minute TTL (the default):
+        cache write costs 1.25x
+        base input price; cache
+        read costs 0.1x.
+      - 1-hour TTL: cache write
+        costs 2x base input price;
+        cache read costs 0.1x.
+    The 5-minute default expires
+    quickly enough that during low-
+    volume hours (and during rapid
+    deploy cycles that invalidate
+    the cached prefix), the cache
+    writes don't amortize
+    efficiently — write
+    amortization in the API console
+    was sitting at 1.08x
+    (essentially "one read per
+    write"), which leaves
+    significant cost savings on
+    the table.
+    Operator review on 2026-05-13
+    showed cb_kb v1.10.x daily
+    cost at $14.14 for 328
+    conversations on Claude Haiku
+    4.5 ($0.043 per conversation,
+    ~Rs 3.58). Modelled cost at
+    1-hour TTL with the same
+    14-conversations-per-hour
+    average is $5-7/day (~Rs 14k-
+    19k/month vs current
+    Rs 35k/month run-rate).
+
+  Why this is safe:
+    1. Pure config change — the
+       Anthropic API handles the
+       new TTL transparently; no
+       SDK upgrade needed, no
+       beta header required for
+       Claude Haiku 4.5 (1-hour
+       TTL is GA for Claude 4.5
+       family per docs.claude.com
+       /en/build-with-claude/
+       prompt-caching).
+    2. Cache content does NOT
+       change — the same system-
+       prompt text is cached; it
+       just lives 12x longer
+       between writes.
+    3. Worst-case downside is
+       paying 2x cache-write cost
+       on a write that gets only
+       one read (still cheaper
+       than 5-min cache in that
+       scenario? actually
+       slightly worse: 2x write
+       vs 1.25x write for the
+       same single read). But
+       the dominant case at
+       Cosmic Byte's traffic
+       volume (~14 conv/hour
+       averaged across the day,
+       peaks of 30-40/hour) is
+       many reads per write,
+       where 1-hour is decisively
+       better.
+    4. Reversible in one line if
+       it causes any unexpected
+       issue — change "1h" back
+       to default by removing
+       the ttl key. Single-block
+       cache_control means the
+       blast radius is contained.
+
+  Verification path:
+    - After deploy, watch the
+      API console Caching
+      dashboard (console
+      .anthropic.com) over
+      48 hours.
+    - Expected: cache_creation
+      tokens drop, cache_read
+      tokens stay roughly steady
+      (same content cached
+      longer), write amortization
+      climbs from 1.08x toward
+      5-7x.
+    - Expected: daily cost on
+      the Cost dashboard drops
+      from ~$14/day to
+      ~$5-7/day at current
+      traffic levels.
+    - If write amortization
+      hasn't improved by
+      2026-05-17, investigate
+      whether the cached prefix
+      is being invalidated by
+      something else (e.g. a
+      cb_kb.py update, a session
+      ID accidentally landing
+      in the cached portion of
+      the system prompt).
+
+  Coordinated change:
+    discord_bot.py v1.3.0 ships
+    the same one-line edit on
+    its parallel cache_control
+    breakpoint (discord_bot.py
+    line ~1429). Both files
+    must be deployed together
+    to apply the change across
+    the full support surface
+    (portal + Discord bot).
+    discord_bot.py and
+    support_portal.py reference
+    DIFFERENT API call sites
+    but use the same cache_
+    control pattern; both need
+    the ttl update.
+
+  Documentation reference:
+    Anthropic prompt caching
+    docs:
+    https://docs.claude.com/en/
+    docs/build-with-claude/
+    prompt-caching
+    1-hour TTL syntax (current
+    GA):
+      "cache_control": {
+        "type": "ephemeral",
+        "ttl": "1h"
+      }
+
 v2.29.0 (2026-05-11) -- Claude
   - Y-bump: admin dashboard timestamps
     now display in India Standard Time
@@ -4600,7 +4747,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.29.0"
+__version__ = "2.30.0"
 
 import streamlit as st
 
@@ -7375,7 +7522,7 @@ CUSTOMER MESSAGE: {original_text}
                 {
                     "type": "text",
                     "text": system_text,
-                    "cache_control": {"type": "ephemeral"},
+                    "cache_control": {"type": "ephemeral", "ttl": "1h"},
                 }
             ]
 
