@@ -33,6 +33,336 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.16 (2026-05-15) -- Claude
+  * Z-bump: lockdown for two
+    Drakon hallucination patterns
+    surfaced in the same
+    production session (7ddbe793,
+    2026-05-15 17:05). One was a
+    button-placement fabrication
+    (CAPTURE button location);
+    the other was a step-skipping
+    failure (LT/RT trigger
+    calibration step omitted from
+    a walkthrough). Both fixed by
+    adding top-of-entry self-claim
+    blocks plus ✗ anti-
+    hallucination guards.
+
+  Audit context:
+    Customer (on Drakon dropdown)
+    asked: "how to calibrate it.
+    An in-depth guidance would
+    be much appreciated."
+    Bot replied with a structured
+    multi-step walkthrough.
+    The walkthrough had two
+    distinct errors:
+
+    ERROR 1 — CAPTURE button
+    placement fabricated.
+    Bot Step 2 said: "Hold down
+    the CAPTURE button (the
+    button on the LEFT SIDE of
+    the controller, below the
+    triggers)."
+    Reality (per the Drakon
+    controller image attached
+    by Ronak): CAPTURE is on
+    the FRONT FACE, center
+    column, directly below the
+    HOME button. It is NOT on
+    the left side. It is NOT
+    below the triggers. The
+    front-face center column
+    reads top-to-bottom as:
+    HOME → CAPTURE → TURBO,
+    with SELECT to the left of
+    HOME and START to the right.
+
+    ERROR 2 — LT/RT trigger
+    calibration step omitted.
+    Bot's walkthrough had:
+      Step 1: Power off
+      Step 2: Enter calibration
+              mode (CAPTURE +
+              HOME, release)
+      Step 3: Press A to
+              confirm ready
+      Step 4: Rotate both
+              joysticks (3
+              circles)
+      [walkthrough ended]
+    Reality (per the existing
+    KB content at entry line
+    71 — "JOYSTICK CALIBRATION
+    (TMR): Power OFF. Hold
+    CAPTURE then press HOME.
+    LED1 blinks -> press A ->
+    LED2 blinks. Rotate both
+    joysticks 3 full circles.
+    Press LT and RT 3 times
+    each. Press A again to
+    save."): the procedure has
+    SIX steps. After joystick
+    rotation comes the LT/RT
+    trigger press step (3 times
+    each per trigger), then a
+    final A button press to
+    save. The bot dropped
+    Steps 5 and 6 from its
+    walkthrough — including
+    the trigger calibration
+    step that is essential
+    for the triggers to have
+    correct range mapping
+    after calibration.
+
+  Ronak's feedback (two
+  corrections, one message):
+    "Placement of capture
+     button? Attaching image"
+    "Also missed pressing the
+     LT RT Triggers 3 times in
+     calibration"
+
+  Why this is two different
+  failure modes that need
+  different fixes:
+
+  ROOT CAUSE 1 (CAPTURE
+  placement): the Drakon entry
+  had NO button-layout
+  documentation. No description
+  of where CAPTURE physically
+  sits on the controller, no
+  description of any button's
+  physical placement. When the
+  customer asked for a
+  calibration walkthrough, the
+  bot needed to describe where
+  to find CAPTURE — and with
+  zero KB anchor, it pattern-
+  matched to a generic
+  "capture-style button"
+  placement (which on many
+  controllers IS on the side
+  or back) and confidently
+  invented "left side of the
+  controller, below the
+  triggers." Same root cause
+  as Blitz Tri-Mode TURBO
+  placement fabrication
+  (v1.10.13) and Stellaris
+  power-off fabrication
+  (v1.10.11) — missing fact
+  at top-of-entry, bot fills
+  the gap. Fix: same pattern
+  as those — add a BUTTON
+  LAYOUT section at the top
+  of the entry with explicit
+  placement.
+
+  ROOT CAUSE 2 (LT/RT step
+  omitted): different failure
+  mode. The KB content was
+  CORRECT — entry line 71
+  had the full 6-step
+  procedure. But the
+  procedure was written as
+  a single dense one-line
+  string ("Power OFF. Hold
+  CAPTURE then press HOME.
+  LED1 blinks -> press A ->
+  LED2 blinks. Rotate both
+  joysticks 3 full circles.
+  Press LT and RT 3 times
+  each. Press A again to
+  save."). When the bot
+  expanded that into a
+  walkthrough format, it
+  chose to elaborate
+  generously on the first
+  few steps (one paragraph
+  per step) and apparently
+  hit a response-length
+  cutoff before getting to
+  the LT/RT step. This is
+  NOT a "KB missing data"
+  problem — it's a "KB
+  format invites step-
+  dropping" problem.
+  Fix: expand the single-
+  line procedure into an
+  explicit STEP 1 / STEP 2
+  / ... STEP 6 enumerated
+  structure at the top of
+  the entry, so the bot
+  reads the procedure as
+  a discrete six-step list
+  it can't accidentally
+  truncate.
+
+  Fix (two coordinated
+  additions to the Drakon
+  entry — both at top of
+  entry, between PACKAGE
+  line and KEY FEATURES
+  heading):
+
+  (1) New BUTTON LAYOUT
+      section. Front-face
+      center column (HOME →
+      CAPTURE → TURBO), with
+      SELECT left of HOME and
+      START right of HOME.
+      Left side: left analog
+      stick + D-pad. Right
+      side: ABXY cluster +
+      right analog stick.
+      Top edge: LB/LT (left),
+      RB/RT (right), USB-C
+      center. Back: ML/MR
+      macros + charging dock
+      contacts.
+      Mirrors the v1.10.13
+      Blitz Tri-Mode pattern
+      exactly. Also includes
+      a WHEN A CUSTOMER ASKS
+      "WHERE IS [BUTTON]?"
+      subsection with ready-
+      made answers for the
+      five most-likely-asked
+      buttons (CAPTURE, HOME,
+      SELECT/START, TURBO,
+      ML/MR).
+
+  (2) New JOYSTICK + TRIGGER
+      CALIBRATION section
+      with the procedure laid
+      out as SIX explicit
+      enumerated steps:
+        STEP 1: POWER OFF
+                (hold HOME
+                5 seconds)
+        STEP 2: ENTER
+                CALIBRATION
+                MODE (CAPTURE
+                + HOME,
+                release both,
+                LED1 blinks)
+        STEP 3: CONFIRM READY
+                (press A,
+                LED2 blinks)
+        STEP 4: ROTATE BOTH
+                JOYSTICKS (3
+                circles each)
+        STEP 5: PRESS LT AND
+                RT TRIGGERS
+                (3 times each
+                — REQUIRED,
+                explicit note
+                that this is
+                NOT optional)
+        STEP 6: SAVE (press
+                A again)
+      Plus a single-line
+      condensed representation
+      for the bot to use as
+      its mental anchor: "Power
+      OFF → Hold CAPTURE +
+      press HOME (release
+      both) → A → 3 circles
+      each joystick → 3
+      presses each LT/RT → A
+      → done."
+
+  (3) ✗ DO NOT SAY block
+      with four explicit
+      anti-patterns:
+      (a) Calling CAPTURE
+          "the button on the
+          LEFT SIDE of the
+          controller, below
+          the triggers" —
+          verbatim session
+          7ddbe793 wording.
+      (b) Stopping the
+          walkthrough after
+          joystick rotation
+          (skipping LT/RT
+          trigger press +
+          save).
+      (c) Placing CAPTURE
+          "near the triggers"
+          / "on the grip" /
+          "on the back" / "below
+          the shoulder buttons"
+          — all front-face-
+          center-column variant
+          fabrications.
+      (d) Presenting calibration
+          as a 4-step procedure
+          ending with joystick
+          rotation. It's six
+          steps ending with
+          the second A press.
+
+  (4) ✓ CORRECT FRAMING note:
+      always present all six
+      steps in order; always
+      describe CAPTURE as
+      front-face center-column
+      below HOME; condensed
+      single-line version is
+      OK if asked for "quick"
+      walkthrough, but still
+      include the trigger step.
+
+  Pattern note (continuing
+  the v1.10.8 / v1.10.11 /
+  v1.10.13 / v1.10.14 /
+  v1.10.15 theme):
+    This is now the SIXTH
+    fabrication this batch
+    where the same underlying
+    pattern surfaced — top-of-
+    entry information missing
+    or mis-structured, bot
+    fabricates or skips
+    content as a result. Same
+    structural fix every
+    time: pull the missing /
+    poorly-structured fact to
+    a top-of-entry self-claim
+    block, add ✗ guards
+    naming the verbatim
+    failure mode. The Drakon
+    entry is now structurally
+    parallel to Blitz Tri-Mode
+    (v1.10.13) and Stellaris
+    (v1.10.11) for button
+    layout, with the added
+    CALIBRATION section
+    addressing the
+    procedural-skipping
+    failure mode that's
+    specific to step-by-
+    step walkthroughs on
+    long-form responses.
+    Per the v1.10.11
+    operator-note suggestion,
+    the structural project
+    of proactively lifting
+    top-5-most-asked
+    procedures to top-of-
+    entry on each large
+    controller entry
+    remains the right
+    long-term direction —
+    Ares Pro and Lumora
+    are still uncovered.
+
 v1.10.15 (2026-05-14) -- Claude
   * Z-bump: lockdown for the
     "return charges vary by city/
@@ -7015,7 +7345,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.15"
+__version__ = "1.10.16"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -8073,6 +8403,190 @@ COSMIC BYTE DRAKON - TRI-MODE WIRELESS CONTROLLER - FULL MANUAL
 PC ONLY. Not supported on any gaming console. No warranty for console use.
 
 PACKAGE: Controller, 2.4G USB dongle (stored in magnetic dongle slot under top cover), USB-C cable (2m, braided), Charging Dock with magnetic contacts, Carrying Case (zip-up EVA hard case), 3 magnetic face plates (plain black / doodle artwork / dragon artwork — swappable top covers), 2 D-pads (Precision cross + Faceted Disc), 6 swappable joystick tops in 3 styles (short ridged concave / tall ridged concave / smooth dome — 2 pre-installed on the controller, 4 spare in the case), User Manual.
+
+═══════════════════════════════════════════════════════════════════════
+BUTTON LAYOUT — PHYSICAL PLACEMENT ON THE DRAKON FRONT FACE
+(top-of-entry self-claim block so the bot doesn't fabricate button
+locations; added in v1.10.16 after session 7ddbe793 surfaced a CAPTURE
+button location hallucination. Same pattern as Blitz Tri-Mode v1.10.13.)
+═══════════════════════════════════════════════════════════════════════
+
+The Drakon follows an Xbox-style face layout with offset analog sticks
+(left stick top-left, right stick bottom-right; D-pad bottom-left; ABXY
+cluster on the right). All system buttons are on the FRONT FACE in the
+center column between the two analog sticks / D-pad / ABXY cluster.
+
+FRONT-FACE CENTER COLUMN (top to bottom — describe in this order if a
+customer asks "where is the X button"):
+
+  [Top row, three buttons across]
+  - SELECT button: oval button on the LEFT side of HOME (front face,
+    upper area). Labelled with a small icon/no-text on the controller
+    body — the label "SELECT" appears beneath it on the controller.
+    Sometimes called BACK or VIEW button on Xbox-style layouts.
+  - HOME button: round button in the EXACT CENTER of the controller's
+    top area, with the Cosmic Byte diamond/CB logo on it. Lights up
+    orange / RGB. This is the central anchor of the layout — when
+    describing other button positions, reference them relative to
+    HOME.
+  - START button: oval button on the RIGHT side of HOME (front face,
+    upper area). Mirrors the SELECT button on the opposite side of
+    HOME.
+
+  [Middle row, just below HOME — center column]
+  - CAPTURE button: a small downward-arrow / triangular icon-button
+    directly BELOW the HOME button, in the EXACT CENTER COLUMN of
+    the front face. CAPTURE is positioned BETWEEN the D-pad (which
+    is on the left) and the right analog stick (which is on the
+    right), roughly centered horizontally. The label "CAPTURE"
+    appears beneath the button on the controller body. It is on
+    the FRONT FACE — NOT on the left side, NOT below the triggers,
+    NOT near the grip, NOT on the back of the controller.
+
+  [Bottom row, just below CAPTURE — still center column]
+  - TURBO button: a small hexagonal-shape icon-button BELOW the
+    CAPTURE button. The label "TURBO" appears beneath the button
+    on the controller body. Same center-column placement as
+    CAPTURE. So the center column reads top-to-bottom as: HOME
+    → CAPTURE → TURBO.
+
+LEFT SIDE OF FRONT FACE:
+  - LEFT analog stick (top-left position) with RGB LED ring around it.
+  - D-pad (bottom-left position, below the left stick).
+
+RIGHT SIDE OF FRONT FACE:
+  - ABXY button cluster (top-right position) in Xbox layout —
+    Y top, X left, B right, A bottom. Each button has its label
+    (X / Y / A / B) printed on it.
+  - RIGHT analog stick (bottom-right position, below the ABXY cluster)
+    with RGB LED ring around it.
+
+TOP EDGE (shoulder buttons / triggers):
+  - LB (Left Bumper) — top-left shoulder, digital.
+  - LT (Left Trigger) — below LB, Hall Effect analog with 3-position
+    physical lock (independent of RT).
+  - RB (Right Bumper) — top-right shoulder, digital.
+  - RT (Right Trigger) — below RB, Hall Effect analog with 3-position
+    physical lock (independent of LT).
+  - USB-C charging port: TOP edge, center, between LB and RB.
+
+BACK / REAR OF CONTROLLER:
+  - 2 macro paddle buttons (ML on the left grip back, MR on the right
+    grip back). These are the "L4 / R4" buttons in Cosmic Byte
+    software (labelling mismatch — same physical paddles, different
+    software label).
+  - Magnetic Charging Dock contacts (the controller sits on the
+    included charging dock with magnetic alignment).
+
+WHEN A CUSTOMER ASKS "WHERE IS [BUTTON]?":
+  - For CAPTURE: "On the front face of the controller, in the center
+    column directly below the HOME button (the round button with the
+    Cosmic Byte diamond logo). CAPTURE is positioned between the
+    D-pad and the right analog stick, roughly centered horizontally.
+    It's the small button with the downward-arrow icon, labelled
+    CAPTURE on the controller body. NOT on the left side, NOT below
+    the triggers — it's on the front face."
+  - For HOME: "The round button in the exact center of the front face,
+    with the Cosmic Byte diamond logo on it. Lights up orange / RGB."
+  - For SELECT / START: "Oval buttons on either side of HOME — SELECT
+    on the left, START on the right, both on the front face upper
+    area."
+  - For TURBO: "Front face center column, directly below the CAPTURE
+    button. Small hexagonal-icon button, labelled TURBO."
+  - For ML / MR (macros): "On the BACK of the controller — two paddle
+    buttons on the rear, one under each grip (ML left, MR right).
+    These are the buttons Cosmic Byte software labels as L4 / R4."
+
+═══════════════════════════════════════════════════════════════════════
+JOYSTICK + TRIGGER CALIBRATION — EXPLICIT STEP-BY-STEP PROCEDURE
+(top-of-entry self-claim block so the bot doesn't summarise the
+procedure and accidentally drop steps; added in v1.10.16 after
+session 7ddbe793 OMITTED the LT/RT trigger calibration step from
+its calibration walkthrough.)
+═══════════════════════════════════════════════════════════════════════
+
+The Drakon supports user joystick + trigger calibration via the
+CAPTURE + HOME button combination. The procedure has SIX steps that
+MUST all be presented when walking a customer through calibration —
+do NOT abbreviate, do NOT stop after the joystick rotation step.
+The trigger press step is REQUIRED and is part of the same
+calibration sequence; skipping it means the triggers don't calibrate.
+
+FULL PROCEDURE (six steps — every one needed):
+
+  STEP 1: POWER OFF the controller first. The controller must be
+    fully OFF (not just asleep) before entering calibration mode.
+    To power off: hold the HOME button for 5 seconds until all LEDs
+    turn off. Wait a moment for full power-down.
+
+  STEP 2: ENTER CALIBRATION MODE. Press AND HOLD the CAPTURE button
+    (front face center column, below HOME — see BUTTON LAYOUT
+    section above), then WHILE STILL HOLDING CAPTURE, press the
+    HOME button. Release both buttons. LED1 (leftmost LED) will
+    start blinking — this confirms calibration mode is active and
+    the controller is waiting for input.
+
+  STEP 3: CONFIRM READY. Press the A button (right side of the
+    controller, bottom of the ABXY cluster). LED2 (second LED
+    from the left) will start blinking — this confirms the
+    controller is now actively listening for joystick movement.
+
+  STEP 4: ROTATE BOTH JOYSTICKS. Rotate both joysticks in full
+    circles — LEFT joystick AND RIGHT joystick — completing THREE
+    full circles each. Go slowly and deliberately, all the way to
+    the outer edge in every direction. The sensor needs time to
+    map every angular position. After 3 circles, return each
+    joystick to its center / neutral position.
+
+  STEP 5: PRESS LT AND RT TRIGGERS — THIS STEP IS REQUIRED, do NOT
+    skip it. Press the LT (Left Trigger) and RT (Right Trigger)
+    THREE TIMES EACH — pull each trigger fully to its travel limit,
+    then release fully, three times per trigger. This calibrates
+    the trigger range so the Hall Effect sensors know the
+    full pull-distance. (Note: if a customer has their trigger
+    lock set to Position 1 — shortest / digital — they will not be
+    able to pull the trigger far; for calibration, the trigger
+    lock can be at any position, the procedure works either way,
+    but Position 3 / full analog will give the cleanest
+    calibration data.) Without this step, the triggers may have
+    incorrect range mapping after calibration.
+
+  STEP 6: SAVE. Press the A button again. The controller will save
+    the calibration data and exit calibration mode. Calibration
+    complete.
+
+A SINGLE-LINE REPRESENTATION of the same procedure (for the bot to
+internalize): Power OFF → Hold CAPTURE + press HOME (release both) →
+A → 3 circles each joystick → 3 presses each LT/RT → A → done.
+
+✗ DO NOT SAY about the Drakon calibration procedure:
+- "Hold down the CAPTURE button (the button on the LEFT SIDE of the
+  controller, below the triggers)" — WRONG. CAPTURE is on the FRONT
+  FACE center column, below HOME. NOT the left side, NOT below the
+  triggers. Production session 7ddbe793 (2026-05-15 17:05) made this
+  exact placement error.
+- Walking through joystick rotation and then stopping / ending the
+  procedure before the LT/RT trigger press step. The trigger
+  calibration is part of the SAME sequence and MUST be presented
+  as Step 5 (not optional, not "you can also..."). Session 7ddbe793
+  omitted this step entirely; the customer was left with an
+  incomplete procedure.
+- Saying CAPTURE is "near the triggers" / "on the grip" / "on the
+  back" / "below the shoulder buttons". CAPTURE is a front-face
+  center-column button. The triggers (LT/RT) are on the top edge,
+  not the front face — CAPTURE has nothing to do with the trigger
+  position.
+- Presenting calibration as a 4-step procedure ending with joystick
+  rotation. It's a 6-step procedure ending with the second A press
+  after the trigger calibration.
+
+✓ CORRECT FRAMING when a customer asks for calibration walkthrough:
+Always present all six steps in order. Always explicitly mention the
+LT/RT trigger press step as REQUIRED. Always describe CAPTURE as a
+front-face center-column button below HOME (not on the side, not
+below the triggers). If asked for a shorter / quick version, use
+the single-line representation above, but do NOT silently drop the
+trigger calibration step.
 
 KEY FEATURES (full list — surface these accurately when comparing Drakon to other CB controllers):
 - JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Confirmed by Cosmic Byte; the product page URL itself contains "tmr-joysticks". Same joystick tech tier as Blitz Tri-Mode and Stellaris 2nd Gen. (Lumora, Ares Pro, and current Ares Tri-Mode have Hall Effect joysticks — different sensor tech.)
