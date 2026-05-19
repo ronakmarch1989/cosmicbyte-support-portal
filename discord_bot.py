@@ -87,6 +87,56 @@ Companion service:
 
 CHANGELOG
 ---------
+v1.4.0 (2026-05-19) -- Claude
+  - Y-bump: MAX_TOKENS constant
+    (line ~795) bumped from 600
+    to 1500. Coordinated with
+    support_portal.py v2.31.0
+    (same bump) and cb_kb.py
+    v1.10.25 (new Rule 17
+    markdown-only / no-HTML
+    output format).
+
+  Audit context: see
+  support_portal.py v2.31.0
+  changelog above for the full
+  audit context. Same incident,
+  same root cause, same fix.
+  Discord bot was running the
+  same 600-token cap and would
+  exhibit the same truncation
+  on comprehensive
+  troubleshooting flows from
+  Discord users.
+
+  Discord-specific note:
+    HTML is even worse on
+    Discord than on the
+    web portal. Discord
+    renders only its own
+    markdown subset; raw
+    HTML shows as literal
+    text in every case,
+    not just on truncation.
+    Discord users would
+    see `<div>` and
+    `</div>` as visible
+    text in any response
+    where the bot
+    generated HTML, even
+    with no truncation.
+    Rule 17 in cb_kb.py
+    v1.10.25 addresses
+    this side; this
+    MAX_TOKENS bump
+    addresses the
+    truncation side.
+
+  Reversibility:
+    Single-line constant
+    change. Trivial to
+    revert.
+
 v1.3.0 (2026-05-14) -- Claude
   - Y-bump: switch the Anthropic
     prompt-cache TTL from the
@@ -725,7 +775,7 @@ v1.0.0 (2026-05-08) -- Claude
                                       /var/data, matches portal)
 """
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 import os
 import sys
@@ -792,7 +842,7 @@ DISCORD_MSG_LIMIT = 1900
 
 # Anthropic model + token budget (same as web portal)
 MODEL = "claude-haiku-4-5-20251001"
-MAX_TOKENS = 600
+MAX_TOKENS = 1500
 
 
 # ─────────────────────────────────────────────────────────────────────

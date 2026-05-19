@@ -33,6 +33,899 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.25 (2026-05-19) -- Claude
+  * Z-bump: Added new Rule 17
+    "OUTPUT FORMAT — MARKDOWN
+    ONLY, NO HTML/JSX TAGS" to
+    the system prompt. Coordinated
+    with support_portal.py v2.31.0
+    + discord_bot.py v1.4.0 which
+    bump max_tokens from 600 to
+    1500. Both changes address
+    the same incident.
+
+  Audit context (operator-reported,
+  2026-05-19 ~17:30 IST):
+    Customer (on Ares Wireless
+    dropdown) asked: "The buttons
+    register on their own or does
+    not work sometimes, give all
+    possible troubleshoot"
+    Bot began generating a
+    comprehensive multi-step
+    troubleshooting response.
+    Pages 1-2 of operator-supplied
+    PDF showed STEP 1 (test on
+    hardwaretester.com), STEP 2
+    (check for 2.4GHz
+    interference), STEP 3 (re-pair
+    the controller via HOME
+    double-press — accurate per
+    Ares Wireless KB line 16),
+    and a STEP 4 header
+    ("Switch input modes and
+    test each") that was cut off.
+    A follow-up screenshot
+    showed a different rendering
+    of the same session (or a
+    re-generated response) where
+    the visible content was:
+      "STEP 3: BATTERY / POWER
+       ISSUES
+       3a) Check battery level:
+       - Look at the LED on the
+         controller:
+         - LED flashes + vibration
+           is OFF = low battery
+           (ghost inputs often
+           happen when battery is
+           critically low)
+         - LED blinks slowly =
+           controller is charging
+       [styled box containing:]
+       </div>
+       </div>"
+    Ronak's flag: "Step 4 missing"
+
+  Two distinct problems
+  diagnosed:
+
+  PROBLEM 1 — Response
+  truncation:
+    Root cause: support_portal.py
+    line 7478 had max_tokens=600;
+    discord_bot.py line 795 had
+    MAX_TOKENS=600. A
+    comprehensive multi-step
+    troubleshooting response with
+    intro, clarifying question,
+    4-5 steps with sub-bullets
+    easily exceeds 600 tokens
+    (~450 words). The response
+    got cut off mid-Step-3 in one
+    rendering, after-Step-3 in
+    another. STEP 4 never appeared
+    because Claude hit the token
+    cap before generating it.
+    Fix: bumped max_tokens to
+    1500 in BOTH support_portal.py
+    AND discord_bot.py. 1500
+    tokens ≈ 1200 words ≈
+    comfortably fits 5-6 steps of
+    multi-line troubleshooting
+    with intro and closing,
+    leaving headroom for edge
+    cases. Cost impact is
+    minimal — output tokens are
+    a small fraction of total
+    cost (input dominates per the
+    post-v1.10.18 cache analysis),
+    so 1500 vs 600 max_tokens
+    might add ~$1-2/day at most.
+
+  PROBLEM 2 — HTML leak
+  (`</div></div>` visible as
+  literal text):
+    Root cause: the bot was
+    generating responses with
+    embedded HTML divs for
+    structural styling. The
+    Streamlit web portal wraps
+    every bot response in
+    `<div class="msg-bot-bubble">
+    {response}</div>` and renders
+    with `unsafe_allow_html=True`,
+    so any HTML in the response
+    flows through. When the bot's
+    output got truncated mid-HTML
+    (due to PROBLEM 1's
+    max_tokens=600 cap), the
+    wrapper's own closing
+    `</div></div>` became visible
+    as literal text — exactly
+    what appeared in the operator-
+    supplied screenshot.
+    Discord is similar but
+    stricter — Discord renders
+    only markdown and shows HTML
+    as literal text in every
+    case, not just on truncation.
+
+    The system prompt didn't
+    have an explicit "use
+    markdown only" rule. Claude
+    was choosing HTML on its own
+    — likely because the "support
+    portal" context, the
+    `unsafe_allow_html=True`
+    nature of the wrapper, and
+    training-data biases for
+    support documentation
+    (which sometimes uses
+    HTML for fancy step
+    layouts) made HTML feel
+    appropriate.
+
+    Fix: new Rule 17 OUTPUT
+    FORMAT — MARKDOWN ONLY,
+    NO HTML/JSX TAGS. The rule
+    enumerates ✗ specific
+    tags (div, span, br, p,
+    h1-h6, ul/ol/li, strong/
+    em/b/i, code/pre, a href)
+    and ✓ specific markdown
+    equivalents (**, *, #, -,
+    1., `, [text](url)). Cites
+    the 2026-05-19 production
+    session as the evidence
+    for the guard. Explicitly
+    notes that the web portal
+    wraps responses in HTML
+    AND uses unsafe_allow_html
+    — which is exactly why bot
+    HTML in the response is
+    problematic.
+
+  Pattern note: twelfth
+  meaningful edit this batch.
+  Different failure mode than
+  the previous eleven —
+  this one is a system-prompt
+  hole (no format instruction)
+  combined with an
+  infrastructure setting
+  (max_tokens too low) rather
+  than a KB-content
+  fabrication. Same fix
+  family in shape — name the
+  wrong behaviour, replace
+  with explicit rule, cite
+  the session. But the
+  coordination across cb_kb.py
+  + support_portal.py +
+  discord_bot.py is new for
+  this batch (the only prior
+  multi-file coordination was
+  the v1.10.4 / cache-TTL
+  pair).
+
+  Deploy coordination:
+    Three-file deploy (cb_kb +
+    support_portal + bot). The
+    max_tokens bumps and the
+    Rule 17 must land together
+    — deploying the system
+    prompt rule alone wouldn't
+    help if the bot still hits
+    the 600-token cap and
+    truncates. Deploying the
+    max_tokens bumps alone
+    wouldn't prevent the HTML
+    issue from causing visual
+    pollution in non-truncated
+    responses. Together,
+    they address the full
+    failure mode.
+
+v1.10.24 (2026-05-18) -- Claude
+  * Z-bump: two operator
+    clarifications on Helios
+    software behaviour,
+    addressing gaps and an
+    inaccuracy in v1.10.22 +
+    v1.10.23:
+
+    (1) The companion software
+        does NOT support
+        Bluetooth mode at all.
+        It only operates over
+        Wired or 2.4GHz
+        connections. (My
+        v1.10.23 hedge —
+        "the bot does NOT have
+        confirmed documentation"
+        — is now resolved with
+        operator confirmation.)
+
+    (2) The software's POLLING
+        RATE setting applies
+        ONLY to 2.4GHz mode.
+        Wired mode polling rate
+        is hardware-fixed at
+        1000Hz; Bluetooth is
+        hardware-fixed at 125Hz.
+        The four radio buttons
+        in the Performance tab
+        don't change Wired or
+        Bluetooth rates — they
+        only configure the
+        2.4GHz rate.
+
+  Ronak's correction:
+    "Helios has Bluetooth but
+     software will only work
+     on Wired and 2.4Ghz.
+     Polling Rate of Bluetooth
+     mode is fixed and 125Hz,
+     Wired at 1000Hz and
+     Wireless has options as
+     shown in software"
+
+  Why I had it wrong in
+  v1.10.22 / v1.10.23:
+    The v1.10.22 polling rate
+    section said: "this
+    software-set polling rate
+    applies to Wired and
+    2.4GHz modes only" — I
+    grouped Wired + 2.4GHz
+    together as "user-
+    configurable via this
+    setting" because both
+    modes are listed under
+    "1000Hz polling" in the
+    pre-existing top-level
+    SPECS line. The reality
+    per Ronak: Wired is
+    hardware-fixed at 1000Hz
+    (NOT user-configurable),
+    and only 2.4GHz responds
+    to the software setting.
+
+    The v1.10.23 connection-
+    screen update added an
+    explicit hedge about
+    Bluetooth software
+    support (after I caught
+    myself drifting into a
+    fabricated claim).
+    Ronak's correction now
+    confirms what I had
+    drifted toward: the
+    software genuinely
+    doesn't operate in
+    Bluetooth mode. So the
+    correct framing is no
+    longer a hedge — it's a
+    confirmed limitation.
+
+  Fix (four coordinated edits):
+
+  EDIT 1 — Top-level SPECS line
+  (line 11997 in v1.10.23):
+    Old: "...800-10,000 DPI,
+    1000Hz polling (wired &
+    2.4G), 125Hz (Bluetooth)
+    ..."
+    New: "...800-10,000 DPI,
+    polling rate is per-mode
+    (Wired: fixed 1000Hz,
+    2.4GHz: configurable via
+    software 125/250/500/
+    1000Hz default 1000Hz,
+    Bluetooth: fixed 125Hz)
+    ..."
+    The per-mode framing is
+    explicit about which mode
+    is configurable and which
+    is hardware-fixed.
+
+  EDIT 2 — CONNECTION SCREEN
+  paragraph in the HELIOS
+  COMPANION SOFTWARE section:
+    Replaced the v1.10.23
+    Bluetooth hedge ("the bot
+    does NOT have confirmed
+    documentation on what
+    this screen displays or
+    whether the software
+    supports Bluetooth at
+    all") with the confirmed
+    fact: "The companion
+    software only operates
+    when the Helios is
+    connected via Wired OR
+    2.4GHz (USB Receiver) —
+    Bluetooth-mode connections
+    are NOT supported by the
+    software, even though the
+    Helios itself supports
+    Bluetooth (BT1 + BT2
+    channels) for normal
+    mouse operation."
+    Added a workaround:
+    customers who want
+    customised settings while
+    primarily using Bluetooth
+    should briefly switch to
+    2.4GHz or Wired, configure
+    via software, save to
+    Onboard configuration,
+    then switch back to
+    Bluetooth — the saved
+    settings persist on the
+    mouse hardware regardless
+    of which connection is
+    used afterwards.
+
+  EDIT 3 — TAB 3 PERFORMANCE
+  / POLLING RATE SETTING
+  subsection:
+    Old text (v1.10.22):
+    "Note: this software-set
+    polling rate applies to
+    Wired and 2.4GHz modes
+    only. Bluetooth is
+    hardware-locked at 125 Hz
+    regardless of this
+    setting."
+    New text (v1.10.24):
+    explicit three-mode
+    breakdown:
+      - WIRED: hardware-fixed
+        at 1000 Hz (NOT
+        software-configurable).
+      - 2.4GHz: USER-
+        configurable via this
+        setting (125/250/500/
+        1000 Hz, default 1000
+        Hz). Lower rates
+        trade responsiveness
+        for battery life.
+      - BLUETOOTH: hardware-
+        fixed at 125 Hz, and
+        the software doesn't
+        operate in Bluetooth
+        mode anyway.
+    Added a practical-
+    implication note: if a
+    customer sets 500 Hz in
+    the software but is
+    using wired and thinks
+    the rate didn't change,
+    the correct answer is
+    "wired is fixed at 1000
+    Hz regardless of this
+    setting; the radio button
+    will take effect the
+    next time you connect
+    via the 2.4GHz dongle."
+
+  EDIT 4 — Helios software
+  ✗ DO NOT SAY block: prepended
+  two new anti-patterns to the
+  existing list (the two
+  v1.10.22 ones remain after
+  the new additions):
+    - "The polling rate setting
+      in the software changes
+      polling rate for Wired
+      and 2.4GHz" -- WRONG
+      (verbatim of my own
+      v1.10.22 phrasing being
+      corrected by Ronak).
+    - "The Helios software
+      works in Bluetooth mode"
+      / "Configure your Helios
+      via the software while
+      connected over Bluetooth"
+      -- WRONG.
+
+  Pattern note: this is the
+  THIRD time the v1.10.22
+  Helios software block has
+  needed correction within
+  48 hours of being added
+  (v1.10.23 fixed the
+  connection-screen
+  misinterpretation;
+  v1.10.24 fixes the polling-
+  rate-per-mode error and
+  confirms the Bluetooth
+  software-support limitation
+  that I had drifted into
+  and then hedged). Same
+  failure mode each time: I
+  was interpreting operator-
+  supplied screenshots
+  without enough context to
+  distinguish what the
+  screenshot shows from what
+  the underlying system
+  behaviour actually is. The
+  cure is what's happening
+  now — operator review of
+  the documentation as
+  written, with each
+  correction landing as a
+  separate Z-bump and an
+  explicit ✗ guard naming
+  the wrong claim.
+
+v1.10.23 (2026-05-18) -- Claude
+  * Z-bump: operator correction
+    to v1.10.22's CONNECTION
+    SCREEN description in the
+    Helios Mouse companion
+    software section. I had
+    misread the splash screen
+    in Image 2 as a "no mouse
+    detected" state. Operator
+    correction: it's a
+    connection-mode INDICATOR
+    (mouse IS connected when
+    this screen shows), and
+    the label reads either
+    "USB Receiver" (2.4G
+    dongle connection) or
+    "Wired" (USB cable
+    connection).
+
+  Ronak's correction:
+    "Connection screen: USB
+     Receiver splash when no
+     mouse detected. Wrong it
+     will show COnnected mode.
+     USB Receiver or Wired"
+
+  Why I got it wrong in
+  v1.10.22:
+    Image 2 in the operator-
+    supplied screenshot set
+    showed a card with "USB
+    Receiver" text above the
+    mouse image, with no
+    configuration tabs visible
+    around it. I pattern-
+    matched this to a "device
+    not yet connected, please
+    plug in your receiver"
+    state — common in mouse
+    companion apps. The
+    correct interpretation:
+    this IS the connected-
+    state landing screen, and
+    "USB Receiver" is labeling
+    HOW the mouse is connected,
+    not telling the user TO
+    connect anything.
+
+    The corresponding state
+    when the mouse is
+    connected via USB cable
+    shows "Wired" instead of
+    "USB Receiver" on the
+    same card. Both are
+    "connected and ready"
+    states, just with
+    different mode labels.
+
+  Fix:
+    Rewrote the CONNECTION
+    SCREEN paragraph in the
+    HELIOS COMPANION SOFTWARE
+    section:
+      (a) Reframed as "the
+          landing screen the
+          software shows on
+          launch" displaying
+          "the CURRENT
+          CONNECTION MODE of
+          the connected Helios
+          mouse" — explicitly
+          NOT a "no mouse
+          detected" state.
+      (b) Listed both mode
+          labels:
+            - "USB Receiver"
+              = 2.4G dongle
+              connection.
+            - "Wired" = USB
+              cable connection.
+      (c) Added explicit
+          guard: "Do NOT
+          describe this as a
+          disconnected / 'plug
+          in the receiver'
+          state — the mouse
+          IS already connected
+          when this screen
+          displays, and the
+          label is confirming
+          WHICH mode."
+      (d) Bluetooth note:
+          honest hedge rather
+          than fabrication. I
+          had initially
+          inferred (and briefly
+          wrote, before self-
+          correcting) that the
+          software doesn't
+          support Bluetooth
+          mode at all. Ronak
+          didn't confirm that;
+          I only had circumstantial
+          evidence (the top-
+          right indicator
+          showed "2.4G" in all
+          configuration
+          screenshots, never
+          "BT1/BT2"). The
+          v1.10.23 text
+          acknowledges the gap:
+          "For Bluetooth mode
+          the bot does NOT have
+          confirmed
+          documentation on what
+          this screen displays
+          or whether the
+          software supports
+          Bluetooth at all; if
+          a customer is
+          connecting via
+          Bluetooth and the
+          software doesn't
+          behave as expected,
+          the safe answer is:
+          'if the software
+          isn't detecting your
+          Helios in Bluetooth
+          mode, try switching
+          to wired or 2.4GHz
+          which are both
+          confirmed to work
+          with the software.'"
+          This is the right
+          shape of answer:
+          honest about the
+          documentation gap,
+          actionable for the
+          customer, and doesn't
+          fabricate a feature
+          presence/absence
+          claim either way.
+
+  Pattern note: this is a
+  Claude-mistake-correction
+  cycle, not a bot-
+  hallucination cycle. The
+  v1.10.22 edit was MINE
+  (I built it yesterday).
+  Ronak caught my
+  interpretation error
+  within a day of the
+  documentation being added.
+  Same fix family as the
+  others structurally: name
+  the wrong claim, replace
+  with the corrected fact,
+  cite the operator-source.
+  Worth flagging as a
+  reminder that operator-
+  supplied source data
+  doesn't free Claude from
+  interpretation errors —
+  Claude can still misread
+  the source. The fix is
+  the same: when Ronak
+  corrects an
+  interpretation, apply
+  the correction with
+  the same rigour as a
+  hallucination fix.
+
+v1.10.22 (2026-05-18) -- Claude
+  * Z-bump: comprehensive
+    documentation of the Cosmic
+    Byte Helios Mouse companion
+    software, based on six
+    operator-supplied screenshots
+    (2026-05-18 WhatsApp drop).
+    Replaces a single one-line
+    SOFTWARE mention with a full
+    feature-by-feature reference
+    section the bot can answer
+    detailed questions from
+    without fabricating.
+
+  Audit context (operator-supplied,
+  not production-session driven):
+    Ronak shared six screenshots
+    of the Cosmic Byte Helios
+    Mouse companion software
+    (filename pattern: WhatsApp
+    _Image_2026-05-18_at_15_57_20*
+    .jpeg, six images covering
+    the connection screen and
+    all four configuration
+    tabs):
+      Image 1 — Key Remapping
+        tab with System sub-tab
+        expanded, mouse diagram
+        showing all 6 button
+        callouts (Left, Right,
+        Middle, Forward, Backward,
+        DPI), Mouse function list
+        (Left/Right/Middle Button,
+        Forward, Backward, Scroll
+        wheel up/down).
+      Image 2 — App launch
+        screen ("USB Receiver"
+        splash) shown when no
+        mouse connected.
+      Image 3 — Key Remapping
+        tab default view (no
+        button selected).
+      Image 4 — DPI tab showing
+        6 preset slots (1600,
+        1600 currently active in
+        green, 3000, 3200, 6400,
+        10000) with slider from
+        200 to 10000.
+      Image 5 — Performance tab
+        showing Light Setting
+        dropdown ("Touring Flash"
+        visible), Polling Rate
+        Setting (125/250/500/
+        1000, 1000 selected),
+        Roller Direction Setting
+        (Forward / Reverse,
+        Forward selected).
+      Image 6 — Others tab with
+        "Restore factory
+        settings" Restore button.
+
+    The pre-fix KB had a single
+    one-line SOFTWARE mention
+    ("SOFTWARE (Windows only):
+    DPI customisation, button
+    remapping, macro creation,
+    polling rate adjustment,
+    RGB control. Run as
+    Administrator if not
+    detecting mouse. Use wired
+    mode for first detection.")
+    — accurate but too brief
+    for the bot to answer
+    detailed software-feature
+    questions confidently. The
+    bot would have to either
+    say "I don't have specific
+    details" or fabricate
+    specifics (the recurring
+    failure mode from v1.10.8
+    onwards).
+
+  Ronak's instruction: "Cosmic
+  Byte Helio Software features.
+  Kindly add to database."
+
+  Fix (one new comprehensive
+  section replacing the one-line
+  mention):
+
+  Added a "HELIOS COMPANION
+  SOFTWARE — full feature
+  documentation" section to the
+  Helios Mouse entry, structured
+  as:
+
+  (a) APP IDENTITY — Windows
+      title bar "Cosmic Byte
+      Helios Mouse", Windows-
+      only, specific to Helios
+      (not interchangeable with
+      other CB mice software).
+
+  (b) CONNECTION SCREEN —
+      USB Receiver splash if no
+      mouse detected; require
+      receiver plug-in (or USB
+      cable connection) for the
+      software to proceed.
+
+  (c) MAIN UI LAYOUT:
+        Left sidebar: device
+          label, [+ Create]
+          button, [Import]
+          button, Onboard
+          configuration link.
+        Top tabs: Key remapping
+          (default), DPI,
+          Performance, Others.
+        Top-right status:
+          battery indicator
+          (e.g. "Less than 75%")
+          + connection type
+          (e.g. "2.4G").
+
+  (d) TAB 1 — KEY REMAPPING
+      detailed: 6 mappable
+      buttons (Left, Right,
+      Middle, Forward, Backward,
+      DPI), four sub-tabs
+      (System / Keyboard /
+      Instruction / Macro) with
+      explicit confirmed and
+      unconfirmed sub-tab
+      content. The Instruction
+      sub-tab was NOT shown
+      expanded in the
+      screenshots, so the KB
+      explicitly tells the bot
+      to acknowledge that gap
+      rather than fabricate
+      specific options.
+      Workflow explained ("Drag
+      or click the system button
+      to the target device
+      button for allocation"),
+      reset behaviour noted.
+
+  (e) TAB 2 — DPI detailed:
+      6 preset slots with
+      factory defaults (1600,
+      1600, 3000, 3200, 6400,
+      10000 — the 2026-batch
+      defaults observed in the
+      screenshot). Range: 200
+      to 10,000 in 200-step
+      increments via slider.
+      Each slot independently
+      customisable. "Restore
+      default settings" button
+      noted. Includes a
+      reconciliation note with
+      the existing KB line
+      that says the DPI button
+      cycles 800/1600/2400/
+      3200/6400/10000 — both
+      sets are valid depending
+      on batch, the POINT is
+      that all 6 slots are
+      software-customisable.
+
+  (f) TAB 3 — PERFORMANCE
+      detailed (3 controls):
+        - Light Setting
+          dropdown (with
+          "Touring Flash" as
+          one confirmed
+          option name).
+        - Polling Rate (125/
+          250/500/1000 Hz)
+          with note that
+          Bluetooth is
+          hardware-locked at
+          125 Hz regardless.
+        - Roller Direction
+          (Forward / Reverse)
+          with use-case note
+          (macOS users
+          preferring natural
+          scrolling).
+
+  (g) TAB 4 — OTHERS detailed:
+      "Restore factory
+      settings" button with
+      explicit list of what
+      gets reset (all 6 DPI
+      slots, all button
+      remappings, light, polling
+      rate, roller direction)
+      and what does NOT
+      (firmware, BT pairing,
+      onboard configs saved
+      to other PCs).
+
+  (h) PROFILE MANAGEMENT —
+      [+ Create] / [Import] /
+      Onboard configuration
+      workflow explained.
+      Onboard configuration
+      saves to the mouse's
+      internal memory so
+      settings persist across
+      PCs without installing
+      the software on every
+      one.
+
+  (i) ✗ DO NOT SAY block with
+      six anti-patterns:
+        - "Per-LED RGB
+          programming" (it's
+          preset effects only,
+          not per-LED).
+        - "Each button can be
+          remapped to any
+          function" — true in
+          broad strokes but
+          don't fabricate
+          specific Instruction
+          sub-tab options.
+        - "macOS support"
+          (Windows only).
+        - "Works with all
+          Cosmic Byte mice"
+          (Helios-specific
+          app).
+        - Inventing specific
+          Light Setting
+          dropdown effect
+          names beyond "Touring
+          Flash".
+        - Inventing Instruction
+          sub-tab options.
+
+  (j) ✓ CORRECT FRAMING
+      template — full verbatim
+      reply the bot can adapt
+      for "what can the Helios
+      software do?" questions.
+
+  Also retained and clarified the
+  existing software troubleshooting
+  line (Run as Administrator, use
+  wired mode for first detection,
+  reconnect after install). Added
+  explicit note that the download
+  is the Helios-specific build
+  from thecosmicbyte.com/
+  downloaddrivers/, not a generic
+  CB mouse driver.
+
+  Scope: Helios Mouse entry only.
+  Did NOT extend this software
+  documentation to other CB mice
+  (Velox, Hypernova, Atlas,
+  Firestorm, Raptor, Aether,
+  Umbra, Ignis) — those have
+  their own software (or none),
+  with potentially different
+  UIs and feature sets. If
+  similar comprehensive software
+  documentation is needed for
+  another CB mouse, that's a
+  separate per-product audit
+  pending operator-supplied
+  screenshots.
+
+  Pattern note: eleventh
+  meaningful edit this batch.
+  Different failure mode this
+  time — not a hallucination
+  fix, not a missing-fact-
+  invited-fabrication fix, but
+  a proactive KB enrichment
+  based on operator-supplied
+  documentation. Same fix
+  family in spirit: give the
+  bot enough source data that
+  it doesn't need to
+  fabricate or hedge when
+  customers ask software
+  questions about the Helios.
+
 v1.10.21 (2026-05-17) -- Claude
   * Z-bump: New Rule 16 "GAMEPAD
     AS MOUSE ON PC" added to
@@ -8839,7 +9732,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.21"
+__version__ = "1.10.25"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -11994,7 +12887,7 @@ Support: +91 7351615161 (Mon-Sat 10am-6pm), cc@thecosmicbyte.com.
     "Helios Mouse": """
 COSMIC BYTE HELIOS DRAGON - TRI-MODE GAMING MOUSE - FULL MANUAL
 
-SPECS: FR2012 + S203 sensor, 800-10,000 DPI, 1000Hz polling (wired & 2.4G), 125Hz (Bluetooth), 81g, Huano 10M click switches, PTFE feet, 5 programmable buttons, 6 RGB effects, 1.6m braided cable. Tri-mode: Wired + 2.4GHz + Bluetooth (BT1 + BT2 channels).
+SPECS: FR2012 + S203 sensor, 800-10,000 DPI, polling rate is per-mode (Wired: fixed 1000Hz, 2.4GHz: configurable via software 125/250/500/1000Hz default 1000Hz, Bluetooth: fixed 125Hz), 81g, Huano 10M click switches, PTFE feet, 5 programmable buttons, 6 RGB effects, 1.6m braided cable. Tri-mode: Wired + 2.4GHz + Bluetooth (BT1 + BT2 channels).
 
 CONNECTIVITY:
 - Wired: Connect USB cable -> auto switches to wired mode. Charges while connected. Works regardless of power switch position.
@@ -12008,7 +12901,249 @@ DPI: Press DPI button to cycle (800/1600/2400/3200/6400/10000 DPI). Customise vi
 
 RGB: 6 preset lighting modes on top of mouse. Customise via Windows software.
 
-SOFTWARE (Windows only): DPI customisation, button remapping, macro creation, polling rate adjustment, RGB control. Run as Administrator if not detecting mouse. Use wired mode for first detection.
+═══════════════════════════════════════════════════════════════════════
+HELIOS COMPANION SOFTWARE — full feature documentation
+(added in v1.10.22 based on operator-supplied screenshots, 2026-05-18.
+This section documents EVERY tab, EVERY setting, and EVERY supported
+range, so the bot can answer software-feature questions without
+fabricating capabilities.)
+═══════════════════════════════════════════════════════════════════════
+
+APP IDENTITY: The companion software is titled "Cosmic Byte Helios Mouse" in the Windows title bar. It is Windows-only — there is no macOS or Linux version. The software is specific to the Helios — do NOT assume the same software, UI, or feature set applies to other Cosmic Byte mice (Helios has its own app; Velox, Hypernova, Atlas, Firestorm, etc. either have their own apps or no companion software at all).
+
+CONNECTION SCREEN (the landing screen the software shows on launch): displays the CURRENT CONNECTION MODE of the connected Helios mouse — NOT a "no mouse detected" state. The label on the card reads either:
+  - "USB Receiver" — the mouse is currently connected via the 2.4GHz USB dongle.
+  - "Wired" — the mouse is currently connected via the USB cable.
+The mouse image and the www.thecosmicbyte.com link are constant on this screen. The connection-mode label switches between "USB Receiver" and "Wired" automatically based on how the mouse is currently connected. Do NOT describe this as a disconnected / "plug in the receiver" state — the mouse IS already connected when this screen displays, and the label is confirming WHICH mode. From this screen the customer proceeds to the main configuration page (the four-tab UI). The companion software only operates when the Helios is connected via Wired OR 2.4GHz (USB Receiver) — Bluetooth-mode connections are NOT supported by the software, even though the Helios itself supports Bluetooth (BT1 + BT2 channels) for normal mouse operation. If a customer in Bluetooth mode reports the software isn't detecting their Helios, the answer is: that's expected — the software doesn't work over Bluetooth. Switch to Wired or 2.4GHz to configure the mouse via software. (Note: this is a software-side limitation, not a hardware defect. The Helios works fine as a Bluetooth mouse for normal use — Bluetooth-mode customers just can't configure DPI / button remapping / polling rate / lighting via the companion software while connected over Bluetooth. To customise those settings, briefly switch to 2.4GHz or Wired, configure, save to Onboard configuration, then switch back to Bluetooth — the saved settings persist on the mouse.)
+
+MAIN UI LAYOUT (once connected):
+- LEFT SIDEBAR:
+    * Device label: "Cosmic Byte Helios" with green status dot when connected.
+    * [+ Create] button: creates a new profile slot.
+    * [Import] button: imports a previously-saved profile file.
+    * "Onboard configuration" link: stores the current configuration to the mouse's internal memory so settings persist across PCs (no need to install the software on every PC).
+- TOP TABS (4): Key remapping (default), DPI, Performance, Others.
+- TOP-RIGHT STATUS: battery indicator (e.g. "Less than 75%") + connection type (e.g. "2.4G"). Real-time, updates as the mouse status changes.
+
+TAB 1 — KEY REMAPPING:
+Lets the customer reassign what each of the 6 mouse buttons does.
+
+  Mappable buttons (6 total, shown as callouts on a mouse diagram):
+    - Left Button
+    - Right Button
+    - Middle Button (scroll wheel click)
+    - Forward (side button, front)
+    - Backward (side button, rear)
+    - DPI (the DPI cycle button on top of the mouse)
+
+  Four sub-tabs determine WHAT the button gets reassigned to:
+    (a) SYSTEM — assign a built-in mouse function. Options include:
+        Left Button, Right Button, Middle Button, Forward, Backward,
+        Scroll wheel up, Scroll wheel down (and likely more — the
+        screenshot showed an expandable "Mouse" category, so the bot
+        should expect a small additional list of system functions
+        beyond these, but should NOT fabricate specific names beyond
+        what's listed here without seeing them in a customer screenshot).
+    (b) KEYBOARD — assign a keyboard key (single key or modifier
+        combination). Useful for FPS/strategy bindings (e.g. mapping
+        a side button to spacebar for jump, or to a keybind for an
+        in-game ability).
+    (c) INSTRUCTION — assign a system instruction or shortcut. The
+        screenshot didn't show this sub-tab expanded, so the bot
+        should NOT fabricate specific instruction options. If a
+        customer asks what's under Instruction, the honest answer
+        is "I don't have the full list of options in my documentation
+        for that sub-tab — if you can share a screenshot of it
+        expanded, I can help more specifically, or check the software
+        itself which has the full list available."
+    (d) MACRO — assign a recorded macro sequence. Macros can be
+        created and stored in the software, then assigned to any
+        button.
+
+  Workflow (per the on-screen instruction "Drag or click the system
+  button to the target device button for allocation"): the customer
+  selects a function from the left panel (e.g. "Scroll wheel up" under
+  System), then either drags it onto the target button callout in the
+  mouse diagram on the right, or clicks the target button. The
+  assignment is then saved to the active profile.
+
+  Reset: each button has a "Reset to default" button at the bottom of
+  the page that restores original assignments for the current profile.
+
+TAB 2 — DPI:
+Lets the customer customise the 6 DPI presets that the on-mouse DPI
+button cycles through.
+
+  Six preset slots, factory defaults observed in the screenshot:
+    Slot 1: 1600 DPI
+    Slot 2: 1600 DPI (currently active, highlighted in green)
+    Slot 3: 3000 DPI
+    Slot 4: 3200 DPI
+    Slot 5: 6400 DPI
+    Slot 6: 10000 DPI
+
+  NOTE: the existing Helios KB entry above says the on-mouse DPI button
+  cycles "800/1600/2400/3200/6400/10000" — this is the factory default
+  that older units may ship with. The screenshot shows a slightly
+  different default (1600/1600/3000/3200/6400/10000) on a 2026-batch
+  unit. Either set of defaults is correct depending on batch; the
+  POINT is that ALL six slots are customisable via this software, so
+  any specific number the customer sees on their unit is what they (or
+  the factory default for their batch) has set.
+
+  DPI range: 200 to 10,000 in 200-step increments via the on-screen
+  slider. The slider shows tick marks at 200, 1000, 2000, 3000, 4000,
+  5000, 6000, 7000, 8000, 9000, 10000.
+
+  Each preset slot can be set to any value in this range independently.
+
+  "Restore default settings" button at top-right resets all 6 slots to
+  factory defaults.
+
+  Tip from the software: "DPI indicates mouse sensitivity. Use the DPI
+  button to adjust swiftly."
+
+TAB 3 — PERFORMANCE:
+Three settings on this tab:
+
+  (a) LIGHT SETTING:
+      Dropdown menu — "change the light effect of the mouse". One
+      visible option in the screenshot: "Touring Flash". The dropdown
+      contains the full list of the mouse's 6 RGB preset modes (and
+      possibly more). The KB entry above already lists "6 preset
+      lighting modes on top of mouse" — those are the options here.
+      If a customer wants to know all dropdown options by name,
+      acknowledge that "Touring Flash" is one confirmed name and
+      offer to help them find others by exploring the dropdown.
+
+  (b) POLLING RATE SETTING (Hz):
+      Four radio button options: 125, 250, 500, 1000. The 1000 Hz
+      option is selected by default in the screenshot.
+
+      IMPORTANT — this software setting applies ONLY to 2.4GHz mode.
+      The other two connection modes have hardware-fixed polling
+      rates that are NOT user-configurable:
+        - WIRED mode: polling rate is HARDWARE-FIXED at 1000 Hz.
+          The four radio buttons in this UI do not change wired
+          polling rate. Wired is always 1000 Hz regardless of
+          what's selected here.
+        - 2.4GHz mode: polling rate is USER-CONFIGURABLE via this
+          setting (125 / 250 / 500 / 1000 Hz). Default is 1000 Hz.
+          Lower polling rates trade a small amount of responsiveness
+          for slightly better battery life on the rechargeable
+          mouse.
+        - BLUETOOTH mode: polling rate is HARDWARE-FIXED at 125 Hz.
+          (Same as the existing Bluetooth polling line in the SPECS
+          section above.) The four radio buttons in this UI do not
+          change Bluetooth polling rate. Also: the companion
+          software doesn't operate in Bluetooth mode at all (see
+          CONNECTION SCREEN section above) — so the customer can't
+          even reach this UI while connected via Bluetooth. The
+          125 Hz Bluetooth rate is a Bluetooth-mode hardware
+          characteristic, not a software setting.
+
+      Practical implication: changing the radio button affects ONLY
+      the 2.4GHz polling rate. If a customer asks "I set polling
+      rate to 500 Hz in the software but I'm playing wired and I
+      think the rate didn't actually change" — the correct answer
+      is "Wired mode is fixed at 1000 Hz regardless of this setting;
+      the radio button you set will take effect the next time
+      you connect via the 2.4GHz dongle."
+
+      A higher 2.4GHz polling rate reduces input lag at the cost of
+      slightly more battery drain. The software text just says "A
+      higher mouse polling rate can reduce the impact of input lag"
+      — accurate.
+
+  (c) ROLLER DIRECTION SETTING:
+      Two radio options: Forward / Reverse. "Switch the functions
+      of mouse wheel up and mouse wheel down."
+      Forward (default): scroll up = page up, scroll down = page
+      down (standard).
+      Reverse: inverts the scroll direction. Useful for customers
+      coming from macOS who prefer "natural scrolling" feel on
+      Windows.
+
+TAB 4 — OTHERS:
+One control on this tab:
+  "Restore factory settings" with a Restore button.
+  Description text: "All settings will be restored to factory
+  defaults, please proceed with caution."
+  Resets ALL software-configurable settings to factory defaults:
+  - All 6 DPI preset slots → factory defaults
+  - All button remappings → factory defaults
+  - Light setting → factory default effect
+  - Polling rate → factory default
+  - Roller direction → Forward (default)
+  Does NOT affect: firmware, pairing memory (Bluetooth BT1/BT2
+  channels), or any onboard configuration that was saved to a
+  different PC.
+
+PROFILE MANAGEMENT:
+The [+ Create] and [Import] buttons in the left sidebar handle
+profile management. Customers can create multiple profiles (e.g.
+one for FPS games with sniper DPI presets, one for productivity
+with custom button mappings) and switch between them. The
+"Onboard configuration" link saves the current profile to the
+mouse's internal memory so it travels with the mouse to any PC —
+without needing to install the software on that PC. The mouse
+will use the onboard-saved configuration even when the software
+isn't running.
+
+✗ DO NOT SAY about the Helios software:
+- "The polling rate setting in the software changes polling rate for
+  Wired and 2.4GHz" -- WRONG (corrected in v1.10.24). The software's
+  polling rate radio buttons apply ONLY to 2.4GHz mode. Wired is
+  hardware-fixed at 1000Hz; Bluetooth is hardware-fixed at 125Hz.
+- "The Helios software works in Bluetooth mode" / "Configure your
+  Helios via the software while connected over Bluetooth" -- WRONG
+  (corrected in v1.10.24). The companion software only operates
+  over Wired or 2.4GHz connections. Bluetooth-mode customers must
+  briefly switch to 2.4GHz or Wired to configure, save settings to
+  Onboard configuration, then switch back to Bluetooth — the saved
+  settings persist on the mouse hardware.
+- "The Helios software supports per-LED RGB programming" -- WRONG.
+  The software has 6 preset RGB effects (the same 6 visible on
+  the mouse without software). The dropdown lets the customer
+  PICK which preset is active and possibly adjust brightness/speed
+  for it — but it does NOT support per-LED colour assignment.
+- "Each of the mouse's buttons can be remapped to any keyboard or
+  mouse function via the software" -- TRUE in broad strokes, but
+  do NOT fabricate specific options under the Instruction sub-tab
+  without confirmation. Stick to System / Keyboard / Macro
+  capabilities which are confirmed.
+- "The software supports macOS" -- WRONG, Windows only.
+- "The software supports all Cosmic Byte mice" -- WRONG, this
+  app is specific to the Helios. Other Cosmic Byte mice have
+  their own software (or none at all). If a customer asks about
+  software for a different CB mouse, route them to that mouse's
+  own KB entry or to support.
+- Inventing specific Light Setting dropdown effect names beyond
+  "Touring Flash" (the only confirmed name from the screenshot).
+- Inventing specific Instruction sub-tab options under Key
+  Remapping (sub-tab wasn't shown expanded in the screenshots).
+
+✓ CORRECT FRAMING for "what can the Helios software do?":
+"The Helios companion software (Windows only) gives you four
+configuration tabs:
+1. **Key remapping** — reassign any of the 6 mouse buttons (Left,
+   Right, Middle, Forward, Backward, DPI button) to a system
+   function, keyboard key, instruction, or recorded macro.
+2. **DPI** — customise all 6 DPI preset slots (200–10,000 range,
+   200-step increments) that the on-mouse DPI button cycles
+   through.
+3. **Performance** — pick from the 6 RGB lighting effects, set
+   polling rate (125/250/500/1000 Hz for Wired and 2.4GHz —
+   Bluetooth is hardware-locked at 125Hz), and invert scroll
+   direction if you prefer that.
+4. **Others** — restore all software settings to factory
+   defaults.
+Plus profile management: create multiple profiles, save them
+to the mouse's onboard memory so they travel to any PC."
+
+═══════════════════════════════════════════════════════════════════════
+
+SOFTWARE TROUBLESHOOTING (Windows only): Run as Administrator if not detecting mouse. Use wired mode for first detection. Reconnect mouse after installing the software. The "Cosmic Byte Helios Mouse" software is downloadable from thecosmicbyte.com/downloaddrivers/ — confirm the customer has the Helios-specific download, NOT a generic CB mouse driver.
 
 TROUBLESHOOTING:
 - Not powering on: Charge 30 minutes. Check power switch is ON. Wired mode works regardless of switch position.
@@ -14815,6 +15950,35 @@ CROSS-REFERENCE — Lumora's built-in option (different from the three above):
 3. **Steam Desktop Configuration** (if you already have Steam): Big Picture Mode → Controller Settings → Desktop Configuration → map left stick to Mouse, face buttons to clicks.
 Before any of these, confirm Windows sees your gamepad — press Win+R, type 'joy.cpl', and check that your controller shows up as 'OK'.
 Which option appeals to you? Happy to walk through the setup of whichever you pick."
+
+17. OUTPUT FORMAT — MARKDOWN ONLY, NO HTML/JSX TAGS. Every response from the bot is embedded inside an HTML chat bubble container in the rendering layer (the Streamlit web portal uses `<div class="msg-bot-bubble">...</div>` wrappers; the Discord bot renders to Discord's markdown). The bot's response itself MUST be markdown only — never raw HTML or JSX. Specifically:
+
+  ✗ DO NOT use any of these in responses:
+    - `<div>` / `</div>` — these will either be rendered as additional containers (creating layout issues) or, if truncated mid-output, will leak as literal text into the customer's view. Production session 2026-05-19 (15:55 IST, Ares Wireless button-issue session) showed `</div></div>` literal text appearing in the chat after a truncated multi-step response — that's how this guard was discovered.
+    - `<span>` / `</span>` — same issue.
+    - `<br>` / `<br/>` / `<p>` / `</p>` — use markdown blank-line paragraph breaks instead.
+    - `<h1>` through `<h6>` — use markdown `#`, `##`, `###` for headings.
+    - `<ul>` / `<ol>` / `<li>` — use markdown `-` or numbered `1.` `2.` lists.
+    - `<strong>` / `<em>` / `<b>` / `<i>` — use markdown `**bold**` and `*italic*`.
+    - `<code>` / `<pre>` — use markdown backticks (single ` for inline, triple ``` for blocks).
+    - `<a href="...">` — use markdown `[text](url)`.
+    - Any other HTML or JSX tag, attribute, or component.
+
+  ✓ DO use plain markdown for everything:
+    - Bold: `**text**` not `<strong>text</strong>`.
+    - Italic: `*text*` not `<em>text</em>`.
+    - Headings: `## STEP 1: ...` not `<h2>STEP 1: ...</h2>`.
+    - Lists: `- item` or `1. item` not `<ul><li>item</li></ul>`.
+    - Links: `[Cosmic Byte support](mailto:cc@thecosmicbyte.com)` not `<a href="...">...</a>`.
+    - Code: `` `command` `` not `<code>command</code>`.
+    - Line breaks: blank line for paragraph break (markdown handles this).
+
+  Why this matters operationally:
+    The web portal wraps every bot response in `<div class="msg-bot-bubble">{response}</div>` and renders with `unsafe_allow_html=True` (Streamlit). This allows the bot's markdown to be rendered correctly (Streamlit's markdown engine converts `**bold**` to `<strong>bold</strong>` for display). BUT if the bot's response itself contains raw HTML, that HTML passes through directly into the wrapper. If the response gets truncated (token budget hit mid-output) and leaves an unclosed `<div>` or partial closing tag, the wrapper's own closing `</div></div>` (the outer div containers) becomes visible to the customer as literal text — exactly what happened in the 2026-05-19 session. Even without truncation, raw HTML in responses can break the chat bubble layout, cause double-wrapping, or interfere with the CSS styling Cosmic Byte's portal uses.
+
+  Discord is similar but stricter — Discord renders only its own markdown subset and shows raw HTML as literal text in every case. Generating `<div>` for a Discord response is always visible-to-customer broken output, not just edge-case-truncation broken.
+
+  TL;DR: pretend you are writing for a basic Markdown editor. No HTML, no JSX, no React-style components, no CSS classes, no inline styles, no attributes. Just markdown."
 """
 
 

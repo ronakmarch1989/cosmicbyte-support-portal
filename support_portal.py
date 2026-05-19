@@ -139,6 +139,162 @@ CHANGELOG FORMAT:
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
 
+v2.31.0 (2026-05-19) -- Claude
+  - Y-bump: max_tokens for the
+    Anthropic Messages API call
+    bumped from 600 to 1500
+    (line ~7478). Coordinated
+    with discord_bot.py v1.4.0
+    (same bump) and cb_kb.py
+    v1.10.25 (new Rule 17
+    markdown-only / no-HTML
+    output format).
+
+  Audit context (2026-05-19,
+  ~17:30 IST):
+    Customer (Ares Wireless
+    dropdown) asked for "all
+    possible troubleshoot" for
+    a button-registration issue.
+    Bot generated a
+    comprehensive 4-5 step
+    response, hit the
+    max_tokens=600 cap mid-
+    Step-3, and the truncation
+    left the customer with:
+    (a) STEP 4 missing
+        entirely
+    (b) HTML divs visible as
+        literal `</div></div>`
+        text in the chat
+        (the bot was
+        generating HTML for
+        styling and the
+        wrapper's closing
+        divs became visible
+        when the truncation
+        broke the nesting).
+
+  Why 600 was too low:
+    A comprehensive multi-
+    step troubleshooting
+    response with intro,
+    clarifying question,
+    4-5 STEP blocks with
+    sub-bullets, and a
+    closing call-to-action
+    runs ~450-600 words ≈
+    600-800 tokens. The
+    600-token cap was at
+    the lower edge of
+    actual response sizes
+    needed for the
+    "give all possible
+    troubleshoot" type of
+    request, leaving zero
+    margin and causing
+    truncation on
+    comprehensive flows.
+
+  Why 1500 (not higher,
+  not lower):
+    1500 tokens ≈ 1200
+    words. Comfortably
+    fits 5-6 steps of
+    multi-line
+    troubleshooting plus
+    headroom. Higher
+    values (e.g. 4096)
+    would be wasteful —
+    Cosmic Byte's
+    customer questions
+    rarely warrant a
+    1000-word response,
+    and giving the bot
+    too much rope
+    encourages padding.
+    1500 is the
+    smallest-safe ceiling.
+
+  Cost impact:
+    Output tokens are a
+    small fraction of
+    total cost. Per the
+    post-v1.10.18 cache
+    analysis (cache_read_
+    ratio 85-95%, daily
+    cost ~$10/day), input
+    dominates. Bumping
+    max_tokens caps the
+    OUTPUT side of each
+    response — even if
+    every response now
+    used the full 1500
+    tokens (which they
+    don't — most are
+    100-400 tokens),
+    the increase would
+    add ~$1-2/day. In
+    practice, only the
+    "give all possible
+    troubleshoot" type
+    of comprehensive
+    flows approach the
+    new limit, so the
+    actual incremental
+    cost is well under
+    $1/day.
+
+  Coordination with
+  cb_kb.py v1.10.25:
+    The max_tokens bump
+    alone is insufficient
+    — even with more
+    headroom, the bot
+    would still generate
+    HTML divs that cause
+    visual pollution in
+    the chat. Rule 17 in
+    cb_kb.py v1.10.25
+    locks down "markdown
+    only, no HTML" so
+    the bot stops
+    generating divs in
+    the first place.
+    Together: max_tokens
+    bump prevents
+    truncation, Rule 17
+    prevents the HTML
+    leak.
+
+  Coordination with
+  discord_bot.py v1.4.0:
+    Discord bot has the
+    same max_tokens
+    setting (MAX_TOKENS
+    constant at line
+    ~795). Bumped to
+    1500 to match.
+    Discord also benefits
+    from Rule 17 — even
+    more strictly than
+    the portal, since
+    Discord renders only
+    markdown and shows
+    raw HTML as literal
+    text in every case,
+    not just on
+    truncation.
+
+  Reversibility:
+    Single-line change.
+    Trivial to revert by
+    changing 1500 back to
+    600 (or any other
+    value).
+
+------------------------------------------------------------------------------
+
 v2.30.0 (2026-05-14) -- Claude
   - Y-bump: switch the Anthropic
     prompt-cache TTL from the
@@ -4747,7 +4903,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.30.0"
+__version__ = "2.31.0"
 
 import streamlit as st
 
@@ -7475,7 +7631,7 @@ CUSTOMER MESSAGE: {original_text}
 
             api_kwargs = dict(
                 model="claude-haiku-4-5-20251001",
-                max_tokens=600,
+                max_tokens=1500,
                 messages=api_messages,
             )
             if third_party:
