@@ -139,6 +139,85 @@ CHANGELOG FORMAT:
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
 
+v2.35.0 (2026-05-20) -- Claude
+  - DARK variant of the v2.34.0
+    brand reskin. Operator chose
+    dark over light for mobile
+    readability (OLED, glare, eye
+    strain, battery). Kept every
+    brand upgrade -- Bricolage /
+    Sora / JetBrains Mono fonts,
+    orange #FF9E1B accent, rounded
+    PILL buttons, soft-shadow cards
+    -- but on a dark blue-charcoal
+    canvas (#0d1319) with dark
+    surfaces (#18212b) and light
+    text (#eef1f5 / #c4c9d4). The
+    website footer is already dark
+    #101820, so this stays on-brand.
+  - Text-on-orange (buttons, user
+    bubble, badges, live pill) uses
+    a fixed dark --on-accent #101820
+    so it never goes low-contrast
+    when --cb-ink flipped to light.
+  - Button hover brightens to
+    #ffb347 (was darken-to-#cc7a14
+    on light) keeping dark text.
+  - Disclaimer box -> dark soft-
+    orange alert; brought back faint
+    static orange atmosphere glows.
+  - Still a pure CSS reskin: no
+    logic / HTML / class names
+    changed; v2.34.0 light theme was
+    never deployed.
+  NOTE: cannot render live Streamlit
+  here -- visual review after deploy.
+
+v2.34.0 (2026-05-20) -- Claude
+  - Y-bump: full VISUAL RESKIN of
+    the portal to match the new
+    Cosmic Byte LIGHT website brand
+    (cb-brand-light.css). Pure CSS
+    change -- NO logic, NO HTML
+    structure, NO class names were
+    altered, so all functionality
+    (chat, product picker, photo
+    upload, feedback, digest, admin
+    OTP login from v2.32-2.33) is
+    untouched.
+  - Palette: dark #060606 canvas ->
+    light #f7f8fa; near-black cards
+    -> white #ffffff surfaces with
+    1px #e1e4ea lines + soft shadow;
+    ink #101820 text; brand orange
+    #FF9E1B (was #FFB020).
+  - Typography: Rajdhani/Inter ->
+    Bricolage Grotesque (display) +
+    Sora (body/UI) + JetBrains Mono
+    (labels, badges, buttons).
+  - Components: angular clip-path
+    cut-corner buttons -> rounded
+    PILL buttons (radius 100px) with
+    hover lift + orange glow; inputs
+    radius 8px with orange focus
+    ring; chat bubbles on white;
+    orange pill scrollbar; light
+    cream alert/disclaimer box; the
+    dark "gaming" glows replaced by
+    a faint static warm atmosphere.
+  - Legacy CSS var aliases kept
+    (--orange,--bg,--s1,...) mapped
+    to the new palette so any stray
+    reference still resolves.
+  - Inline dark-hex bits (CSV link,
+    Raise-a-ticket badge, feedback /
+    helper text, disclaimer, footer,
+    version stamp) recoloured to the
+    light brand by hand.
+  NOTE: I cannot render live
+  Streamlit here -- visual review
+  needed after deploy.
+
 v2.33.0 (2026-05-20) -- Claude
   - Y-bump: admin OTP emails now
     send via BREVO (the
@@ -5208,7 +5287,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.33.0"
+__version__ = "2.35.0"
 
 import streamlit as st
 
@@ -5307,86 +5386,104 @@ CB_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA7EAAAOxCAYAAAAjIyBZAAE
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500&display=swap');
-:root{--orange:#FFB020;--orange-dim:rgba(255,176,32,0.12);--orange-border:rgba(255,176,32,0.3);--bg:#080808;--s1:#101010;--s2:#171717;--border2:#282828;--text:#EFEFEF;--muted:#777;}
-html,body,[class*="css"]{background-color:var(--bg)!important;color:var(--text);}
-.stApp{background-color:var(--bg);}
-.main .block-container{max-width:780px;padding-top:0!important;padding-bottom:4rem;margin-top:0!important;}
-.cb-header{display:flex;align-items:center;justify-content:space-between;padding:0.3rem 0 0.5rem;border-bottom:1px solid var(--border2);margin-bottom:0.6rem;position:relative;}
-.cb-header::after{content:'';position:absolute;bottom:-1px;left:0;width:100px;height:2px;background:var(--orange);}
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root{
+  --cb-bg:#0d1319;--cb-bg-soft:#111a23;--cb-surface:#18212b;--cb-surface-2:#1f2a35;
+  --cb-line:#2b3744;--cb-line-soft:#232e39;
+  --cb-ink:#eef1f5;--cb-ink-2:#c4c9d4;--cb-ink-3:#8a92a3;
+  --cb-accent:#FF9E1B;--cb-accent-2:#ffb347;--cb-accent-soft:rgba(255,158,27,0.12);
+  --on-accent:#101820;
+  /* legacy aliases — any leftover var() reference resolves to the dark palette */
+  --orange:#FF9E1B;--orange-dim:rgba(255,158,27,0.12);--orange-border:#2b3744;
+  --bg:#0d1319;--s1:#18212b;--s2:#1f2a35;--border2:#2b3744;--text:#eef1f5;--muted:#8a92a3;
+}
+html,body,[class*="css"],[data-testid="stAppViewContainer"],[data-testid="stApp"],.stApp{
+  background-color:var(--cb-bg)!important;color:var(--cb-ink);
+  font-family:'Sora',-apple-system,BlinkMacSystemFont,sans-serif;
+  padding-top:0!important;margin-top:0!important;}
+h1,h2,h3,h4,h5,h6{font-family:'Bricolage Grotesque',serif!important;font-weight:700!important;color:var(--cb-ink)!important;letter-spacing:-0.02em!important;}
+.main .block-container{max-width:780px;padding-top:0!important;padding-bottom:4rem;margin-top:0!important;position:relative;z-index:1;}
+[data-testid="stHeader"]{display:none!important;height:0!important;min-height:0!important;visibility:hidden!important;}
+section[data-testid="stMain"] > div:first-child{padding-top:0!important;}
+div[data-testid="stVerticalBlock"] > div:first-child{padding-top:0!important;}
+.appview-container .main .block-container{padding-top:0!important;}
+[data-testid="stSidebar"]{background:var(--cb-bg-soft)!important;}
+
+.cb-header{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0 0.7rem;border-bottom:1px solid var(--cb-line);margin-bottom:0.8rem;position:relative;}
+.cb-header::after{content:'';position:absolute;bottom:-1px;left:0;width:64px;height:3px;background:var(--cb-accent);border-radius:100px;}
 .cb-brand{display:flex;align-items:center;gap:14px;}
 .cb-logo-text{display:none;}
 .cb-tagline{display:none;}
-.cb-tagline{font-size:9px;color:var(--muted);letter-spacing:0.22em;text-transform:uppercase;margin-top:5px;}
-.cb-live-badge{background:var(--orange);color:#000;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 16px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
-.status-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;display:inline-block;margin-right:6px;box-shadow:0 0 8px #22C55E;animation:blink 2s infinite;}
+.cb-live-badge{background:var(--cb-accent);color:var(--on-accent);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:6px 16px;border-radius:100px;}
+.status-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;display:inline-block;margin-right:6px;box-shadow:0 0 8px rgba(34,197,94,0.7);animation:blink 2s infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
-.cb-label{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--orange);margin-bottom:6px;display:flex;align-items:center;gap:10px;}
-.cb-label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent);}
+
+.cb-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--cb-accent);margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+.cb-label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--cb-line),transparent);}
+
 .msg-user{display:flex;justify-content:flex-end;margin:10px 0;}
-.msg-user-bubble{background:var(--orange);color:#000;font-weight:600;padding:11px 18px;border-radius:18px 18px 3px 18px;max-width:78%;font-size:14px;line-height:1.55;font-family:'Inter',sans-serif;}
+.msg-user-bubble{background:var(--cb-accent);color:var(--on-accent);font-weight:500;padding:11px 18px;border-radius:18px 18px 4px 18px;max-width:78%;font-size:14px;line-height:1.55;font-family:'Sora',sans-serif;box-shadow:0 2px 12px rgba(255,158,27,0.22);}
 .msg-bot{display:flex;gap:10px;align-items:flex-start;margin:10px 0;}
-.msg-bot-icon{width:34px;height:34px;flex-shrink:0;background:var(--orange-dim);border:1px solid var(--orange-border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-top:2px;}
-.msg-bot-bubble{background:var(--s1);border:1px solid var(--border2);border-left:2px solid var(--orange);color:#DFDFDF;padding:13px 17px;border-radius:3px 16px 16px 16px;max-width:85%;font-size:14px;line-height:1.72;font-family:'Inter',sans-serif;}
-.msg-bot-name{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--orange);margin-bottom:7px;}
-.stTextInput input{background:var(--s1)!important;border:1px solid var(--border2)!important;border-radius:5px!important;color:var(--text)!important;font-size:14px!important;padding:12px 16px!important;font-family:'Inter',sans-serif!important;}
-.stTextInput input:focus{border-color:var(--orange)!important;box-shadow:0 0 0 2px var(--orange-dim)!important;}
-.stTextInput input::placeholder{color:#383838!important;}
-.stSelectbox > div > div{background:var(--s1)!important;border:1px solid var(--border2)!important;border-radius:5px!important;color:var(--text)!important;}
-.stSelectbox > div > div:focus-within{border-color:var(--orange)!important;box-shadow:0 0 0 2px var(--orange-dim)!important;}
-.stSelectbox svg{fill:var(--orange)!important;}
-.stButton button,.stFormSubmitButton button,.stDownloadButton button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.1em!important;text-transform:uppercase!important;font-family:'Rajdhani',sans-serif!important;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%)!important;transition:all 0.15s!important;}
-.stButton button:hover,.stFormSubmitButton button:hover,.stDownloadButton button:hover{background:#FFC040!important;}
+.msg-bot-icon{width:34px;height:34px;flex-shrink:0;background:var(--cb-accent-soft);border:1px solid var(--cb-line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-top:2px;}
+.msg-bot-bubble{background:var(--cb-surface);border:1px solid var(--cb-line);border-left:3px solid var(--cb-accent);color:var(--cb-ink-2);padding:13px 17px;border-radius:4px 14px 14px 14px;max-width:85%;font-size:14px;line-height:1.72;font-family:'Sora',sans-serif;box-shadow:0 2px 10px rgba(0,0,0,0.25);}
+.msg-bot-bubble strong{color:var(--cb-ink)!important;}
+.msg-bot-name{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--cb-accent);margin-bottom:7px;}
+
+.stTextInput input{background:var(--cb-surface)!important;border:1px solid var(--cb-line)!important;border-radius:8px!important;color:var(--cb-ink)!important;font-size:14px!important;padding:12px 16px!important;font-family:'Sora',sans-serif!important;}
+.stTextInput input:focus{border-color:var(--cb-accent)!important;box-shadow:0 0 0 3px rgba(255,158,27,0.18)!important;}
+.stTextInput input::placeholder{color:var(--cb-ink-3)!important;}
+.stSelectbox > div > div{background:var(--cb-surface)!important;border:1px solid var(--cb-line)!important;border-radius:8px!important;color:var(--cb-ink)!important;}
+.stSelectbox > div > div:focus-within{border-color:var(--cb-accent)!important;box-shadow:0 0 0 3px rgba(255,158,27,0.18)!important;}
+.stSelectbox svg{fill:var(--cb-accent)!important;}
+
+.stButton button,.stFormSubmitButton button,.stDownloadButton button{background:var(--cb-accent)!important;color:var(--on-accent)!important;border:1px solid var(--cb-accent)!important;border-radius:100px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.1em!important;text-transform:uppercase!important;font-family:'JetBrains Mono',monospace!important;padding:11px 22px!important;clip-path:none!important;box-shadow:none!important;transition:all 0.2s!important;}
+.stButton button:hover,.stFormSubmitButton button:hover,.stDownloadButton button:hover{background:var(--cb-accent-2)!important;color:var(--on-accent)!important;border-color:var(--cb-accent-2)!important;transform:translateY(-2px)!important;box-shadow:0 6px 22px rgba(255,158,27,0.4)!important;}
 [data-testid="stForm"]{border:none!important;padding:0!important;}
-/* File uploader — make it visible against the dark theme */
-[data-testid="stFileUploader"] label{color:var(--orange)!important;font-size:12px!important;font-weight:600!important;font-family:'Inter',sans-serif!important;margin-bottom:6px!important;}
-[data-testid="stFileUploader"] section{background:#0c0c0c!important;border:1px dashed var(--orange-border)!important;border-radius:6px!important;padding:8px 12px!important;}
-[data-testid="stFileUploader"] section:hover{border-color:var(--orange)!important;background:#0f0f0f!important;}
-[data-testid="stFileUploader"] section button{background:var(--orange)!important;color:#000!important;border:none!important;border-radius:3px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.08em!important;text-transform:uppercase!important;padding:6px 14px!important;clip-path:none!important;}
-/* Hide Streamlit's default "200MB per file" helper text — it's wrong (we enforce 5MB).
-   The accurate limit is communicated in the label and via the help tooltip instead. */
-[data-testid="stFileUploaderDropzoneInstructions"] small,
-[data-testid="stFileUploader"] section small{display:none!important;}
-[data-testid="stFileUploader"] section > div:first-child{color:#aaa!important;font-size:12px!important;}
-button[kind="secondary"],div[data-testid="stHorizontalBlock"] button{background:transparent!important;color:var(--orange)!important;border:1px solid var(--orange-border)!important;clip-path:none!important;border-radius:6px!important;font-size:16px!important;padding:4px 10px!important;letter-spacing:0!important;text-transform:none!important;}
-div[data-testid="stHorizontalBlock"] button:hover{background:var(--orange-dim)!important;border-color:var(--orange)!important;}
-hr{border-color:var(--border2)!important;}
-.cb-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted);font-family:'Inter',sans-serif;padding-top:0.25rem;}
-.cb-footer a{color:var(--orange);text-decoration:none;}
-.feedback-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);}
-.feedback-label{font-size:11px;color:var(--muted);font-family:'Inter',sans-serif;}
+
+/* File uploader — dark dashed dropzone */
+[data-testid="stFileUploader"] label{color:var(--cb-accent)!important;font-size:12px!important;font-weight:600!important;font-family:'Sora',sans-serif!important;margin-bottom:6px!important;}
+[data-testid="stFileUploader"] section{background:var(--cb-bg-soft)!important;border:1px dashed var(--cb-line)!important;border-radius:10px!important;padding:8px 12px!important;}
+[data-testid="stFileUploader"] section:hover{border-color:var(--cb-accent)!important;background:var(--cb-accent-soft)!important;}
+[data-testid="stFileUploader"] section button{background:var(--cb-accent)!important;color:var(--on-accent)!important;border:none!important;border-radius:100px!important;font-weight:700!important;font-size:11px!important;letter-spacing:0.08em!important;text-transform:uppercase!important;padding:6px 14px!important;clip-path:none!important;font-family:'JetBrains Mono',monospace!important;}
+/* Hide Streamlit's default "200MB per file" helper text — it's wrong (we enforce 5MB). */
+[data-testid="stFileUploaderDropzoneInstructions"] small,[data-testid="stFileUploader"] section small{display:none!important;}
+[data-testid="stFileUploader"] section > div:first-child{color:var(--cb-ink-3)!important;font-size:12px!important;}
+
+button[kind="secondary"],div[data-testid="stHorizontalBlock"] button{background:var(--cb-surface)!important;color:var(--cb-accent)!important;border:1px solid var(--cb-line)!important;clip-path:none!important;border-radius:100px!important;font-size:16px!important;padding:4px 12px!important;letter-spacing:0!important;text-transform:none!important;}
+div[data-testid="stHorizontalBlock"] button:hover{background:var(--cb-accent-soft)!important;border-color:var(--cb-accent)!important;}
+
+hr{border-color:var(--cb-line)!important;}
+.cb-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--cb-ink-3);font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;padding-top:0.6rem;margin-top:1rem;border-top:1px solid var(--cb-line);}
+.cb-footer a{color:var(--cb-accent);text-decoration:none;}
+.cb-footer a:hover{color:var(--cb-accent-2);}
+.feedback-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--cb-line);}
+.feedback-label{font-size:11px;color:var(--cb-ink-3);font-family:'Sora',sans-serif;}
+
+a{transition:color 0.2s;}
+a:hover{color:var(--cb-accent)!important;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--cb-accent)!important;border-radius:100px;}
+::-webkit-scrollbar-track{background:var(--cb-surface-2);}
+
 #MainMenu,footer,header{visibility:hidden;}
 .stDeployButton{display:none;}
-
-/* ── GAMING BACKGROUND ─────────────────────────────────────────── */
-html,body,[data-testid="stAppViewContainer"],[data-testid="stApp"],.stApp{
-    background: #060606 !important;
-padding-top:0!important;margin-top:0!important;}
-[data-testid="stHeader"]{display:none!important;height:0!important;min-height:0!important;visibility:hidden!important;}section[data-testid="stMain"] > div:first-child{padding-top:0!important;}div[data-testid="stVerticalBlock"] > div:first-child{padding-top:0!important;}.appview-container .main .block-container{padding-top:0!important;}
-[data-testid="stSidebar"]{background:#060606!important;}
-.main .block-container{position:relative;z-index:1;}
-@keyframes glowPulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
-@keyframes wmarkPulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
 </style>
 """, unsafe_allow_html=True)
 
-# Background energy glows only
+# Subtle warm brand atmosphere on the dark canvas — faint, static glows
 st.markdown("""
 <style>
 #cb-glow-bl{
-    position:fixed;bottom:-150px;left:-150px;
-    width:600px;height:600px;border-radius:50%;
-    background:radial-gradient(circle,rgba(255,140,0,0.15) 0%,transparent 70%);
+    position:fixed;bottom:-180px;left:-180px;
+    width:620px;height:620px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,158,27,0.10) 0%,transparent 70%);
     pointer-events:none;z-index:0;
-    animation:glowPulse 6s ease-in-out infinite;
 }
 #cb-glow-tr{
-    position:fixed;top:-120px;right:-120px;
-    width:500px;height:500px;border-radius:50%;
-    background:radial-gradient(circle,rgba(255,140,0,0.10) 0%,transparent 70%);
+    position:fixed;top:-150px;right:-150px;
+    width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,158,27,0.07) 0%,transparent 70%);
     pointer-events:none;z-index:0;
-    animation:glowPulse 6s ease-in-out infinite;
-    animation-delay:3s;
 }
 </style>
 <div id="cb-glow-bl"></div>
@@ -7670,8 +7767,8 @@ def render_admin():
                 filename = f"cb_support_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
                 st.markdown(
                     f'''<a href="data:text/csv;base64,{b64}" download="{filename}"
-                    style="display:inline-block;background:#FF8C00;color:#000;font-weight:600;
-                    padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;margin-top:4px">
+                    style="display:inline-block;background:#FF9E1B;color:#101820;font-weight:700;font-family:'JetBrains Mono',monospace;
+                    padding:8px 18px;border-radius:100px;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;margin-top:4px">
                     ⬇️ Download CSV</a>''',
                     unsafe_allow_html=True
                 )
@@ -8073,7 +8170,7 @@ for idx, msg in enumerate(st.session_state.messages):
                     update_feedback(row, "👎 Unhelpful", note)
                     st.session_state.feedback_given[fb_key] = f"👎 - {note}"
         else:
-            st.markdown(f"<p style='font-size:11px;color:#555;margin:2px 0 10px'>Thanks for your feedback: {st.session_state.feedback_given.get(fb_key, '')}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-size:11px;color:#8a92a3;margin:2px 0 10px'>Thanks for your feedback: {st.session_state.feedback_given.get(fb_key, '')}</p>", unsafe_allow_html=True)
 
         ai_response_index += 1
 
@@ -8350,7 +8447,7 @@ CUSTOMER MESSAGE: {original_text}
 
 # ── INPUT ──
 st.markdown("<div style='margin-top:1rem'></div>", unsafe_allow_html=True)
-st.markdown("<p style='font-size:10px;color:#555;margin:0 0 4px'>Press Enter or click Send to submit. You can attach up to 4 photos of your product / issue (PNG/JPG/WebP, max 5MB each).</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:10px;color:#8a92a3;margin:0 0 4px'>Press Enter or click Send to submit. You can attach up to 4 photos of your product / issue (PNG/JPG/WebP, max 5MB each).</p>", unsafe_allow_html=True)
 with st.form(key=f"chat_form_{st.session_state.input_key}", clear_on_submit=True):
     col_input, col_btn = st.columns([5, 1])
     with col_input:
@@ -8432,17 +8529,17 @@ if st.session_state.messages:
 st.markdown("""
 <div style="
     margin-top: 1.5rem;
-    background: #111;
-    border: 1px solid #2a2a2a;
-    border-left: 3px solid #FF8C00;
-    border-radius: 6px;
+    background: rgba(255,158,27,0.10);
+    border: 1px solid #2b3744;
+    border-left: 3px solid #FF9E1B;
+    border-radius: 8px;
     padding: 10px 14px;
     font-size: 11px;
-    color: #666;
+    color: #c4c9d4;
     line-height: 1.6;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Sora', sans-serif;
 ">
-    <span style="color:#FF8C00;font-weight:600;">⚠ AI Disclaimer:</span>
+    <span style="color:#FF9E1B;font-weight:700;">⚠ AI Disclaimer:</span>
     This support chat is powered by AI and is intended to provide general guidance based on Cosmic Byte product manuals.
     Responses may not always be accurate, complete, or up to date.
     For warranty claims, order issues, returns, or any official matter, please contact our support team directly.
@@ -8459,7 +8556,7 @@ st.markdown("""
     <div>
         Need more help? &nbsp;
         <a href="https://www.thecosmicbyte.com/raise-a-ticket/" target="_blank"
-           style="background:#FFB020;color:#000;padding:4px 12px;border-radius:3px;font-weight:700;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">
+           style="background:#FF9E1B;color:#101820;padding:5px 14px;border-radius:100px;font-weight:700;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;text-decoration:none">
            Raise a ticket
         </a>
         &nbsp;&nbsp;
@@ -8468,9 +8565,9 @@ st.markdown("""
         <a href="tel:+917351615161">+91 7351615161</a>
         <span style="color:#333">&nbsp;(Mon-Sat 10am-6pm)</span>
     </div>
-    <a href="https://www.thecosmicbyte.com" target="_blank" style="color:#444;font-size:11px">thecosmicbyte.com</a>
+    <a href="https://www.thecosmicbyte.com" target="_blank" style="color:#ffb347;font-size:11px">thecosmicbyte.com</a>
 </div>
-<div style="text-align:right;color:#333;font-size:10px;font-family:'Inter',sans-serif;margin-top:4px">
+<div style="text-align:right;color:#8a92a3;font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;margin-top:4px">
     v__VERSION_PLACEHOLDER__
 </div>
 """.replace("__VERSION_PLACEHOLDER__", __version__), unsafe_allow_html=True)
