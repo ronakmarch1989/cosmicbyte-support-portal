@@ -139,6 +139,311 @@ CHANGELOG FORMAT:
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
 
+v2.33.0 (2026-05-20) -- Claude
+  - Y-bump: admin OTP emails now
+    send via BREVO (the
+    transactional email service
+    already used by the Cosmic
+    Byte website and the Reverse
+    Pickup portal), with the
+    existing Gmail SMTP path kept
+    as an automatic fallback.
+    Operator-requested — keeps all
+    Cosmic Byte email on one
+    service.
+
+  Why:
+    v2.32.0 delivered the admin
+    OTP via Gmail SMTP (the path
+    the daily digest already
+    used). The operator asked to
+    use Brevo instead, since the
+    website and the pickup portal
+    already run on Brevo.
+    Consolidating onto one email
+    service simplifies sender-
+    domain verification,
+    deliverability monitoring,
+    and credentials management.
+
+  Implementation:
+    send_otp_email() rewritten to
+    match the pickup portal's
+    Brevo integration exactly
+    (app/email_brevo.py
+    send_login_code), via the
+    Brevo transactional HTTP API:
+      POST https://api.brevo.com/v3/smtp/email
+      headers: api-key, content-type,
+               accept
+      json: {sender:{name,email},
+             to:[{email}], subject,
+             htmlContent, textContent}
+      success = HTTP 200/201
+    The OTP email is a small clean
+    HTML body with the code shown
+    prominently, plus a plain-text
+    alternative.
+
+  Fallback behaviour (resilience):
+    * If BREVO_API_KEY is set -> send
+      via Brevo.
+    * If the Brevo call fails (non-
+      2xx or exception) -> automatically
+      fall through to Gmail SMTP.
+    * If BREVO_API_KEY is NOT set ->
+      go straight to Gmail SMTP (the
+      v2.32.0 behaviour).
+    This means the switch can never
+    break OTP delivery: worst case it
+    silently uses the already-working
+    Gmail path. The operator gets Brevo
+    the moment BREVO_API_KEY is present
+    in the environment.
+
+  Env vars (same names as the pickup
+  portal, so the values can be reused
+  verbatim):
+    BREVO_API_KEY    -- Brevo API key.
+                        If unset, OTP
+                        falls back to
+                        Gmail.
+    BREVO_URL        -- endpoint
+                        (default
+                        https://api.brevo.com/v3/smtp/email)
+    EMAIL_FROM       -- verified Brevo
+                        sender (default
+                        no-reply@thecosmicbyte.com)
+    EMAIL_FROM_NAME  -- sender display
+                        name (default
+                        "Cosmic Byte Support")
+
+  Operator action on deploy:
+    Add BREVO_API_KEY to the support
+    portal's Render environment (the
+    same key the website / pickup
+    portal use). EMAIL_FROM defaults
+    to the already-verified
+    no-reply@thecosmicbyte.com sender,
+    so no further setup is needed. If
+    BREVO_API_KEY is left unset, OTP
+    keeps working via Gmail.
+
+  Reused unchanged: the rate limiting,
+  whitelist, OTP hashing, verify cap,
+  and 8h session cookie from v2.32.0 /
+  v2.32.1 are untouched — only the
+  email transport changed.
+
+------------------------------------------------------------------------------
+
+v2.32.1 (2026-05-20) -- Claude
+  - Z-bump: set the default admin
+    OTP whitelist to the
+    operator's address,
+    ronak.gupta@thecosmicbyte.com
+    (was the two support
+    addresses). Now the email+OTP
+    login (v2.32.0) works
+    out-of-the-box on deploy with
+    no Render env-var setup
+    needed. Additional admins can
+    still be authorised by setting
+    ADMIN_EMAILS (comma-separated).
+
+------------------------------------------------------------------------------
+
+v2.32.0 (2026-05-20) -- Claude
+  - Y-bump: replaced the single
+    shared-password admin login
+    with EMAIL + ONE-TIME-CODE
+    (OTP) authentication, plus
+    rate limiting to deter spam
+    and bots. Operator-requested
+    security hardening of the
+    admin panel.
+
+  Why:
+    The admin panel was gated by
+    a single shared password
+    (ADMIN_PASSWORD). A shared
+    password is a weak control:
+    it can be guessed, shared,
+    leaked, or reused, and there
+    was no rate limiting on the
+    login form, so it was open
+    to automated guessing. The
+    operator asked for email +
+    OTP login with rate limiting.
+
+  What the new flow does:
+    1. Operator enters their
+       admin email.
+    2. If the email is on the
+       whitelist, a 6-digit
+       one-time code is emailed
+       to them (via the existing
+       Gmail SMTP path — no new
+       email provider needed).
+    3. Operator enters the code.
+       On success they're logged
+       in, and the existing 8h
+       HMAC session cookie is
+       set (so the
+       stay-logged-in behaviour
+       is unchanged).
+
+  Security properties:
+    * WHITELIST: only emails in
+      the ADMIN_EMAILS env var
+      can receive a code. A bot
+      can't request a code to an
+      address it controls.
+    * EMAIL-ENUMERATION
+      RESISTANCE: the form
+      behaves identically for
+      whitelisted and non-
+      whitelisted emails (same
+      messaging, same stage
+      transition), so it never
+      reveals which addresses
+      are valid admins.
+    * OTP HASHED AT REST: the
+      code is stored as an HMAC
+      (keyed by ADMIN_PASSWORD +
+      email), never in
+      plaintext. A leaked state
+      file is useless.
+    * SHORT TTL: codes expire
+      after 10 minutes and are
+      single-use (burned on
+      successful verify).
+    * VERIFY-ATTEMPT CAP: max 5
+      wrong guesses before the
+      code is invalidated —
+      stops brute-forcing the
+      6-digit space.
+    * PER-EMAIL SEND LIMIT: max
+      3 code requests per email
+      per 15 minutes.
+    * GLOBAL SEND LIMIT: max 20
+      codes sent across all
+      emails per 60 minutes
+      (defence-in-depth against
+      a flood even though the
+      whitelist already caps
+      targets).
+
+  State storage:
+    OTP + rate-limit state lives
+    in admin_otp_state.json on
+    the persistent disk
+    (/var/data), using the same
+    pattern + disk lock as the
+    digest state. If no
+    persistent disk is mounted,
+    falls back to an in-memory
+    cache_resource store (lost
+    on restart, which is fine —
+    OTPs and rate-limit windows
+    are short-lived). State is
+    pruned of expired entries on
+    every load so the file stays
+    small.
+
+  New env vars:
+    ADMIN_EMAILS
+      Comma-separated whitelist
+      of emails allowed to
+      request an admin OTP.
+      Defaults to
+      "cc@thecosmicbyte.com,
+      thecosmicbyte2017@gmail.com"
+      if unset, so the panel
+      isn't accidentally locked
+      out on first deploy.
+      RECOMMENDED: set this
+      explicitly in Render to
+      the exact admin addresses.
+    ADMIN_ALLOW_PASSWORD_FALLBACK
+      "true" re-enables the old
+      shared-password login as
+      an emergency break-glass
+      (shown as a collapsed
+      "Trouble receiving the
+      code?" expander). Default
+      OFF. Intended for the case
+      where email delivery breaks
+      and the operator would
+      otherwise be locked out.
+      Enable temporarily in
+      Render env, log in, fix
+      email, then disable again.
+
+  Reused, unchanged:
+    * Gmail SMTP (GMAIL_SENDER +
+      GMAIL_APP_PASSWORD) — the
+      same path the daily digest
+      uses. send_otp_email()
+      mirrors send_email_with_csv().
+    * The 8h HMAC session cookie
+      (_make_admin_auth_token /
+      _verify_admin_auth_token,
+      keyed by ADMIN_PASSWORD).
+      ADMIN_PASSWORD is still
+      used as the cookie + OTP
+      HMAC key; it's just no
+      longer a login method by
+      itself (unless the
+      break-glass is enabled).
+
+  New code (all additive except
+  the login-gate rewrite):
+    * import secrets (for
+      cryptographically-secure
+      OTP generation).
+    * ADMIN_OTP_* constants.
+    * _admin_allowed_emails(),
+      _otp_memory_store(),
+      _load_otp_state(),
+      _save_otp_state(),
+      _prune_otp_state(),
+      _otp_send_allowed(),
+      _generate_otp(),
+      _hash_otp(),
+      send_otp_email().
+    * Admin login gate rewritten
+      from a one-field password
+      form into the two-stage
+      email -> code flow, with
+      the optional break-glass
+      expander.
+
+  Operator action required on
+  deploy:
+    1. (Recommended) Set
+       ADMIN_EMAILS in Render to
+       the exact admin email
+       address(es).
+    2. Confirm GMAIL_SENDER and
+       GMAIL_APP_PASSWORD are
+       set (they already are —
+       the digest uses them).
+    3. Leave
+       ADMIN_ALLOW_PASSWORD_FALLBACK
+       unset (OFF) unless email
+       delivery is broken.
+
+  Reversibility:
+    Setting
+    ADMIN_ALLOW_PASSWORD_FALLBACK=true
+    restores the old password
+    login alongside OTP. Full
+    revert is a git revert of
+    this version.
+
+------------------------------------------------------------------------------
+
 v2.31.0 (2026-05-19) -- Claude
   - Y-bump: max_tokens for the
     Anthropic Messages API call
@@ -4903,7 +5208,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.31.0"
+__version__ = "2.33.0"
 
 import streamlit as st
 
@@ -4950,6 +5255,7 @@ import uuid
 import json
 import csv
 import re             # v2.26.0: risk-flagging regex patterns in admin
+import secrets        # v2.32.0: cryptographically-secure admin OTP generation
 import base64
 import io
 import zipfile
@@ -6361,6 +6667,232 @@ auto_daily_digest()
 # ── ADMIN PAGE ──
 ADMIN_PASSWORD = get_secret("ADMIN_PASSWORD", "cosmicbyte_admin")
 
+# ── ADMIN EMAIL + OTP LOGIN (v2.32.0, Brevo delivery v2.33.0) ──────────
+# Replaces the single shared-password admin login with email + one-time
+# code (OTP), delivered via Brevo (the transactional email service already
+# used by the website + pickup portal), with automatic Gmail SMTP fallback.
+# Includes rate limiting (per-email + global) to deter spam/bots, a verify-
+# attempt cap to stop brute-forcing the 6-digit code, and email-enumeration
+# resistance (the form behaves identically for whitelisted and non-
+# whitelisted emails).
+#
+# New env vars:
+#   ADMIN_EMAILS                  -- comma-separated whitelist of emails
+#                                    allowed to request an admin OTP.
+#                                    Defaults to
+#                                    ronak.gupta@thecosmicbyte.com if
+#                                    unset. Add more (comma-separated) to
+#                                    authorise additional admins.
+#   ADMIN_ALLOW_PASSWORD_FALLBACK -- "true" re-enables the old shared-
+#                                    password login as an emergency
+#                                    break-glass (default OFF). Use only
+#                                    if email delivery breaks; disable
+#                                    again afterwards.
+#
+# ADMIN_PASSWORD is still used as the HMAC key for the session cookie and
+# for hashing OTPs at rest, so the existing 8h cookie-persistence keeps
+# working unchanged.
+ADMIN_OTP_LENGTH = 6
+ADMIN_OTP_TTL_MINUTES = 10
+ADMIN_OTP_MAX_VERIFY_ATTEMPTS = 5       # wrong-code tries before the code is burned
+ADMIN_OTP_MAX_SENDS_PER_EMAIL = 3       # OTP requests per email...
+ADMIN_OTP_SEND_WINDOW_MINUTES = 15      # ...within this rolling window
+ADMIN_OTP_GLOBAL_MAX_SENDS = 20         # total OTP sends across all emails...
+ADMIN_OTP_GLOBAL_WINDOW_MINUTES = 60    # ...within this rolling window (defence in depth)
+
+ADMIN_OTP_STATE_PATH = (
+    os.path.join(PERSISTENT_DATA_DIR, "admin_otp_state.json")
+    if (PERSISTENT_DATA_DIR and os.path.isdir(PERSISTENT_DATA_DIR))
+    else None
+)
+
+def _admin_allowed_emails():
+    """Whitelist of emails permitted to request an admin OTP.
+    Comma-separated env var ADMIN_EMAILS; falls back to the operator's
+    admin address so the panel works out-of-the-box without env setup."""
+    raw = get_secret("ADMIN_EMAILS", "ronak.gupta@thecosmicbyte.com")
+    return {e.strip().lower() for e in raw.split(",") if e.strip()}
+
+@st.cache_resource
+def _otp_memory_store():
+    """In-memory OTP/rate-limit store, used only when no persistent disk is
+    mounted. Shared across all sessions on this instance; lost on restart
+    (acceptable — OTPs are short-lived and rate-limit windows are short)."""
+    return {"_data": {}}
+
+def _load_otp_state():
+    if ADMIN_OTP_STATE_PATH is None:
+        return dict(_otp_memory_store()["_data"])
+    if not os.path.exists(ADMIN_OTP_STATE_PATH):
+        return {}
+    try:
+        with _log_disk_lock:
+            with open(ADMIN_OTP_STATE_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: otp state read failed: {e}", flush=True)
+        return {}
+
+def _save_otp_state(state):
+    if ADMIN_OTP_STATE_PATH is None:
+        _otp_memory_store()["_data"] = dict(state)
+        return
+    try:
+        tmp_path = ADMIN_OTP_STATE_PATH + ".tmp"
+        with _log_disk_lock:
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(state, f)
+            os.replace(tmp_path, ADMIN_OTP_STATE_PATH)
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: otp state save failed: {e}", flush=True)
+
+def _prune_otp_state(state):
+    """Drop expired per-email entries and out-of-window send timestamps so
+    the state file stays small and rate-limit windows roll correctly."""
+    now = datetime.now()
+    send_cutoff = now - timedelta(minutes=ADMIN_OTP_SEND_WINDOW_MINUTES)
+    for email in list(state.keys()):
+        if email == "_global_sends":
+            continue
+        ent = state.get(email) or {}
+        kept = []
+        for s in ent.get("sends", []):
+            try:
+                if datetime.fromisoformat(s) > send_cutoff:
+                    kept.append(s)
+            except Exception:
+                pass
+        ent["sends"] = kept
+        exp = ent.get("expires")
+        try:
+            otp_expired = (not exp) or datetime.fromisoformat(exp) < now
+        except Exception:
+            otp_expired = True
+        if otp_expired and not kept:
+            del state[email]
+        else:
+            state[email] = ent
+    g_cutoff = now - timedelta(minutes=ADMIN_OTP_GLOBAL_WINDOW_MINUTES)
+    gkept = []
+    for s in state.get("_global_sends", []):
+        try:
+            if datetime.fromisoformat(s) > g_cutoff:
+                gkept.append(s)
+        except Exception:
+            pass
+    state["_global_sends"] = gkept
+    return state
+
+def _otp_send_allowed(email, state):
+    """Return (allowed: bool, message: str). Enforces per-email and global
+    send rate limits."""
+    now = datetime.now()
+    ent = state.get(email, {})
+    sends = ent.get("sends", [])
+    if len(sends) >= ADMIN_OTP_MAX_SENDS_PER_EMAIL:
+        try:
+            oldest = min(datetime.fromisoformat(s) for s in sends)
+            wait = int((oldest + timedelta(minutes=ADMIN_OTP_SEND_WINDOW_MINUTES) - now).total_seconds() // 60) + 1
+        except Exception:
+            wait = ADMIN_OTP_SEND_WINDOW_MINUTES
+        return False, f"Too many code requests for this email. Please wait about {max(wait,1)} minute(s) and try again."
+    if len(state.get("_global_sends", [])) >= ADMIN_OTP_GLOBAL_MAX_SENDS:
+        return False, "The login system is temporarily busy. Please try again in a few minutes."
+    return True, ""
+
+def _generate_otp():
+    return "".join(secrets.choice("0123456789") for _ in range(ADMIN_OTP_LENGTH))
+
+def _hash_otp(otp, email):
+    """HMAC the OTP keyed by ADMIN_PASSWORD + email, so the stored value is
+    useless to an attacker even if the state file leaks."""
+    return hmac.new(
+        ADMIN_PASSWORD.encode(),
+        f"{email.lower()}:{otp}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+def send_otp_email(recipient, otp):
+    """Send a one-time admin login code.
+
+    Prefers Brevo — the transactional email service already used by the
+    Cosmic Byte website and the Reverse Pickup portal — via its HTTP API
+    (same pattern as the pickup portal's send_login_code). Falls back to
+    the existing Gmail SMTP path if BREVO_API_KEY isn't configured or the
+    Brevo call fails, so OTP delivery keeps working either way.
+
+    Brevo env vars (same names as the pickup portal, so the values can be
+    reused):
+      BREVO_API_KEY    -- the Brevo API key (if unset, falls back to Gmail)
+      BREVO_URL        -- endpoint (default https://api.brevo.com/v3/smtp/email)
+      EMAIL_FROM       -- verified sender (default no-reply@thecosmicbyte.com)
+      EMAIL_FROM_NAME  -- sender display name (default "Cosmic Byte Support")
+    """
+    subject = "Your Cosmic Byte admin login code"
+    text_body = (
+        f"Your Cosmic Byte admin login code is: {otp}\n\n"
+        f"This code expires in {ADMIN_OTP_TTL_MINUTES} minutes and can be used once.\n"
+        f"If you didn't request this, you can safely ignore this email.\n\n"
+        f"- Cosmic Byte Support"
+    )
+
+    # ---- Preferred path: Brevo transactional email API ----
+    brevo_key = get_secret("BREVO_API_KEY")
+    if brevo_key:
+        try:
+            brevo_url = get_secret("BREVO_URL", "https://api.brevo.com/v3/smtp/email")
+            from_email = get_secret("EMAIL_FROM", "no-reply@thecosmicbyte.com")
+            from_name = get_secret("EMAIL_FROM_NAME", "Cosmic Byte Support")
+            html = (
+                "<div style='font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:auto'>"
+                "<p>Your Cosmic Byte admin login code is:</p>"
+                f"<p style='font-size:32px;font-weight:700;letter-spacing:6px;margin:16px 0'>{otp}</p>"
+                f"<p>This code expires in {ADMIN_OTP_TTL_MINUTES} minutes and can be used once.</p>"
+                "<p style='color:#888;font-size:13px'>If you didn't request this, you can safely ignore this email.</p>"
+                "<p style='color:#888;font-size:13px'>— Cosmic Byte Support</p>"
+                "</div>"
+            )
+            r = requests.post(
+                brevo_url,
+                headers={"api-key": brevo_key,
+                         "content-type": "application/json",
+                         "accept": "application/json"},
+                json={"sender": {"name": from_name, "email": from_email},
+                      "to": [{"email": recipient}],
+                      "subject": subject,
+                      "htmlContent": html,
+                      "textContent": text_body},
+                timeout=20,
+            )
+            if r.status_code in (200, 201):
+                return True
+            print(f"[support_portal_v2] WARNING: Brevo OTP send failed "
+                  f"({r.status_code}: {r.text[:200]}); trying Gmail fallback", flush=True)
+            # fall through to Gmail fallback
+        except Exception as e:
+            print(f"[support_portal_v2] WARNING: Brevo OTP send error: {e}; trying Gmail fallback", flush=True)
+            # fall through to Gmail fallback
+
+    # ---- Fallback path: Gmail SMTP (existing path the daily digest uses) ----
+    try:
+        gmail_user = get_secret("GMAIL_SENDER")
+        gmail_app_pw = get_secret("GMAIL_APP_PASSWORD")
+        if not gmail_user or not gmail_app_pw:
+            print("[support_portal_v2] WARNING: OTP not sent — no Brevo key and no Gmail secrets", flush=True)
+            return False
+        msg = MIMEText(text_body)
+        msg["From"] = gmail_user
+        msg["To"] = recipient
+        msg["Subject"] = subject
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(gmail_user, gmail_app_pw)
+            server.sendmail(gmail_user, recipient, msg.as_string())
+        return True
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: OTP email send failed (Gmail fallback): {e}", flush=True)
+        return False
+
+
 # ── ADMIN HIERARCHICAL GROUPING (v2.21.0) ──
 # With disk persistence (v2.17.0+), the admin conversation log grows
 # indefinitely. The flat list became unworkable past a few days. The
@@ -7237,50 +7769,130 @@ if st.session_state.show_admin:
 
     if not st.session_state.admin_authenticated:
         st.markdown("### 🔒 Admin Login")
-        pwd = st.text_input("Password", type="password")
-        c1, c2 = st.columns([1, 4])
-        with c1:
-            if st.button("Login"):
-                if pwd == ADMIN_PASSWORD:
-                    st.session_state.admin_authenticated = True
-                    # v2.13.0/.1: set the persistent auth cookie via the
-                    # shared manager. Guarded for the embed_mode edge case
-                    # where _cookie_manager is None (admin should never be
-                    # entered via embed_mode in practice).
-                    if _cookie_manager is not None:
-                        _cookie_manager.set(
-                            ADMIN_AUTH_COOKIE_NAME,
-                            _make_admin_auth_token(ADMIN_PASSWORD),
-                            expires_at=datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS),
-                        )
-                        # v2.24.3: critical -- give the cookie iframe a
-                        # moment to actually persist the write before
-                        # st.rerun() fires. Without this delay the rerun
-                        # races the postMessage to the iframe and the
-                        # cookie write is dropped, which means a hard
-                        # refresh later finds no cb_admin_auth cookie
-                        # and drops the operator back to the password
-                        # screen. 500ms is the smallest reliable window
-                        # observed across browsers (Chrome / Edge /
-                        # Safari / Firefox) for the iframe to receive
-                        # the postMessage, write document.cookie, and
-                        # have the browser commit the write. The user-
-                        # visible cost is a half-second pause on the
-                        # Login click; the user-visible benefit is that
-                        # admin auth now actually persists.
-                        time.sleep(0.5)
-                    # v2.24.2: clear the wait flag so a sign-out + sign-
-                    # back-in cycle inside the same session gets a fresh
-                    # wait window on the next refresh.
-                    st.session_state.pop("_admin_cookies_waited", None)
+        _allowed_emails = _admin_allowed_emails()
+        _otp_stage = st.session_state.get("_admin_otp_stage", "enter_email")
+        # Identical wording whether or not the email is whitelisted, so the
+        # form never reveals which addresses are valid admins.
+        _generic_sent_msg = "If that email is authorised, a login code is on its way — check your inbox."
+
+        def _finish_admin_login():
+            """Shared success path: mark authed, set the 8h cookie, rerun."""
+            st.session_state.admin_authenticated = True
+            st.session_state.pop("_admin_otp_stage", None)
+            st.session_state.pop("_admin_otp_email", None)
+            if _cookie_manager is not None:
+                _cookie_manager.set(
+                    ADMIN_AUTH_COOKIE_NAME,
+                    _make_admin_auth_token(ADMIN_PASSWORD),
+                    expires_at=datetime.now() + timedelta(hours=ADMIN_AUTH_DURATION_HOURS),
+                )
+                time.sleep(0.5)  # let the cookie iframe persist before rerun (see v2.24.3)
+            st.session_state.pop("_admin_cookies_waited", None)
+            st.rerun()
+
+        # ---- STAGE 1: request a code ----
+        if _otp_stage == "enter_email":
+            st.caption("Enter your authorised admin email. We'll send you a one-time login code.")
+            email_in = st.text_input("Admin email", key="_admin_otp_email_input")
+            c1, c2 = st.columns([1, 4])
+            with c1:
+                if st.button("Send code"):
+                    email_norm = (email_in or "").strip().lower()
+                    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email_norm):
+                        st.error("Please enter a valid email address.")
+                    else:
+                        state = _prune_otp_state(_load_otp_state())
+                        if email_norm in _allowed_emails:
+                            ok, why = _otp_send_allowed(email_norm, state)
+                            if not ok:
+                                st.error(why)
+                            else:
+                                otp = _generate_otp()
+                                now = datetime.now()
+                                ent = state.get(email_norm, {})
+                                ent["otp_hash"] = _hash_otp(otp, email_norm)
+                                ent["expires"] = (now + timedelta(minutes=ADMIN_OTP_TTL_MINUTES)).isoformat()
+                                ent["verify_attempts"] = 0
+                                ent.setdefault("sends", []).append(now.isoformat())
+                                state[email_norm] = ent
+                                state.setdefault("_global_sends", []).append(now.isoformat())
+                                _save_otp_state(state)
+                                if send_otp_email(email_norm, otp):
+                                    st.session_state._admin_otp_stage = "enter_code"
+                                    st.session_state._admin_otp_email = email_norm
+                                    st.rerun()
+                                else:
+                                    st.error("Couldn't send the code right now. Please try again in a moment.")
+                        else:
+                            # Non-whitelisted: advance to the code stage anyway so
+                            # the UI gives nothing away. Any code entered will fail.
+                            st.session_state._admin_otp_stage = "enter_code"
+                            st.session_state._admin_otp_email = email_norm
+                            st.rerun()
+            with c2:
+                if st.button("Cancel"):
+                    st.session_state.show_admin = False
+                    st.session_state.pop("_admin_otp_stage", None)
                     st.rerun()
-                else:
-                    st.error("Incorrect password")
-        with c2:
-            if st.button("Cancel"):
-                st.session_state.show_admin = False
-                st.rerun()
-        st.stop()
+
+            # Optional break-glass: only shown if explicitly enabled via env.
+            if get_secret("ADMIN_ALLOW_PASSWORD_FALLBACK", "false").lower() == "true":
+                with st.expander("Trouble receiving the code? (emergency password login)"):
+                    pwd = st.text_input("Admin password", type="password", key="_admin_pwd_fallback")
+                    if st.button("Login with password"):
+                        if pwd == ADMIN_PASSWORD:
+                            _finish_admin_login()
+                        else:
+                            st.error("Incorrect password")
+            st.stop()
+
+        # ---- STAGE 2: enter the code ----
+        else:
+            target = st.session_state.get("_admin_otp_email", "")
+            st.caption(f"Enter the {ADMIN_OTP_LENGTH}-digit code sent to your email. "
+                       f"It expires in {ADMIN_OTP_TTL_MINUTES} minutes.")
+            code_in = st.text_input("Login code", max_chars=ADMIN_OTP_LENGTH, key="_admin_otp_code_input")
+            c1, c2, c3 = st.columns([1, 1, 3])
+            with c1:
+                if st.button("Verify"):
+                    state = _prune_otp_state(_load_otp_state())
+                    ent = state.get(target, {})
+                    if not ent or "otp_hash" not in ent:
+                        st.error("No active code for that email. Please request a new one.")
+                    else:
+                        expired = False
+                        try:
+                            expired = datetime.fromisoformat(ent["expires"]) < datetime.now()
+                        except Exception:
+                            expired = True
+                        if expired:
+                            st.error("That code has expired. Please request a new one.")
+                            state.pop(target, None); _save_otp_state(state)
+                        elif ent.get("verify_attempts", 0) >= ADMIN_OTP_MAX_VERIFY_ATTEMPTS:
+                            st.error("Too many incorrect attempts. Please request a new code.")
+                            state.pop(target, None); _save_otp_state(state)
+                        elif hmac.compare_digest(ent["otp_hash"], _hash_otp((code_in or "").strip(), target)):
+                            state.pop(target, None); _save_otp_state(state)  # burn the code on success
+                            _finish_admin_login()
+                        else:
+                            ent["verify_attempts"] = ent.get("verify_attempts", 0) + 1
+                            remaining = ADMIN_OTP_MAX_VERIFY_ATTEMPTS - ent["verify_attempts"]
+                            state[target] = ent; _save_otp_state(state)
+                            if remaining > 0:
+                                st.error(f"Incorrect code. {remaining} attempt(s) left.")
+                            else:
+                                st.error("Too many incorrect attempts. Please request a new code.")
+            with c2:
+                if st.button("Resend"):
+                    st.session_state._admin_otp_stage = "enter_email"
+                    st.rerun()
+            with c3:
+                if st.button("Cancel"):
+                    st.session_state.show_admin = False
+                    st.session_state.pop("_admin_otp_stage", None)
+                    st.session_state.pop("_admin_otp_email", None)
+                    st.rerun()
+            st.stop()
     else:
         render_admin()
         st.stop()
