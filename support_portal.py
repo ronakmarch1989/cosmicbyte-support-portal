@@ -139,6 +139,76 @@ CHANGELOG FORMAT:
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
 
+v2.37.0 (2026-05-20) -- Claude
+  - Admin login now supports SMS and
+    WhatsApp codes in addition to
+    email. Ported from the Cosmic
+    Byte WooCommerce OTP plugin so
+    the SAME credentials are reused:
+      * WhatsApp -> LimeChat CVF-events
+        API (fires the approved
+        "cosmicbyte_otp" template).
+        Env: LIMECHAT_AUTH_VALUE
+        (required), LIMECHAT_URL,
+        LIMECHAT_AUTH_HEADER_NAME,
+        LIMECHAT_FB_ACCOUNT_ID,
+        LIMECHAT_EVENT_NAME.
+      * SMS -> URL-template bulk
+        gateway (##phone## ##otp##
+        ##message## placeholders).
+        Env: SMS_TPL_URL (required),
+        SMS_TPL_METHOD, _SUCCESS_MATCH,
+        _STRIP_PLUS.
+      * ADMIN_PHONES -- whitelist of
+        admin mobile numbers.
+    Login screen gained an Email /
+    WhatsApp / SMS selector. The
+    email path (Brevo/Gmail) is
+    UNCHANGED and remains the default.
+    OTP rate-limit, hashing, expiry,
+    and verify all reuse the existing
+    machinery keyed by identifier.
+  - Admin entry hidden: the visible
+    "Admin" button is removed. The
+    panel now opens only via the URL
+    ?admin (e.g. /?admin), or
+    ?admin=KEY if ADMIN_URL_KEY is
+    set. OTP still gates real access.
+  NOTE: cannot test live here — needs
+  the LimeChat/SMS env values set in
+  Render and a visual check on deploy.
+
+v2.36.0 (2026-05-20) -- Claude
+  - BUGFIX (admin OTP login): a
+    FAILED email send was still
+    counted against the per-email
+    rate limit (3 / 15 min). So if
+    delivery was broken, the admin
+    got locked out ("Too many code
+    requests") without ever
+    receiving a code. Now the send
+    is attempted FIRST and the code
+    is only persisted + counted if
+    the email actually went out. A
+    failed attempt no longer
+    consumes a rate-limit slot, and
+    the error now says so and points
+    to the server-log WARNING line.
+  - Added an in-app email-backend
+    diagnostic inside the emergency
+    password-login panel (shown only
+    when ADMIN_ALLOW_PASSWORD_FALLBACK
+    =true): reports whether a Brevo
+    key and/or Gmail SMTP creds are
+    detected (no secret values
+    shown), so a "codes not arriving"
+    problem is diagnosable without
+    log access. If NEITHER backend
+    is configured it says so plainly.
+  - No theme/logic changes beyond
+    the OTP gate; v2.35.0 dark theme
+    untouched.
+
 v2.35.0 (2026-05-20) -- Claude
   - DARK variant of the v2.34.0
     brand reskin. Operator chose
@@ -5287,7 +5357,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.35.0"
+__version__ = "2.37.0"
 
 import streamlit as st
 
@@ -6756,7 +6826,17 @@ if "feedback_given" not in st.session_state:
 if "admin_authenticated" not in st.session_state:
     st.session_state.admin_authenticated = False
 if "show_admin" not in st.session_state:
-    st.session_state.show_admin = False
+    # v2.37.0: the admin panel is no longer exposed by a visible button.
+    # It opens only when the URL carries ?admin  (e.g. ai.thecosmicbyte.com/?admin).
+    # If ADMIN_URL_KEY is set in the environment, the value must match
+    # (?admin=THEKEY) for a little extra obscurity; the OTP login still
+    # gates actual access either way.
+    _admin_q = st.query_params.get("admin", "")
+    _admin_url_key = get_secret("ADMIN_URL_KEY", "")
+    if _admin_url_key:
+        st.session_state.show_admin = (_admin_q == _admin_url_key)
+    else:
+        st.session_state.show_admin = bool(_admin_q)
 
 # ── AUTO DAILY DIGEST ──
 auto_daily_digest()
@@ -6988,6 +7068,124 @@ def send_otp_email(recipient, otp):
     except Exception as e:
         print(f"[support_portal_v2] WARNING: OTP email send failed (Gmail fallback): {e}", flush=True)
         return False
+
+
+# ── ADMIN OTP — SMS + WHATSAPP CHANNELS (v2.37.0) ─────────────────────
+# Mirrors the Cosmic Byte WooCommerce OTP plugin so the SAME credentials
+# can be reused — just set them in the Render environment:
+#   WhatsApp via LimeChat CVF-events API (fires the approved
+#   "cosmicbyte_otp" WhatsApp template):
+#     LIMECHAT_AUTH_VALUE        -- the x-limechat-uat token (REQUIRED)
+#     LIMECHAT_URL               -- default https://flow-builder.limechat.ai/api/v1/cvf-events
+#     LIMECHAT_AUTH_HEADER_NAME  -- default x-limechat-uat
+#     LIMECHAT_FB_ACCOUNT_ID     -- optional x-fb-account-id header value
+#     LIMECHAT_EVENT_NAME        -- default cosmicbyte_otp
+#   SMS via a URL-template bulk gateway (Indian-gateway pattern):
+#     SMS_TPL_URL                -- full URL with ##phone## ##otp## ##message## (REQUIRED)
+#     SMS_TPL_METHOD             -- GET (default) or POST
+#     SMS_TPL_SUCCESS_MATCH      -- optional substring that must appear in a success body
+#     SMS_TPL_STRIP_PLUS         -- "yes" (default) sends digits without the leading +
+#   ADMIN_PHONES                 -- comma-separated whitelist of admin mobile numbers
+def _normalize_phone_for_otp(raw, default_cc="91"):
+    """Return (e164, digits_only, without_country_code). A bare 10-digit
+    number gets the default country code (91 = India) prepended, matching
+    the website plugin's behaviour."""
+    digits = re.sub(r"\D", "", raw or "")
+    if not digits:
+        return "", "", ""
+    if len(digits) == 10:
+        digits = default_cc + digits
+    without_cc = digits[len(default_cc):] if (digits.startswith(default_cc) and len(digits) > 10) else digits
+    return "+" + digits, digits, without_cc
+
+def _admin_allowed_phones():
+    """Comma-separated env ADMIN_PHONES, normalised to digits-only for matching.
+    Empty by default — the operator sets their admin mobile number in Render."""
+    raw = get_secret("ADMIN_PHONES", "")
+    out = set()
+    for p in (raw or "").split(","):
+        _, digits, _ = _normalize_phone_for_otp(p.strip())
+        if digits:
+            out.add(digits)
+    return out
+
+def send_otp_whatsapp(phone_raw, otp):
+    """WhatsApp OTP via LimeChat CVF-events (same pattern as the website plugin)."""
+    auth_value = get_secret("LIMECHAT_AUTH_VALUE")
+    if not auth_value:
+        print("[support_portal_v2] WARNING: WhatsApp OTP not sent — LIMECHAT_AUTH_VALUE unset", flush=True)
+        return False
+    url = get_secret("LIMECHAT_URL", "https://flow-builder.limechat.ai/api/v1/cvf-events")
+    header_name = get_secret("LIMECHAT_AUTH_HEADER_NAME", "x-limechat-uat")
+    fb_account_id = get_secret("LIMECHAT_FB_ACCOUNT_ID", "")
+    event_name = get_secret("LIMECHAT_EVENT_NAME", "cosmicbyte_otp")
+    e164, digits, without_cc = _normalize_phone_for_otp(phone_raw)
+    headers = {"Content-Type": "application/json", header_name: auth_value}
+    if fb_account_id:
+        headers["x-fb-account-id"] = fb_account_id
+    body = {"distinct_id": digits, "phone": e164, "event": event_name,
+            "data": {"otp": otp, "phone_number": without_cc}}
+    try:
+        r = requests.post(url, headers=headers, json=body, timeout=15)
+        if r.status_code in (200, 201, 202):
+            return True
+        print(f"[support_portal_v2] WARNING: WhatsApp OTP send failed "
+              f"({r.status_code}: {(r.text or '')[:200]})", flush=True)
+        return False
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: WhatsApp OTP send error: {e}", flush=True)
+        return False
+
+def send_otp_sms(phone_raw, otp, message):
+    """SMS OTP via a configurable URL-template gateway (same pattern as the plugin).
+    The URL template embeds the gateway user/password/sender and uses the
+    placeholders ##phone## ##otp## ##message## (each URL-encoded on substitution)."""
+    from urllib.parse import quote, urlparse, parse_qs
+    url_template = get_secret("SMS_TPL_URL", "")
+    if not url_template:
+        print("[support_portal_v2] WARNING: SMS OTP not sent — SMS_TPL_URL unset", flush=True)
+        return False
+    method = (get_secret("SMS_TPL_METHOD", "GET") or "GET").upper()
+    if method not in ("GET", "POST"):
+        method = "GET"
+    success_pat = get_secret("SMS_TPL_SUCCESS_MATCH", "")
+    strip_plus = (get_secret("SMS_TPL_STRIP_PLUS", "yes") or "yes").lower() == "yes"
+    e164, digits, _ = _normalize_phone_for_otp(phone_raw)
+    phone_for_send = digits if strip_plus else e164
+    subs = {"##phone##": quote(phone_for_send), "##message##": quote(message), "##otp##": quote(otp)}
+    final = url_template
+    for k, v in subs.items():
+        final = final.replace(k, v)
+    try:
+        if method == "POST":
+            parsed = urlparse(final)
+            base = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+            form = {k: v[0] for k, v in parse_qs(parsed.query).items()}
+            r = requests.post(base, data=form, timeout=15)
+        else:
+            r = requests.get(final, timeout=15)
+        ok = 200 <= r.status_code < 300
+        if ok and success_pat:
+            ok = success_pat.lower() in (r.text or "").lower()
+        if ok:
+            return True
+        print(f"[support_portal_v2] WARNING: SMS OTP send failed "
+              f"({r.status_code}: {(r.text or '')[:200]})", flush=True)
+        return False
+    except Exception as e:
+        print(f"[support_portal_v2] WARNING: SMS OTP send error: {e}", flush=True)
+        return False
+
+def send_otp_via_channel(channel, identifier, otp):
+    """Dispatch an OTP to the chosen channel. Returns bool success.
+    Email keeps the existing Brevo/Gmail path untouched."""
+    if channel == "WhatsApp":
+        return send_otp_whatsapp(identifier, otp)
+    if channel == "SMS":
+        msg = (f"Your Cosmic Byte admin login code is {otp}. "
+               f"Valid for {ADMIN_OTP_TTL_MINUTES} minutes.")
+        return send_otp_sms(identifier, otp, msg)
+    return send_otp_email(identifier, otp)
 
 
 # ── ADMIN HIERARCHICAL GROUPING (v2.21.0) ──
@@ -7887,44 +8085,72 @@ if st.session_state.show_admin:
             st.session_state.pop("_admin_cookies_waited", None)
             st.rerun()
 
-        # ---- STAGE 1: request a code ----
+        # ---- STAGE 1: request a code (Email / WhatsApp / SMS) ----
         if _otp_stage == "enter_email":
-            st.caption("Enter your authorised admin email. We'll send you a one-time login code.")
-            email_in = st.text_input("Admin email", key="_admin_otp_email_input")
+            _channel = st.radio(
+                "Send my login code via",
+                ["Email", "WhatsApp", "SMS"],
+                horizontal=True,
+                key="_admin_otp_channel_pick",
+            )
+            if _channel == "Email":
+                st.caption("Enter your authorised admin email. We'll send you a one-time login code.")
+                id_in = st.text_input("Admin email", key="_admin_otp_email_input")
+            else:
+                _verb = "message you on WhatsApp" if _channel == "WhatsApp" else "text you"
+                st.caption(f"Enter your authorised admin mobile number. We'll {_verb} a one-time login code.")
+                id_in = st.text_input("Admin mobile number", key="_admin_otp_phone_input",
+                                      placeholder="+91 98765 43210")
             c1, c2 = st.columns([1, 4])
             with c1:
                 if st.button("Send code"):
-                    email_norm = (email_in or "").strip().lower()
-                    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email_norm):
-                        st.error("Please enter a valid email address.")
+                    # Resolve identifier + whitelist for the chosen channel.
+                    if _channel == "Email":
+                        identifier = (id_in or "").strip().lower()
+                        valid_format = bool(re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", identifier))
+                        fmt_err = "Please enter a valid email address."
+                        allowed = identifier in _allowed_emails
+                    else:
+                        _e164, identifier, _w = _normalize_phone_for_otp(id_in)
+                        valid_format = len(identifier) >= 10
+                        fmt_err = "Please enter a valid mobile number."
+                        allowed = identifier in _admin_allowed_phones()
+                    if not valid_format:
+                        st.error(fmt_err)
                     else:
                         state = _prune_otp_state(_load_otp_state())
-                        if email_norm in _allowed_emails:
-                            ok, why = _otp_send_allowed(email_norm, state)
+                        if allowed:
+                            ok, why = _otp_send_allowed(identifier, state)
                             if not ok:
                                 st.error(why)
                             else:
                                 otp = _generate_otp()
                                 now = datetime.now()
-                                ent = state.get(email_norm, {})
-                                ent["otp_hash"] = _hash_otp(otp, email_norm)
-                                ent["expires"] = (now + timedelta(minutes=ADMIN_OTP_TTL_MINUTES)).isoformat()
-                                ent["verify_attempts"] = 0
-                                ent.setdefault("sends", []).append(now.isoformat())
-                                state[email_norm] = ent
-                                state.setdefault("_global_sends", []).append(now.isoformat())
-                                _save_otp_state(state)
-                                if send_otp_email(email_norm, otp):
+                                # Attempt delivery FIRST (v2.36.0): only persist the
+                                # code + count it against the rate limit if it sent.
+                                if send_otp_via_channel(_channel, identifier, otp):
+                                    ent = state.get(identifier, {})
+                                    ent["otp_hash"] = _hash_otp(otp, identifier)
+                                    ent["expires"] = (now + timedelta(minutes=ADMIN_OTP_TTL_MINUTES)).isoformat()
+                                    ent["verify_attempts"] = 0
+                                    ent.setdefault("sends", []).append(now.isoformat())
+                                    state[identifier] = ent
+                                    state.setdefault("_global_sends", []).append(now.isoformat())
+                                    _save_otp_state(state)
                                     st.session_state._admin_otp_stage = "enter_code"
-                                    st.session_state._admin_otp_email = email_norm
+                                    st.session_state._admin_otp_email = identifier
+                                    st.session_state._admin_otp_channel = _channel
                                     st.rerun()
                                 else:
-                                    st.error("Couldn't send the code right now. Please try again in a moment.")
+                                    st.error(f"Couldn't send the code via {_channel} — that "
+                                             "backend isn't delivering. This attempt was NOT "
+                                             "counted against your limit. Check the server logs "
+                                             "for a line starting '[support_portal_v2] WARNING:'.")
                         else:
-                            # Non-whitelisted: advance to the code stage anyway so
-                            # the UI gives nothing away. Any code entered will fail.
+                            # Non-whitelisted: advance anyway so the UI reveals nothing.
                             st.session_state._admin_otp_stage = "enter_code"
-                            st.session_state._admin_otp_email = email_norm
+                            st.session_state._admin_otp_email = identifier
+                            st.session_state._admin_otp_channel = _channel
                             st.rerun()
             with c2:
                 if st.button("Cancel"):
@@ -7935,6 +8161,21 @@ if st.session_state.show_admin:
             # Optional break-glass: only shown if explicitly enabled via env.
             if get_secret("ADMIN_ALLOW_PASSWORD_FALLBACK", "false").lower() == "true":
                 with st.expander("Trouble receiving the code? (emergency password login)"):
+                    # v2.36.0: show which email backends are configured (no secret
+                    # values revealed) so delivery problems are diagnosable in-app.
+                    _has_brevo = bool(get_secret("BREVO_API_KEY"))
+                    _has_gmail = bool(get_secret("GMAIL_SENDER")) and bool(get_secret("GMAIL_APP_PASSWORD"))
+                    st.caption(
+                        f"Email backends detected — Brevo API key: "
+                        f"{'yes' if _has_brevo else 'NO'} · Gmail SMTP creds: "
+                        f"{'yes' if _has_gmail else 'NO'}. "
+                        + ("At least one path is configured; if codes still don't "
+                           "arrive, check spam and the server logs."
+                           if (_has_brevo or _has_gmail)
+                           else "NEITHER is configured — that's why no code can be "
+                                "sent. Set BREVO_API_KEY (or GMAIL_SENDER + "
+                                "GMAIL_APP_PASSWORD) in the Render environment.")
+                    )
                     pwd = st.text_input("Admin password", type="password", key="_admin_pwd_fallback")
                     if st.button("Login with password"):
                         if pwd == ADMIN_PASSWORD:
@@ -7946,7 +8187,10 @@ if st.session_state.show_admin:
         # ---- STAGE 2: enter the code ----
         else:
             target = st.session_state.get("_admin_otp_email", "")
-            st.caption(f"Enter the {ADMIN_OTP_LENGTH}-digit code sent to your email. "
+            _ch = st.session_state.get("_admin_otp_channel", "Email")
+            _dest = {"Email": "your email", "WhatsApp": "your WhatsApp",
+                     "SMS": "your phone"}.get(_ch, "your email")
+            st.caption(f"Enter the {ADMIN_OTP_LENGTH}-digit code sent to {_dest}. "
                        f"It expires in {ADMIN_OTP_TTL_MINUTES} minutes.")
             code_in = st.text_input("Login code", max_chars=ADMIN_OTP_LENGTH, key="_admin_otp_code_input")
             c1, c2, c3 = st.columns([1, 1, 3])
@@ -7955,7 +8199,7 @@ if st.session_state.show_admin:
                     state = _prune_otp_state(_load_otp_state())
                     ent = state.get(target, {})
                     if not ent or "otp_hash" not in ent:
-                        st.error("No active code for that email. Please request a new one.")
+                        st.error("No active code for that login. Please request a new one.")
                     else:
                         expired = False
                         try:
@@ -8572,9 +8816,7 @@ st.markdown("""
 </div>
 """.replace("__VERSION_PLACEHOLDER__", __version__), unsafe_allow_html=True)
 
-# Admin access link (subtle, at bottom)
-st.markdown("<div style='margin-top:1.5rem;text-align:center'>", unsafe_allow_html=True)
-if st.button("⚙️ Admin", key="open_admin", help="Admin dashboard"):
-    st.session_state.show_admin = True
-    st.rerun()
-st.markdown("</div>", unsafe_allow_html=True)
+# Admin access is no longer a visible button (v2.37.0).
+# Open the admin panel by visiting the portal with ?admin in the URL,
+# e.g. https://ai.thecosmicbyte.com/?admin  (or ?admin=YOURKEY if the
+# ADMIN_URL_KEY env var is set). The OTP login still gates real access.
