@@ -33,6 +33,49 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.27 (2026-05-20) -- Claude
+  * Z-bump: CORRECTED the Ares
+    Wireless LED scheme. Operator
+    reported the soft-copy manual
+    wrongly said the indicator
+    glows GREEN in Android mode;
+    the correct colour is BLUE.
+    Confirmed with operator: on the
+    Ares Wireless, Android AND
+    XInput BOTH show Blue. Fixed in
+    3 live spots (LED INDICATORS
+    list + guards (e) and (f)) and
+    added guard (h): never say
+    green for Ares Wireless Android;
+    blue is shared by XInput +
+    Android so distinguish by host;
+    scoped to Ares Wireless ONLY.
+    NOT changed: Ares Tri-Mode
+    (legitimately Green=Android) and
+    Ares Wired (still Green=Android
+    per its own manual — operator
+    only corrected the Wireless;
+    flagged for confirmation).
+
+v1.10.26 (2026-05-20) -- Claude
+  * Z-bump: Added a BATTERY LIFE
+    block to the Helios Dragon
+    mouse entry (operator-supplied
+    spec). RGB ON ~20H, RGB OFF
+    ~50H continuous (under 12mA
+    lights-off draw); wireless
+    modes only, moot when wired.
+    Included ✗ guards: do NOT
+    state a Helios mAh capacity or
+    charge time (not documented,
+    don't borrow other products'
+    figures), and the 20H/50H gap
+    is RGB on-vs-off NOT a
+    connection-mode difference.
+    The Helios SPECS one-liner
+    previously had no battery
+    figure at all.
+
 v1.10.25 (2026-05-19) -- Claude
   * Z-bump: Added new Rule 17
     "OUTPUT FORMAT — MARKDOWN
@@ -9732,7 +9775,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.25"
+__version__ = "1.10.27"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -11691,10 +11734,10 @@ CONNECTIVITY:
 - Range: up to 8 metres. Clear line of sight recommended.
 
 LED INDICATORS:
-- Blue LED = XInput mode (default, PC).
+- Blue LED = XInput mode (default, PC). Blue ALSO indicates Android mode on this SKU (see next line).
 - Red LED = DirectInput mode.
 - Yellow LED = PC Analog mode.
-- Green LED = Android mode.
+- Android mode = Blue LED (NOT green). Corrected 2026-05-20: the Ares Wireless shows BLUE in Android mode — the SAME colour as XInput. There is NO green Android indicator on the Ares Wireless. Because Blue covers both XInput and Android, the colour alone does not distinguish them — tell them apart by the host (connected to a PC = XInput; connected to Android via OTG = Android mode).
 - LEDs blinking = connecting / needs pairing.
 - LED solid = connected.
 - LED flashes + vibration disabled = low battery.
@@ -11774,21 +11817,26 @@ Known hallucinations the AI has produced for the Ares Wireless dongle disconnect
 
 (e) "Hold Turbo + Home for 3 seconds to cycle between XInput and DirectInput modes" -- WRONG. Turbo + Home is not a documented combo for any Ares variant. The correct XInput / DirectInput toggle DIFFERS BY SKU:
     * Ares Wired AND Ares Wireless (per the manuals — same combo on both):
-        Hold the HOME button for 5 seconds. LED colour changes: Blue = XInput, Red = DirectInput, Yellow = PC Analog, Green = Android (auto).
+        Hold the HOME button for 5 seconds. LED colour changes: Blue = XInput, Red = DirectInput, Yellow = PC Analog. On the Ares Wireless, Android mode ALSO shows BLUE (auto-detected via OTG; corrected 2026-05-20 — NOT green). (The Ares Wired's LED scheme is documented in the Ares Wired entry.)
     * Ares Tri-Mode (different combo — confirmed by the Ares Tri-Mode manual):
         Press Back + Start together for 3 seconds. LED colour changes: Orange = XInput, Red = DirectInput, Green = Android, Blue = iOS.
     * Ares Pro: granular per-mode table — the combo depends on connection mode (Wired / 2.4GHz / Bluetooth) AND platform (PC / Android). See the Ares Pro entry's modes table.
     If you find yourself writing "Turbo + Home" or "Hold X + Y for 3 seconds" as a mode-switch combo for an Ares Wireless or Ares Wired, stop — that's a hallucination. The correct answer is HOME 5 seconds for both.
 
-(f) "Orange LED = XInput mode" for an Ares Wireless or Ares Wired -- WRONG colour. Orange = XInput is the Ares TRI-MODE LED scheme (a different SKU). The LED colour scheme on the Ares Wireless (and the matching scheme on the Ares Wired) per their manuals is:
-    * BLUE LED solid = XInput mode (default on PC).
+(f) "Orange LED = XInput mode" for an Ares Wireless or Ares Wired -- WRONG colour. Orange = XInput is the Ares TRI-MODE LED scheme (a different SKU). The LED colour scheme on the Ares Wireless per its manual is (the Ares Wired is documented in its own entry):
+    * BLUE LED solid = XInput mode (default on PC) — and ALSO Android mode (Blue is shared on the Ares Wireless; corrected 2026-05-20, was previously mis-documented as green).
     * Red LED solid = DirectInput mode.
     * Yellow LED solid = PC Analog mode (a separate state — NOT XInput).
-    * Green LED solid = Android mode.
+    * There is NO green Android indicator on the Ares Wireless — Android shows BLUE.
     If a customer with an Ares Wireless reports their LED is "yellow" and asks if that's XInput, the answer is NO — yellow is PC Analog, not XInput. To switch them to XInput, they hold HOME for 5 seconds until the LED turns Blue.
     DO NOT borrow LED colours from the Ares Tri-Mode (Orange / Red / Green / Blue for XInput / DInput / Android / iOS) when answering an Ares Wireless or Ares Wired question — those are different SKUs with different LED schemes.
 
 (g) Blindly accepting a customer-stated framing that is internally inconsistent with their product -- WRONG. The Ares Wireless is 2.4GHz-only with no wired mode. If a customer asks about "switching modes via wired USB cable" while their session is identified as Ares Wireless, do NOT just go with the wired framing -- the customer most likely has a different Ares variant (Ares Tri-Mode, Ares Pro). ASK which variant before generating any procedure. This is a specific instance of the general rule (#14) in the SYSTEM_PROMPT: when a customer's stated framing contradicts the product they appear to have, clarify before procedure.
+
+(h) CORRECTION (2026-05-20, operator-reported): On the ARES WIRELESS the Android-mode LED is BLUE, NOT green. The KB previously stated "Green = Android" for this SKU — that was WRONG and has been corrected throughout this entry. On the Ares Wireless, BLUE now indicates BOTH XInput (PC default) and Android (via OTG). Consequences for answering:
+    * NEVER tell an Ares Wireless customer the LED is green in Android mode. There is no green state on this SKU.
+    * If an Ares Wireless customer says "my LED is blue," do NOT assume it must be XInput — on this SKU blue is shown for BOTH XInput and Android. Distinguish by the host: connected to a PC = XInput; connected to an Android device via OTG = Android mode. If unsure, ask what they have it plugged into.
+    * This correction applies to the ARES WIRELESS ONLY. The Ares TRI-MODE legitimately uses Green = Android (different SKU) — do NOT "correct" the Tri-Mode. The Ares WIRED entry still documents Green = Android per its own manual; do not change it based on this Ares Wireless correction.
 
 GENERAL GUIDANCE FOR VAGUE ARES DONGLE QUESTIONS:
 If a customer's message is ambiguous about disconnect / unpair / switch (as it almost always is -- "disconnect" can mean unplug, unpair, or mode-switch), DO NOT pick one interpretation and generate a procedure. ASK the clarifying question above. Volunteering an unrequested multi-step procedure is the exact context where the AI is most likely to hallucinate, and where a fabrication is most likely to send the customer down a useless rabbit hole.
@@ -12900,6 +12948,18 @@ CONNECTIVITY:
 DPI: Press DPI button to cycle (800/1600/2400/3200/6400/10000 DPI). Customise via software for precise levels.
 
 RGB: 6 preset lighting modes on top of mouse. Customise via Windows software.
+
+BATTERY LIFE (wireless use): Helios runtime depends on the RGB lighting.
+- RGB ON: up to ~20 hours of continuous use.
+- RGB OFF: up to ~50 hours of continuous use (with lighting off the mouse draws under 12mA).
+So switching the RGB off more than doubles runtime (≈20H -> ≈50H). These figures apply to wireless modes (2.4GHz / Bluetooth). In WIRED mode it is moot — the mouse runs off USB power and charges while connected, so it does not run the battery down.
+SOURCE: operator-supplied official spec, 2026-05-20. The two runtime figures (20H lights-on, 50H lights-off) and the <12mA lights-off current draw are the ONLY battery figures confirmed for the Helios.
+
+✗ Do NOT state a battery CAPACITY (mAh) for the Helios — it is NOT in our documentation. Other Cosmic Byte products list mAh figures (e.g. 600mAh, 1300mAh); do NOT borrow or guess one for the Helios. If asked the mAh, say it isn't specified in the information you have.
+✗ Do NOT invent a CHARGE TIME or charging current for the Helios — not documented.
+✗ Do NOT frame the 20H vs 50H gap as a Bluetooth-vs-2.4GHz difference — the difference is RGB ON vs OFF, not the connection mode.
+✗ Do NOT inflate beyond the stated numbers (e.g. "60+ hours") or quote a per-hour battery drain — only ~20H and ~50H are confirmed.
+✓ CORRECT framing: "On the Helios, battery life depends on the RGB lighting — about 20 hours with the lights on, and up to about 50 hours with the lighting off. So if you want to stretch the charge, turn the RGB off."
 
 ═══════════════════════════════════════════════════════════════════════
 HELIOS COMPANION SOFTWARE — full feature documentation
