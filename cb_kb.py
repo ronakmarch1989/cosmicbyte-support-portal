@@ -33,6 +33,28 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.28 (2026-05-20) -- Claude
+  * Z-bump: Documented the Phantom
+    TKL (Wireless tri-mode) COMPANION
+    SOFTWARE from operator-supplied
+    screenshots (2026-05-22). Added a
+    full feature section to the
+    "Phantom TKL" entry: the 5 tabs
+    (Settings/Global, Key Assignment,
+    Light Effect, Music/sound-reactive,
+    Macro), the 18 light effects, the
+    10 music modes, profiles + 4
+    layers (Default/FN1/FN2/Tap),
+    remap targets, and in-app Device
+    Info (Firmware V3.0.0 USB /
+    Software V2.0.0). Guards: don't
+    invent effects/modes beyond the
+    listed sets; don't conflate the
+    in-app software version with the
+    download-page build numbers;
+    don't confuse with Phantom TKL
+    Wired.
+
 v1.10.27 (2026-05-20) -- Claude
   * Z-bump: CORRECTED the Ares
     Wireless LED scheme. Operator
@@ -9775,7 +9797,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.27"
+__version__ = "1.10.28"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -13424,6 +13446,47 @@ SOFTWARE: Download from https://www.thecosmicbyte.com/downloaddrivers/
 - v1.0.0.4 (March 2026): Fixed icon and software resolution display.
 - v1.0.0.3 (Nov 2025): Fixed Debounce Time Adjustment issue.
 Always use the latest version from the official website. (software page). Windows only. Lets you remap keys, customise per-key RGB, set macros. Keyboard must be connected via USB-C for software to detect it.
+
+COMPANION SOFTWARE — FULL FEATURE DOCUMENTATION
+(added v1.10.28 based on operator-supplied software screenshots, 2026-05-22. Documents every tab and setting so the bot can answer Phantom TKL software-feature questions without fabricating. Windows PC software; connect the keyboard — USB-C recommended — for the software to detect it.)
+Software title bar: "Cosmic Byte Phantom TKL Wireless Software".
+In-app Device Info (Settings > Device Info), as shown 2026-05-22:
+- Device model: Phantom TKL Wireless
+- Firmware version: V3.0.0 (USB)
+- Software version: V2.0.0
+NOTE: the in-app "Software version" field (V2.0.0) is numbered separately from the official download-page version history (which lists builds like v1.0.0.4). Do NOT claim they are the same number or try to reconcile them — just tell customers to install the LATEST build from https://www.thecosmicbyte.com/downloaddrivers/.
+
+The software has FIVE sections, opened from the left-hand sidebar icons:
+
+1) SETTINGS / GLOBAL (gear icon) — sub-pages:
+   - Device Info: shows device model, firmware version, software version.
+   - Language: dropdown (English available).
+   - Startup: "Autorun" toggle (launch the software automatically when the PC starts).
+   - Exit, Tap, Sleep, Debounce, Reset: further global / keyboard-behaviour settings (Reset = restore the keyboard to defaults via software).
+
+2) KEY ASSIGNMENT (keyboard icon) — full key remapping:
+   - Profiles: create multiple (Profile1 by default; add / copy / delete / import / export profiles).
+   - Four layers per profile: Default, FN1, FN2, Tap.
+   - Each key can be reassigned to: a Keyboard key, a Mouse function, a Multimedia control, a Macro, a Command, or a Key combination.
+   - Assignable groups include standard keys (A-Z, 0-9, symbols), advanced keys (F1-F12, Esc, Tab, navigation/editing keys), the numeric keypad, and modifiers (Left/Right Ctrl, Shift, Alt, Win), plus FN / FN2.
+
+3) LIGHT EFFECT (sun/brightness icon) — RGB lighting effects:
+   - 18 options: Static, Breathing, Spectrum, Strobe, Raindrops, Color Wheel, Ripple, Starlight, Fade, Snake Trail, Neon Stream, Reactive, Wave, Pinwheel, Cascade, Bloom, Custom, Off.
+   - Adjustable: Brightness, Speed, single Color (colour wheel + R/G/B sliders + hex entry), a "Colourful" (multi-colour) toggle, preset colour swatches, and saved Custom colours.
+
+4) MUSIC / SOUND-REACTIVE LIGHTING (music-note icon): "the keyboard light changes with the rhythm of the system sound." Has an ON/OFF toggle.
+   - 10 music modes: Pulse – Chill, Strobe Burst – Rock, Drift – Ambient, Spectrum Shift – Vocal, Stream – Standard, Bloom – Intense, Beat Drop – Rock, Glide – Intense, Surge – Epic, Rainfall – Standard.
+   - Adjustable: Brightness, Color, "ColorFull", "Auto Gain", colour picker.
+
+5) MACRO EDIT PANEL (</> icon) — create and manage macros:
+   - "Record" button captures a key sequence; add / edit (pencil) / copy / delete / import / export macros; "double click to modify the item".
+
+CONNECTION: if the keyboard isn't connected the software shows "Please connect your device." Connect via USB-C (the in-app firmware is reported as "(USB)").
+
+✗ Do NOT invent lighting effects beyond the 18 listed above, or music modes beyond the 10 listed. If a customer asks whether a specific effect exists, only confirm ones on these lists; otherwise say it is not listed in the software.
+✗ Do NOT state firmware/software version numbers other than what Device Info shows (Firmware V3.0.0 (USB) / Software V2.0.0 as of 2026-05-22) — and note versions change, so point to the official download page for the latest.
+✗ Do NOT confuse this Phantom TKL WIRELESS (tri-mode) software with the Phantom TKL WIRED keyboard — they are different SKUs.
+✓ This software is Windows-only and needs the keyboard connected (USB-C recommended) to detect it.
 
 TROUBLESHOOTING:
 - Keyboard not detected in wired mode: Try a different USB port (preferably USB 3.0). Try a different USB-C cable. Make sure mode switch is on USB/middle position.
