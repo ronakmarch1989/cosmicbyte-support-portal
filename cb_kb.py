@@ -33,6 +33,37 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.10.29 (2026-05-22) -- Claude
+  * Z-bump: Added a new "Orbit" KB
+    entry documenting Cosmic Byte's
+    browser-based configurator at
+    orbit.thecosmicbyte.com. Covers
+    what it is, what customers can
+    do, the supported-devices
+    snapshot (Helios, Lumora, Ares
+    Pro, Drakon, Blitz, Stellaris,
+    Phantom TKL, Velox, Ignis;
+    "list grows"), strict browser
+    rules (Chrome/Edge/Brave/Opera
+    on DESKTOP only — NOT Firefox/
+    Safari/mobile), step-by-step
+    usage, connection rules (USB or
+    2.4 GHz only — Bluetooth can't
+    be configured), the Cosmic Byte
+    Connect desktop-helper carve-out
+    for wired Velox, troubleshooting,
+    and anti-fabrication guards (do
+    NOT claim Orbit works on Firefox/
+    Safari/mobile; do NOT confirm
+    support for a specific product
+    beyond the snapshot — point
+    customers to the live device
+    grid). Also added "Orbit" to
+    PRODUCT_URLS and to the PRODUCTS
+    dropdown so customers can select
+    it to ask Orbit-specific
+    questions.
+
 v1.10.28 (2026-05-20) -- Claude
   * Z-bump: Documented the Phantom
     TKL (Wireless tri-mode) COMPANION
@@ -9797,7 +9828,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.28"
+__version__ = "1.10.29"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -9848,6 +9879,7 @@ PRODUCT_URLS = {
     "Ignis Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-ignis-tri-mode-gaming-mouse-pixart-3311-sensor-1000hz-polling-software-support/",
     "Raptor Mouse": "https://www.thecosmicbyte.com/product/cosmic-byte-raptor-dual-mode-wireless-wired-gaming-mouse/",
     "Optical Switches": "https://www.thecosmicbyte.com/product/cosmic-byte-optical-switches-pack-of-20/",
+    "Orbit": "https://orbit.thecosmicbyte.com",
 }
 
 
@@ -11135,7 +11167,7 @@ KEY FEATURES (full list — surface these accurately when comparing Drakon to ot
 - MAGNETIC TOP COVER / FACE PLATE: 3 face plates included (plain black / doodle artwork / dragon artwork). Swap by lifting from the front edge gap. Dongle storage slot inside the cover.
 - VIBRATION: Dual motors, 4 levels (Off / Low / Medium / High) adjustable via FNL + Right Joystick Up/Down.
 - TURBO: 5/15/25 shots-per-second, semi-auto and full-auto modes. Speed adjustable.
-- BATTERY: 600mAh, 8-20 hours depending on RGB usage. RGB auto-disables at low battery to extend playtime.
+- BATTERY: 1000mAh, 8-20 hours depending on RGB usage. RGB auto-disables at low battery to extend playtime.
 - POLLING: 1000Hz on Wired and 2.4GHz.
 - CONNECTIVITY: Tri-Mode (USB-C Wired / 2.4GHz dongle / Bluetooth). Multi-platform via Bluetooth: PC (XInput + DInput), Android (XInput + DInput), iOS (XInput).
 - 3.5mm AUDIO JACK: Works in 2.4GHz wireless and wired modes only. NOT in Bluetooth or mobile modes.
@@ -11211,6 +11243,8 @@ TROUBLESHOOTING:
 - Controller frozen: Pin into RESET hole for 1 second.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+
+BATTERY CAPACITY — AUTHORITATIVE (do NOT regress): The Drakon battery is 1000mAh. An earlier version of this entry and some chat responses stated 600mAh — that was WRONG and has been corrected (confirmed by Cosmic Byte). If you ever recall, infer, or see "600mAh" for the Drakon, treat it as the stale/incorrect figure and use 1000mAh. Runtime is unchanged: 8-20 hours depending on RGB usage, with RGB auto-disabling at low battery. IMPORTANT — do NOT over-correct: the 600mAh figure is CORRECT for the Blitz Tri-Mode and Blitz Wireless (those genuinely are 600mAh) — only the Drakon's figure changed from 600 to 1000mAh. (Note: the Starforge is 1200mAh, NOT 600mAh — see its own entry.)
 """,
     "Ares Pro": """
 COSMIC BYTE ARES PRO - TRI-MODE CONTROLLER - FULL MANUAL
@@ -12097,10 +12131,11 @@ The Blitz Tri-Mode supports a charging dock accessory. The dock is SOLD SEPARATE
 CRITICAL clarifications for AI:
 - The Blitz Tri-Mode controller itself has the contacts on the back for the charging dock (that's the "supported" part). The dock is a separate accessory product.
 - The dock is NOT in the box with the controller. Anyone telling a customer "charging dock included" is wrong.
-- The dock IS available for purchase -- customers can buy it on thecosmicbyte.com (it has its own product listing now).
+- The dock IS available for purchase NOW — it has its own product listing on thecosmicbyte.com. Direct product page: https://www.thecosmicbyte.com/product/cosmic-byte-blitz-tri-mode-charging-dock-controller-not-included/ (as the URL says, the CONTROLLER is NOT included with the dock — the listing is for the bare dock accessory).
+- COMPATIBILITY — IMPORTANT: This charging dock works ONLY with the Blitz Tri-Mode. It does NOT fit or work with the Blitz Wireless (the Dual-Mode model). If a Blitz Wireless / Dual-Mode customer asks about this dock, tell them it is Blitz Tri-Mode only and not compatible with their controller.
 - The dock is an ADDED SUPPORT accessory, not a default-bundled item. Marketing the controller's features should mention "supports a charging dock (sold separately)" rather than "comes with a charging dock" or "charging dock included".
 
-If a customer asks where to buy the Blitz Tri-Mode charging dock, the correct response is: "The Blitz Tri-Mode supports a charging dock, which is sold separately on thecosmicbyte.com (not included with the controller). Search the site for the Blitz Tri-Mode charging dock product page. In the meantime, the controller charges normally via the included USB-C cable -- use a 5V/1A adapter or PC USB port. Avoid fast chargers as they can damage the battery."
+If a customer asks where to buy the Blitz Tri-Mode charging dock, the correct response is: "The Blitz Tri-Mode charging dock is now live and available to order here: https://www.thecosmicbyte.com/product/cosmic-byte-blitz-tri-mode-charging-dock-controller-not-included/ — it is sold separately (the controller is not included with the dock), and it works only with the Blitz Tri-Mode, not the Blitz Wireless / Dual-Mode. Use coupon code ONLINEPAY for 10% off on online payments. In the meantime, the controller charges normally via the included USB-C cable — use a 5V/1A adapter or PC USB port, and avoid fast chargers as they can damage the battery."
 
 KEY FEATURES (full list — surface these accurately when comparing Blitz Tri-Mode to other CB controllers):
 - JOYSTICKS: TMR (Tunnel Magnetoresistance) — drift-resistant, high precision. Newer/more precise than Hall Effect. Same joystick tech tier as Drakon and Stellaris 2nd Gen. The TMR joysticks are a primary selling point of the Blitz Tri-Mode and a real advantage over Lumora (which has Hall Effect joysticks, not TMR) — but NOT an advantage over Drakon, which also has TMR joysticks.
@@ -12485,6 +12520,8 @@ FIRMWARE UPDATE (Starforge — manual file path when available):
 PACKAGE: Controller, magnetic cover, 2.4G receiver, USB-C cable (1.5m), manual, 3 extra joystick sets, puller, screwdriver.
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered.
+
+BATTERY CAPACITY — AUTHORITATIVE (do NOT regress): The Starforge battery is 1200mAh (runtime 10-12 hours, charge 3-4 hours). An earlier catalogue line and some chat responses stated 600mAh — that was WRONG and has been corrected (confirmed by Cosmic Byte). If you ever recall, infer, or see "600mAh" for the Starforge, treat it as the stale/incorrect figure and use 1200mAh. (The 600mAh figure is correct for the Blitz Tri-Mode and Blitz Wireless, NOT the Starforge.)
 """,
 
     "Quantum": """
@@ -13806,6 +13843,7 @@ Always use the latest version from the official website.. Windows only. Per-key 
 TROUBLESHOOTING:
 - Keyboard not powering on in wireless: Check battery switch on back is turned ON.
 - 2.4G not working: FN + Q, receiver plugged in. Hold FN + Q for 3s to re-pair.
+- 2.4G short range / drops out after a short distance (e.g. cuts out within ~0.5m): this is almost always USB 3.0 radio interference or dongle placement, not a faulty keyboard. Try, in order: (1) move the receiver to a USB 2.0 port, or use a USB extension cable to position the dongle away from the PC case and away from USB 3.0 ports / hubs (USB 3.0 ports emit 2.4GHz noise that swamps the dongle); (2) keep the dongle in line-of-sight of the keyboard, not behind a metal case or monitor; (3) make sure the battery isn't critically low (FN + Left CTRL — RED = low; charge it, a low battery can weaken the radio); (4) re-pair with FN + Q held 3s (Q LED blinks green, stops when paired); (5) if it still drops, switch to Bluetooth (FN + W/E/R) or wired (FN + T) to confirm the keyboard itself is fine, and contact support to check the dongle. (NOTE: an exact rated 2.4GHz range isn't listed in the manual — do not quote a specific metre figure; if the customer needs the official spec, route them to cc@thecosmicbyte.com.)
 - Bluetooth not connecting: FN + W/E/R. Hold for 3s to re-pair. Enable BT on device.
 - Keyboard sleeps during use: Normal — press any key to wake.
 - Key not working: Remove and re-insert switch. Replace if still faulty.
@@ -13820,6 +13858,11 @@ SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
 
     "Artemis": """
 COSMIC BYTE ARTEMIS — WIRED 68-KEY MECHANICAL KEYBOARD
+
+⚠️ DISAMBIGUATION — TWO DIFFERENT ARTEMIS KEYBOARDS EXIST:
+- "Artemis" (THIS entry) = WIRED-ONLY 68-key mechanical. No battery, no wireless.
+- "Artemis Wireless" (CB-GK-40) = TRI-MODE (2.4GHz dongle / Bluetooth ×3 / wired USB-C), 2500mAh battery — a SEPARATE product with its own KB entry.
+If the customer mentions ANY of: wireless, Bluetooth, 2.4GHz, dongle, tri-mode, battery/charging, range/dropout, or calls it "Artemis 3" / "Artemis Tri-Mode" — they have the Artemis Wireless (CB-GK-40). Use the "Artemis Wireless" entry, and do NOT tell them their keyboard is wired-only. Both are Outemu Blue MECHANICAL swappable-switch boards (neither is optical).
 
 WIRED ONLY. No wireless, no battery. 68-key compact layout. Outemu swappable switches. Per-key RGB with software customization.
 
@@ -14687,6 +14730,74 @@ WARRANTY: 1 year against manufacturing defects. Physical/water damage and tamper
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
 """,
 
+    "Orbit": """
+ORBIT — COSMIC BYTE'S BROWSER-BASED CONFIGURATOR (also called "GOD MODE")
+(added v1.10.29 from operator-supplied Orbit package, 2026-05-22. This is a TOOL entry, not a physical product — it documents the Orbit web configurator that customers use to tune supported Cosmic Byte peripherals from any modern Chrome-based desktop browser.)
+
+WHAT IT IS:
+Cosmic Byte Orbit is the official BROWSER-BASED configurator for Cosmic Byte gaming peripherals. It runs entirely in a web browser at https://orbit.thecosmicbyte.com — for most devices there is NO desktop software to download. (One exception: the wired Velox needs the "Cosmic Byte Connect" desktop helper — see below.)
+
+URL: https://orbit.thecosmicbyte.com
+
+WHAT CUSTOMERS CAN DO IN ORBIT (varies per device):
+- Remap buttons / keys
+- Adjust DPI, sensitivity, polling rate
+- Tune stick / trigger response, deadzones, motion (controllers)
+- Customise vibration
+- Set RGB lighting effects, colour, brightness, speed
+- Record and edit macros
+- Sign in and sync settings to a Cosmic Byte account
+
+CURRENTLY SUPPORTED DEVICES (snapshot 2026-05-22 — list grows over time):
+- Helios (wireless gaming mouse)
+- Lumora (wireless gamepad)
+- Ares Pro (wireless gamepad)
+- Drakon (tri-mode controller)
+- Blitz (tri-mode controller)
+- Stellaris (tri-mode controller)
+- Phantom TKL (tri-mode gasket mechanical keyboard)
+- Velox (tri-mode gaming mouse)
+- Ignis (tri-mode gaming mouse)
+More Cosmic Byte hardware is added regularly. The LIVE device grid at https://orbit.thecosmicbyte.com is the authoritative list — direct customers there to see what is supported right now. Some devices may appear flagged "Coming soon — in testing" while in pre-release.
+
+BROWSER & PLATFORM REQUIREMENTS (strict):
+- DESKTOP ONLY — Windows, macOS, Linux, ChromeOS.
+- Supported browsers: Chrome, Edge, Brave, Opera (any Chromium-based browser with WebHID).
+- NOT supported: Firefox, Safari, or any mobile browser (iOS or Android) — even Chrome on a phone or tablet will NOT work. Orbit uses the browser WebHID API, which only Chromium browsers on desktop implement.
+
+HOW TO USE IT (step-by-step for customers):
+1. On a desktop or laptop computer, open Chrome (or Edge / Brave / Opera).
+2. Visit https://orbit.thecosmicbyte.com.
+3. Plug your Cosmic Byte device into the computer using either its USB cable or its 2.4 GHz USB dongle. For wireless devices, set the connection switch to USB or 2.4G (NOT Bluetooth).
+4. Click "Detect device" on the page and approve the browser permission prompt that pops up.
+5. Open the configurator for your device and tune the settings you want.
+6. Optional: sign in to sync settings to your account.
+
+CONNECTION RESTRICTIONS:
+- Bluetooth devices CANNOT be configured in Orbit — the configuration interface is only exposed over USB / 2.4 GHz. Customers on Bluetooth must switch their device to USB cable or its 2.4 GHz dongle to use Orbit.
+- For most supported devices, no driver or software install is required — Orbit talks to the device directly through the browser.
+
+SPECIAL CASE — COSMIC BYTE CONNECT (small desktop helper):
+A few devices (currently the WIRED Velox) expose their configuration interface on a USB-HID interface that Chrome cannot reach via WebHID. Those devices are configured through a small desktop helper called "Cosmic Byte Connect" — the Orbit web UI stays the same; the helper acts as a thin bridge between the browser and the device. Only these specific devices need the helper; all other supported devices work in the browser alone.
+
+TROUBLESHOOTING:
+- "It won't connect / no prompt appears": check the browser — must be Chrome / Edge / Brave / Opera on DESKTOP. Firefox, Safari and any mobile browser will not work.
+- "Detect device does nothing": make sure the device is plugged in via USB cable or its 2.4 GHz dongle. Bluetooth-connected devices cannot be configured in Orbit — switch to USB or 2.4G.
+- Permission prompt got dismissed: click "Detect device" again. If the browser remembered "no" for the site, try a new tab or an incognito window.
+- Wired Velox specifically: needs the Cosmic Byte Connect desktop helper.
+- "My device isn't in the list": not every Cosmic Byte product is supported yet — the list grows over time. Check the live device grid at https://orbit.thecosmicbyte.com for the current line-up.
+
+ANTI-FABRICATION GUARDS:
+✗ Do NOT tell a customer Orbit works on Firefox, Safari, iPhone, iPad, or Android — it does NOT. Orbit needs Chrome / Edge / Brave / Opera on a desktop computer.
+✗ Do NOT tell a customer to download desktop software for Orbit — Orbit is browser-based. The only download in scope is the "Cosmic Byte Connect" helper, and ONLY for the specific devices that need it (currently the wired Velox).
+✗ Do NOT confirm or deny that a SPECIFIC product is supported in Orbit unless it is on the snapshot list above. The supported set expands regularly — direct customers to https://orbit.thecosmicbyte.com for the authoritative current list.
+✗ Do NOT say Bluetooth devices can be configured in Orbit — they cannot. The customer must switch to USB or the 2.4 GHz dongle.
+✗ Do NOT invent per-device features. Features (DPI, RGB, macros, etc.) vary per device — only confirm what each device's own configurator actually exposes.
+✓ Correct framing: "Orbit is our browser-based configurator at https://orbit.thecosmicbyte.com — open it in Chrome / Edge / Brave / Opera on a desktop computer, connect your device by USB cable or its 2.4 GHz dongle (Bluetooth won't work for configuration), click Detect device, and approve the browser prompt. No download needed for most devices."
+
+SUPPORT: For Orbit issues, customers can email cc@thecosmicbyte.com.
+""",
+
     "All Products": ""  # Filled dynamically
 }
 
@@ -14705,7 +14816,7 @@ KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 # =============================================================================
 # PRODUCTS
 # =============================================================================
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly", "Orbit"]
 
 
 # =============================================================================
@@ -14845,7 +14956,7 @@ PRODUCT COMPARISON GUIDANCE — when a customer asks "should I upgrade from X to
 
   3. Do NOT default to a "newer = better" or "different = upgrade" framing. Many CB cross-product comparisons are SIDE-GRADES with different strengths, not hierarchical upgrades. Specifically:
      - Lumora vs Blitz Tri-Mode is a SIDE-GRADE. Blitz wins on TMR joystick precision; Lumora wins on macro count (4 vs 0), RGB customisation (Cloak design + 5 zones vs no RGB), button mapping flexibility (gamepad/keyboard/mouse vs gamepad-only), replaceable accessories (6 stick tops + 2 D-pad covers vs none), and onboard profiles (4 vs 3). Both have comparable gyro capability. Recommend based on what the customer values: precision-focused gaming = Blitz; customisation/macros/RGB = Lumora.
-     - Drakon vs Lumora is a SIDE-GRADE with different strengths. Drakon wins on TMR joysticks (Lumora has Hall Effect — different sensor tech, both drift-resistant but TMR is newer and more precise), RGB granularity (7 zones with up to 8 keyframe animations vs Lumora's 5 zones with preset animations), and the dragon artwork design + 3 swappable face plates. Lumora wins on macro count (4 vs 2), button mapping flexibility (gamepad/keyboard/mouse mapping vs gamepad-only), trigger mode flexibility (analog/digital software-switchable on Lumora's Hall Effect triggers vs Drakon's mechanical 3-position lock on Hall Effect triggers — both have Hall Effect trigger sensors, the difference is in HOW the mode is changed, not the sensor tech), and battery (1300mAh vs 600mAh). Both have drift-resistant joysticks (TMR vs HE), both are Tri-Mode, both have 6-axis gyro with software customisation, both have Hall Effect analog triggers. Recommend based on customer priority: TMR sticks + RGB granularity + dragon design + tactile mechanical trigger lock = Drakon; macros + keyboard/mouse mapping + bigger battery + software-switchable trigger modes = Lumora.
+     - Drakon vs Lumora is a SIDE-GRADE with different strengths. Drakon wins on TMR joysticks (Lumora has Hall Effect — different sensor tech, both drift-resistant but TMR is newer and more precise), RGB granularity (7 zones with up to 8 keyframe animations vs Lumora's 5 zones with preset animations), and the dragon artwork design + 3 swappable face plates. Lumora wins on macro count (4 vs 2), button mapping flexibility (gamepad/keyboard/mouse mapping vs gamepad-only), trigger mode flexibility (analog/digital software-switchable on Lumora's Hall Effect triggers vs Drakon's mechanical 3-position lock on Hall Effect triggers — both have Hall Effect trigger sensors, the difference is in HOW the mode is changed, not the sensor tech), and battery (1300mAh vs 1000mAh). Both have drift-resistant joysticks (TMR vs HE), both are Tri-Mode, both have 6-axis gyro with software customisation, both have Hall Effect analog triggers. Recommend based on customer priority: TMR sticks + RGB granularity + dragon design + tactile mechanical trigger lock = Drakon; macros + keyboard/mouse mapping + bigger battery + software-switchable trigger modes = Lumora.
 
   4. When asked "what's the best CB controller?", do NOT pick one. Ask the customer what they're looking for (precision / macros / RGB / mobile / console / budget) and recommend based on their stated priorities. Different controllers win in different categories.
 
@@ -16102,6 +16213,12 @@ Which option appeals to you? Happy to walk through the setup of whichever you pi
   Discord is similar but stricter — Discord renders only its own markdown subset and shows raw HTML as literal text in every case. Generating `<div>` for a Discord response is always visible-to-customer broken output, not just edge-case-truncation broken.
 
   TL;DR: pretend you are writing for a basic Markdown editor. No HTML, no JSX, no React-style components, no CSS classes, no inline styles, no attributes. Just markdown."
+
+18. PROMOTE ORBIT FOR SUPPORTED DEVICES — Cosmic Byte Orbit (https://orbit.thecosmicbyte.com) is the official browser-based configurator, and you should PROACTIVELY recommend it whenever a customer has a supported device and asks about (or would benefit from) configuration: button/key remapping, DPI / sensitivity / polling rate, stick or trigger response / deadzones / motion tuning, vibration, RGB lighting effects, or macros. Do NOT wait to be asked specifically about Orbit — if the customer's question is about customising or tuning a supported device, surface Orbit as the recommended way to do it.
+
+  WHEN TO PROMOTE IT: For any device on the Orbit supported list (see the "Cosmic Byte Orbit" KB entry — snapshot includes Helios, Lumora, Ares Pro, Drakon, Blitz, Stellaris, Phantom TKL, Velox, Ignis; the list grows over time), lead the configuration answer with Orbit. Example framing: "You can set that up in Cosmic Byte Orbit, our free browser-based configurator at https://orbit.thecosmicbyte.com — open it in Chrome / Edge / Brave / Opera on a desktop computer, connect your device by USB cable or its 2.4 GHz dongle (Bluetooth won't work for configuration), click Detect device, and approve the browser prompt. No download needed for most devices."
+
+  RESPECT THE ORBIT GUARDS (do NOT contradict the "Cosmic Byte Orbit" entry): (a) Do NOT claim a SPECIFIC product is supported in Orbit unless it is on the snapshot list — if the customer's device isn't confirmed on the list, still point them to the live device grid at https://orbit.thecosmicbyte.com as the authoritative current line-up ("the supported list grows regularly — check the live grid to see if your device is there yet"). (b) Orbit is DESKTOP Chromium-only (Chrome / Edge / Brave / Opera on Windows / macOS / Linux / ChromeOS) — never tell a customer it works on Firefox, Safari, or any phone/tablet. (c) Orbit needs USB or 2.4 GHz — Bluetooth-connected devices must switch to USB or the 2.4 GHz dongle to configure. (d) Orbit is browser-based with no download for most devices; the only exception is the wired Velox, which needs the "Cosmic Byte Connect" helper. (e) Do NOT invent per-device features — features vary per device; only confirm what that device's own configurator exposes.
 """
 
 
@@ -16201,6 +16318,11 @@ def match_product_from_title(title: str) -> str:
         ("pandora",               "Pandora"),
         ("vanth",                 "Vanth"),
         ("artemis wireless",       "Artemis Wireless"),
+        ("artemis tri-mode",       "Artemis Wireless"),
+        ("artemis tri mode",       "Artemis Wireless"),
+        ("artemis trimode",        "Artemis Wireless"),
+        ("artemis 3",              "Artemis Wireless"),
+        ("artemis bluetooth",      "Artemis Wireless"),
         ("cb-gk-40",              "Artemis Wireless"),
         ("artemis",               "Artemis"),
         ("firefly tkl",           "Firefly TKL"),
@@ -16615,8 +16737,8 @@ TRI-MODE WITH ADVANCED FEATURES:
 PREMIUM / FLAGSHIP:
 - Lumora: Tri-mode, Hall Effect joysticks, Hall Effect analog/digital switchable triggers, 6-axis gyro, 4 macro buttons, 5-zone Cloak RGB, full keyboard/mouse mapping, replaceable joystick tops + D-pad covers, 1300mAh. Most feature-rich CB controller.
 - Stellaris: Tri-mode, TMR joysticks, Hall Effect analog triggers, gyro, RGB, 1000mAh. Premium build (transparent variant has additional outer RGB ring).
-- Drakon: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers with 3-position physical trigger lock (digital / mid-analog / full-analog mechanical positions — sensor is Hall Effect throughout), gyro, 7-zone RGB with up to 8 keyframe animations, 2 macros (ML/MR), dragon artwork design with 3 swappable magnetic face plates (plain black / doodle / dragon), 6 swappable joystick tops in 3 styles, 2 D-pads, charging dock + carrying case included, 600mAh.
-- Starforge: Tri-mode, TMR joysticks (replaceable/modular — 4 force-rating modules included: 60gf / 70gf / 120gf / 150gf), Optical triggers (drift-resistant via light-based sensors — unique in the lineup), gyro, 600mAh, 4 macros (M1-M4), companion mobile app (Key Linker). Budget flagship.
+- Drakon: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers with 3-position physical trigger lock (digital / mid-analog / full-analog mechanical positions — sensor is Hall Effect throughout), gyro, 7-zone RGB with up to 8 keyframe animations, 2 macros (ML/MR), dragon artwork design with 3 swappable magnetic face plates (plain black / doodle / dragon), 6 swappable joystick tops in 3 styles, 2 D-pads, charging dock + carrying case included, 1000mAh.
+- Starforge: Tri-mode, TMR joysticks (replaceable/modular — 4 force-rating modules included: 60gf / 70gf / 120gf / 150gf), Optical triggers (drift-resistant via light-based sensors — unique in the lineup), gyro, 1200mAh, 4 macros (M1-M4), companion mobile app (Key Linker). Budget flagship.
 - Stratos Xenon: Tri-mode, Hall Effect, large grip. Comfort-focused.
 - Quantum: Tri-mode, Hall Effect, gyro. Mid-premium.
 - Eclipse: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, Joystick Resistance Roller (stiffness adjust). Entry flagship.
@@ -16685,8 +16807,8 @@ TKL (no numpad, compact):
 - Pandora: Wired TKL, Outemu Blue/Brown, RGB per-key. Mid-range.
 - Phantom TKL Wired (CB-GK-42): Wired TKL, Outemu switches, RGB. Good wired TKL.
 - Phantom TKL: Tri-mode wireless TKL, Outemu switches, RGB, 4000mAh. Best wireless TKL.
-- Artemis Wired (CB-GK-40): Wired TKL, optical switches, RGB. Fast actuation.
-- Artemis Wireless: Tri-mode, optical switches, RGB. Premium wireless TKL.
+- Artemis (wired): Wired 68-key compact (65% layout), Outemu Blue MECHANICAL swappable switches, per-key RGB. (Mechanical hot-swap, NOT optical.)
+- Artemis Wireless (CB-GK-40): Tri-mode (2.4GHz / Bluetooth ×3 / wired USB-C), 68-key compact (65% layout), Outemu Blue MECHANICAL swappable switches, per-key RGB, 2500mAh battery. Premium wireless 65% board. (Mechanical hot-swap, NOT optical. CB-GK-40 is the TRI-MODE model — the plain "Artemis" is the wired-only one.)
 
 FULL SIZE (with numpad):
 - Astra (CB-GK-33): Wired full-size, Outemu switches, RGB. Budget full.
@@ -16696,7 +16818,8 @@ FULL SIZE (with numpad):
 BUYING GUIDE:
 - Budget compact → Pandora or Firefly TKL
 - Wireless compact → Phantom TKL (wireless)
-- Fast switches → Artemis (optical)
+- Optical switches → Trinity (full-size, genuinely optical)
+- Wireless 65% mechanical (hot-swap) → Artemis Wireless (tri-mode)
 - Full size with numpad → Vanth or Astra
 - Note: Trinity uses optical switches — confirm customer wants optical, not mechanical
 """
@@ -16854,6 +16977,11 @@ def detect_products_from_message(messages: list) -> tuple:
         ("pandora",              "Pandora"),
         ("vanth",                "Vanth"),
         ("artemis wireless",     "Artemis Wireless"),
+        ("artemis tri-mode",     "Artemis Wireless"),
+        ("artemis tri mode",     "Artemis Wireless"),
+        ("artemis trimode",      "Artemis Wireless"),
+        ("artemis 3",            "Artemis Wireless"),
+        ("artemis bluetooth",    "Artemis Wireless"),
         ("cb-gk-40",             "Artemis Wireless"),
         ("artemis",              "Artemis"),
         ("firefly tkl",          "Firefly TKL"),
