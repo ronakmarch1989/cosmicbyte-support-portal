@@ -1,6 +1,6 @@
 """
 ==============================================================================
-COSMIC BYTE SUPPORT PORTAL  —  app version: 2.38.0
+COSMIC BYTE SUPPORT PORTAL  —  app version: 2.39.0
 ==============================================================================
 
 What this file is:
@@ -138,6 +138,22 @@ CHANGELOG FORMAT:
 ------------------------------------------------------------------------------
 CHANGELOG (newest entry first)
 ------------------------------------------------------------------------------
+
+v2.39.0 (2026-07-07) -- Claude
+  - WebSocket bandwidth: render only
+    the most recent 12 chat messages
+    per rerun; older messages load on
+    demand via a "show earlier" button.
+    Streamlit re-sends all rendered
+    elements over the WebSocket on
+    every rerun, so capping the render
+    window cuts WebSocket egress on
+    long/persisted chats (feedback and
+    quick-question reruns get cheaper
+    too). Static-asset HTTP egress was
+    already handled at the Cloudflare
+    edge; this addresses the remaining
+    WebSocket share.
 
 v2.38.0 (2026-05-20) -- Claude
   - Admin login delivery reworked.
@@ -5420,7 +5436,7 @@ v2.x (earlier, undated) -- User
 ==============================================================================
 """
 
-__version__ = "2.38.0"
+__version__ = "2.39.0"
 
 import streamlit as st
 
@@ -8490,8 +8506,33 @@ if not st.session_state.messages:
                 st.rerun()
 
 # ── CHAT HISTORY + FEEDBACK ──
-ai_response_index = 0
+# WebSocket bandwidth control (v2.39.0): Streamlit re-transmits every rendered
+# element over the WebSocket on each rerun, so re-rendering the ENTIRE history
+# every time is the main driver of WebSocket egress (worst on long / persisted
+# returning-customer chats). We render only the most recent RENDER_WINDOW
+# messages by default; older ones are skipped entirely (not rendered = not sent)
+# until the customer clicks "show earlier". NOTE: a collapsed st.expander would
+# NOT help — Streamlit still transmits collapsed content; the only real saving is
+# to not render the skipped messages at all.
+RENDER_WINDOW = 12
+_all_msgs = st.session_state.messages
+_start_idx = 0
+if len(_all_msgs) > RENDER_WINDOW and not st.session_state.get("show_full_history"):
+    _start_idx = len(_all_msgs) - RENDER_WINDOW
+    _hidden = _start_idx
+    if st.button(
+        f"↑ Show earlier {_hidden} message{'s' if _hidden != 1 else ''}",
+        key="show_earlier_history",
+    ):
+        st.session_state.show_full_history = True
+        st.rerun()
+
+# Feedback keys are indexed by assistant-message ordinal (fb_0, fb_1, ...), so we
+# must account for any assistant messages we skip to keep those keys stable.
+ai_response_index = sum(1 for _m in _all_msgs[:_start_idx] if _m["role"] != "user")
 for idx, msg in enumerate(st.session_state.messages):
+    if idx < _start_idx:
+        continue
     if msg["role"] == "user":
         st.markdown(f"""
         <div class="msg-user">
