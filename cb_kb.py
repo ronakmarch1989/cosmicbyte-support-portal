@@ -33,6 +33,67 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.12.0 (2026-09-01) -- Claude
+  * Y-bump: THX Spatial Audio wired
+    headset line. CryoCore entry
+    REWRITTEN for the upgraded
+    7.1.4 THX model (20 ohm, THX
+    Spatial Audio + app) with a
+    prominent guard: the OLD 7.1
+    CryoCore (32 ohm, setup.exe
+    driver) is DISCONTINUED and does
+    NOT support THX -- old-unit
+    owners keep a LEGACY section
+    with the setup.exe path. New
+    entries: Proteus X (THX dual-
+    input, disambiguated from the
+    older non-THX Proteus) and
+    Olympus (THX, 53mm neodymium,
+    USB, long-press EQ cycle). All
+    three share a full THX Spatial
+    Audio + software guide (mode
+    switch, Standard EQ/presets,
+    Parametric EQ, Camera Head
+    Tracking + its Spatial-Audio-
+    only requirement). Updated
+    PRODUCT_URLS (new CryoCore URL),
+    PRODUCTS, headset catalogue and
+    buying guide, and matcher
+    aliases in BOTH functions
+    ("proteus x" placed BEFORE bare
+    "proteus"; "olympus").
+
+v1.11.0 (2026-09-01) -- Claude
+  * Y-bump: Added the ARCTURUS
+    tri-mode gasket keyboard line —
+    Arcturus 65 (65%/66 keys),
+    Arcturus 75 (75%/82 keys) and
+    Arcturus 98 (98%/101 keys). Full
+    KB entries (specs, tri-mode
+    setup, hot-swap, FN shortcuts,
+    RGB, battery, troubleshooting,
+    warranty), PRODUCT_URLS, the
+    PRODUCTS dropdown, catalogue
+    section, and matcher aliases in
+    BOTH match_product_from_title()
+    and detect_products_from_message()
+    (arcturus 65/75/98 + bare
+    "arcturus" -> 75 default; family
+    guard tells the bot to ask size
+    for size-specific questions —
+    factory reset differs: 65 =
+    FN+Space, 75/98 = FN+ESC).
+  * Backfill note: this version also
+    formally records earlier content
+    changes that shipped without a
+    version bump — Drakon battery
+    1000mAh, Starforge 1200mAh,
+    Artemis Wireless routing +
+    catalogue fix, Blitz Tri-Mode
+    charging-dock URL/caveat, and
+    SYSTEM_PROMPT Rule 18 (proactive
+    Orbit promotion).
+
 v1.10.29 (2026-05-22) -- Claude
   * Z-bump: Added a new "Orbit" KB
     entry documenting Cosmic Byte's
@@ -9828,7 +9889,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.10.29"
+__version__ = "1.12.0"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -9849,12 +9910,17 @@ PRODUCT_URLS = {
     "Ares Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-ares-wireless-controller-for-pc/",
     "Nexus": "https://www.thecosmicbyte.com/product/cosmic-byte-nexus-wireless-controller-for-pc-aaa-removable-battery/",
     "Artemis Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-cb-gk-40-artemis-wired-wireless-bluetooth-68-key-per-key-rgb-mechanical-gaming-keyboard/",
+    "Arcturus 65": "https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/",
+    "Arcturus 75": "https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/",
+    "Arcturus 98": "https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/",
     "Artemis": "https://www.thecosmicbyte.com/product/cosmic-byte-artemis-68-key-per-key-rgb-mechanical-gaming-keyboard/",
     "Firefly TKL": "https://www.thecosmicbyte.com/product/cosmic-byte-firefly-tkl-per-key-rgb-mechanical-keyboard/",
     "Trinity": "https://www.thecosmicbyte.com/product/cosmic-byte-trinity-optical-swappable-switch-keyboard/",
     "Astra": "https://www.thecosmicbyte.com/product/cosmic-byte-cb-gk-33-astra-hot-swappable-mechanical-wired-bluetooth-keyboard-with-per-key-rgb-and-software-2/",
-    "CryoCore":       "https://www.thecosmicbyte.com/product/cryocore/",
+    "CryoCore":       "https://www.thecosmicbyte.com/product/cosmic-byte-cryocore-7-1-surround-wired-gaming-headset/",
     "Proteus":        "https://www.thecosmicbyte.com/product/proteus/",
+    "Proteus X":      "https://www.thecosmicbyte.com/product/cosmic-byte-proteus-x-7-1-4-surround-wired-headset-with-thx-spatial-audio/",
+    "Olympus":        "https://www.thecosmicbyte.com/product/cosmic-byte-olympus-7-1-4-surround-wired-headset-with-thx-spatial-audio/",
     "Immortal":       "https://www.thecosmicbyte.com/product/cosmic-byte-immortal-2-4ghz-wireless-bluetooth-wired-headphone-black/",
     "CosmoBuds X220": "https://www.thecosmicbyte.com/product/cosmobuds-x220/",
     "Cyclone RGB":    "https://www.thecosmicbyte.com/product/cyclone-rgb/",
@@ -13911,6 +13977,139 @@ RETURN POLICY: 7-day replacement for transit damage or manufacturing defects.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon-Sat 10am-6pm
 """,
 
+    "Arcturus 65": """
+COSMIC BYTE ARCTURUS 65 — TRI-MODE 65% GASKET MECHANICAL KEYBOARD
+
+ARCTURUS FAMILY — 3 SIZES: The Arcturus line has three tri-mode gasket keyboards that share switches, battery, sound-dampening, connectivity and hot-swap, differing mainly in SIZE/LAYOUT and a few shortcuts: Arcturus 65 (65%, 66 keys+knob), Arcturus 75 (75%, 82 keys+knob), Arcturus 98 (98%, 101 keys+knob). If a customer just says "Arcturus" without a size AND asks something size-specific (factory reset, exact FN shortcuts, dimensions/weight), ASK which size they have. KEY DIFFERENCE: factory reset is FN + Space on the 65, but FN + ESC on the 75 and 98.
+
+TRI-MODE: Wired USB-C + 2.4GHz + Bluetooth (5.0/3.0, up to 3 devices). 65% layout (66 keys + volume knob). Outemu Custom Yellow pre-lubed LINEAR switches, hot-swappable. Gasket-mounted design. 4000mAh battery. Per-key RGB. PBT keycaps.
+
+SPECS: 65% (66 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 321 x 114 x 40 mm, weight 660g ± 20g. Software: Windows / macOS.
+
+SOUND DAMPENING (multi-layer): Poron foam + IXPE switch pad + PET dampening film + DPEM switch pad + silicone bottom pad. Result: reduced hollow sound, deeper premium acoustics, minimal resonance.
+
+WHAT'S IN THE BOX: Keyboard, USB-C cable, 2-in-1 keycap & switch puller, 2 spare mechanical switches, extra keycaps, user manual. (Use a spare switch for a single failed key instead of a service claim.)
+
+CONNECTIVITY / SWITCHING MODES:
+- Wired: connect the Type-C cable to the PC, wait ~15s for driver install. Plug & play.
+- 2.4GHz: switch to 2.4G mode, hold FN + R (3s), insert the USB receiver — auto-connects. (Avoid USB hubs; reinsert the receiver if it drops.)
+- Bluetooth (3 devices): switch to BT mode, hold FN + Q / W / E (3s) → the indicator flashes = pairing mode; select the keyboard in your device's Bluetooth menu.
+  - Device names: Bluetooth 5.0 = "CB 65 BT5.0", Bluetooth 3.0 = "CB 65 BT3.0". Each of the 3 slots supports BT 5.0 or 3.0 depending on the device.
+  - Switch between paired devices: FN + Q / W / E.
+  - Notes: pairing timeout 1 minute, reconnect ~20s, auto-sleep when idle.
+
+HOT-SWAP (3-pin & 5-pin, no soldering): remove the keycap with the puller → pull the switch with the puller → align pins carefully → press the new switch straight into the socket. Do NOT bend pins or use excessive force; insert switches straight.
+
+RGB / VOLUME KNOB: Volume knob — rotate = volume, press = mute.
+
+BATTERY: 4000mAh. Indicator: low = blinking, charging = constant (solid), full = OFF. Battery %: press FN + Backspace, then number keys show battery level. RGB / wireless use drains battery faster — reduce RGB or use wired mode to extend runtime.
+
+TROUBLESHOOTING: Won't power on → charge, check the mode switch. Wired not detected → different USB port, restart PC, wait for driver. 2.4G not working → reinsert receiver, press FN + R, avoid USB hubs. Bluetooth not connecting → hold FN + Q/W/E, remove old pairing, reconnect. BT disconnecting → charge battery, stay within ~10m range. Keys not working / double typing → replace the switch (use a spare), reset. RGB not working → FN + X to toggle RGB, raise brightness. Battery drains fast → reduce RGB, use wired. Input lag → use 2.4G mode for gaming.
+
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered. Compliance: RoHS, WEEE, BIS, ETA.
+
+SOFTWARE: Available for advanced customization. Works in Wired and 2.4GHz modes only — NOT supported over Bluetooth.
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/ — use coupon code ONLINEPAY for 10% off on online payments.
+
+FN SHORTCUTS (Arcturus 65):
+- Function row: FN + 1-0 = F1-F10 | FN + - / = = F11 / F12
+- FN + U / I / O = Print Screen / Scroll Lock / Pause | FN + PgUp / PgDn = Insert / Home | FN + Del = End
+- Media: FN + V = Play/Pause | FN + B / N = Previous / Next | FN + M = Mute | FN + , / . = Volume - / +
+- System: FN + H / J = Screen Brightness - / + | FN + K = Task View | FN + L = My Computer / Launchpad | FN + Win = Lock Windows key
+
+RGB CONTROLS (Arcturus 65): FN + Backslash = change effect | FN + [ / ] = speed | FN + Up/Down = brightness | FN + Left/Right = direction / color | FN + X = RGB on/off.
+
+FACTORY RESET (Arcturus 65): hold FN + Space for 3 seconds. (The 65 uses FN + Space — the 75 and 98 use FN + ESC.)
+""",
+    "Arcturus 75": """
+COSMIC BYTE ARCTURUS 75 — TRI-MODE 75% GASKET MECHANICAL KEYBOARD
+
+ARCTURUS FAMILY — 3 SIZES: The Arcturus line has three tri-mode gasket keyboards that share switches, battery, sound-dampening, connectivity and hot-swap, differing mainly in SIZE/LAYOUT and a few shortcuts: Arcturus 65 (65%, 66 keys+knob), Arcturus 75 (75%, 82 keys+knob), Arcturus 98 (98%, 101 keys+knob). If a customer just says "Arcturus" without a size AND asks something size-specific (factory reset, exact FN shortcuts, dimensions/weight), ASK which size they have. KEY DIFFERENCE: factory reset is FN + Space on the 65, but FN + ESC on the 75 and 98.
+
+TRI-MODE: Wired USB-C + 2.4GHz + Bluetooth (5.0/3.0, up to 3 devices). 75% layout (82 keys + volume knob). Outemu Custom Yellow pre-lubed LINEAR switches, hot-swappable. Gasket-mounted design. 4000mAh battery. Per-key RGB. PBT keycaps.
+
+SPECS: 75% (82 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 332 x 141 x 40 mm, weight ~800g ± 20g. Software: Windows / macOS.
+
+SOUND DAMPENING (multi-layer): Poron foam + IXPE switch pad + PET dampening film + DPEM switch pad + silicone bottom pad. Result: reduced hollow sound, deeper premium acoustics, minimal resonance.
+
+WHAT'S IN THE BOX: Keyboard, USB-C cable, 2-in-1 keycap & switch puller, 2 spare mechanical switches, extra keycaps, user manual. (Use a spare switch for a single failed key instead of a service claim.)
+
+CONNECTIVITY / SWITCHING MODES:
+- Wired: connect the Type-C cable to the PC, wait ~15s for driver install. Plug & play.
+- 2.4GHz: switch to 2.4G mode, hold FN + R (3s), insert the USB receiver — auto-connects. (Avoid USB hubs; reinsert the receiver if it drops.)
+- Bluetooth (3 devices): switch to BT mode, hold FN + Q / W / E (3s) → the indicator flashes = pairing mode; select the keyboard in your device's Bluetooth menu.
+  - Device names: Bluetooth 5.0 = "CB 75 BT5.0", Bluetooth 3.0 = "CB 75 BT3.0". Each of the 3 slots supports BT 5.0 or 3.0 depending on the device.
+  - Switch between paired devices: FN + Q / W / E.
+  - Notes: pairing timeout 1 minute, reconnect ~20s, auto-sleep when idle.
+
+HOT-SWAP (3-pin & 5-pin, no soldering): remove the keycap with the puller → pull the switch with the puller → align pins carefully → press the new switch straight into the socket. Do NOT bend pins or use excessive force; insert switches straight.
+
+RGB / VOLUME KNOB: Volume knob — rotate = volume, press = mute.
+
+BATTERY: 4000mAh. Indicator: low = blinking, charging = constant (solid), full = OFF. Battery %: press FN + Backspace, then number keys show battery level. RGB / wireless use drains battery faster — reduce RGB or use wired mode to extend runtime.
+
+TROUBLESHOOTING: Won't power on → charge, check the mode switch. Wired not detected → different USB port, restart PC, wait for driver. 2.4G not working → reinsert receiver, press FN + R, avoid USB hubs. Bluetooth not connecting → hold FN + Q/W/E, remove old pairing, reconnect. BT disconnecting → charge battery, stay within ~10m range. Keys not working / double typing → replace the switch (use a spare), reset. RGB not working → FN + X to toggle RGB, raise brightness. Battery drains fast → reduce RGB, use wired. Input lag → use 2.4G mode for gaming.
+
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered. Compliance: RoHS, WEEE, BIS, ETA.
+
+SOFTWARE: Available for advanced customization. Works in Wired and 2.4GHz modes only — NOT supported over Bluetooth.
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/ — use coupon code ONLINEPAY for 10% off on online payments.
+
+FN SHORTCUTS (Arcturus 75):
+- FN + F1 / F2 = Screen Brightness - / + | FN + F3 = Task View | FN + F4 = App switch | FN + F5 = Emoji | FN + F6 = Screenshot
+- FN + F7 / F8 / F9 = Media control | FN + F10 = Search | FN + F11 = Input method | FN + F12 = Desktop
+
+RGB CONTROLS (Arcturus 75): FN + Backslash = effect | FN + Enter = color | FN + Up/Down = brightness | FN + Left/Right = speed | FN + X = RGB on/off.
+
+FACTORY RESET (Arcturus 75): hold FN + ESC for 3 seconds. (The 75 and 98 use FN + ESC — the 65 uses FN + Space.)
+""",
+    "Arcturus 98": """
+COSMIC BYTE ARCTURUS 98 — TRI-MODE 98% GASKET MECHANICAL KEYBOARD
+
+ARCTURUS FAMILY — 3 SIZES: The Arcturus line has three tri-mode gasket keyboards that share switches, battery, sound-dampening, connectivity and hot-swap, differing mainly in SIZE/LAYOUT and a few shortcuts: Arcturus 65 (65%, 66 keys+knob), Arcturus 75 (75%, 82 keys+knob), Arcturus 98 (98%, 101 keys+knob). If a customer just says "Arcturus" without a size AND asks something size-specific (factory reset, exact FN shortcuts, dimensions/weight), ASK which size they have. KEY DIFFERENCE: factory reset is FN + Space on the 65, but FN + ESC on the 75 and 98.
+
+TRI-MODE: Wired USB-C + 2.4GHz + Bluetooth (5.0/3.0, up to 3 devices). 98% layout (101 keys + volume knob). Outemu Custom Yellow pre-lubed LINEAR switches, hot-swappable. Gasket-mounted design. 4000mAh battery. Per-key RGB. PBT keycaps.
+
+SPECS: 98% (101 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 409 x 142 x 40 mm, weight ~1000g ± 20g. Software: Windows / macOS.
+
+SOUND DAMPENING (multi-layer): Poron foam + IXPE switch pad + PET dampening film + DPEM switch pad + silicone bottom pad. Result: reduced hollow sound, deeper premium acoustics, minimal resonance.
+
+WHAT'S IN THE BOX: Keyboard, USB-C cable, 2-in-1 keycap & switch puller, 2 spare mechanical switches, extra keycaps, user manual. (Use a spare switch for a single failed key instead of a service claim.)
+
+CONNECTIVITY / SWITCHING MODES:
+- Wired: connect the Type-C cable to the PC, wait ~15s for driver install. Plug & play.
+- 2.4GHz: switch to 2.4G mode, hold FN + R (3s), insert the USB receiver — auto-connects. (Avoid USB hubs; reinsert the receiver if it drops.)
+- Bluetooth (3 devices): switch to BT mode, hold FN + Q / W / E (3s) → the indicator flashes = pairing mode; select the keyboard in your device's Bluetooth menu.
+  - Device names: Bluetooth 5.0 = "CB 98 BT5.0", Bluetooth 3.0 = "CB 98 BT3.0". Each of the 3 slots supports BT 5.0 or 3.0 depending on the device.
+  - Switch between paired devices: FN + Q / W / E.
+  - Notes: pairing timeout 1 minute, reconnect ~20s, auto-sleep when idle.
+
+HOT-SWAP (3-pin & 5-pin, no soldering): remove the keycap with the puller → pull the switch with the puller → align pins carefully → press the new switch straight into the socket. Do NOT bend pins or use excessive force; insert switches straight.
+
+RGB / VOLUME KNOB: Volume knob — rotate = volume, press = mute.
+
+BATTERY: 4000mAh. Indicator: low = blinking, charging = constant (solid), full = OFF. Battery %: press FN + Backspace, then number keys show battery level. RGB / wireless use drains battery faster — reduce RGB or use wired mode to extend runtime.
+
+TROUBLESHOOTING: Won't power on → charge, check the mode switch. Wired not detected → different USB port, restart PC, wait for driver. 2.4G not working → reinsert receiver, press FN + R, avoid USB hubs. Bluetooth not connecting → hold FN + Q/W/E, remove old pairing, reconnect. BT disconnecting → charge battery, stay within ~10m range. Keys not working / double typing → replace the switch (use a spare), reset. RGB not working → FN + X to toggle RGB, raise brightness. Battery drains fast → reduce RGB, use wired. Input lag → use 2.4G mode for gaming.
+
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered. Compliance: RoHS, WEEE, BIS, ETA.
+
+SOFTWARE: Available for advanced customization. Works in Wired and 2.4GHz modes only — NOT supported over Bluetooth.
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/ — use coupon code ONLINEPAY for 10% off on online payments.
+
+FN SHORTCUTS (Arcturus 98):
+- FN + F1 / F2 = Screen Brightness - / + | FN + F3 = Task View | FN + F4 = App switching | FN + F5 = Emoji | FN + F6 = Screenshot
+- FN + F7 / F8 / F9 = Media control | FN + F10 = Search | FN + F11 = Input method | FN + F12 = Desktop
+
+RGB CONTROLS (Arcturus 98): FN + Backslash = effect | FN + Enter = color | FN + Up/Down = brightness | FN + Left/Right = speed | FN + X = RGB on/off.
+
+FACTORY RESET (Arcturus 98): hold FN + ESC for 3 seconds. (The 75 and 98 use FN + ESC — the 65 uses FN + Space.)
+
+NOTE: The Arcturus 98 is the near-full-size (98%) member of the family with a numpad. Its manual spec table lists the RGB as SMD bottom-mounted LEDs (south-facing) — same placement family as the 65/75.
+""",
     "Firefly TKL": """
 COSMIC BYTE FIREFLY TKL — WIRED 87-KEY MECHANICAL KEYBOARD (CB-GK-16 / CB-GK-18)
 
@@ -14288,56 +14487,63 @@ ANTI-HALLUCINATION GUARD (Ares Tri-Mode — read before answering)
 """,
 
     "CryoCore": """
-PRODUCT: Cosmic Byte CryoCore — 7.1 USB Wired Gaming Headset
+PRODUCT: Cosmic Byte CryoCore — 7.1.4 SURROUND WIRED GAMING HEADSET (UPGRADED THX SPATIAL AUDIO VERSION)
 
-SPECS:
-- Connection: USB 2.0 only (no 3.5mm)
-- Cable length: 2.0m
-- Driver: 50mm | Sensitivity: 110dB ±5dB | Impedance: 32Ω | Freq: 20Hz–20kHz
+⚠️ TWO CRYOCORE GENERATIONS EXIST — READ THIS FIRST:
+- CURRENT / UPGRADED CryoCore (sold now) = 7.1.4 surround, ships with the THX Spatial Audio + desktop software, 20Ω impedance. THIS entry's main specs describe this model.
+- OLD CryoCore (DISCONTINUED) = 7.1 surround, 32Ω impedance, used the older setup.exe 7.1 driver from the downloads page. It is NO LONGER SOLD.
+- CRITICAL: THX Spatial Audio does NOT work on the OLD CryoCore hardware. Only the upgraded hardware supports THX. If a customer with the OLD unit asks how to get THX / Spatial Audio, tell them plainly it is not supported on their hardware — do not send them to install THX. Their correct path is the legacy setup.exe driver for 7.1 (see LEGACY section below).
+- How to tell which one a customer has: the upgraded model is marketed as 7.1.4 with THX branding and uses the THX Spatial Audio + app; the old model is 7.1 and came with the setup.exe driver / no THX. If unsure, ask when/where they bought it and whether the box/listing mentions THX.
+
+SPECS (UPGRADED THX MODEL):
+- Surround: 7.1.4 (via THX Spatial Audio + software)
+- Connection: USB 2.0 ONLY (no 3.5mm). Cable 2.0m.
+- Driver: 50mm Hi-Fi | Sensitivity: 110dB ±5dB (@1kHz) | Impedance: 20Ω | Freq: 20Hz–20kHz
 - Rated power: 20mW | Max power: 50mW
 - Weight: 277g | Dimensions: 195×95×165mm
-- Mic: Electret condenser, omnidirectional, 6.0×5.0mm, -42dB ±3dB sensitivity
-- Mic SNR: 58dB | Mic output impedance: ≤2.2kΩ
+- Mic: Electret condenser (ENC), omnidirectional, 6.0×5.0mm, sensitivity -42dB ±3dB, SNR 58dB, output impedance ≤2.2kΩ, detachable, with mic cap
+- CONNECTION IS USB ONLY — CONFIRMED BY COSMIC BYTE. The CryoCore has NO 3.5mm jack and NO 3.5mm mode. (The manual's highlights card shows a "Dual Input USB & 3.5mm" icon — that is a printing/template error; IGNORE it.) If a customer asks whether the CryoCore works with a 3.5mm device (phone, Xbox controller jack, Nintendo Switch), the answer is NO — it is USB only. For 3.5mm needs, point them to the Proteus X (genuine dual input).
 
-WHAT'S IN THE BOX: CryoCore headset, detachable microphone, user manual
+WHAT'S IN THE BOX: CryoCore 7.1.4 headset, detachable microphone, user manual.
 
-CONTROLS:
-- Volume dial on earcup — rotate to adjust volume
-- Mic switch on earcup — slide UP = mic ON, slide DOWN = mic MUTED
-- Detachable microphone — plug into the port on the left earcup
+CONTROLS (on the earcup):
+- Volume dial — scroll up = volume +, scroll down = volume −
+- Mic switch — slide ON / OFF to enable or mute the microphone
+- Detachable microphone plugs into the earcup port; mic cap included
 
-SETUP — PC/LAPTOP:
-1. Connect USB to PC
-2. Download driver from https://www.thecosmicbyte.com/downloaddrivers/
-3. Extract and run setup.exe
-4. Enable 7.1 Surround Sound in the software
-5. In Windows Sound Settings, select "CB CryoCore" as both output AND input device
+THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.com):
+- When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
+- AUDIO MODE SWITCH (top-right of every screen) — the single most important control: "THX Stereo" = traditional 2-channel L/R (cleanest for music/general listening). "THX Spatial Audio" = virtual 360° surround field (hear direction of footsteps/gunfire in games; wider soundstage for movies).
+- STANDARD SETTINGS (everyday controls): 10-band Equalizer (32 Hz to 16 kHz), each band adjustable +12 dB to -12 dB, toggle on/off; presets Default (flat) / Music (lifted bass + upper treble) / Game (in-game detail + positional cues) / Movie (dialogue + cinematic) / Custom (moving any slider auto-switches to Custom); Reset returns to flat. Sound Normalization (evens out quiet vs loud, slider sets strength — good for late-night). Bass Boost (one-tap extra low end). Voice Clarity (one-tap vocal-range emphasis for chat/streams/quiet dialogue).
+- EXPERT > PARAMETRIC EQ: finer control than the Standard EQ. Same 5 presets + Reset. Response graph 20 Hz–20 kHz, +12/-12 dB, 10 draggable points (one per band). Per-band controls: Frequency (centre point), Gain (boost/cut in dB), Q (width — lower Q = broad, higher Q = narrow/surgical), Filter (Peak is the standard choice). Each band has a Band 1–10 checkbox to switch it off WITHOUT erasing its settings (for A/B comparison).
+- EXPERT > CAMERA HEAD TRACKING: uses a webcam to keep virtual sound sources anchored to the world when you turn your head (more convincing spatial effect). REQUIRES THX Spatial Audio mode — in THX Stereo mode the app shows a notice that head-tracking effects can only be heard once Spatial Audio is enabled; flip the top-right mode toggle first. Controls: Device (choose your webcam/USB video device), Camera Mode (Auto recommended), Enable toggle (top-right). A preview shows your tracked head position vs the virtual speakers.
+- USER SETTINGS: language + app information.
+- SOFTWARE TROUBLESHOOTING: headset not shown in the app → check USB, let the app finish loading. Head-tracking "can only be heard when Spatial Audio is enabled" → switch the mode toggle to THX Spatial Audio. No surround effect → make sure the mode switch is on THX Spatial Audio, not THX Stereo.
 
-SETUP — PS4/PS5:
-- Plug USB directly into console. No driver or software needed.
-- Adjust volume from PlayStation Audio Settings
+SETUP — PC/LAPTOP (upgraded model): plug USB into PC → download and install THX Spatial Audio + from www.thecosmicbyte.com → open the app and confirm the headset appears bottom-left → set the mode switch to THX Spatial Audio for 7.1.4 surround → in Windows Sound Settings select the CryoCore as both output AND input.
 
+SETUP — PS4/PS5: plug USB directly into the console. No software needed (THX Spatial Audio is a PC app). Adjust volume from PlayStation audio settings.
 NOTE: Xbox is NOT officially supported via USB.
 
-TROUBLESHOOTING:
-Q: Headset not detected on PC?
-A: Check USB connection → reinstall driver → try different USB port → set "CB CryoCore" as default audio device in Windows Sound Settings
+TROUBLESHOOTING (upgraded model):
+Q: Headset not detected on PC? A: Check USB → try another USB port → set the CryoCore as default output/input in Windows Sound Settings → make sure the THX app has finished loading.
+Q: No surround / sounds flat? A: In the THX app, switch the top-right mode from THX Stereo to THX Spatial Audio; confirm the CryoCore is the default output.
+Q: Mic not working? A: Mic firmly plugged in → mic switch slid to ON → select the CryoCore as microphone input in Windows Sound Settings.
+Q: No audio? A: Turn the volume dial up → set the CryoCore as default output.
 
-Q: No 7.1 surround sound?
-A: Install the driver software → enable 7.1 in software settings → confirm "CB CryoCore" is default output in Windows Sound Settings
+LEGACY — OLD / DISCONTINUED CryoCore (7.1, 32Ω) — ONLY for customers who still own the old unit:
+- Setup: connect USB → download the driver from https://www.thecosmicbyte.com/downloaddrivers/ → extract and run setup.exe → enable 7.1 Surround in that software → in Windows Sound Settings select "CB CryoCore" as output AND input.
+- THX Spatial Audio is NOT supported on this hardware. Do not install it for the old model.
+- Old-unit troubleshooting: not detected → reinstall the setup.exe driver, try another USB port, set "CB CryoCore" as default; no 7.1 → enable 7.1 in the driver software; mic → switch slid UP (ON) and "CB CryoCore" selected as input.
+- This model is discontinued; replacement/upgrade path is the current THX CryoCore.
 
-Q: Microphone not working?
-A: Check mic is firmly plugged in → ensure mic switch is slid UP (ON position) → select "CB CryoCore" as microphone input in Windows Sound Settings
+CARE: Keep away from moisture. Store cool and dry. Avoid bending the cable. Do not disassemble.
 
-Q: No audio from headset?
-A: Rotate the volume dial → set "CB CryoCore" as default output in Windows Sound Settings
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products NOT covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
 
-CARE: Keep away from moisture. Store in cool dry place. Avoid bending cable. Do not disassemble.
-
-WARRANTY: 1 year against manufacturing defects. Physical/water damage and tampered products not covered.
-SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-cryocore-7-1-surround-wired-gaming-headset/ — use coupon code ONLINEPAY for 10% off on online payments.
 """,
-
     "Proteus": """
 PRODUCT: Cosmic Byte Proteus — Gaming Headset (Dual Input USB + 3.5mm)
 
@@ -14382,6 +14588,99 @@ WARRANTY: 1 year against manufacturing defects. Physical/water damage and tamper
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
 """,
 
+    "Proteus X": """
+PRODUCT: Cosmic Byte Proteus X — 7.1.4 SURROUND WIRED HEADSET WITH THX SPATIAL AUDIO (Dual Input USB + 3.5mm)
+
+DISAMBIGUATION: "Proteus X" (THIS entry) is the newer THX Spatial Audio model. The plain "Proteus" is the OLDER non-THX model with its own KB entry. If a customer says "Proteus X" or mentions THX / Spatial Audio, use THIS entry. Do NOT tell a Proteus X owner their headset lacks THX.
+
+KEY FEATURES: 7.1.4 surround (THX Spatial Audio), 50mm Hi-Fi drivers, DUAL INPUT (USB & 3.5mm), detachable flexible ENC microphone, RGB LED lights, on-cable controller, auto-adjustable headband, protein-leather ear cushions, braided cable. Colours: black and white.
+
+SPECS:
+- Driver: 50mm | Sensitivity: 111 ±3dB | Impedance: 32Ω ±15% | Freq: 20Hz–20,000Hz
+- Power: 20mW rated | 30mW input
+- Headset jack: 3.5mm & USB 7.1 (DUAL INPUT). Overall cable 2.1m ±10%: headset cable 0.7m + 3.5mm audio cable 1.5m + USB cable 1.5m
+- Mic: 6.0×5.0mm ENC, sensitivity -42dB, omnidirectional, detachable
+- Weight: 280g (without cable), 336g (with cable) | Product dims: 190×90×220mm | Packaging: 200×100×230mm
+
+WHAT'S IN THE BOX: Proteus X headset, detachable microphone, USB-C to USB-A connector, 3.5mm audio cable, user manual.
+
+ON-CABLE CONTROLLER:
+- Volume wheel — scroll up = volume +, scroll down = volume −
+- Mic mute button — tap once = microphone on/off
+- LED on/off button — tap once = RGB lights on/off
+- Volume mute button — tap once = volume mute/unmute
+
+PLATFORM COMPATIBILITY (which cable to use):
+- 3.5mm cable → Xbox One S/X, PS4/PS5 (controller jack), Nintendo Switch, mobile devices, PC/Mac/laptop (stereo, no THX processing over 3.5mm)
+- USB (Type-C to USB-A) → PS4/PS5 and PC/Mac/laptop. USB is the mode for THX Spatial Audio / 7.1.4 on PC.
+- Xbox: 3.5mm only (no USB surround on Xbox).
+
+THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.com):
+- When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
+- AUDIO MODE SWITCH (top-right of every screen) — the single most important control: "THX Stereo" = traditional 2-channel L/R (cleanest for music/general listening). "THX Spatial Audio" = virtual 360° surround field (hear direction of footsteps/gunfire in games; wider soundstage for movies).
+- STANDARD SETTINGS (everyday controls): 10-band Equalizer (32 Hz to 16 kHz), each band adjustable +12 dB to -12 dB, toggle on/off; presets Default (flat) / Music (lifted bass + upper treble) / Game (in-game detail + positional cues) / Movie (dialogue + cinematic) / Custom (moving any slider auto-switches to Custom); Reset returns to flat. Sound Normalization (evens out quiet vs loud, slider sets strength — good for late-night). Bass Boost (one-tap extra low end). Voice Clarity (one-tap vocal-range emphasis for chat/streams/quiet dialogue).
+- EXPERT > PARAMETRIC EQ: finer control than the Standard EQ. Same 5 presets + Reset. Response graph 20 Hz–20 kHz, +12/-12 dB, 10 draggable points (one per band). Per-band controls: Frequency (centre point), Gain (boost/cut in dB), Q (width — lower Q = broad, higher Q = narrow/surgical), Filter (Peak is the standard choice). Each band has a Band 1–10 checkbox to switch it off WITHOUT erasing its settings (for A/B comparison).
+- EXPERT > CAMERA HEAD TRACKING: uses a webcam to keep virtual sound sources anchored to the world when you turn your head (more convincing spatial effect). REQUIRES THX Spatial Audio mode — in THX Stereo mode the app shows a notice that head-tracking effects can only be heard once Spatial Audio is enabled; flip the top-right mode toggle first. Controls: Device (choose your webcam/USB video device), Camera Mode (Auto recommended), Enable toggle (top-right). A preview shows your tracked head position vs the virtual speakers.
+- USER SETTINGS: language + app information.
+- SOFTWARE TROUBLESHOOTING: headset not shown in the app → check USB, let the app finish loading. Head-tracking "can only be heard when Spatial Audio is enabled" → switch the mode toggle to THX Spatial Audio. No surround effect → make sure the mode switch is on THX Spatial Audio, not THX Stereo.
+
+SETUP — PC: connect via USB (USB-C to USB-A) → install THX Spatial Audio + from www.thecosmicbyte.com → confirm "Proteus X" appears bottom-left in the app → set mode to THX Spatial Audio for surround → select the Proteus X as default output/input in Windows Sound Settings. (3.5mm gives plain stereo with no THX app processing.)
+SETUP — CONSOLES: PS4/PS5 via USB or 3.5mm; Xbox and Switch via 3.5mm; mobile via 3.5mm.
+
+TROUBLESHOOTING:
+Q: No surround? A: You must be on USB and the THX app mode must be THX Spatial Audio (not Stereo). 3.5mm cannot do 7.1.4.
+Q: Not detected in the THX app? A: Use the USB cable (not 3.5mm) → check the connection → wait for the app to load.
+Q: RGB off? A: Tap the LED button on the cable controller. Q: Mic muted? A: Tap the mic mute button; ensure the mic is firmly plugged in.
+Q: Works on PC but not Xbox? A: Xbox supports 3.5mm only.
+
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products NOT covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-proteus-x-7-1-4-surround-wired-headset-with-thx-spatial-audio/ — use coupon code ONLINEPAY for 10% off on online payments.
+""",
+    "Olympus": """
+PRODUCT: Cosmic Byte Olympus — 7.1.4 SURROUND WIRED HEADSET WITH THX SPATIAL AUDIO (USB)
+
+KEY FEATURES: 7.1.4 surround (THX Spatial Audio), 53mm NEODYMIUM drivers (the largest driver in the wired THX line-up), USB input, detachable ENC microphone, auto-adjustable headband, protein-leather ear cushions, braided cable, THX branding on the headband, carrying pouch included.
+
+SPECS:
+- Driver: 53mm neodymium | Sensitivity: 110 ±3dB | Impedance: 32Ω ±15% | Freq: 20Hz–20,000Hz
+- Power: 20mW rated | 30mW input
+- Headset jack: USB. Cable 2.1m ±10%.
+- Mic: ø6.0×2.7mm ENC, sensitivity -40 ±3dB, omnidirectional, detachable
+- Weight: 280g (without cable), 335g (with cable) | Product dims: 175×110×215mm | Packaging: 256×256×109mm
+- Connection is USB — do NOT promise a 3.5mm jack for the Olympus (the manual lists USB input only).
+
+WHAT'S IN THE BOX: Olympus headset, detachable microphone, carrying pouch, user manual.
+
+CONTROLS:
+- Volume wheel — scroll up = volume +, scroll down = volume −
+- Mic mute button — tap once = microphone on/off
+- LONG PRESS the mic mute button = switch EQ preset on the headset: Music mode → Game mode → Movie mode (cycles). This is a hardware EQ switch and is separate from the presets inside the THX app.
+
+THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.com):
+- When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
+- AUDIO MODE SWITCH (top-right of every screen) — the single most important control: "THX Stereo" = traditional 2-channel L/R (cleanest for music/general listening). "THX Spatial Audio" = virtual 360° surround field (hear direction of footsteps/gunfire in games; wider soundstage for movies).
+- STANDARD SETTINGS (everyday controls): 10-band Equalizer (32 Hz to 16 kHz), each band adjustable +12 dB to -12 dB, toggle on/off; presets Default (flat) / Music (lifted bass + upper treble) / Game (in-game detail + positional cues) / Movie (dialogue + cinematic) / Custom (moving any slider auto-switches to Custom); Reset returns to flat. Sound Normalization (evens out quiet vs loud, slider sets strength — good for late-night). Bass Boost (one-tap extra low end). Voice Clarity (one-tap vocal-range emphasis for chat/streams/quiet dialogue).
+- EXPERT > PARAMETRIC EQ: finer control than the Standard EQ. Same 5 presets + Reset. Response graph 20 Hz–20 kHz, +12/-12 dB, 10 draggable points (one per band). Per-band controls: Frequency (centre point), Gain (boost/cut in dB), Q (width — lower Q = broad, higher Q = narrow/surgical), Filter (Peak is the standard choice). Each band has a Band 1–10 checkbox to switch it off WITHOUT erasing its settings (for A/B comparison).
+- EXPERT > CAMERA HEAD TRACKING: uses a webcam to keep virtual sound sources anchored to the world when you turn your head (more convincing spatial effect). REQUIRES THX Spatial Audio mode — in THX Stereo mode the app shows a notice that head-tracking effects can only be heard once Spatial Audio is enabled; flip the top-right mode toggle first. Controls: Device (choose your webcam/USB video device), Camera Mode (Auto recommended), Enable toggle (top-right). A preview shows your tracked head position vs the virtual speakers.
+- USER SETTINGS: language + app information.
+- SOFTWARE TROUBLESHOOTING: headset not shown in the app → check USB, let the app finish loading. Head-tracking "can only be heard when Spatial Audio is enabled" → switch the mode toggle to THX Spatial Audio. No surround effect → make sure the mode switch is on THX Spatial Audio, not THX Stereo.
+
+SETUP — PC: plug USB into PC → install THX Spatial Audio + from www.thecosmicbyte.com → confirm "Olympus" appears bottom-left in the app → set mode to THX Spatial Audio for surround → select the Olympus as default output/input in Windows Sound Settings.
+SETUP — PS4/PS5: plug USB into the console; no software needed. Xbox: not officially supported via USB.
+
+TROUBLESHOOTING:
+Q: No surround? A: In the THX app switch the top-right mode from THX Stereo to THX Spatial Audio; confirm Olympus is the default output.
+Q: Not detected? A: Check USB → try another port → let the THX app finish loading → set Olympus as default device.
+Q: Sound profile changed unexpectedly? A: A long press on the mic mute button cycles the on-headset EQ (Music/Game/Movie) — a short tap only mutes the mic. Long-press again to cycle back.
+Q: Mic not working? A: Mic firmly plugged in → tap mic mute to unmute → select Olympus as input in Windows.
+
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products NOT covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-olympus-7-1-4-surround-wired-headset-with-thx-spatial-audio/ — use coupon code ONLINEPAY for 10% off on online payments.
+""",
     "Immortal": """
 PRODUCT: Cosmic Byte Immortal — Tri-Mode (Wi-Fi 2.4GHz / Bluetooth 5.3 / Wired) Wireless Gaming Headset
 
@@ -14816,7 +15115,7 @@ KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 # =============================================================================
 # PRODUCTS
 # =============================================================================
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly", "Orbit"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Arcturus 65", "Arcturus 75", "Arcturus 98", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Proteus X", "Olympus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly", "Orbit"]
 
 
 # =============================================================================
@@ -16317,6 +16616,13 @@ def match_product_from_title(title: str) -> str:
         ("velox",                 "Velox"),
         ("pandora",               "Pandora"),
         ("vanth",                 "Vanth"),
+        ("arcturus 65",            "Arcturus 65"),
+        ("arcturus65",            "Arcturus 65"),
+        ("arcturus 75",            "Arcturus 75"),
+        ("arcturus75",            "Arcturus 75"),
+        ("arcturus 98",            "Arcturus 98"),
+        ("arcturus98",            "Arcturus 98"),
+        ("arcturus",              "Arcturus 75"),
         ("artemis wireless",       "Artemis Wireless"),
         ("artemis tri-mode",       "Artemis Wireless"),
         ("artemis tri mode",       "Artemis Wireless"),
@@ -16335,6 +16641,10 @@ def match_product_from_title(title: str) -> str:
         ("cb-gk-33",              "Astra"),
         ("cryocore",              "CryoCore"),
         ("cryo core",             "CryoCore"),
+        ("proteus x",             "Proteus X"),
+        ("proteus-x",             "Proteus X"),
+        ("proteusx",              "Proteus X"),
+        ("olympus",               "Olympus"),
         ("proteus",               "Proteus"),
         ("immortal",              "Immortal"),
         ("cosmobuds x220",        "CosmoBuds X220"),
@@ -16815,12 +17125,19 @@ FULL SIZE (with numpad):
 - Trinity (CB-GK-39): Wired full-size, OPTICAL switches (not mechanical), RGB. Note: NOT compatible with standard mech keycaps.
 - Vanth: Wired full-size, Outemu switches, RGB. Mid-range full.
 
+ARCTURUS SERIES (tri-mode gasket, hot-swap, Outemu Custom Yellow pre-lubed linear, PBT, 4000mAh, per-key RGB):
+- Arcturus 65: 65% (66 keys + volume knob). Compact. 321x114x40mm, 660g.
+- Arcturus 75: 75% (82 keys + volume knob). 332x141x40mm, ~800g.
+- Arcturus 98: 98% (101 keys + volume knob, near-full with numpad). 409x142x40mm, ~1000g.
+  All three: Wired + 2.4G + Bluetooth (3 devices), hot-swap 3/5-pin, gasket-mounted, multi-layer sound dampening. Differ mainly in size; factory reset is FN+Space on the 65, FN+ESC on the 75/98.
+
 BUYING GUIDE:
 - Budget compact → Pandora or Firefly TKL
 - Wireless compact → Phantom TKL (wireless)
 - Optical switches → Trinity (full-size, genuinely optical)
 - Wireless 65% mechanical (hot-swap) → Artemis Wireless (tri-mode)
 - Full size with numpad → Vanth or Astra
+- Tri-mode gasket / hot-swap → Arcturus 65 (65%), 75 (75%) or 98 (98%/numpad)
 - Note: Trinity uses optical switches — confirm customer wants optical, not mechanical
 """
 
@@ -16831,16 +17148,19 @@ WIRELESS HEADSETS:
 - Immortal: Tri-mode (2.4GHz Wi-Fi USB dongle / Bluetooth 5.3 / Wired 3.5mm), 50mm driver, ENC detachable mic, 40hr battery, RGB LED, 20m range, 20ms low-latency. Game/Music modes. PC, mobile (Bluetooth recommended), PS4/PS5 (dongle or 3.5mm), Switch (Bluetooth or 3.5mm), Xbox (3.5mm only). USB-A dongle.
 
 WIRED HEADSETS:
-- CryoCore: USB only, 7.1 surround (needs driver), 50mm driver, detachable mic, PS4/PS5 compatible. No 3.5mm option.
+- CryoCore (UPGRADED THX model, current): USB, 7.1.4 surround via THX Spatial Audio software, 50mm driver, 20Ω, ENC detachable mic, PS4/PS5 compatible. NOTE: the OLD CryoCore (7.1, 32Ω, setup.exe driver) is DISCONTINUED and does NOT support THX — only the upgraded hardware does.
 - Proteus: Dual input (USB + 3.5mm), 7.1 surround via USB, ENC detachable mic, RGB LED, on-cable controller. Xbox = 3.5mm only.
+- Proteus X (THX model): Dual input (USB + 3.5mm), 7.1.4 surround via THX Spatial Audio (USB), 50mm, ENC detachable mic, RGB LED, on-cable controller, black/white. Xbox = 3.5mm only. Newer THX version of the Proteus.
+- Olympus (THX model): USB only, 7.1.4 surround via THX Spatial Audio, 53mm NEODYMIUM drivers (largest in the wired THX line), ENC detachable mic, protein-leather cushions, carrying pouch, on-headset EQ (long-press mic button: Music/Game/Movie). Premium wired THX pick.
 
 EARBUDS:
 - CosmoBuds X220: True wireless TWS, Bluetooth 5.3, 40ms GOD Mode gaming latency, 40hr total battery, IPX5 waterproof, ENC mic, fast charge.
 
 BUYING GUIDE:
 - Wireless multi-platform gaming → Immortal (only tri-mode headset; works wired/dongle/Bluetooth, Xbox via 3.5mm)
-- PC gaming headset (7.1 surround, wired) → CryoCore (USB only) or Proteus (USB + 3.5mm flexibility)
-- Multi-platform wired (PC/console/mobile) → Proteus (dual input)
+- PC gaming headset with THX Spatial Audio (7.1.4, wired) → Olympus (53mm, premium, USB) / Proteus X (USB + 3.5mm flexibility, RGB) / CryoCore upgraded (USB, value)
+- Note: THX Spatial Audio works over USB on PC only; 3.5mm gives plain stereo.
+- Multi-platform wired (PC/console/mobile) → Proteus X (dual input, THX) or Proteus (dual input, non-THX)
 - Wireless earbuds for gaming + music → CosmoBuds X220
 """
 
@@ -16976,6 +17296,13 @@ def detect_products_from_message(messages: list) -> tuple:
         ("velox",                "Velox"),
         ("pandora",              "Pandora"),
         ("vanth",                "Vanth"),
+        ("arcturus 65",          "Arcturus 65"),
+        ("arcturus65",           "Arcturus 65"),
+        ("arcturus 75",          "Arcturus 75"),
+        ("arcturus75",           "Arcturus 75"),
+        ("arcturus 98",          "Arcturus 98"),
+        ("arcturus98",           "Arcturus 98"),
+        ("arcturus",             "Arcturus 75"),
         ("artemis wireless",     "Artemis Wireless"),
         ("artemis tri-mode",     "Artemis Wireless"),
         ("artemis tri mode",     "Artemis Wireless"),
@@ -16994,6 +17321,10 @@ def detect_products_from_message(messages: list) -> tuple:
         # Headsets
         ("cryocore",             "CryoCore"),
         ("cryo core",            "CryoCore"),
+        ("proteus x",            "Proteus X"),
+        ("proteus-x",            "Proteus X"),
+        ("proteusx",             "Proteus X"),
+        ("olympus",              "Olympus"),
         ("proteus",              "Proteus"),
         ("immortal",             "Immortal"),
         # Earbuds
