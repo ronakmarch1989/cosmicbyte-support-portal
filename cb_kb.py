@@ -61,7 +61,27 @@ v1.12.0 (2026-09-01) -- Claude
     buying guide, and matcher
     aliases in BOTH functions
     ("proteus x" placed BEFORE bare
-    "proteus"; "olympus").
+    "proteus"; "olympus"). Old
+    Proteus marked DISCONTINUED
+    (no THX) with guard; catalogue
+    and buying guide no longer
+    recommend it. THX app is
+    WINDOWS-only over USB (Mac/
+    console/3.5mm = no THX); THX
+    headsets are NOT Orbit devices
+    (guards in all 3 entries, the
+    Orbit entry and Rule 18). THX
+    line tiered entry/mid/flagship
+    (no prices in KB — customers
+    are sent to the product page);
+    Olympus marked NEW flagship /
+    best-tuned
+    speakers. Arcturus 65/75/98 are
+    ORBIT devices: software lines
+    rewritten to point to Orbit and
+    all three added to the Orbit
+    supported snapshot (Orbit entry
+    + Rule 18).
 
 v1.11.0 (2026-09-01) -- Claude
   * Y-bump: Added the ARCTURUS
@@ -13074,14 +13094,16 @@ DPI: Press DPI button to cycle (800/1600/2400/3200/6400/10000 DPI). Customise vi
 
 RGB: 6 preset lighting modes on top of mouse. Customise via Windows software.
 
+BATTERY: 500mAh rechargeable. Charge time: approximately 2 hours (charges over the USB-C cable; the mouse keeps working in wired mode while charging). Both figures confirmed by Cosmic Byte, 2026-09-01.
+
 BATTERY LIFE (wireless use): Helios runtime depends on the RGB lighting.
 - RGB ON: up to ~20 hours of continuous use.
 - RGB OFF: up to ~50 hours of continuous use (with lighting off the mouse draws under 12mA).
 So switching the RGB off more than doubles runtime (≈20H -> ≈50H). These figures apply to wireless modes (2.4GHz / Bluetooth). In WIRED mode it is moot — the mouse runs off USB power and charges while connected, so it does not run the battery down.
-SOURCE: operator-supplied official spec, 2026-05-20. The two runtime figures (20H lights-on, 50H lights-off) and the <12mA lights-off current draw are the ONLY battery figures confirmed for the Helios.
+SOURCE: runtime figures (20H lights-on, 50H lights-off) and the <12mA lights-off draw from the operator-supplied official spec, 2026-05-20; the 500mAh capacity and ~2-hour charge time confirmed by Cosmic Byte 2026-09-01. These are the confirmed battery figures for the Helios.
 
-✗ Do NOT state a battery CAPACITY (mAh) for the Helios — it is NOT in our documentation. Other Cosmic Byte products list mAh figures (e.g. 600mAh, 1300mAh); do NOT borrow or guess one for the Helios. If asked the mAh, say it isn't specified in the information you have.
-✗ Do NOT invent a CHARGE TIME or charging current for the Helios — not documented.
+✓ Battery CAPACITY is 500mAh — CONFIRMED. State it when asked. Do NOT borrow another product's figure (e.g. 600mAh, 1000mAh, 1200mAh, 1300mAh belong to other Cosmic Byte devices) — the Helios is 500mAh. (An earlier version of this entry said the capacity was unspecified; that is superseded — 500mAh is now confirmed.)
+✓ CHARGE TIME is approximately 2 hours — CONFIRMED. State it as "about 2 hours" (it is an approximate figure, so do not present it as exact to the minute). Do NOT invent a charging CURRENT (mA/W) — that is still not documented.
 ✗ Do NOT frame the 20H vs 50H gap as a Bluetooth-vs-2.4GHz difference — the difference is RGB ON vs OFF, not the connection mode.
 ✗ Do NOT inflate beyond the stated numbers (e.g. "60+ hours") or quote a per-hour battery drain — only ~20H and ~50H are confirmed.
 ✓ CORRECT framing: "On the Helios, battery life depends on the RGB lighting — about 20 hours with the lights on, and up to about 50 hours with the lighting off. So if you want to stretch the charge, turn the RGB off."
@@ -13984,7 +14006,7 @@ ARCTURUS FAMILY — 3 SIZES: The Arcturus line has three tri-mode gasket keyboar
 
 TRI-MODE: Wired USB-C + 2.4GHz + Bluetooth (5.0/3.0, up to 3 devices). 65% layout (66 keys + volume knob). Outemu Custom Yellow pre-lubed LINEAR switches, hot-swappable. Gasket-mounted design. 4000mAh battery. Per-key RGB. PBT keycaps.
 
-SPECS: 65% (66 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 321 x 114 x 40 mm, weight 660g ± 20g. Software: Windows / macOS.
+SPECS: 65% (66 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 321 x 114 x 40 mm, weight 660g ± 20g. Software: Cosmic Byte Orbit web configurator (browser-based, Chromium desktop — works on Windows / macOS / Linux / ChromeOS; USB or 2.4GHz only, not Bluetooth).
 
 SOUND DAMPENING (multi-layer): Poron foam + IXPE switch pad + PET dampening film + DPEM switch pad + silicone bottom pad. Result: reduced hollow sound, deeper premium acoustics, minimal resonance.
 
@@ -14008,7 +14030,7 @@ TROUBLESHOOTING: Won't power on → charge, check the mode switch. Wired not det
 
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered. Compliance: RoHS, WEEE, BIS, ETA.
 
-SOFTWARE: Available for advanced customization. Works in Wired and 2.4GHz modes only — NOT supported over Bluetooth.
+SOFTWARE — COSMIC BYTE ORBIT (web-based): the Arcturus is configured through Cosmic Byte Orbit, the official BROWSER-BASED configurator at https://orbit.thecosmicbyte.com — no download needed. Use it to remap keys, set RGB effects/colour/brightness/speed and record macros. Requirements: open it in Chrome / Edge / Brave / Opera on a DESKTOP computer (Windows / macOS / Linux / ChromeOS — not Firefox, Safari, phones or tablets), connect the keyboard by USB cable or its 2.4GHz dongle, click Detect device and approve the browser prompt. NOT supported over Bluetooth — switch to USB or 2.4GHz to configure (this matches the manual: software works in Wired and 2.4GHz modes only). The supported-device grid at orbit.thecosmicbyte.com is the authoritative list.
 
 BUY: https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/ — use coupon code ONLINEPAY for 10% off on online payments.
 
@@ -14029,7 +14051,7 @@ ARCTURUS FAMILY — 3 SIZES: The Arcturus line has three tri-mode gasket keyboar
 
 TRI-MODE: Wired USB-C + 2.4GHz + Bluetooth (5.0/3.0, up to 3 devices). 75% layout (82 keys + volume knob). Outemu Custom Yellow pre-lubed LINEAR switches, hot-swappable. Gasket-mounted design. 4000mAh battery. Per-key RGB. PBT keycaps.
 
-SPECS: 75% (82 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 332 x 141 x 40 mm, weight ~800g ± 20g. Software: Windows / macOS.
+SPECS: 75% (82 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 332 x 141 x 40 mm, weight ~800g ± 20g. Software: Cosmic Byte Orbit web configurator (browser-based, Chromium desktop — works on Windows / macOS / Linux / ChromeOS; USB or 2.4GHz only, not Bluetooth).
 
 SOUND DAMPENING (multi-layer): Poron foam + IXPE switch pad + PET dampening film + DPEM switch pad + silicone bottom pad. Result: reduced hollow sound, deeper premium acoustics, minimal resonance.
 
@@ -14053,7 +14075,7 @@ TROUBLESHOOTING: Won't power on → charge, check the mode switch. Wired not det
 
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered. Compliance: RoHS, WEEE, BIS, ETA.
 
-SOFTWARE: Available for advanced customization. Works in Wired and 2.4GHz modes only — NOT supported over Bluetooth.
+SOFTWARE — COSMIC BYTE ORBIT (web-based): the Arcturus is configured through Cosmic Byte Orbit, the official BROWSER-BASED configurator at https://orbit.thecosmicbyte.com — no download needed. Use it to remap keys, set RGB effects/colour/brightness/speed and record macros. Requirements: open it in Chrome / Edge / Brave / Opera on a DESKTOP computer (Windows / macOS / Linux / ChromeOS — not Firefox, Safari, phones or tablets), connect the keyboard by USB cable or its 2.4GHz dongle, click Detect device and approve the browser prompt. NOT supported over Bluetooth — switch to USB or 2.4GHz to configure (this matches the manual: software works in Wired and 2.4GHz modes only). The supported-device grid at orbit.thecosmicbyte.com is the authoritative list.
 
 BUY: https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/ — use coupon code ONLINEPAY for 10% off on online payments.
 
@@ -14072,7 +14094,7 @@ ARCTURUS FAMILY — 3 SIZES: The Arcturus line has three tri-mode gasket keyboar
 
 TRI-MODE: Wired USB-C + 2.4GHz + Bluetooth (5.0/3.0, up to 3 devices). 98% layout (101 keys + volume knob). Outemu Custom Yellow pre-lubed LINEAR switches, hot-swappable. Gasket-mounted design. 4000mAh battery. Per-key RGB. PBT keycaps.
 
-SPECS: 98% (101 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 409 x 142 x 40 mm, weight ~1000g ± 20g. Software: Windows / macOS.
+SPECS: 98% (101 keys + volume knob). Outemu Custom Yellow (pre-lubed linear) switches, HOT-SWAPPABLE (3-pin & 5-pin, no soldering), 50M presses. 4000mAh battery. PBT keycaps, non-shine-through legends (no light bleed). RGB, south-facing LEDs. Polling: 1000Hz (Wired / 2.4G), 125Hz (Bluetooth). Bluetooth range up to 10m. Key travel 3.6 ± 0.5mm, actuation 45 ± 5g. Cable: 1.6m Type-C (PVC with ferrite core). Dual-stage adjustable feet with silicone pads. Size 409 x 142 x 40 mm, weight ~1000g ± 20g. Software: Cosmic Byte Orbit web configurator (browser-based, Chromium desktop — works on Windows / macOS / Linux / ChromeOS; USB or 2.4GHz only, not Bluetooth).
 
 SOUND DAMPENING (multi-layer): Poron foam + IXPE switch pad + PET dampening film + DPEM switch pad + silicone bottom pad. Result: reduced hollow sound, deeper premium acoustics, minimal resonance.
 
@@ -14096,7 +14118,7 @@ TROUBLESHOOTING: Won't power on → charge, check the mode switch. Wired not det
 
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered. Compliance: RoHS, WEEE, BIS, ETA.
 
-SOFTWARE: Available for advanced customization. Works in Wired and 2.4GHz modes only — NOT supported over Bluetooth.
+SOFTWARE — COSMIC BYTE ORBIT (web-based): the Arcturus is configured through Cosmic Byte Orbit, the official BROWSER-BASED configurator at https://orbit.thecosmicbyte.com — no download needed. Use it to remap keys, set RGB effects/colour/brightness/speed and record macros. Requirements: open it in Chrome / Edge / Brave / Opera on a DESKTOP computer (Windows / macOS / Linux / ChromeOS — not Firefox, Safari, phones or tablets), connect the keyboard by USB cable or its 2.4GHz dongle, click Detect device and approve the browser prompt. NOT supported over Bluetooth — switch to USB or 2.4GHz to configure (this matches the manual: software works in Wired and 2.4GHz modes only). The supported-device grid at orbit.thecosmicbyte.com is the authoritative list.
 
 BUY: https://www.thecosmicbyte.com/product/cosmic-byte-arcturus-tri-mode-gasket-mechanical-keyboard/ — use coupon code ONLINEPAY for 10% off on online payments.
 
@@ -14499,6 +14521,7 @@ SPECS (UPGRADED THX MODEL):
 - Surround: 7.1.4 (via THX Spatial Audio + software)
 - Connection: USB 2.0 ONLY (no 3.5mm). Cable 2.0m.
 - Driver: 50mm Hi-Fi | Sensitivity: 110dB ±5dB (@1kHz) | Impedance: 20Ω | Freq: 20Hz–20kHz
+- SPEAKERS TUNED AND UPDATED FOR THX: the upgraded CryoCore uses updated speaker drivers that have been acoustically tuned for THX Spatial Audio — THX's filters are calibrated to this specific hardware (note the impedance changed from 32Ω on the old model to 20Ω on the upgraded one). This is a core reason the OLD CryoCore cannot run THX: the THX processing is matched to the upgraded drivers, not the old ones.
 - Rated power: 20mW | Max power: 50mW
 - Weight: 277g | Dimensions: 195×95×165mm
 - Mic: Electret condenser (ENC), omnidirectional, 6.0×5.0mm, sensitivity -42dB ±3dB, SNR 58dB, output impedance ≤2.2kΩ, detachable, with mic cap
@@ -14511,7 +14534,18 @@ CONTROLS (on the earcup):
 - Mic switch — slide ON / OFF to enable or mute the microphone
 - Detachable microphone plugs into the earcup port; mic cap included
 
-THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.com):
+WHAT THX SPATIAL AUDIO+ IS AND WHY IT MATTERS (use this to explain the benefit to customers):
+- THX Spatial Audio+ is the immersive-audio platform from THX Ltd. (the company behind THX certification). It turns a stereo headset into a full 360° virtual surround experience using a physics-based room simulation, placing sounds around you — front, sides, behind AND above — with no physical speaker setup.
+- WHAT "7.1.4" MEANS: the ".4" is FOUR HEIGHT channels. Ordinary 7.1 only places sound on a flat horizontal plane; 7.1.4 adds sounds coming from above, which completes the 360° soundscape. This is a genuine step up from the old 7.1 headsets.
+- THE GAMING EDGE: enhanced positional accuracy — you can pinpoint where footsteps, gunfire, reloads and other cues are coming from, including above/below you. That directional awareness is the main competitive benefit. THX's engine is built specifically to make the most of positional sound cues in games.
+- MOVIES & MUSIC: THX Spatial Audio mode gives a wider, more cinematic soundstage for films; THX Stereo mode gives clean, natural 2-channel playback that is ideal for music.
+- AI HEAD TRACKING: uses your webcam to follow your head so the virtual sound field stays anchored to the world when you turn (instead of turning with you). Sounds keep coming from where they should — far more realistic, and it helps you keep your bearings in games. Requires THX Spatial Audio mode and a connected webcam.
+- DEVICE-SPECIFIC TUNING: THX measures each headset's acoustic performance and designs custom filters/EQ so BOTH stereo and spatial playback are accurate for THAT exact headset. This is why the Cosmic Byte THX headsets have speakers tuned specifically for THX — the processing is matched to the hardware rather than generic.
+- PERSONAL AUDIO PROFILES: content modes (Game / Music / Movie presets) plus the Standard and Parametric EQ let the customer tailor the sound to what they are doing.
+- HONEST LIMITS (do not over-promise): THX Spatial Audio+ works ONLY on WINDOWS, and ONLY over the USB input. It does NOT run on macOS, Linux, consoles or phones, and it does NOT process audio over a 3.5mm connection. (A USB-connected headset still works as a normal USB audio device on PS4/PS5 or a Mac — just without the THX app / surround processing.) The full height/positional effect is strongest with content that carries positional audio — most modern games and surround movie mixes do; plain stereo sources gain a wider soundstage but not true discrete height cues.
+- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
+
+THX SPATIAL AUDIO + SOFTWARE (WINDOWS-only desktop app — download it from www.thecosmicbyte.com; requires the headset connected by USB):
 - When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
 - AUDIO MODE SWITCH (top-right of every screen) — the single most important control: "THX Stereo" = traditional 2-channel L/R (cleanest for music/general listening). "THX Spatial Audio" = virtual 360° surround field (hear direction of footsteps/gunfire in games; wider soundstage for movies).
 - STANDARD SETTINGS (everyday controls): 10-band Equalizer (32 Hz to 16 kHz), each band adjustable +12 dB to -12 dB, toggle on/off; presets Default (flat) / Music (lifted bass + upper treble) / Game (in-game detail + positional cues) / Movie (dialogue + cinematic) / Custom (moving any slider auto-switches to Custom); Reset returns to flat. Sound Normalization (evens out quiet vs loud, slider sets strength — good for late-night). Bass Boost (one-tap extra low end). Voice Clarity (one-tap vocal-range emphasis for chat/streams/quiet dialogue).
@@ -14520,7 +14554,7 @@ THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.co
 - USER SETTINGS: language + app information.
 - SOFTWARE TROUBLESHOOTING: headset not shown in the app → check USB, let the app finish loading. Head-tracking "can only be heard when Spatial Audio is enabled" → switch the mode toggle to THX Spatial Audio. No surround effect → make sure the mode switch is on THX Spatial Audio, not THX Stereo.
 
-SETUP — PC/LAPTOP (upgraded model): plug USB into PC → download and install THX Spatial Audio + from www.thecosmicbyte.com → open the app and confirm the headset appears bottom-left → set the mode switch to THX Spatial Audio for 7.1.4 surround → in Windows Sound Settings select the CryoCore as both output AND input.
+SETUP — WINDOWS PC/LAPTOP (upgraded model): plug USB into the Windows PC → download and install THX Spatial Audio + from www.thecosmicbyte.com (Windows only) → open the app and confirm the headset appears bottom-left → set the mode switch to THX Spatial Audio for 7.1.4 surround → in Windows Sound Settings select the CryoCore as both output AND input.
 
 SETUP — PS4/PS5: plug USB directly into the console. No software needed (THX Spatial Audio is a PC app). Adjust volume from PlayStation audio settings.
 NOTE: Xbox is NOT officially supported via USB.
@@ -14542,10 +14576,16 @@ CARE: Keep away from moisture. Store cool and dry. Avoid bending the cable. Do n
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products NOT covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
 
+PRICING: do NOT quote a price for this headset. For the current price and any offers, direct the customer to the product page (BUY link below) — pricing is set on the website and changes.
 BUY: https://www.thecosmicbyte.com/product/cosmic-byte-cryocore-7-1-surround-wired-gaming-headset/ — use coupon code ONLINEPAY for 10% off on online payments.
 """,
     "Proteus": """
-PRODUCT: Cosmic Byte Proteus — Gaming Headset (Dual Input USB + 3.5mm)
+PRODUCT: Cosmic Byte Proteus — Gaming Headset (Dual Input USB + 3.5mm) — ⚠️ DISCONTINUED (OLD MODEL)
+
+⚠️ THIS IS THE OLD PROTEUS — DISCONTINUED. It is NO LONGER SOLD; the replacement is the Proteus X (THX Spatial Audio model, own KB entry). This entry exists ONLY to support customers who still own the old unit.
+- THX Spatial Audio is NOT supported on the old Proteus — it is the pre-THX model and uses its own USB 7.1 mode. Do NOT send an old-Proteus owner to install the THX Spatial Audio + app.
+- If a customer asks to BUY a Proteus, sell the Proteus X, not this model.
+- If unsure which one a customer has: the Proteus X is marketed as 7.1.4 with THX branding and uses the THX Spatial Audio + app; the old Proteus is 7.1 with no THX. Ask when/where they bought it and whether the listing mentions THX.
 
 SPECS:
 - Connection: Dual input — USB (7.1 surround) AND 3.5mm jack
@@ -14591,12 +14631,13 @@ SUPPORT: cc@thecosmicbyte.com | +91 7351615161 | Mon–Sat 10am–6pm
     "Proteus X": """
 PRODUCT: Cosmic Byte Proteus X — 7.1.4 SURROUND WIRED HEADSET WITH THX SPATIAL AUDIO (Dual Input USB + 3.5mm)
 
-DISAMBIGUATION: "Proteus X" (THIS entry) is the newer THX Spatial Audio model. The plain "Proteus" is the OLDER non-THX model with its own KB entry. If a customer says "Proteus X" or mentions THX / Spatial Audio, use THIS entry. Do NOT tell a Proteus X owner their headset lacks THX.
+DISAMBIGUATION: "Proteus X" (THIS entry) is the CURRENT THX Spatial Audio model and the one that is sold. The plain "Proteus" is the OLDER non-THX model — now DISCONTINUED — kept in the KB only to support existing owners. If a customer says "Proteus X" or mentions THX / Spatial Audio, use THIS entry. Do NOT tell a Proteus X owner their headset lacks THX.
 
 KEY FEATURES: 7.1.4 surround (THX Spatial Audio), 50mm Hi-Fi drivers, DUAL INPUT (USB & 3.5mm), detachable flexible ENC microphone, RGB LED lights, on-cable controller, auto-adjustable headband, protein-leather ear cushions, braided cable. Colours: black and white.
 
 SPECS:
 - Driver: 50mm | Sensitivity: 111 ±3dB | Impedance: 32Ω ±15% | Freq: 20Hz–20,000Hz
+- SPEAKERS TUNED FOR THX: the Proteus X speakers have been acoustically tuned for THX Spatial Audio, so THX's stereo and spatial processing is matched to these drivers (this tuning is a difference from the old non-THX Proteus).
 - Power: 20mW rated | 30mW input
 - Headset jack: 3.5mm & USB 7.1 (DUAL INPUT). Overall cable 2.1m ±10%: headset cable 0.7m + 3.5mm audio cable 1.5m + USB cable 1.5m
 - Mic: 6.0×5.0mm ENC, sensitivity -42dB, omnidirectional, detachable
@@ -14611,11 +14652,22 @@ ON-CABLE CONTROLLER:
 - Volume mute button — tap once = volume mute/unmute
 
 PLATFORM COMPATIBILITY (which cable to use):
-- 3.5mm cable → Xbox One S/X, PS4/PS5 (controller jack), Nintendo Switch, mobile devices, PC/Mac/laptop (stereo, no THX processing over 3.5mm)
-- USB (Type-C to USB-A) → PS4/PS5 and PC/Mac/laptop. USB is the mode for THX Spatial Audio / 7.1.4 on PC.
+- 3.5mm cable → Xbox One S/X, PS4/PS5 (controller jack), Nintendo Switch, mobile devices, PC/Mac/laptop (plain stereo — NO THX processing over 3.5mm)
+- USB (Type-C to USB-A) → PS4/PS5 and PC/Mac/laptop as a standard USB audio device. THX Spatial Audio / 7.1.4 is available ONLY on WINDOWS via USB with the THX app installed — on a Mac the headset works over USB but WITHOUT the THX app.
 - Xbox: 3.5mm only (no USB surround on Xbox).
 
-THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.com):
+WHAT THX SPATIAL AUDIO+ IS AND WHY IT MATTERS (use this to explain the benefit to customers):
+- THX Spatial Audio+ is the immersive-audio platform from THX Ltd. (the company behind THX certification). It turns a stereo headset into a full 360° virtual surround experience using a physics-based room simulation, placing sounds around you — front, sides, behind AND above — with no physical speaker setup.
+- WHAT "7.1.4" MEANS: the ".4" is FOUR HEIGHT channels. Ordinary 7.1 only places sound on a flat horizontal plane; 7.1.4 adds sounds coming from above, which completes the 360° soundscape. This is a genuine step up from the old 7.1 headsets.
+- THE GAMING EDGE: enhanced positional accuracy — you can pinpoint where footsteps, gunfire, reloads and other cues are coming from, including above/below you. That directional awareness is the main competitive benefit. THX's engine is built specifically to make the most of positional sound cues in games.
+- MOVIES & MUSIC: THX Spatial Audio mode gives a wider, more cinematic soundstage for films; THX Stereo mode gives clean, natural 2-channel playback that is ideal for music.
+- AI HEAD TRACKING: uses your webcam to follow your head so the virtual sound field stays anchored to the world when you turn (instead of turning with you). Sounds keep coming from where they should — far more realistic, and it helps you keep your bearings in games. Requires THX Spatial Audio mode and a connected webcam.
+- DEVICE-SPECIFIC TUNING: THX measures each headset's acoustic performance and designs custom filters/EQ so BOTH stereo and spatial playback are accurate for THAT exact headset. This is why the Cosmic Byte THX headsets have speakers tuned specifically for THX — the processing is matched to the hardware rather than generic.
+- PERSONAL AUDIO PROFILES: content modes (Game / Music / Movie presets) plus the Standard and Parametric EQ let the customer tailor the sound to what they are doing.
+- HONEST LIMITS (do not over-promise): THX Spatial Audio+ works ONLY on WINDOWS, and ONLY over the USB input. It does NOT run on macOS, Linux, consoles or phones, and it does NOT process audio over a 3.5mm connection. (A USB-connected headset still works as a normal USB audio device on PS4/PS5 or a Mac — just without the THX app / surround processing.) The full height/positional effect is strongest with content that carries positional audio — most modern games and surround movie mixes do; plain stereo sources gain a wider soundstage but not true discrete height cues.
+- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
+
+THX SPATIAL AUDIO + SOFTWARE (WINDOWS-only desktop app — download it from www.thecosmicbyte.com; requires the headset connected by USB):
 - When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
 - AUDIO MODE SWITCH (top-right of every screen) — the single most important control: "THX Stereo" = traditional 2-channel L/R (cleanest for music/general listening). "THX Spatial Audio" = virtual 360° surround field (hear direction of footsteps/gunfire in games; wider soundstage for movies).
 - STANDARD SETTINGS (everyday controls): 10-band Equalizer (32 Hz to 16 kHz), each band adjustable +12 dB to -12 dB, toggle on/off; presets Default (flat) / Music (lifted bass + upper treble) / Game (in-game detail + positional cues) / Movie (dialogue + cinematic) / Custom (moving any slider auto-switches to Custom); Reset returns to flat. Sound Normalization (evens out quiet vs loud, slider sets strength — good for late-night). Bass Boost (one-tap extra low end). Voice Clarity (one-tap vocal-range emphasis for chat/streams/quiet dialogue).
@@ -14624,7 +14676,7 @@ THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.co
 - USER SETTINGS: language + app information.
 - SOFTWARE TROUBLESHOOTING: headset not shown in the app → check USB, let the app finish loading. Head-tracking "can only be heard when Spatial Audio is enabled" → switch the mode toggle to THX Spatial Audio. No surround effect → make sure the mode switch is on THX Spatial Audio, not THX Stereo.
 
-SETUP — PC: connect via USB (USB-C to USB-A) → install THX Spatial Audio + from www.thecosmicbyte.com → confirm "Proteus X" appears bottom-left in the app → set mode to THX Spatial Audio for surround → select the Proteus X as default output/input in Windows Sound Settings. (3.5mm gives plain stereo with no THX app processing.)
+SETUP — WINDOWS PC: connect via USB (USB-C to USB-A) → install THX Spatial Audio + from www.thecosmicbyte.com (Windows only) → confirm "Proteus X" appears bottom-left in the app → set mode to THX Spatial Audio for surround → select the Proteus X as default output/input in Windows Sound Settings. (3.5mm gives plain stereo with no THX app processing.)
 SETUP — CONSOLES: PS4/PS5 via USB or 3.5mm; Xbox and Switch via 3.5mm; mobile via 3.5mm.
 
 TROUBLESHOOTING:
@@ -14636,15 +14688,17 @@ Q: Works on PC but not Xbox? A: Xbox supports 3.5mm only.
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products NOT covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
 
+PRICING: do NOT quote a price for this headset. For the current price and any offers, direct the customer to the product page (BUY link below) — pricing is set on the website and changes.
 BUY: https://www.thecosmicbyte.com/product/cosmic-byte-proteus-x-7-1-4-surround-wired-headset-with-thx-spatial-audio/ — use coupon code ONLINEPAY for 10% off on online payments.
 """,
     "Olympus": """
 PRODUCT: Cosmic Byte Olympus — 7.1.4 SURROUND WIRED HEADSET WITH THX SPATIAL AUDIO (USB)
 
-KEY FEATURES: 7.1.4 surround (THX Spatial Audio), 53mm NEODYMIUM drivers (the largest driver in the wired THX line-up), USB input, detachable ENC microphone, auto-adjustable headband, protein-leather ear cushions, braided cable, THX branding on the headband, carrying pouch included.
+KEY FEATURES: NEW flagship of the wired THX line — best-tuned speakers and best sound experience of the three THX headsets. 7.1.4 surround (THX Spatial Audio), 53mm NEODYMIUM drivers (the largest driver in the wired THX line-up), USB input, detachable ENC microphone, auto-adjustable headband, protein-leather ear cushions, braided cable, THX branding on the headband, carrying pouch included.
 
 SPECS:
 - Driver: 53mm neodymium | Sensitivity: 110 ±3dB | Impedance: 32Ω ±15% | Freq: 20Hz–20,000Hz
+- FLAGSHIP / BEST SOUND IN THE LINE: the Olympus is the NEW top model of the wired THX line and has the BEST-TUNED speakers and the best overall sound experience of the three (CryoCore < Proteus X < Olympus). Its 53mm neodymium drivers are acoustically tuned for THX Spatial Audio. If a customer asks which THX headset sounds best or wants the premium option, recommend the Olympus.
 - Power: 20mW rated | 30mW input
 - Headset jack: USB. Cable 2.1m ±10%.
 - Mic: ø6.0×2.7mm ENC, sensitivity -40 ±3dB, omnidirectional, detachable
@@ -14658,7 +14712,18 @@ CONTROLS:
 - Mic mute button — tap once = microphone on/off
 - LONG PRESS the mic mute button = switch EQ preset on the headset: Music mode → Game mode → Movie mode (cycles). This is a hardware EQ switch and is separate from the presets inside the THX app.
 
-THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.com):
+WHAT THX SPATIAL AUDIO+ IS AND WHY IT MATTERS (use this to explain the benefit to customers):
+- THX Spatial Audio+ is the immersive-audio platform from THX Ltd. (the company behind THX certification). It turns a stereo headset into a full 360° virtual surround experience using a physics-based room simulation, placing sounds around you — front, sides, behind AND above — with no physical speaker setup.
+- WHAT "7.1.4" MEANS: the ".4" is FOUR HEIGHT channels. Ordinary 7.1 only places sound on a flat horizontal plane; 7.1.4 adds sounds coming from above, which completes the 360° soundscape. This is a genuine step up from the old 7.1 headsets.
+- THE GAMING EDGE: enhanced positional accuracy — you can pinpoint where footsteps, gunfire, reloads and other cues are coming from, including above/below you. That directional awareness is the main competitive benefit. THX's engine is built specifically to make the most of positional sound cues in games.
+- MOVIES & MUSIC: THX Spatial Audio mode gives a wider, more cinematic soundstage for films; THX Stereo mode gives clean, natural 2-channel playback that is ideal for music.
+- AI HEAD TRACKING: uses your webcam to follow your head so the virtual sound field stays anchored to the world when you turn (instead of turning with you). Sounds keep coming from where they should — far more realistic, and it helps you keep your bearings in games. Requires THX Spatial Audio mode and a connected webcam.
+- DEVICE-SPECIFIC TUNING: THX measures each headset's acoustic performance and designs custom filters/EQ so BOTH stereo and spatial playback are accurate for THAT exact headset. This is why the Cosmic Byte THX headsets have speakers tuned specifically for THX — the processing is matched to the hardware rather than generic.
+- PERSONAL AUDIO PROFILES: content modes (Game / Music / Movie presets) plus the Standard and Parametric EQ let the customer tailor the sound to what they are doing.
+- HONEST LIMITS (do not over-promise): THX Spatial Audio+ works ONLY on WINDOWS, and ONLY over the USB input. It does NOT run on macOS, Linux, consoles or phones, and it does NOT process audio over a 3.5mm connection. (A USB-connected headset still works as a normal USB audio device on PS4/PS5 or a Mac — just without the THX app / surround processing.) The full height/positional effect is strongest with content that carries positional audio — most modern games and surround movie mixes do; plain stereo sources gain a wider soundstage but not true discrete height cues.
+- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
+
+THX SPATIAL AUDIO + SOFTWARE (WINDOWS-only desktop app — download it from www.thecosmicbyte.com; requires the headset connected by USB):
 - When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
 - AUDIO MODE SWITCH (top-right of every screen) — the single most important control: "THX Stereo" = traditional 2-channel L/R (cleanest for music/general listening). "THX Spatial Audio" = virtual 360° surround field (hear direction of footsteps/gunfire in games; wider soundstage for movies).
 - STANDARD SETTINGS (everyday controls): 10-band Equalizer (32 Hz to 16 kHz), each band adjustable +12 dB to -12 dB, toggle on/off; presets Default (flat) / Music (lifted bass + upper treble) / Game (in-game detail + positional cues) / Movie (dialogue + cinematic) / Custom (moving any slider auto-switches to Custom); Reset returns to flat. Sound Normalization (evens out quiet vs loud, slider sets strength — good for late-night). Bass Boost (one-tap extra low end). Voice Clarity (one-tap vocal-range emphasis for chat/streams/quiet dialogue).
@@ -14667,7 +14732,7 @@ THX SPATIAL AUDIO + SOFTWARE (desktop app — download from www.thecosmicbyte.co
 - USER SETTINGS: language + app information.
 - SOFTWARE TROUBLESHOOTING: headset not shown in the app → check USB, let the app finish loading. Head-tracking "can only be heard when Spatial Audio is enabled" → switch the mode toggle to THX Spatial Audio. No surround effect → make sure the mode switch is on THX Spatial Audio, not THX Stereo.
 
-SETUP — PC: plug USB into PC → install THX Spatial Audio + from www.thecosmicbyte.com → confirm "Olympus" appears bottom-left in the app → set mode to THX Spatial Audio for surround → select the Olympus as default output/input in Windows Sound Settings.
+SETUP — WINDOWS PC: plug USB into the Windows PC → install THX Spatial Audio + from www.thecosmicbyte.com (Windows only) → confirm "Olympus" appears bottom-left in the app → set mode to THX Spatial Audio for surround → select the Olympus as default output/input in Windows Sound Settings.
 SETUP — PS4/PS5: plug USB into the console; no software needed. Xbox: not officially supported via USB.
 
 TROUBLESHOOTING:
@@ -14679,6 +14744,7 @@ Q: Mic not working? A: Mic firmly plugged in → tap mic mute to unmute → sele
 WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products NOT covered.
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
 
+PRICING: do NOT quote a price for this headset. For the current price and any offers, direct the customer to the product page (BUY link below) — pricing is set on the website and changes.
 BUY: https://www.thecosmicbyte.com/product/cosmic-byte-olympus-7-1-4-surround-wired-headset-with-thx-spatial-audio/ — use coupon code ONLINEPAY for 10% off on online payments.
 """,
     "Immortal": """
@@ -15057,6 +15123,9 @@ CURRENTLY SUPPORTED DEVICES (snapshot 2026-05-22 — list grows over time):
 - Phantom TKL (tri-mode gasket mechanical keyboard)
 - Velox (tri-mode gaming mouse)
 - Ignis (tri-mode gaming mouse)
+- Arcturus 65 (tri-mode gasket mechanical keyboard, 65%)
+- Arcturus 75 (tri-mode gasket mechanical keyboard, 75%)
+- Arcturus 98 (tri-mode gasket mechanical keyboard, 98%)
 More Cosmic Byte hardware is added regularly. The LIVE device grid at https://orbit.thecosmicbyte.com is the authoritative list — direct customers there to see what is supported right now. Some devices may appear flagged "Coming soon — in testing" while in pre-release.
 
 BROWSER & PLATFORM REQUIREMENTS (strict):
@@ -15089,6 +15158,7 @@ TROUBLESHOOTING:
 ANTI-FABRICATION GUARDS:
 ✗ Do NOT tell a customer Orbit works on Firefox, Safari, iPhone, iPad, or Android — it does NOT. Orbit needs Chrome / Edge / Brave / Opera on a desktop computer.
 ✗ Do NOT tell a customer to download desktop software for Orbit — Orbit is browser-based. The only download in scope is the "Cosmic Byte Connect" helper, and ONLY for the specific devices that need it (currently the wired Velox).
+✗ HEADSETS ARE NOT ORBIT DEVICES: the THX headsets (CryoCore, Proteus X, Olympus) use the separate THX Spatial Audio+ Windows app, NOT Orbit. Do not send headset customers here.
 ✗ Do NOT confirm or deny that a SPECIFIC product is supported in Orbit unless it is on the snapshot list above. The supported set expands regularly — direct customers to https://orbit.thecosmicbyte.com for the authoritative current list.
 ✗ Do NOT say Bluetooth devices can be configured in Orbit — they cannot. The customer must switch to USB or the 2.4 GHz dongle.
 ✗ Do NOT invent per-device features. Features (DPI, RGB, macros, etc.) vary per device — only confirm what each device's own configurator actually exposes.
@@ -15873,7 +15943,7 @@ CB sells a SEPARATE product called "Cosmic Byte Optical Switches (Pack of 20)" �
 - URL: https://www.thecosmicbyte.com/product/cosmic-byte-optical-switches-pack-of-20/
 - SKU: OPTICALSWITCHES, manufactured by H&J, Country of Origin CN [CB published]
 - Pack: 20 switches per pack [CB published]
-- Price: MRP ₹200, current ₹145 [CB published]
+- Price: do not quote — check the product page for current pricing (prices and deals change).
 - Variants available: Brown Switch (tactile feel), Red Switch (linear feel) — only 2 options [CB published: variant names. Type classification confirmed by H&J Amazon and Newegg listings].
 - Detailed actuation force / pre-travel / total travel: NOT published by CB or by H&J on any source I can find. [Specs not publicly documented for this specific H&J variant.] When asked, tell the customer: "Detailed actuation/travel specs for the H&J optical switches sold on CB aren't published anywhere I can verify. What I can tell you generically about optical switches: actuation is via infrared light beam (not metal contact), typical lifespan is ~100 million keystrokes (longer than mechanical's 50M), water/dust resistant, no debounce delay. For the specific feel: Red is linear (smooth, no bump), Brown is tactile (with a bump but no click). For exact specs, please reach out to CB at cc@thecosmicbyte.com or +91 7351615161."
 - Compatibility: ONLY with CB Trinity Optical Swappable Switch Keyboard. DO NOT recommend these for any other CB keyboard (Astra, Artemis, Firefly TKL, Pandora, Vanth, Phantom TKL, etc. — those all use mechanical switches with Cherry MX-style sockets, completely different mechanism).
@@ -16515,9 +16585,9 @@ Which option appeals to you? Happy to walk through the setup of whichever you pi
 
 18. PROMOTE ORBIT FOR SUPPORTED DEVICES — Cosmic Byte Orbit (https://orbit.thecosmicbyte.com) is the official browser-based configurator, and you should PROACTIVELY recommend it whenever a customer has a supported device and asks about (or would benefit from) configuration: button/key remapping, DPI / sensitivity / polling rate, stick or trigger response / deadzones / motion tuning, vibration, RGB lighting effects, or macros. Do NOT wait to be asked specifically about Orbit — if the customer's question is about customising or tuning a supported device, surface Orbit as the recommended way to do it.
 
-  WHEN TO PROMOTE IT: For any device on the Orbit supported list (see the "Cosmic Byte Orbit" KB entry — snapshot includes Helios, Lumora, Ares Pro, Drakon, Blitz, Stellaris, Phantom TKL, Velox, Ignis; the list grows over time), lead the configuration answer with Orbit. Example framing: "You can set that up in Cosmic Byte Orbit, our free browser-based configurator at https://orbit.thecosmicbyte.com — open it in Chrome / Edge / Brave / Opera on a desktop computer, connect your device by USB cable or its 2.4 GHz dongle (Bluetooth won't work for configuration), click Detect device, and approve the browser prompt. No download needed for most devices."
+  WHEN TO PROMOTE IT: For any device on the Orbit supported list (see the "Cosmic Byte Orbit" KB entry — snapshot includes Helios, Lumora, Ares Pro, Drakon, Blitz, Stellaris, Phantom TKL, Velox, Ignis, Arcturus 65, Arcturus 75, Arcturus 98; the list grows over time), lead the configuration answer with Orbit. Example framing: "You can set that up in Cosmic Byte Orbit, our free browser-based configurator at https://orbit.thecosmicbyte.com — open it in Chrome / Edge / Brave / Opera on a desktop computer, connect your device by USB cable or its 2.4 GHz dongle (Bluetooth won't work for configuration), click Detect device, and approve the browser prompt. No download needed for most devices."
 
-  RESPECT THE ORBIT GUARDS (do NOT contradict the "Cosmic Byte Orbit" entry): (a) Do NOT claim a SPECIFIC product is supported in Orbit unless it is on the snapshot list — if the customer's device isn't confirmed on the list, still point them to the live device grid at https://orbit.thecosmicbyte.com as the authoritative current line-up ("the supported list grows regularly — check the live grid to see if your device is there yet"). (b) Orbit is DESKTOP Chromium-only (Chrome / Edge / Brave / Opera on Windows / macOS / Linux / ChromeOS) — never tell a customer it works on Firefox, Safari, or any phone/tablet. (c) Orbit needs USB or 2.4 GHz — Bluetooth-connected devices must switch to USB or the 2.4 GHz dongle to configure. (d) Orbit is browser-based with no download for most devices; the only exception is the wired Velox, which needs the "Cosmic Byte Connect" helper. (e) Do NOT invent per-device features — features vary per device; only confirm what that device's own configurator exposes.
+  RESPECT THE ORBIT GUARDS (do NOT contradict the "Cosmic Byte Orbit" entry): (a) Do NOT claim a SPECIFIC product is supported in Orbit unless it is on the snapshot list — if the customer's device isn't confirmed on the list, still point them to the live device grid at https://orbit.thecosmicbyte.com as the authoritative current line-up ("the supported list grows regularly — check the live grid to see if your device is there yet"). (b) Orbit is DESKTOP Chromium-only (Chrome / Edge / Brave / Opera on Windows / macOS / Linux / ChromeOS) — never tell a customer it works on Firefox, Safari, or any phone/tablet. (c) Orbit needs USB or 2.4 GHz — Bluetooth-connected devices must switch to USB or the 2.4 GHz dongle to configure. (d) Orbit is browser-based with no download for most devices; the only exception is the wired Velox, which needs the "Cosmic Byte Connect" helper. (e) Do NOT invent per-device features — features vary per device; only confirm what that device's own configurator exposes. (f) Orbit is for keyboards, mice and controllers ONLY. The THX headsets (CryoCore, Proteus X, Olympus) are NOT Orbit devices — their software is the THX Spatial Audio+ WINDOWS app from www.thecosmicbyte.com. Never promote Orbit for a headset.
 """
 
 
@@ -16679,7 +16749,7 @@ GATERON MECHANICAL SWITCHES — sold on thecosmicbyte.com (Pack of 10)
 URL: https://www.thecosmicbyte.com/product/gateron-mechanical-switches-compatible-with-cosmic-byte-hot-swappable-keyboards-qty-1pc/
 SKU: GATERONSWITCH
 PACK: 10 switches per pack
-PRICE RANGE: ₹200–₹250 depending on switch type (-60% deal often live)
+PRICE: varies by switch type and deals often run — do not quote a figure; check the product page for current pricing.
 
 PIN: 5-Pin (PCB-mount) [CB published]. Fits CB keyboards with 5-pin sockets — Astra (CB-GK-33), Phantom TKL, Phantom TKL Wired (CB-GK-42). Does NOT fit 3-pin-only keyboards (Artemis Wired/Wireless CB-GK-40, Firefly TKL, Pandora, Vanth) without clipping the 2 plastic pins (clipping NOT recommended — buy a 3-pin Outemu or Kailh switch instead).
 
@@ -16728,7 +16798,7 @@ KAILH MECHANICAL SWITCHES — sold on thecosmicbyte.com (Pack of 10)
 URL: https://www.thecosmicbyte.com/product/kailh-mechanical-switches-for-swappable-keyboards-pack-of-10/
 SKU: KAILH
 PACK: 10 switches per pack
-PRICE RANGE: ₹180–₹250 depending on switch type
+PRICE: varies by switch type — do not quote a figure; check the product page for current pricing.
 COUNTRY OF ORIGIN: CN (manufactured by Kailh) [CB published]
 
 COMPATIBILITY: Cherry MX-style. Kailh switches sold on CB include both standard (3-pin compatible) and Box-housing variants. The Box variants are typically 5-pin — check the specific switch type before buying for a 3-pin-only keyboard.
@@ -16779,11 +16849,11 @@ Brand site: https://www.kailhswitch.com
 OUTEMU MECHANICAL SWITCHES — sold on thecosmicbyte.com in packs of 20
 
 PACKS AVAILABLE ON CB (3 SKUs):
-- Outemu Pack of 20 (3-Pin) — standard hot-swap, plate-mount. Price range ₹145–₹325 depending on switch type. 29 variants available (full list below).
+- Outemu Pack of 20 (3-Pin) — standard hot-swap, plate-mount. Price varies by switch type (check the product page for current pricing). 29 variants available (full list below).
   BUY: https://www.thecosmicbyte.com/product/outemu-mechanical-switches-for-swappable-keyboards-pack-of-20/
-- Outemu Pack of 20 (5-Pin) — for 5-pin PCB sockets. SKU: OUTEMU5PIN. Price ₹325 (current; MRP ₹700). The 5-Pin SKU is a SEPARATE product line from the 3-Pin pack and offers ONLY the "Cream" series (4 variants).
+- Outemu Pack of 20 (5-Pin) — for 5-pin PCB sockets. SKU: OUTEMU5PIN. (check the product page for current pricing.) The 5-Pin SKU is a SEPARATE product line from the 3-Pin pack and offers ONLY the "Cream" series (4 variants).
   BUY: https://www.thecosmicbyte.com/product/outemu-mechanical-switches-for-hot-swappable-keyboards-5-pin-pack-of-20/
-- Certified Refurbished Pack of 20 — ₹75–₹140, ships with 22 switches (2 extra). Same no-warranty / no-return policy as new. 3-Pin variants.
+- Certified Refurbished Pack of 20 — lower-cost option (check the product page for current pricing), ships with 22 switches (2 extra). Same no-warranty / no-return policy as new. 3-Pin variants.
   BUY: https://www.thecosmicbyte.com/product/certified-refurbished-outemu-mechanical-switches-for-swappable-keyboards-pack-of-20/
 
 IMPORTANT: 3-Pin and 5-Pin Outemu packs have COMPLETELY DIFFERENT switch lineups. The 3-Pin pack has the broad 29-variant catalog (Standard + Pre-Lubed series). The 5-Pin pack has only the 4 Cream switches. Don't tell a customer wanting "Outemu Silent Lemon" to buy the 5-Pin pack — that switch is only in the 3-Pin pack.
@@ -16926,7 +16996,7 @@ CHERRY MX MECHANICAL SWITCHES — sold on thecosmicbyte.com (Pack of 10)
 URL: https://www.thecosmicbyte.com/product/cherry-mx-mechancial-5-pin-switches-compatible-with-hot-swappable-keyboards-pack-of-10/
 SKU: CHERRYMX
 PACK: 10 switches per pack
-PRICE: MRP ₹1,000, current ₹449 (typical -55% deal). Premium option vs Outemu/Kailh.
+PRICE: premium-tier option vs Outemu/Kailh; deals often run — do not quote a figure; check the product page for current pricing.
 
 PIN: 5-Pin (PCB-mount) — confirmed by the product URL. Fits CB keyboards with 5-pin sockets ONLY: Astra (CB-GK-33), Phantom TKL, Phantom TKL Wired (CB-GK-42). Does NOT fit 3-pin-only keyboards (Artemis Wired/Wireless CB-GK-40, Firefly TKL, Pandora, Vanth) without clipping the 2 plastic pins (clipping NOT recommended).
 
@@ -17148,19 +17218,22 @@ WIRELESS HEADSETS:
 - Immortal: Tri-mode (2.4GHz Wi-Fi USB dongle / Bluetooth 5.3 / Wired 3.5mm), 50mm driver, ENC detachable mic, 40hr battery, RGB LED, 20m range, 20ms low-latency. Game/Music modes. PC, mobile (Bluetooth recommended), PS4/PS5 (dongle or 3.5mm), Switch (Bluetooth or 3.5mm), Xbox (3.5mm only). USB-A dongle.
 
 WIRED HEADSETS:
-- CryoCore (UPGRADED THX model, current): USB, 7.1.4 surround via THX Spatial Audio software, 50mm driver, 20Ω, ENC detachable mic, PS4/PS5 compatible. NOTE: the OLD CryoCore (7.1, 32Ω, setup.exe driver) is DISCONTINUED and does NOT support THX — only the upgraded hardware does.
-- Proteus: Dual input (USB + 3.5mm), 7.1 surround via USB, ENC detachable mic, RGB LED, on-cable controller. Xbox = 3.5mm only.
-- Proteus X (THX model): Dual input (USB + 3.5mm), 7.1.4 surround via THX Spatial Audio (USB), 50mm, ENC detachable mic, RGB LED, on-cable controller, black/white. Xbox = 3.5mm only. Newer THX version of the Proteus.
-- Olympus (THX model): USB only, 7.1.4 surround via THX Spatial Audio, 53mm NEODYMIUM drivers (largest in the wired THX line), ENC detachable mic, protein-leather cushions, carrying pouch, on-headset EQ (long-press mic button: Music/Game/Movie). Premium wired THX pick.
+- CryoCore (UPGRADED THX model, current): USB only, 7.1.4 surround via THX Spatial Audio software, 50mm driver (tuned + updated for THX), 20Ω, ENC detachable mic, PS4/PS5 compatible. Entry point to the THX line. NOTE: the OLD CryoCore (7.1, 32Ω, setup.exe driver) is DISCONTINUED and does NOT support THX — only the upgraded hardware does.
+- Proteus (OLD MODEL — DISCONTINUED, no THX): Dual input (USB + 3.5mm), 7.1 via USB, ENC mic, RGB, on-cable controller. No longer sold — recommend the Proteus X instead; keep only for existing owners.
+- Proteus X (THX model): Dual input (USB + 3.5mm), 7.1.4 surround via THX Spatial Audio (USB), 50mm (tuned for THX), ENC detachable mic, RGB LED, on-cable controller, black/white. Xbox = 3.5mm only. Mid pick; the one to choose for multi-platform 3.5mm use.
+- Olympus (THX model): NEW FLAGSHIP — best-tuned speakers and best sound of the THX line. USB only, 7.1.4 via THX Spatial Audio, 53mm NEODYMIUM drivers (largest in the line), ENC detachable mic, protein-leather cushions, carrying pouch, on-headset EQ (long-press mic button: Music/Game/Movie). Premium pick.
+- THX NOTE (all three): THX Spatial Audio+ software is WINDOWS-only and works over USB only; download from www.thecosmicbyte.com. It is NOT Orbit — do not send headset customers to Orbit.
 
 EARBUDS:
 - CosmoBuds X220: True wireless TWS, Bluetooth 5.3, 40ms GOD Mode gaming latency, 40hr total battery, IPX5 waterproof, ENC mic, fast charge.
 
 BUYING GUIDE:
 - Wireless multi-platform gaming → Immortal (only tri-mode headset; works wired/dongle/Bluetooth, Xbox via 3.5mm)
-- PC gaming headset with THX Spatial Audio (7.1.4, wired) → Olympus (53mm, premium, USB) / Proteus X (USB + 3.5mm flexibility, RGB) / CryoCore upgraded (USB, value)
-- Note: THX Spatial Audio works over USB on PC only; 3.5mm gives plain stereo.
-- Multi-platform wired (PC/console/mobile) → Proteus X (dual input, THX) or Proteus (dual input, non-THX)
+- PC gaming headset with THX Spatial Audio (7.1.4, wired) → Olympus (flagship, best sound, USB) / Proteus X (mid tier, USB + 3.5mm flexibility, RGB) / CryoCore upgraded (entry tier, USB, value)
+- THX line tiering: CryoCore = entry, Proteus X = mid, Olympus = flagship/premium. Do NOT quote prices — send customers to the product page for current pricing.
+- Best sound / premium THX → Olympus. Budget THX → CryoCore. Need 3.5mm for console/mobile too → Proteus X.
+- Note: THX Spatial Audio works on WINDOWS over USB only; 3.5mm gives plain stereo; not Mac/console for the app.
+- Multi-platform wired (PC/console/mobile) → Proteus X (dual input, THX). (Old Proteus is discontinued — do not recommend it.)
 - Wireless earbuds for gaming + music → CosmoBuds X220
 """
 
