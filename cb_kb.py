@@ -33,6 +33,63 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.13.0 (2026-10-01) -- Claude
+  * Y-bump: Added the SENSA wireless
+    gamepad — the lineup's PS5-
+    compatible controller (PS5 / PC /
+    Mac / Steam / iOS 13+ / Android
+    5+; Bluetooth 6.0 + USB-C wired
+    only, NO 2.4GHz dongle). Full KB
+    entry: Hall-Effect magnetic
+    sticks, ADAPTIVE force-feedback
+    triggers, 6-axis gyro, touchpad,
+    speaker+mic, TRRS jack, RGB mode
+    cycle, ML/MR macros (24 inputs),
+    Turbo (5/10/15 cps), stick+
+    trigger & axis calibration,
+    deadzone toggle, Windows-only
+    firmware tool (needed after PS5
+    system updates), sleep/power,
+    charging LEDs, pin reset.
+    Registered in PRODUCT_URLS,
+    PRODUCTS, BOTH matchers,
+    controllers catalogue + buying
+    guide. Cross-product guard
+    amendments: CONSOLE COMPATIBILITY
+    RULE now excepts the Sensa (PS5);
+    HE matrix line (HE sticks, but
+    adaptive — NOT Hall Effect —
+    triggers); BT polling note (500Hz
+    wired / 250Hz BT as printed, no
+    1000Hz claims, no dongle);
+    warranty guards — Sensa is 2-YEAR
+    (overview + STEP 3), console-use
+    exclusion does not apply to it.
+    Anti-fabrication: no battery mAh/
+    runtime (not in manual), not
+    Sony-licensed (say PS5-
+    compatible), no Xbox/Switch, not
+    on Orbit snapshot. Manual's
+    mislabeled second 'X-Input'
+    section documented as the BT
+    pairing steps (printing error).
+  * Same-version additions (operator
+    confirmed, 2026-10-01): battery
+    1000mAh (runtime/charge time
+    still undocumented); PS5-system-
+    update firmware rule elevated to
+    the top guard + first
+    troubleshooting Q (always try
+    firmware before support/
+    warranty); new "USING THE SENSA
+    ON PC" section — behaves as a
+    PS5-style controller, XInput-only
+    games need the built-in X-Input
+    toggle, Steam Input (PlayStation
+    Controller Support) or
+    DS4Windows; full TROUBLESHOOTING
+    Q&A section added.
+
 v1.12.0 (2026-09-01) -- Claude
   * Y-bump: THX Spatial Audio wired
     headset line. CryoCore entry
@@ -9909,7 +9966,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.12.0"
+__version__ = "1.13.0"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -9953,6 +10010,7 @@ PRODUCT_URLS = {
     "Blitz Wireless": "https://www.thecosmicbyte.com/product/cosmic-byte-blitz-wireless-wired-controller-for-pc-hall-effect-joystick-triggers-1000hz-polling-rate-black/",
     "Eclipse": "https://www.thecosmicbyte.com/product/cosmic-byte-eclipse-tri-mode-controller-adjustable-force-tmr-joysticks/",
     "Starforge": "https://www.thecosmicbyte.com/product/cosmic-byte-starforge-tri-mode-controller-replaceable-tmr-joysticks/",
+    "Sensa": "https://www.thecosmicbyte.com/product/cosmic-byte-sensa-wireless-gamepad-for-ps5-pc-mac-ios-android-hall-effect-sticks-adaptive-triggers-bluetooth-6-0-rgb-macro-back-buttons/",
     "Quantum": "https://www.thecosmicbyte.com/product/cosmic-byte-quantum-controller/",
     "Stratos Xenon": "https://www.thecosmicbyte.com/product/cosmic-byte-stratos-xenon-gamepad-for-ps4-ios-and-android/",
     "Velox": "https://www.thecosmicbyte.com/product/cosmic-byte-velox-tri-mode-mouse-pixart-3395-sensor-39-grams/",
@@ -12539,6 +12597,112 @@ GENERAL GUIDANCE FOR VAGUE ECLIPSE QUESTIONS:
 If a customer's message is just "Eclipse" or "eclips" with no specific question (as has happened in production logs), DO NOT assume they are asking about calibration / drift / any specific topic. ASK them what they need help with — pairing, calibration, RGB, macros, software, charging, etc. — before launching into a how-to. Volunteering an unrequested calibration walk-through wastes the customer's time and (as v1.4.1 demonstrated) is the exact context where the AI is most likely to hallucinate the steps.
 """,
 
+    "Sensa": """
+PRODUCT: Cosmic Byte Sensa — WIRELESS GAMEPAD for PS5 / PC / Mac / iOS / Android (Hall Effect sticks, adaptive triggers, Bluetooth 6.0)
+
+⚠️ PLATFORM RULES — READ FIRST (the Sensa is DIFFERENT from most CB controllers):
+- The Sensa IS PlayStation 5 compatible — it is designed for PS5, Windows PC, macOS, Steam, iOS (13+), and Android (5.0+). This is an EXCEPTION to the usual "CB controllers don't work on consoles" rule. Do NOT tell a Sensa customer their controller cannot be used on PS5.
+- NOT supported: Xbox (any generation) and Nintendo Switch — the manual does not list them. Do not claim Xbox/Switch support.
+- NOT Sony-licensed: per the manual's trademark disclaimer, the Sensa is an independently developed product and is NOT licensed, sponsored, or endorsed by Sony. Never call it an "official" or "licensed" PS5 controller — say "PS5-compatible".
+- CONNECTIVITY IS BLUETOOTH 6.0 + USB WIRED ONLY. There is NO 2.4GHz dongle — no receiver in the box, nothing to lose or re-pair. If a customer asks "where is the dongle", the answer is: the Sensa has no dongle; it connects over Bluetooth or the USB-C cable.
+- ⚠️ #1 KNOWN ISSUE PATTERN — PS5 SYSTEM UPDATES: if a Sensa that was working on PS5 suddenly stops working or keeps disconnecting, the MOST LIKELY cause is a PlayStation 5 system update. The FIX is a Sensa FIRMWARE UPDATE from the Cosmic Byte website (https://www.thecosmicbyte.com/downloaddrivers/ — Windows PC required; full steps in the FIRMWARE UPDATE section below). ALWAYS raise this first for any "Sensa stopped working on PS5" complaint — it resolves the issue; do not route the customer to support or warranty before they have tried the firmware update.
+
+KEY FEATURES: PS5 + multi-platform compatibility, Bluetooth 6.0 (up to 10m) + USB-C wired, Hall-Effect magnetic analog sticks (drift-resistant), ADAPTIVE TRIGGER force feedback on L2/R2 (DualSense-style — unique in the CB lineup), 6-axis motion sensor (gyro), dual voice-coil vibration motors, capacitive touchpad, built-in speaker AND microphone, 3.5mm TRRS headset jack, RGB lighting with adjustable brightness, 2 programmable rear macro buttons (ML/MR), Turbo, firmware updates via Windows PC.
+
+SPECS (per manual):
+- Connectivity: Bluetooth 6.0 / USB wired (Type-C). Wireless range up to 10 meters. NO 2.4GHz dongle mode.
+- Polling rate: the manual spec table prints "500Hz/250Hz (wired and wireless)" — i.e. 500Hz wired / 250Hz wireless per the printed order. Do NOT claim 1000Hz for the Sensa in any mode. If a customer needs a guaranteed per-mode figure beyond what the manual prints, route to cc@thecosmicbyte.com.
+- Sensors: 6-axis motion sensor. Analog sticks: Hall-Effect magnetic. Triggers: Adaptive force feedback (L2/R2).
+- Vibration: dual voice-coil motors. Audio: built-in speaker + microphone; 3.5mm TRRS headset port. Lighting: RGB multi-colour. Charging: USB Type-C.
+- ✓ BATTERY: 1000mAh rechargeable lithium-ion — CONFIRMED by Cosmic Byte (2026-10-01). State it when asked. (An earlier version of this entry said the capacity was unspecified; that is superseded.) Runtime hours and charge time are still NOT documented — do NOT invent them; route to support if a customer needs those figures. Other confirmed battery facts: low-battery warning below 3.65V; charging LED breathes orange while powered off, turns off when full.
+
+WHAT'S IN THE BOX: Sensa gamepad, USB Type-C charging cable, user manual, warranty card. (No dongle — none is needed.)
+
+CONNECTING — PLAYSTATION 5:
+1. First-time pairing is WIRED: connect the controller to the PS5 with a USB cable.
+2. Press the PS button — the controller pairs automatically with the console.
+3. Disconnect the cable to play wirelessly.
+- If the controller disconnects after a PS5 SYSTEM UPDATE, a firmware update may be required (see FIRMWARE below).
+
+CONNECTING — WINDOWS PC:
+- USB: connect with the Type-C cable; Windows installs drivers automatically. Works with Steam.
+- X-Input mode toggle: hold SHARE + OPTIONS for 5 seconds.
+- Bluetooth: turn the controller OFF → hold SHARE + PS for 3 seconds until the LED flashes → select the controller in PC Bluetooth settings. (NOTE: the printed manual mislabels this Bluetooth section as a second "Switch to X-Input Mode" heading — a printing error. The steps are the Bluetooth pairing steps; present them as such.)
+
+USING THE SENSA ON PC — IT BEHAVES LIKE A PS5 CONTROLLER (IMPORTANT for troubleshooting):
+On Windows, the Sensa is supported THE SAME WAY a PS5 (DualSense-style) gamepad is supported on PC — it identifies as a PS5-style controller, NOT as an Xbox controller. What this means in practice:
+- Games and launchers with NATIVE PlayStation-controller support (most modern titles, and anything launched through Steam) work directly.
+- SOME PC GAMES ONLY UNDERSTAND XBOX (XInput) CONTROLLERS. In those games the Sensa may not be detected, or buttons/prompts may be wrong. This is NORMAL for any PS5-style controller on PC — the controller is not faulty. Convert its input to Xbox-style with EITHER of:
+  1. STEAM (recommended, free, no install needed if the customer has Steam): launch the game through Steam and enable Steam Input — Steam → Settings → Controller → enable "PlayStation Controller Support". Non-Steam games can be added to Steam as a non-Steam game to get the same translation.
+  2. DS4WINDOWS (free third-party tool, ds4-windows.com): runs in the background and makes the controller appear to Windows as an Xbox 360 controller, so XInput-only games detect it. Install → connect the Sensa (USB or Bluetooth) → DS4Windows maps it automatically.
+- The Sensa ALSO has a built-in X-Input mode toggle (hold SHARE + OPTIONS for 5 seconds) — try this FIRST before installing anything; for many XInput-only games it is enough on its own.
+- Recommended order when a PC game doesn't detect the Sensa or buttons are wrong: (1) toggle X-Input mode (SHARE + OPTIONS 5s) → (2) launch via Steam with PlayStation Controller Support enabled → (3) use DS4Windows. One of these resolves virtually every PC detection/mapping issue.
+
+CONNECTING — macOS / iOS / ANDROID (Bluetooth):
+1. Turn the controller OFF. 2. Hold SHARE + PS for 3 seconds. 3. Open Bluetooth settings on the device. 4. Select the controller from the list.
+- Compatible with iOS 13+ and Android 5.0+.
+
+MACRO PROGRAMMING (rear buttons ML / MR):
+- Enter programming: hold TouchKey + ML (or MR) for 3 seconds → record the button sequence → press ML/MR again to save. Maximum 24 inputs per macro.
+- Clear a macro: hold TouchKey + ML/MR for 5 seconds.
+
+TURBO FUNCTION:
+- Applicable buttons: Triangle, Circle, Cross, Square, L1, R1, L2, R2.
+- Press the action button + TURBO to cycle: Turbo ON → Auto Turbo → Turbo OFF.
+- Speed levels: 1 = 5 presses/sec, 2 = 10/sec (default), 3 = 15/sec. Increase: hold TURBO + Right Stick UP. Decrease: hold TURBO + Right Stick DOWN.
+- Clear ALL turbo: hold TURBO + SHARE for 1 second — the controller vibrates to confirm the reset.
+
+LED / RGB SETTINGS:
+- Change light mode: hold OPTIONS and press D-pad LEFT or RIGHT (the gamepad vibrates briefly on each change).
+- Mode cycle order: Random Rainbow (left & right sides) → Synced Rainbow → 8 Static Colors → Off. Right = forward through the sequence, Left = backward. Brightness is adjustable.
+
+CALIBRATION:
+- 3D STICK & TRIGGER CALIBRATION: power the controller OFF → press and hold OPTIONS + SHARE together → while holding both, connect to a PC via USB cable → LED flashes rapidly = calibration mode. Then: press L2 and R2 triggers 2–3 times → rotate BOTH joysticks fully in all directions (2–3 full rotations each) → press and hold the Cross button for 1 second to confirm. LED turns SOLID = calibration successful.
+- AXIS CALIBRATION (while connected to a host — PS5, PC, or other compatible device): hold SHARE + Square for 3 seconds → LED blinks = successful.
+- JOYSTICK DEADZONE TOGGLE: hold TouchKey + L3 (or R3) for 2 seconds → RGB briefly cycles red/blue and the controller vibrates. Toggles between Default Deadzone and 0% Deadzone (No Deadzone Mode). The setting is saved in memory and persists after power off.
+
+FIRMWARE UPDATE (WINDOWS PC ONLY):
+- When needed: especially if the controller disconnects after a PlayStation 5 system update.
+- Steps: turn the controller OFF → press and HOLD the Triangle button → while holding, connect to the PC via USB → controller enters Firmware Update Mode → open the Cosmic Byte Firmware Update Tool (download: https://www.thecosmicbyte.com/downloaddrivers/) → select "BT Wireless" → click Update → wait for completion before disconnecting.
+- Do NOT disconnect during the update; use a stable USB connection.
+
+SLEEP, WAKE & POWER:
+- Auto-sleep: if the controller cannot find a host within 15 minutes, it sleeps. When connected to a console, it sleeps together with the console. Wake: press the PS button.
+- Manual power off: hold the PS button for 5 seconds. Auto power off: if reconnection fails within 15 seconds.
+
+CHARGING & BATTERY:
+- Battery: 1000mAh rechargeable (confirmed by Cosmic Byte). Charge via USB Type-C.
+- While charging powered-off, the LED breathes ORANGE; when charging completes, the LED turns OFF.
+- Low battery: below 3.65V the console displays a low-battery warning.
+- (Runtime hours and charge time are not documented — do not invent them.)
+
+TOUCHPAD / SPEAKER / MIC: the capacitive touchpad, built-in speaker, and built-in microphone are DualSense-style features designed around PS5 use; on other platforms their behaviour depends on the game/OS. The manual does not detail per-platform touchpad/speaker behaviour — do not promise specifics beyond PS5; route detailed questions to support.
+
+RESET: if the controller becomes unresponsive, press the reset button on the back using a pin (hardware reset).
+
+LITHIUM BATTERY SAFETY: do not expose to fire/extreme heat, puncture, or disassemble; use certified USB chargers; dispose per local e-waste regulations.
+
+TROUBLESHOOTING (SENSA):
+Q: Sensa suddenly stopped working / keeps disconnecting on PS5 (was working before)? A: Almost always a PS5 SYSTEM UPDATE changed something — update the Sensa FIRMWARE from https://www.thecosmicbyte.com/downloaddrivers/ using a Windows PC (steps in FIRMWARE UPDATE above). This is the fix — raise it FIRST, before any warranty talk.
+Q: PC game doesn't detect the controller, or buttons/prompts are wrong? A: The Sensa is a PS5-style controller on PC — some games only understand Xbox (XInput) input. Fix in this order: (1) hold SHARE + OPTIONS 5s to toggle the built-in X-Input mode; (2) launch the game through Steam with "PlayStation Controller Support" enabled in Steam → Settings → Controller; (3) install DS4Windows to present the controller as an Xbox 360 pad. See "USING THE SENSA ON PC" above for the full explanation. The controller is NOT faulty.
+Q: Bluetooth pairing fails? A: Turn the controller OFF → hold SHARE + PS for 3 seconds until the LED flashes → remove any old pairing entry on the device → select the controller again. Stay within ~10m.
+Q: Won't pair with PS5 wirelessly? A: First-time pairing MUST be done with the USB cable connected (then press PS). After that, wireless works.
+Q: Stick drift or inaccurate sticks/triggers? A: Run the 3D stick & trigger calibration (power OFF → hold OPTIONS + SHARE → connect USB to PC → follow the steps above). Also check the deadzone toggle (TouchKey + L3/R3, 2s) — 0% deadzone mode can feel like drift in some games; switch back to Default.
+Q: Controller unresponsive/frozen? A: Press the reset button on the back with a pin (hardware reset), then reconnect.
+Q: Not charging? A: Use the Type-C cable with a certified USB charger; LED should breathe orange while charging (powered off). If no LED, try another cable/port.
+Q: Where is the 2.4GHz dongle? A: There is none — the Sensa is Bluetooth 6.0 + USB wired only. Nothing is missing from the box.
+
+⚠️ WARRANTY — 2 YEARS (DIFFERENT from most CB products): the Sensa carries a 2-YEAR LIMITED WARRANTY against manufacturing defects from the date of purchase (valid proof of purchase required). NOT covered: physical damage, liquid damage, unauthorized modification, normal wear and tear. Do NOT quote the standard 1-year figure for the Sensa. Console use on PS5 is the Sensa's designed purpose — do NOT tell a Sensa customer that console use voids or is excluded from their warranty.
+
+SOFTWARE / ORBIT: the only companion software documented for the Sensa is the Cosmic Byte Firmware Update Tool (Windows). The Sensa is NOT on the Orbit confirmed-support snapshot — do not claim Orbit support; the live device grid at https://orbit.thecosmicbyte.com is the authoritative list if a customer wants to check.
+
+ANTI-FABRICATION GUARDS (Sensa):
+✗ Do NOT claim Xbox or Nintendo Switch support. ✗ Do NOT call it Sony-licensed/official. ✓ Battery capacity is 1000mAh (confirmed). ✗ Do NOT invent runtime hours or charge time — not documented. ✗ Do NOT claim 1000Hz polling. ✗ Do NOT claim Hall Effect TRIGGERS — the sticks are Hall-Effect magnetic; the triggers are adaptive force-feedback. ✗ Do NOT mention a 2.4GHz dongle — there is none. ✗ Do NOT quote a 1-year warranty — the Sensa is 2 years.
+
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-sensa-wireless-gamepad-for-ps5-pc-mac-ios-android-hall-effect-sticks-adaptive-triggers-bluetooth-6-0-rgb-macro-back-buttons/ — use coupon code ONLINEPAY for 10% off on online payments.
+""",
     "Starforge": """
 COSMIC BYTE STARFORGE - TRI-MODE CONTROLLER - FULL MANUAL
 
@@ -15185,7 +15349,7 @@ KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 # =============================================================================
 # PRODUCTS
 # =============================================================================
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Arcturus 65", "Arcturus 75", "Arcturus 98", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Proteus X", "Olympus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly", "Orbit"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Sensa", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Arcturus 65", "Arcturus 75", "Arcturus 98", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Proteus X", "Olympus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly", "Orbit"]
 
 
 # =============================================================================
@@ -15213,6 +15377,7 @@ Other CB controllers with Hall Effect (for reference):
 - Blitz Tri-Mode: TMR joysticks + Hall Effect analog triggers.
 - Drakon: TMR joysticks (confirmed by Cosmic Byte; the Drakon product page URL contains "tmr-joysticks", and the Drakon manual's joystick calibration shortcut is labeled "JOYSTICK CALIBRATION (TMR)"). Same joystick tech tier as Blitz Tri-Mode, Stellaris 2nd Gen, Eclipse, and Starforge. TRIGGERS: Hall Effect analog (confirmed by Cosmic Byte), with an additional 3-position physical trigger lock for travel-range adjustment (digital / mid-analog / full-analog mechanical positions). The lock is a mechanical feature on top of the Hall Effect sensors — the sensor itself is Hall Effect in all three lock positions. So Drakon's combo is TMR sticks + Hall Effect analog triggers + mechanical 3-position trigger lock (the lock is exclusive to Drakon among Cosmic Byte controllers).
 - Lumora: Hall Effect joysticks + Hall Effect analog/digital switchable triggers (confirmed by Cosmic Byte). Lumora is NOT TMR despite being a current-generation product with software / "App Support" — do not infer TMR from generation or positioning.
+- Sensa: Hall-Effect MAGNETIC joysticks (confirmed in the manual spec table). TRIGGERS: ADAPTIVE force-feedback triggers on L2/R2 (DualSense-style, unique in the CB lineup) — the manual does NOT describe the trigger sensors as Hall Effect, so do NOT claim "Hall Effect triggers" for the Sensa; say "adaptive triggers".
 - Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
@@ -15269,6 +15434,8 @@ CRITICAL FRAMING WHEN ANSWERING BT POLLING RATE QUESTIONS:
 (2) Do NOT tell customers their controller is "fixed 1000Hz across all modes" or that BT polling rate "matches wired". For every CB gamepad with Bluetooth, BT polling is LOWER than wired/2.4GHz. The matrix above is the source of truth.
 
 (3) Do NOT fabricate or guess BT polling rates for controllers NOT in the matrix above. After the v1.8.3 expansion, the matrix covers all current-generation gamepads with Bluetooth (Ares Tri-Mode, Ares Pro, Blitz Tri-Mode, Stellaris 1st & 2nd Gen, Drakon, Lumora, Eclipse, Starforge, Quantum, Stratos Xenon). The remaining gamepads either are non-Bluetooth (see the NOT IN THE BLUETOOTH MATRIX list above for Ares Wired, Ares Wireless, Blitz Wireless, Nexus) or are not currently CB gamepad products. The matrix is now complete -- do NOT route any of these to support for the BT polling rate; the figure is in the matrix or the controller doesn't have Bluetooth.
+
+SENSA (added v1.13.0, post-matrix): the Sensa is Bluetooth 6.0 + USB wired ONLY (no 2.4GHz dongle, so the wired/2.4GHz column does not apply). Its manual spec table prints "Polling Rate: 500Hz/250Hz (wired and wireless)" — i.e. 500Hz wired / 250Hz over Bluetooth per the printed order. Do NOT claim 1000Hz for the Sensa in any mode, and do NOT apply other controllers' matrix figures to it.
 
 (4) For controllers without Bluetooth at all, see the "NOT IN THE BLUETOOTH MATRIX" list above (Ares Wired, Ares Wireless, Blitz Wireless). For these controllers, the matrix does NOT apply -- the right answer to "what's the BT polling rate" is "this controller doesn't have Bluetooth mode". Confirm the controller has Bluetooth before quoting any figure from the matrix.
 
@@ -15785,7 +15952,7 @@ WORKAROUND -- ON-THE-FLY SOFTWARE GYRO (a real Cosmic Byte differentiator):
     - Promise the workaround works for a controller that's not on the confirmed list. If unsure, offer to confirm with support.
     - Claim the workaround makes BGMI / PUBG Mobile / Free Fire / etc. playable on iPad -- the limit there is the GAME, not the gyro. See GAME-SPECIFIC GAMEPAD SUPPORT VERIFICATION POLICY.
 
-WARRANTY OVERVIEW — new Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period. EXCEPTION: Certified Refurbished products carry a 6-month supplier-backed warranty, NOT 1 year — see REFURBISHED PRODUCTS POLICY below for the full refurbished warranty / packaging / condition policy.
+WARRANTY OVERVIEW — new Cosmic Byte products carry a 1-year warranty against manufacturing defects only. Physical damage, water damage, and tampered products are NOT covered. Battery wear and tear is NOT covered (relevant for products with built-in batteries). Console use (PlayStation, Xbox, Nintendo Switch) is NOT covered for products that are not PS4-licensed. The exact warranty period for an individual product is printed on the MRP label on the product packaging — if a customer is unsure, ask them to check the MRP label for the exact period. EXCEPTION: Certified Refurbished products carry a 6-month supplier-backed warranty, NOT 1 year — see REFURBISHED PRODUCTS POLICY below for the full refurbished warranty / packaging / condition policy. SECOND EXCEPTION: the SENSA gamepad carries a 2-YEAR limited warranty per its manual — do not quote 1 year for the Sensa.
 
 REFURBISHED PRODUCTS POLICY — applies whenever a customer asks about refurbished products, used products, "open box" items, or thinks their product is refurbished or used. Cosmic Byte SELLS certified refurbished products. Do NOT tell a customer "Cosmic Byte does not sell refurbished products" or "all our products are brand new" -- this is FALSE and contradicts the live Certified Refurbished category on thecosmicbyte.com.
 
@@ -15852,10 +16019,10 @@ STEP 2 - TROUBLESHOOT FIRST:
 
 STEP 3 - WARRANTY ESCALATION (only after troubleshooting fails):
 - If the issue appears to be a genuine manufacturing defect after troubleshooting, explain the warranty coverage clearly:
-  * 1 year warranty against manufacturing defects only.
+  * 1 year warranty against manufacturing defects only. (EXCEPTION: Sensa = 2-year limited warranty; Certified Refurbished = 6 months.)
   * Physical damage, water damage, tampered products - NOT covered.
   * Battery wear and tear - NOT covered (Ares Pro specific).
-  * Console use - NOT covered.
+  * Console use - NOT covered. (EXCEPTION: does NOT apply to the Sensa — PS5 is its designed platform — nor to the console-supported Quantum / Stratos Xenon.)
 - Then direct them with this exact message: "For warranty claims and faster resolution, please raise a support ticket at https://www.thecosmicbyte.com/raise-a-ticket/ or email us at cc@thecosmicbyte.com. Our team operates Mon-Sat, 10am-6pm. You can also call +91 7351615161."
 - Do NOT ask customers to collect or upload images, videos or documents - just direct them to raise a ticket or email.
 
@@ -16133,8 +16300,8 @@ STRICT RULES - always follow:
 
    This rule applies to ALL competitor redirects, not just PlayStation. If a customer asks for an "Xbox controller" / "Switch controller" / "Logitech wheel" / "Razer headset" — DO NOT send them to the competitor. Acknowledge CB doesn't have an exact equivalent (if true), then recommend the closest CB product. Example: customer asks for "Razer headset" → recommend a CB headset like Proteus or CryoCore, NOT redirect to razer.com.
 
-1. NEVER mention, compare or reference competitor brands (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state Cosmic Byte controllers are NOT compatible with those consoles.
-   CONSOLE COMPATIBILITY RULE: When customers ask about using a CB controller on PS4/PS5/Xbox/Switch — ONLY the Quantum and Stratos Xenon have real console support. ALL other CB controllers (Stellaris, Blitz, Lumora, Ares, Drakon, Eclipse, Starforge, etc.) CANNOT be used on any console. DualShock mode on these controllers is ONLY a Bluetooth protocol mode for mobile/PC — it does NOT enable console use. Never imply otherwise. (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state Cosmic Byte controllers are NOT compatible with those consoles.
+1. NEVER mention, compare or reference competitor brands (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state console compatibility accurately (MOST CB controllers are NOT compatible with consoles — but see the CONSOLE COMPATIBILITY RULE: the Sensa supports PS5, and Quantum / Stratos Xenon support consoles).
+   CONSOLE COMPATIBILITY RULE: When customers ask about using a CB controller on PS4/PS5/Xbox/Switch — ONLY the SENSA (PlayStation 5 — its designed platform, plus PC/Mac/iOS/Android; NOT Xbox/Switch; not Sony-licensed, say "PS5-compatible" never "official"), the Quantum and the Stratos Xenon have real console support. ALL other CB controllers (Stellaris, Blitz, Lumora, Ares, Drakon, Eclipse, Starforge, etc.) CANNOT be used on any console. DualShock mode on these controllers is ONLY a Bluetooth protocol mode for mobile/PC — it does NOT enable console use. Never imply otherwise. (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state console compatibility accurately (MOST CB controllers are NOT compatible with consoles — but see the CONSOLE COMPATIBILITY RULE: the Sensa supports PS5, and Quantum / Stratos Xenon support consoles).
 2. ONLY answer using the provided product manual content. Never make up features or specs.
 3. If a question is about a THIRD-PARTY BRAND that Cosmic Byte sells (Gateron, Kailh, Outemu, Moza, Cammus, Brook, Cherry MX) — you CAN and SHOULD assist fully. These are products sold on thecosmicbyte.com. Use your knowledge about these brands and direct customers to the product page on thecosmicbyte.com and the brand's official site for deeper technical docs. If a question is truly unrelated to any product Cosmic Byte sells: "I can only assist with products available on thecosmicbyte.com. Please visit thecosmicbyte.com for more."
 4. Be friendly, clear and concise. Use simple language - customers may not be technical.
@@ -16682,6 +16849,7 @@ def match_product_from_title(title: str) -> str:
         ("nexus",                 "Nexus"),
         ("eclipse",               "Eclipse"),
         ("starforge",             "Starforge"),
+        ("sensa",                 "Sensa"),
         ("quantum",               "Quantum"),
         ("velox",                 "Velox"),
         ("pandora",               "Pandora"),
@@ -17119,6 +17287,7 @@ PREMIUM / FLAGSHIP:
 - Stellaris: Tri-mode, TMR joysticks, Hall Effect analog triggers, gyro, RGB, 1000mAh. Premium build (transparent variant has additional outer RGB ring).
 - Drakon: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers with 3-position physical trigger lock (digital / mid-analog / full-analog mechanical positions — sensor is Hall Effect throughout), gyro, 7-zone RGB with up to 8 keyframe animations, 2 macros (ML/MR), dragon artwork design with 3 swappable magnetic face plates (plain black / doodle / dragon), 6 swappable joystick tops in 3 styles, 2 D-pads, charging dock + carrying case included, 1000mAh.
 - Starforge: Tri-mode, TMR joysticks (replaceable/modular — 4 force-rating modules included: 60gf / 70gf / 120gf / 150gf), Optical triggers (drift-resistant via light-based sensors — unique in the lineup), gyro, 1200mAh, 4 macros (M1-M4), companion mobile app (Key Linker). Budget flagship.
+- Sensa: Bluetooth 6.0 + USB wired (NO 2.4GHz dongle), PS5 + PC/Mac/Steam/iOS/Android (the ONLY current CB controller with PS5 support besides the PS4-era Quantum/Stratos Xenon console pads; NOT Xbox/Switch, not Sony-licensed), Hall-Effect magnetic sticks, ADAPTIVE force-feedback triggers (unique in lineup), 6-axis gyro, capacitive touchpad, built-in speaker + mic, 3.5mm TRRS, RGB, 2 rear macros (ML/MR), Turbo, dual voice-coil vibration. 2-YEAR warranty (vs the usual 1 year). PS5-focused flagship.
 - Stratos Xenon: Tri-mode, Hall Effect, large grip. Comfort-focused.
 - Quantum: Tri-mode, Hall Effect, gyro. Mid-premium.
 - Eclipse: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, Joystick Resistance Roller (stiffness adjust). Entry flagship.
@@ -17130,6 +17299,7 @@ BUYING GUIDE:
 - Best joystick precision (TMR) → Blitz Tri-Mode, Stellaris 2nd Gen, Drakon, Eclipse, or Starforge
 - Distinctive RGB design → Lumora (Cloak) or Drakon (dragon artwork + 7-zone keyframes)
 - Best value wireless → Blitz Wireless or Ares Pro
+- PlayStation 5 / console + PC + mobile → Sensa (PS5-compatible, adaptive triggers, touchpad; the PS5 pick of the lineup)
 """
 
 CATALOGUE_MICE = """
@@ -17365,6 +17535,7 @@ def detect_products_from_message(messages: list) -> tuple:
         ("nexus",                "Nexus"),
         ("eclipse",              "Eclipse"),
         ("starforge",            "Starforge"),
+        ("sensa",                "Sensa"),
         ("quantum",              "Quantum"),
         ("velox",                "Velox"),
         ("pandora",              "Pandora"),
