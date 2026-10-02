@@ -33,6 +33,47 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.14.0 (2026-10-02) -- Claude
+  * Y-bump: Added the HYDRUS line —
+    two models sharing ONE product
+    page: Hydrus Wired (USB-A, fixed
+    3m cable, no battery, THREE
+    macro buttons ML/MR/C, built-in
+    6-axis gyro via R3-while-plug
+    Gyro/Steam mode, firmware mode
+    SELECT+START-while-plug) and
+    Hydrus Tri-Mode (USB-C/2.4G/BT,
+    600mAh >10-12h 2h charge, ML/MR
+    only, BT pairing combos + LED
+    colours + BT device names, wired
+    HOME-press data quirk + 2.4G-
+    priority quirk, KB&M + Android
+    mouse + Steam modes, no firmware
+    procedure documented — guarded).
+    Shared platform: TMR sticks +
+    dual HE analog triggers (HE
+    matrix line added), 1000Hz
+    wired/2.4G (BT rate unpublished
+    — polling-matrix note), Turbo
+    5/12/20, vibration 100/70/40/0,
+    22-input macros, circle/45°
+    square modes, factory reset.
+    Per Ronak: bare "hydrus" =
+    ALWAYS-ASK-FIRST guard in both
+    entries (routes to Tri-Mode
+    entry which carries the full
+    variant tell-apart); both models
+    are PC-ONLY (consoles NOT
+    supported, console damage voids
+    warranty; DualShock/Pro modes =
+    emulation — console rule example
+    list updated; PS5 asks → Sensa);
+    both added to Orbit snapshot
+    (Orbit entry + Rule 18) per the
+    manuals' Orbit page; registered
+    in URLS/PRODUCTS/both matchers/
+    catalogue + buying guide.
+
 v1.13.0 (2026-10-01) -- Claude
   * Y-bump: Added the SENSA wireless
     gamepad — the lineup's PS5-
@@ -9966,7 +10007,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.13.0"
+__version__ = "1.14.0"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -10011,6 +10052,8 @@ PRODUCT_URLS = {
     "Eclipse": "https://www.thecosmicbyte.com/product/cosmic-byte-eclipse-tri-mode-controller-adjustable-force-tmr-joysticks/",
     "Starforge": "https://www.thecosmicbyte.com/product/cosmic-byte-starforge-tri-mode-controller-replaceable-tmr-joysticks/",
     "Sensa": "https://www.thecosmicbyte.com/product/cosmic-byte-sensa-wireless-gamepad-for-ps5-pc-mac-ios-android-hall-effect-sticks-adaptive-triggers-bluetooth-6-0-rgb-macro-back-buttons/",
+    "Hydrus Tri-Mode": "https://www.thecosmicbyte.com/product/cosmic-byte-hydrus-controller-for-pc-compact-symmetrical-tmr-sticks/",
+    "Hydrus Wired": "https://www.thecosmicbyte.com/product/cosmic-byte-hydrus-controller-for-pc-compact-symmetrical-tmr-sticks/",
     "Quantum": "https://www.thecosmicbyte.com/product/cosmic-byte-quantum-controller/",
     "Stratos Xenon": "https://www.thecosmicbyte.com/product/cosmic-byte-stratos-xenon-gamepad-for-ps4-ios-and-android/",
     "Velox": "https://www.thecosmicbyte.com/product/cosmic-byte-velox-tri-mode-mouse-pixart-3395-sensor-39-grams/",
@@ -12597,6 +12640,161 @@ GENERAL GUIDANCE FOR VAGUE ECLIPSE QUESTIONS:
 If a customer's message is just "Eclipse" or "eclips" with no specific question (as has happened in production logs), DO NOT assume they are asking about calibration / drift / any specific topic. ASK them what they need help with — pairing, calibration, RGB, macros, software, charging, etc. — before launching into a how-to. Volunteering an unrequested calibration walk-through wastes the customer's time and (as v1.4.1 demonstrated) is the exact context where the AI is most likely to hallucinate the steps.
 """,
 
+    "Hydrus Tri-Mode": """
+PRODUCT: Cosmic Byte Hydrus Tri-Mode Controller — compact symmetrical PC-first controller (USB Wired / 2.4GHz / Bluetooth, TMR sticks, Hall-Effect triggers)
+
+⚠️ TWO HYDRUS MODELS EXIST — ALWAYS ASK FIRST:
+Cosmic Byte sells TWO different Hydrus controllers: the HYDRUS WIRED and the HYDRUS TRI-MODE. If the customer has not said which one they own (they just say "Hydrus"), ASK which variant BEFORE giving any product-specific answer — do not guess and do not answer from the wrong entry. Quick tell-apart to help the customer identify theirs:
+- HYDRUS WIRED: permanently attached 3m USB-A cable, NO battery, THREE macro buttons (ML + MR on the back AND a round "C" button on the front face), no wireless of any kind.
+- HYDRUS TRI-MODE: USB-C port with detachable 1m cable, 2.4GHz USB receiver + Bluetooth, 600mAh battery, TWO macro buttons (ML/MR only — NO C button).
+Shared platform on both: compact symmetrical design, TMR joysticks + dual Hall-Effect analog triggers, up to 1000Hz polling, Turbo/Auto (5/12/20 per sec), 4-level vibration (100/70/40/0, default 70), 22-input macros, circle/45°-square stick modes, stick calibration, keyboard & mouse mode, Android mouse mode, factory reset SELECT + L3 + R3 (5s).
+
+⚠️ PC-ONLY — CONSOLES ARE NOT SUPPORTED (both Hydrus models): the manual states the Hydrus is designed for PC use only; consoles are NOT supported, and warranty is NOT applicable for damage/malfunction caused by use with unsupported devices (including consoles). Some functions work on Android/iOS, but PC is the primary supported platform. The Tri-Mode's Bluetooth "Pro Controller" (Gyro) and "DualShock" modes are EMULATION for PC/Android/iOS feature support — they do NOT make it console-compatible. Do not confuse the Hydrus with the Sensa (the Sensa is the PS5-compatible controller).
+
+KEY FEATURES: Tri-mode connectivity (USB wired / 2.4GHz via USB receiver / Bluetooth), high-precision TMR joysticks (drift-resistant), dual Hall-Effect analog triggers, up to 1000Hz polling (PC Wired & 2.4GHz), X-Input & D-Input (PC), Bluetooth Gyro (NS/Pro-Controller) and DualShock emulation modes, 6-axis gyro (via BT Gyro Mode), Turbo & Auto Fire, ML/MR macro back buttons (22 inputs), 4-level vibration, Capture button, keyboard & mouse mode (PC — dongle & wired only), Android mouse mode, PC Steam mode (wired), joystick Circle / 45°-Square modes (circle error can reach 0%), 600mAh battery, auto-sleep.
+
+SPECS: Connectivity USB Wired / 2.4GHz / Bluetooth. Polling up to 1000Hz (PC Wired & 2.4GHz — Bluetooth rate NOT published, do not quote one). TMR sticks; Hall-Effect analog triggers. Buttons: D-Pad, A/B/X/Y, LB/RB/LT/RT, L3/R3, SELECT, START, HOME, TURBO, CAPTURE, MR/ML. Vibration 4 levels (100/70/40/0%). Battery 600mAh; usage >10–12 hours; charging 2 hours via USB Type-C; 1m USB-A-to-Type-C data cable included. Macros: ML/MR, up to 22 inputs each. Auto sleep: 5 minutes of inactivity. Technical: sleep current ≤17µA, operating 3.7V / ≈30–180mA (vibration on), input DC 4.5–5.5V 300mA, operating −10°C to 55°C, 20–80% RH. Built-in protection: over-voltage cutoff above 6V (auto-resumes below 5.8V); NTC charging protection stops charging at 45°C or −10°C (EN62368).
+
+NOTE ON LEDs: the Hydrus has a multi-colour RGB STATUS LED that indicates mode/state — it is NOT decorative RGB lighting with zones/effects. Do not market "RGB lighting" on the Hydrus.
+
+SUPPORTED MODES BY CONNECTION:
+- Wired: PC X-Input / PC D-Input / Android
+- 2.4GHz: PC X-Input / PC D-Input / Android
+- Bluetooth: PC X-Input / Android D-Input / Gyro Mode / DualShock Mode
+- iOS: Bluetooth ONLY (Gyro Mode or DualShock Mode) — iOS is NOT supported over wired or 2.4GHz, and the iOS app must support external controllers.
+
+INPUT MODES EXPLAINED: X-Input = standard/best-compatibility PC mode (default). D-Input = legacy DirectInput for PC and Android. Gyro Mode = detected as a Pro Controller; use on PC/Android/iOS to enable gyro / motion controls (e.g. gyro aiming in Steam). DualShock Mode = detected as a DualShock controller; enables vibration and native Android/iOS feedback. IMPORTANT: Gyro and DualShock modes emulate those controllers for PC/Android/iOS — NOT compatible with consoles.
+
+WIRED MODE (CRITICAL QUIRKS):
+- Connect the USB cable and PRESS HOME ONCE to activate data transfer — otherwise the cable only CHARGES the controller. ("Charging but not working" over cable = customer didn't press HOME.)
+- If a 2.4GHz connection is active it takes PRIORITY — the USB cable then only charges. Remove the 2.4GHz receiver if wired data is needed.
+- PC X-Input (default): connect + HOME → RGB GREEN solid. PC D-Input: under X-Input, long-press HOME 3s → PURPLE solid. Android wired D-Input: connect + HOME → GREEN solid. Android X-Input: after connection long-press SELECT + HOME 3s (short vibration confirms). Android Mouse Mode: hold CAPTURE + R3 5s.
+
+2.4GHZ WIRELESS MODE: insert the USB receiver into the device. With the controller POWERED OFF, hold X + HOME 3 seconds to enter pairing — RGB ORANGE flashes rapidly (16Hz), stays solid on success. D-Input: under X-Input long-press HOME 3s (PURPLE solid). Android and Mouse Mode combos same as wired.
+
+BLUETOOTH MODE (controller powered off, hold combo 3 seconds):
+- X-Input (PC): B + HOME — CYAN flashes, solid on success. Bluetooth name: "Xbox Bluetooth Controller".
+- D-Input (Android): A + HOME — WHITE flashes. Name: "Gamepad Controller".
+- Gyro Mode (PC/Android/iOS): Y + HOME — RED flashes. Name: "Pro Controller".
+- DualShock Mode (PC/Android/iOS): START + HOME — BLUE flashes. Name: "Wireless Controller" (Android) / "DUALSHOCK 4 Wireless Controller" (iOS).
+Remove any old pairing entry before re-pairing if connection fails.
+
+RECONNECTION & POWER: press HOME 1 second to wake — flashes in last-used mode and reconnects to the last device; if reconnection fails within 30 seconds it sleeps (wake again to retry). Power ON: short press HOME. Power OFF: hold HOME 5 seconds. Auto-sleep after 5 minutes of inactivity.
+
+PC STEAM MODE (WIRED ONLY): with the controller powered off, press and hold R3, then plug the USB cable into the PC while holding — boots directly into Steam-compatible mode.
+
+KEYBOARD & MOUSE MODE (PC — DONGLE AND WIRED ONLY, NOT Bluetooth): hold TURBO + CAPTURE 3 seconds to toggle. The controller then acts as keyboard+mouse. Key map highlights: left stick & D-pad = WASD, A=Space, B=C, X=F, Y=R, LB=Q, RB=E, LT=Right mouse, RT=Left mouse, L3=Shift, R3=Middle mouse, SELECT=Caps, START=Tab, HOME=ESC.
+
+MOUSE MODE (ANDROID — wired/2.4GHz ONLY, not Bluetooth): hold CAPTURE + R3 for 5 seconds. A = left click, B = right click, right stick = pointer. Repeat combo to exit.
+
+TURBO & AUTO FIRE: applies to A/B/X/Y/LB/LT/RB/RT. Hold the button + TURBO = Turbo ON (channel LED blinks when used); press the same button + TURBO again = AUTO fire; again/hold together = clear that button. Clear ALL: hold TURBO alone 5 seconds (vibration confirms). Speeds: Level 1 = 5/sec, Level 2 = 12/sec (default), Level 3 = 20/sec — hold TURBO + push Right Stick fully RIGHT (faster) / LEFT (slower); setting remembered.
+
+VIBRATION STRENGTH: hold TURBO + Right Stick fully UP (stronger) / DOWN (weaker). Levels 100% / 70% (default) / 40% / 0% (off). Each change buzzes; remembered.
+
+ADVANCED FUNCTIONS: A/B/X/Y swap — hold TURBO + R3 3s (swaps A↔B and X↔Y). D-Pad ↔ Left-Stick swap — hold START + L3 3s. Stick shape — hold L3 + TURBO 3s to toggle Circle Mode (default) / 45-Degree Square Mode (joystick circle error can reach 0%). All cleared by factory reset.
+
+MACRO PROGRAMMING (ML / MR — the Tri-Mode has NO C button; a customer mentioning the C macro button owns the HYDRUS WIRED): programmable inputs A/B/X/Y, LB/RB/LT/RT, L3/R3, D-Pad, both sticks. Hold ML or MR ~2 seconds — channel LED blinks slowly + vibration = programming mode. Press the sequence (LED flashes fast while held; press AND interval timing are recorded). Press the same ML/MR again to save (LED solid + vibration). Max 22 inputs per macro; exits automatically after 30 seconds of no input. Single-key = direct mapping; multi-key = macro playback (pressing the other back button can interrupt playback). CLEAR ALL MACROS: hold SELECT + START + R3 for 5 seconds (vibration confirms).
+
+STICK CALIBRATION: power the controller OFF → hold CAPTURE + HOME to enter calibration (RGB PURPLE blinks) → briefly press A (PURPLE flashes rapidly) → rotate BOTH sticks fully 3+ circles (no excessive force) → press each trigger fully 3 times → briefly press A again to save (returns to normal mode).
+
+FACTORY RESET: hold SELECT + L3 + R3 for 5 seconds. Clears: all Turbo + speeds, vibration strength, Auto functions, stick-mode swap, D-Pad/left-stick swap, ABXY swap, keyboard & mouse function, joystick deadzone/stick shape, mode switching defaults, and programming functions.
+
+BATTERY & CHARGING: 600mAh, >10–12 hours use, 2-hour charge via USB Type-C. Charging while in use: current mode LED breathes, solid when full. Charging while powered off: GREEN LED breathes, solid when full. LOW BATTERY: below 3.5V ±0.1V the RED LED flashes rapidly 10 seconds, repeating every minute; below 3.35V ±0.1V the controller auto-powers-off; insufficient battery may prevent power-on — charge promptly. Charging stops automatically at 45°C or −10°C (NTC protection) — charge within normal temperatures.
+
+FIRMWARE: the Tri-Mode manual documents NO firmware-update procedure — do NOT invent one (the HYDRUS WIRED has a documented upgrade mode; do not transfer it to the Tri-Mode). If firmware is ever needed, check https://www.thecosmicbyte.com/downloaddrivers/ or contact support.
+
+SOFTWARE — COSMIC BYTE ORBIT (web-based): the Hydrus is fully configurable through Orbit, the free browser-based configurator at https://orbit.thecosmicbyte.com — nothing to download. Connect via USB cable or the 2.4GHz dongle (NOT Bluetooth), use Chrome/Edge/Brave/Opera on a DESKTOP computer, select the device, adjust and Apply (settings save to the device).
+
+TROUBLESHOOTING:
+Q: Not powering on? A: Battery likely drained (insufficient battery can prevent power-on) — charge promptly.
+Q: Charging over cable but not working as a controller? A: Press HOME once after connecting the USB cable — otherwise it only charges. Also, an active 2.4GHz connection takes priority — remove the receiver if you want wired data.
+Q: Won't connect wirelessly? A: Use the correct pairing combo for your platform/mode (see above); remove any previous Bluetooth pairing and re-pair.
+Q: Doesn't reconnect after waking? A: Press HOME 1s to wake; if reconnection fails within 30s it sleeps — wake and retry.
+Q: No gyro / motion controls? A: Connect via Bluetooth in GYRO MODE (Y + HOME) so it's detected as a Pro Controller; enable motion input in the software (e.g. Steam Input).
+Q: No/weak vibration? A: Raise the level (TURBO + Right Stick up). On Android/iOS connect in DUALSHOCK MODE (START + HOME) for vibration and native feedback.
+Q: Buttons behaving incorrectly? A: ABXY swap or D-Pad↔stick swap may be active — factory reset (SELECT + L3 + R3, 5s).
+Q: Stick drift? A: Run stick calibration (see above).
+Q: Macro (ML/MR) not working? A: ML/MR have NO function by default — they must be programmed first, and saved by pressing ML/MR after recording.
+Q: Android mouse mode not working? A: Works only in wired/2.4GHz — Bluetooth does not support mouse mode.
+Q: iOS not detecting the controller? A: iOS works over Bluetooth ONLY (Gyro or DualShock mode), and the app must support external controllers.
+Q: Steam not detecting it? A: Use Steam Mode (wired only — hold R3 while plugging the cable); restart Steam after connecting.
+Q: Charging stops unexpectedly? A: NTC protection stops charging at 45°C or −10°C — charge within the normal temperature range.
+Q: Can I use it on PS5/PS4/Xbox/Switch? A: No — the Hydrus is PC-only; consoles are not supported (the DualShock/Pro-Controller Bluetooth modes are emulation for PC/Android/iOS, not console support). For PlayStation 5, recommend the Cosmic Byte SENSA instead.
+
+ANTI-FABRICATION GUARDS (Hydrus Tri-Mode): ✗ No console support — ever. ✗ Do NOT quote a Bluetooth polling rate (1000Hz is PC Wired/2.4GHz only; BT figure not published). ✗ Do NOT claim decorative RGB lighting — the LED is a status indicator. ✗ No "C" macro button on this model (that's the Hydrus Wired). ✓ Battery 600mAh is correct for THIS model (same figure as Blitz Tri-Mode — don't cross-correct either). ✓ Warranty 1 year.
+
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered; regular battery wear and tear is NOT covered; damage or malfunction caused by use with unsupported devices (including consoles) is NOT covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-hydrus-controller-for-pc-compact-symmetrical-tmr-sticks/ — the SAME product page covers both Hydrus models; the customer selects Wired or Tri-Mode on the page. Use coupon code ONLINEPAY for 10% off on online payments.
+""",
+    "Hydrus Wired": """
+PRODUCT: Cosmic Byte Hydrus Wired Controller — compact symmetrical PC-first wired controller (USB-A, 3m cable, TMR sticks, Hall-Effect triggers, 3 macro buttons)
+
+⚠️ TWO HYDRUS MODELS EXIST — ALWAYS ASK FIRST:
+Cosmic Byte sells TWO different Hydrus controllers: the HYDRUS WIRED and the HYDRUS TRI-MODE. If the customer has not said which one they own (they just say "Hydrus"), ASK which variant BEFORE giving any product-specific answer — do not guess and do not answer from the wrong entry. Quick tell-apart to help the customer identify theirs:
+- HYDRUS WIRED: permanently attached 3m USB-A cable, NO battery, THREE macro buttons (ML + MR on the back AND a round "C" button on the front face), no wireless of any kind.
+- HYDRUS TRI-MODE: USB-C port with detachable 1m cable, 2.4GHz USB receiver + Bluetooth, 600mAh battery, TWO macro buttons (ML/MR only — NO C button).
+Shared platform on both: compact symmetrical design, TMR joysticks + dual Hall-Effect analog triggers, up to 1000Hz polling, Turbo/Auto (5/12/20 per sec), 4-level vibration (100/70/40/0, default 70), 22-input macros, circle/45°-square stick modes, stick calibration, keyboard & mouse mode, Android mouse mode, factory reset SELECT + L3 + R3 (5s).
+
+⚠️ PC-ONLY — CONSOLES ARE NOT SUPPORTED (both Hydrus models): the manual states the Hydrus is designed for PC use only; consoles are NOT supported, and warranty is NOT applicable for damage/malfunction caused by use with unsupported devices (including consoles). Some functions work on Android/iOS, but PC is the primary supported platform. The Tri-Mode's Bluetooth "Pro Controller" (Gyro) and "DualShock" modes are EMULATION for PC/Android/iOS feature support — they do NOT make it console-compatible. Do not confuse the Hydrus with the Sensa (the Sensa is the PS5-compatible controller).
+
+KEY FEATURES: USB-A wired (permanently attached 3m cable — NO battery, NO wireless), high-precision TMR joysticks, dual Hall-Effect analog triggers, BUILT-IN SIX-AXIS GYRO (via Gyro/Steam Mode), up to 1000Hz polling, X-Input (default) & D-Input (PC), auto-recognition on connection, dedicated keyboard & mouse mode, Android Controller + Android Mouse modes, THREE macro buttons — ML + MR back buttons AND the front "C" button (22 inputs each), Turbo & Auto Turbo (3 speeds), 4-level vibration, Circle/45°-Square stick modes, on-demand stick calibration.
+
+SPECS: 20 digital buttons + 2 Hall-Effect analog triggers — D-Pad, A/B/X/Y, LB/RB/LT/RT, L3/R3, − (SELECT), + (START), HOME, CAPTURE, TURBO, C, ML/MR back buttons; two TMR analog 3D joysticks; built-in 6-axis gyro. Polling up to 1000Hz. Cable 3m, USB-A interface. Vibration 4 levels (100/70/40/0%). Macros: ML, MR and C — up to 22 key entries each. Operating 5V / input DC 4.5–5.5V; −10°C to 45°C; 20–80% RH (non-condensing). NO battery — it is powered by the cable (ignore battery/charging questions for this model; if the customer asks about battery/charging, they probably own the HYDRUS TRI-MODE — ask).
+
+NOTE ON LEDs: multi-colour RGB STATUS LED only (solid ORANGE = connected and ready; PURPLE = D-Input active) — not decorative RGB lighting.
+
+MODES & HOW TO SWITCH:
+- PC X-Input (default): connect the USB-A cable and press HOME — auto-recognition; RGB stays solid ORANGE when detected and ready. (If nothing happens after plugging in, PRESS HOME.)
+- PC D-Input: hold HOME 3 seconds — LED turns solid PURPLE.
+- Keyboard & Mouse Mode (PC): press TURBO + CAPTURE together 3 seconds to toggle. Key map highlights: left stick & D-pad = WASD, A=Space, B=C, X=F, Y=R, LB=Q, RB=E, LT=Right mouse, RT=Left mouse, L3=Shift, R3=Middle mouse, SELECT=Caps, START=Tab, HOME=ESC.
+- Gyro Mode / Steam Mode (PC & Android): hold R3 (right-stick click) DOWN while plugging in the USB cable — enters Gyro Mode at connection. Enables the built-in 6-axis motion sensor as an input axis in software that supports motion (e.g. Steam Input). To EXIT Gyro Mode, unplug the cable and reconnect normally.
+- Android Controller Mode (default on Android): connect the cable and press HOME.
+- Android X-Input: hold SELECT + HOME 3 seconds (short vibration confirms).
+- Android Mouse Mode: hold CAPTURE + R3 for 5 seconds — right stick becomes an on-screen pointer, A = left click, B = right click. Repeat combo to return.
+- iOS: NOT supported (the wired Hydrus has no Bluetooth; iOS support exists only on the Hydrus Tri-Mode via Bluetooth).
+
+TURBO & AUTO TURBO: applies to A/B/X/Y/LB/RB/LT/RT. Hold the button + TURBO = Turbo (channel LED flashes); same button + TURBO a second time = Auto Turbo (continuous); a third time = removes Turbo from that button. Clear ALL: hold TURBO alone 5 seconds (vibration confirms). Speeds: Level 1 = 5/sec, Level 2 = 12/sec (default), Level 3 = 20/sec — hold TURBO + push Right Stick fully RIGHT/LEFT to adjust (short vibration per step; remembered).
+
+VIBRATION STRENGTH: hold TURBO + Right Stick fully UP/DOWN. Levels 100% / 70% (default) / 40% / 0% (off). Each step buzzes; the level is remembered after power off.
+
+ADVANCED FUNCTIONS (NOTE: none of these three are retained after power off — unplugging and replugging also clears them):
+- A/B/X/Y swap: hold TURBO + R3 3s (swaps A↔B and X↔Y; vibration confirms).
+- D-Pad ↔ Left Stick swap: hold START + L3 3s (vibration confirms).
+- Circle / 45°-Square stick mode: hold L3 + TURBO 3s (Circle is default; vibration confirms).
+
+MACRO PROGRAMMING (ML / MR / C — THREE macro buttons; the front C button is EXCLUSIVE to the wired model): programmable inputs A/B/X/Y, LB/RB/LT/RT, L3/R3, D-Pad, both joysticks. Hold ML, MR or C for ~2 seconds — channel LED blinks slowly + motor vibrates = programming mode. Press the buttons in sequence (LED flashes quickly while held; both presses AND the intervals between them are recorded). Briefly press the SAME macro button again to save (LED stays on + vibration) — that button is now the macro trigger. Max 22 key entries per macro (vibration warning when full). If no button is pressed for 30 seconds, it exits and SAVES what was recorded. Macros are RETAINED after power off. Single-key = direct mapping (two mapped buttons pressed together trigger both); multi-key macro playback can be interrupted by pressing another macro button. Example: hold ML 2s → press B, wait 1s, press A, wait 3s, press X → press ML to save; pressing ML now replays B·(1s)·A·(3s)·X. CLEAR ALL MACROS: hold SELECT + START + R3 for 5 seconds (vibration confirms).
+
+STICK CALIBRATION (for drift / off-centre input): with the controller CONNECTED, press CAPTURE + HOME — RGB PURPLE flashes = calibration mode → briefly press A (LED flashes rapidly) → rotate both sticks through 3+ full circles (no excessive force) → press each trigger fully 3 times → briefly press A again to exit. Success returns it to normal mode.
+
+FIRMWARE UPGRADE MODE (PC): hold SELECT + START while plugging the USB cable into the computer — the controller enters upgrade mode. Firmware files/tools: https://www.thecosmicbyte.com/downloaddrivers/.
+
+FACTORY RESET: hold SELECT + L3 + R3 for 5 seconds — restores ALL settings to factory defaults (Turbo assignments + speed, vibration strength, Auto Turbo, circle/square mode, D-Pad/stick swap, A/B/X/Y swap, keyboard & mouse mode, input-mode defaults, and all macro programming).
+
+SOFTWARE — COSMIC BYTE ORBIT (web-based): fully configurable through Orbit at https://orbit.thecosmicbyte.com — nothing to download. Connect via the USB cable, use Chrome/Edge/Brave/Opera on a DESKTOP computer, select the device, adjust and Apply.
+
+TROUBLESHOOTING:
+Q: Not detected, or in the wrong mode? A: Reconnect the USB cable and PRESS HOME. Switch modes manually with the combos above if needed.
+Q: Buttons behaving incorrectly? A: The ABXY swap or D-Pad↔stick swap may be active — toggle it off or factory reset (SELECT + L3 + R3, 5s). Neither swap survives power off, so unplugging and replugging also clears them.
+Q: Stick drift / off-centre? A: Run stick calibration (CAPTURE + HOME → follow steps).
+Q: No vibration / too weak? A: Hold TURBO + Right Stick fully up to increase strength.
+Q: Turbo too fast/slow? A: Hold TURBO + Right Stick fully right/left.
+Q: Keyboard/mouse input instead of controller input? A: Keyboard & Mouse mode is active — press TURBO + CAPTURE 3 seconds to switch back.
+Q: Macro button (ML/MR/C) not working? A: They have no function until programmed — record a macro and SAVE it by pressing the same button after recording.
+Q: On-screen pointer instead of controller input (Android)? A: Mouse Mode is active — hold CAPTURE + R3 5 seconds to return to controller mode.
+Q: No gyro / motion controls? A: Gyro Mode must be entered AT CONNECTION — unplug, then hold R3 while plugging back in; also enable motion input in the software (e.g. Steam Input).
+Q: Settings behaving unexpectedly? A: Factory reset — SELECT + L3 + R3 for 5 seconds.
+Q: Can I use it wirelessly / on Bluetooth? A: No — this is the wired model. For wireless, the HYDRUS TRI-MODE is the 2.4GHz + Bluetooth version.
+Q: Can I use it on PS5/PS4/Xbox/Switch? A: No — PC-only; consoles are not supported, and console-caused damage is not covered by warranty. For PS5, recommend the Cosmic Byte SENSA.
+
+ANTI-FABRICATION GUARDS (Hydrus Wired): ✗ NO battery, NO charging, NO wireless/Bluetooth/dongle — never invent these for the wired model. ✗ No console support — ever. ✗ Do NOT claim decorative RGB lighting — the LED is a status indicator. ✓ The C macro button exists ONLY on this wired model. ✓ Warranty 1 year.
+
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered; damage or malfunction caused by use with unsupported devices (including consoles) is NOT covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
+
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-hydrus-controller-for-pc-compact-symmetrical-tmr-sticks/ — the SAME product page covers both Hydrus models; the customer selects Wired or Tri-Mode on the page. Use coupon code ONLINEPAY for 10% off on online payments.
+""",
     "Sensa": """
 PRODUCT: Cosmic Byte Sensa — WIRELESS GAMEPAD for PS5 / PC / Mac / iOS / Android (Hall Effect sticks, adaptive triggers, Bluetooth 6.0)
 
@@ -15290,6 +15488,8 @@ CURRENTLY SUPPORTED DEVICES (snapshot 2026-05-22 — list grows over time):
 - Arcturus 65 (tri-mode gasket mechanical keyboard, 65%)
 - Arcturus 75 (tri-mode gasket mechanical keyboard, 75%)
 - Arcturus 98 (tri-mode gasket mechanical keyboard, 98%)
+- Hydrus Wired (wired controller — connect via USB cable)
+- Hydrus Tri-Mode (tri-mode controller — connect via USB cable or 2.4GHz dongle, not Bluetooth)
 More Cosmic Byte hardware is added regularly. The LIVE device grid at https://orbit.thecosmicbyte.com is the authoritative list — direct customers there to see what is supported right now. Some devices may appear flagged "Coming soon — in testing" while in pre-release.
 
 BROWSER & PLATFORM REQUIREMENTS (strict):
@@ -15349,7 +15549,7 @@ KNOWLEDGE_BASE["All Products"] = ""  # dynamically resolved per query below
 # =============================================================================
 # PRODUCTS
 # =============================================================================
-PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Sensa", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Arcturus 65", "Arcturus 75", "Arcturus 98", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Proteus X", "Olympus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly", "Orbit"]
+PRODUCTS = ["All Products", "Lumora", "Stellaris", "Drakon", "Ares Pro", "Ares Tri-Mode", "Nexus", "Ares Wired", "Ares Wireless", "Blitz Tri-Mode", "Blitz Wireless", "Eclipse", "Starforge", "Sensa", "Hydrus Tri-Mode", "Hydrus Wired", "Quantum", "Stratos Xenon", "Velox", "Helios Mouse", "Hypernova Mouse", "Atlas Mouse", "Aether Mouse", "Umbra Mouse", "Firestorm Mouse", "Ignis Mouse", "Raptor Mouse", "Phantom TKL", "Phantom TKL Wired", "Pandora", "Vanth", "Artemis Wireless", "Artemis", "Arcturus 65", "Arcturus 75", "Arcturus 98", "Firefly TKL", "Trinity", "Astra", "CryoCore", "Proteus", "Proteus X", "Olympus", "Immortal", "CosmoBuds X220", "Cyclone RGB", "Dragonfly", "Orbit"]
 
 
 # =============================================================================
@@ -15378,6 +15578,7 @@ Other CB controllers with Hall Effect (for reference):
 - Drakon: TMR joysticks (confirmed by Cosmic Byte; the Drakon product page URL contains "tmr-joysticks", and the Drakon manual's joystick calibration shortcut is labeled "JOYSTICK CALIBRATION (TMR)"). Same joystick tech tier as Blitz Tri-Mode, Stellaris 2nd Gen, Eclipse, and Starforge. TRIGGERS: Hall Effect analog (confirmed by Cosmic Byte), with an additional 3-position physical trigger lock for travel-range adjustment (digital / mid-analog / full-analog mechanical positions). The lock is a mechanical feature on top of the Hall Effect sensors — the sensor itself is Hall Effect in all three lock positions. So Drakon's combo is TMR sticks + Hall Effect analog triggers + mechanical 3-position trigger lock (the lock is exclusive to Drakon among Cosmic Byte controllers).
 - Lumora: Hall Effect joysticks + Hall Effect analog/digital switchable triggers (confirmed by Cosmic Byte). Lumora is NOT TMR despite being a current-generation product with software / "App Support" — do not infer TMR from generation or positioning.
 - Sensa: Hall-Effect MAGNETIC joysticks (confirmed in the manual spec table). TRIGGERS: ADAPTIVE force-feedback triggers on L2/R2 (DualSense-style, unique in the CB lineup) — the manual does NOT describe the trigger sensors as Hall Effect, so do NOT claim "Hall Effect triggers" for the Sensa; say "adaptive triggers".
+- Hydrus (BOTH models — Wired and Tri-Mode): TMR joysticks + dual Hall-Effect analog triggers (confirmed in both manuals). Same joystick tech tier as Blitz Tri-Mode / Stellaris 2nd Gen / Drakon.
 - Eclipse / Starforge / Nexus: check individual product manuals — varies by model and batch.
 
 If a customer asks about Hall Effect for a model NOT in the matrix above, check the product manual loaded in your context. If the manual doesn't explicitly say, ask the customer for the exact model name and batch year before answering — do NOT guess "yes" for models not on this confirmed list.
@@ -15436,6 +15637,8 @@ CRITICAL FRAMING WHEN ANSWERING BT POLLING RATE QUESTIONS:
 (3) Do NOT fabricate or guess BT polling rates for controllers NOT in the matrix above. After the v1.8.3 expansion, the matrix covers all current-generation gamepads with Bluetooth (Ares Tri-Mode, Ares Pro, Blitz Tri-Mode, Stellaris 1st & 2nd Gen, Drakon, Lumora, Eclipse, Starforge, Quantum, Stratos Xenon). The remaining gamepads either are non-Bluetooth (see the NOT IN THE BLUETOOTH MATRIX list above for Ares Wired, Ares Wireless, Blitz Wireless, Nexus) or are not currently CB gamepad products. The matrix is now complete -- do NOT route any of these to support for the BT polling rate; the figure is in the matrix or the controller doesn't have Bluetooth.
 
 SENSA (added v1.13.0, post-matrix): the Sensa is Bluetooth 6.0 + USB wired ONLY (no 2.4GHz dongle, so the wired/2.4GHz column does not apply). Its manual spec table prints "Polling Rate: 500Hz/250Hz (wired and wireless)" — i.e. 500Hz wired / 250Hz over Bluetooth per the printed order. Do NOT claim 1000Hz for the Sensa in any mode, and do NOT apply other controllers' matrix figures to it.
+
+HYDRUS (added v1.14.0, post-matrix): Hydrus Tri-Mode — 1000Hz applies to PC WIRED and 2.4GHz only; its BLUETOOTH polling rate is NOT published, so do NOT quote a BT figure for it (route to support if the customer needs one). Hydrus Wired — no wireless at all; wired USB only, up to 1000Hz.
 
 (4) For controllers without Bluetooth at all, see the "NOT IN THE BLUETOOTH MATRIX" list above (Ares Wired, Ares Wireless, Blitz Wireless). For these controllers, the matrix does NOT apply -- the right answer to "what's the BT polling rate" is "this controller doesn't have Bluetooth mode". Confirm the controller has Bluetooth before quoting any figure from the matrix.
 
@@ -16301,7 +16504,7 @@ STRICT RULES - always follow:
    This rule applies to ALL competitor redirects, not just PlayStation. If a customer asks for an "Xbox controller" / "Switch controller" / "Logitech wheel" / "Razer headset" — DO NOT send them to the competitor. Acknowledge CB doesn't have an exact equivalent (if true), then recommend the closest CB product. Example: customer asks for "Razer headset" → recommend a CB headset like Proteus or CryoCore, NOT redirect to razer.com.
 
 1. NEVER mention, compare or reference competitor brands (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state console compatibility accurately (MOST CB controllers are NOT compatible with consoles — but see the CONSOLE COMPATIBILITY RULE: the Sensa supports PS5, and Quantum / Stratos Xenon support consoles).
-   CONSOLE COMPATIBILITY RULE: When customers ask about using a CB controller on PS4/PS5/Xbox/Switch — ONLY the SENSA (PlayStation 5 — its designed platform, plus PC/Mac/iOS/Android; NOT Xbox/Switch; not Sony-licensed, say "PS5-compatible" never "official"), the Quantum and the Stratos Xenon have real console support. ALL other CB controllers (Stellaris, Blitz, Lumora, Ares, Drakon, Eclipse, Starforge, etc.) CANNOT be used on any console. DualShock mode on these controllers is ONLY a Bluetooth protocol mode for mobile/PC — it does NOT enable console use. Never imply otherwise. (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state console compatibility accurately (MOST CB controllers are NOT compatible with consoles — but see the CONSOLE COMPATIBILITY RULE: the Sensa supports PS5, and Quantum / Stratos Xenon support consoles).
+   CONSOLE COMPATIBILITY RULE: When customers ask about using a CB controller on PS4/PS5/Xbox/Switch — ONLY the SENSA (PlayStation 5 — its designed platform, plus PC/Mac/iOS/Android; NOT Xbox/Switch; not Sony-licensed, say "PS5-compatible" never "official"), the Quantum and the Stratos Xenon have real console support. ALL other CB controllers (Stellaris, Blitz, Lumora, Ares, Drakon, Eclipse, Starforge, Hydrus Wired, Hydrus Tri-Mode, etc.) CANNOT be used on any console. DualShock mode on these controllers is ONLY a Bluetooth protocol mode for mobile/PC — it does NOT enable console use. Never imply otherwise. (Sony, Microsoft, Nintendo, Razer, SteelSeries, Logitech, etc.) except to state console compatibility accurately (MOST CB controllers are NOT compatible with consoles — but see the CONSOLE COMPATIBILITY RULE: the Sensa supports PS5, and Quantum / Stratos Xenon support consoles).
 2. ONLY answer using the provided product manual content. Never make up features or specs.
 3. If a question is about a THIRD-PARTY BRAND that Cosmic Byte sells (Gateron, Kailh, Outemu, Moza, Cammus, Brook, Cherry MX) — you CAN and SHOULD assist fully. These are products sold on thecosmicbyte.com. Use your knowledge about these brands and direct customers to the product page on thecosmicbyte.com and the brand's official site for deeper technical docs. If a question is truly unrelated to any product Cosmic Byte sells: "I can only assist with products available on thecosmicbyte.com. Please visit thecosmicbyte.com for more."
 4. Be friendly, clear and concise. Use simple language - customers may not be technical.
@@ -16752,7 +16955,7 @@ Which option appeals to you? Happy to walk through the setup of whichever you pi
 
 18. PROMOTE ORBIT FOR SUPPORTED DEVICES — Cosmic Byte Orbit (https://orbit.thecosmicbyte.com) is the official browser-based configurator, and you should PROACTIVELY recommend it whenever a customer has a supported device and asks about (or would benefit from) configuration: button/key remapping, DPI / sensitivity / polling rate, stick or trigger response / deadzones / motion tuning, vibration, RGB lighting effects, or macros. Do NOT wait to be asked specifically about Orbit — if the customer's question is about customising or tuning a supported device, surface Orbit as the recommended way to do it.
 
-  WHEN TO PROMOTE IT: For any device on the Orbit supported list (see the "Cosmic Byte Orbit" KB entry — snapshot includes Helios, Lumora, Ares Pro, Drakon, Blitz, Stellaris, Phantom TKL, Velox, Ignis, Arcturus 65, Arcturus 75, Arcturus 98; the list grows over time), lead the configuration answer with Orbit. Example framing: "You can set that up in Cosmic Byte Orbit, our free browser-based configurator at https://orbit.thecosmicbyte.com — open it in Chrome / Edge / Brave / Opera on a desktop computer, connect your device by USB cable or its 2.4 GHz dongle (Bluetooth won't work for configuration), click Detect device, and approve the browser prompt. No download needed for most devices."
+  WHEN TO PROMOTE IT: For any device on the Orbit supported list (see the "Cosmic Byte Orbit" KB entry — snapshot includes Helios, Lumora, Ares Pro, Drakon, Blitz, Stellaris, Phantom TKL, Velox, Ignis, Arcturus 65, Arcturus 75, Arcturus 98, Hydrus Wired, Hydrus Tri-Mode; the list grows over time), lead the configuration answer with Orbit. Example framing: "You can set that up in Cosmic Byte Orbit, our free browser-based configurator at https://orbit.thecosmicbyte.com — open it in Chrome / Edge / Brave / Opera on a desktop computer, connect your device by USB cable or its 2.4 GHz dongle (Bluetooth won't work for configuration), click Detect device, and approve the browser prompt. No download needed for most devices."
 
   RESPECT THE ORBIT GUARDS (do NOT contradict the "Cosmic Byte Orbit" entry): (a) Do NOT claim a SPECIFIC product is supported in Orbit unless it is on the snapshot list — if the customer's device isn't confirmed on the list, still point them to the live device grid at https://orbit.thecosmicbyte.com as the authoritative current line-up ("the supported list grows regularly — check the live grid to see if your device is there yet"). (b) Orbit is DESKTOP Chromium-only (Chrome / Edge / Brave / Opera on Windows / macOS / Linux / ChromeOS) — never tell a customer it works on Firefox, Safari, or any phone/tablet. (c) Orbit needs USB or 2.4 GHz — Bluetooth-connected devices must switch to USB or the 2.4 GHz dongle to configure. (d) Orbit is browser-based with no download for most devices; the only exception is the wired Velox, which needs the "Cosmic Byte Connect" helper. (e) Do NOT invent per-device features — features vary per device; only confirm what that device's own configurator exposes. (f) Orbit is for keyboards, mice and controllers ONLY. The THX headsets (CryoCore, Proteus X, Olympus) are NOT Orbit devices — their software is the THX Spatial Audio+ WINDOWS app from www.thecosmicbyte.com. Never promote Orbit for a headset.
 """
@@ -16850,6 +17053,12 @@ def match_product_from_title(title: str) -> str:
         ("eclipse",               "Eclipse"),
         ("starforge",             "Starforge"),
         ("sensa",                 "Sensa"),
+        ("hydrus wired",          "Hydrus Wired"),
+        ("hydrus tri-mode",       "Hydrus Tri-Mode"),
+        ("hydrus tri mode",       "Hydrus Tri-Mode"),
+        ("hydrus trimode",        "Hydrus Tri-Mode"),
+        ("hydrus wireless",       "Hydrus Tri-Mode"),
+        ("hydrus",                "Hydrus Tri-Mode"),
         ("quantum",               "Quantum"),
         ("velox",                 "Velox"),
         ("pandora",               "Pandora"),
@@ -17271,6 +17480,7 @@ COSMIC BYTE CONTROLLERS — Quick Comparison Guide
 
 WIRED (budget):
 - Ares Wired: USB wired, PC-only (XInput / DirectInput modes), Hall Effect joysticks + Hall Effect analog triggers on the 2026 batch (older batches have standard joysticks — see Ares Wired entry for batch identification), dual vibration, ABXY LED + V LED. Entry-level wired.
+- Hydrus Wired: USB-A wired (fixed 3m cable), PC-first (X-Input/D-Input; consoles NOT supported), TMR joysticks + dual Hall Effect analog triggers, built-in 6-axis gyro (Gyro/Steam mode: hold R3 while plugging), 1000Hz, THREE macro buttons (ML/MR/C — 22 inputs each), Turbo 5/12/20, 4-level vibration, keyboard & mouse mode, Android controller/mouse modes, compact symmetrical design. TMR wired step-up over Ares Wired. NOTE: two Hydrus models — if the customer just says "Hydrus", ask which (see entries).
 
 WIRELESS (budget to mid range, no Bluetooth):
 - Nexus: 2.4GHz wireless via USB dongle, 2x AAA non-rechargeable batteries, dual vibration, PC-only. NO Bluetooth, NO rechargeable battery. Budget wireless option for customers who prefer replaceable batteries over rechargeable.
@@ -17281,6 +17491,7 @@ TRI-MODE WITH ADVANCED FEATURES:
 - Ares Pro: Tri-mode (2.4GHz/BT/Wired), Hall Effect joysticks, Hall Effect analog/digital switchable triggers, software customisation (Gen 2 with "App Support" label). NO gyro — for gyro/motion control, recommend Lumora, Drakon, Stellaris, or Blitz Tri-Mode instead.
 - Ares Tri-Mode: Tri-mode (2.4GHz/BT/Wired-USB-C), Hall Effect joysticks + Hall Effect analog triggers, 1000Hz polling, 8-10m range, 210g, Turbo / Auto Turbo (no macros), vibration on PC XInput only. NO gyro, NO RGB customization (only ABXY LEDs), NO macros, NO console support. Mid-range PC-first option below Ares Pro.
 - Blitz Tri-Mode: Tri-mode, TMR joysticks (drift-resistant precision), Hall Effect analog triggers, robust gyro, 1000Hz polling, 600mAh. NO RGB, NO dedicated macro buttons. Precision-focused choice.
+- Hydrus Tri-Mode: Tri-mode (USB-C wired / 2.4GHz receiver / Bluetooth), PC-first (consoles NOT supported — the BT Pro-Controller/DualShock modes are emulation for PC/Android/iOS, not console support), TMR joysticks + Hall Effect analog triggers, 1000Hz (wired/2.4G; BT rate unpublished), 600mAh (>10-12h, 2h charge), 2 macro buttons (ML/MR, 22 inputs), BT Gyro mode, keyboard & mouse mode (PC), Android mouse mode, Steam mode (wired), compact symmetrical design. Macro-equipped alternative to Blitz Tri-Mode. NOTE: two Hydrus models — if the customer just says "Hydrus", ask which.
 
 PREMIUM / FLAGSHIP:
 - Lumora: Tri-mode, Hall Effect joysticks, Hall Effect analog/digital switchable triggers, 6-axis gyro, 4 macro buttons, 5-zone Cloak RGB, full keyboard/mouse mapping, replaceable joystick tops + D-pad covers, 1300mAh. Most feature-rich CB controller.
@@ -17300,6 +17511,7 @@ BUYING GUIDE:
 - Distinctive RGB design → Lumora (Cloak) or Drakon (dragon artwork + 7-zone keyframes)
 - Best value wireless → Blitz Wireless or Ares Pro
 - PlayStation 5 / console + PC + mobile → Sensa (PS5-compatible, adaptive triggers, touchpad; the PS5 pick of the lineup)
+- Compact symmetrical PC controller with macros → Hydrus Tri-Mode (wireless, 2 macros) or Hydrus Wired (3 macros incl. C button, 3m cable)
 """
 
 CATALOGUE_MICE = """
@@ -17536,6 +17748,12 @@ def detect_products_from_message(messages: list) -> tuple:
         ("eclipse",              "Eclipse"),
         ("starforge",            "Starforge"),
         ("sensa",                "Sensa"),
+        ("hydrus wired",         "Hydrus Wired"),
+        ("hydrus tri-mode",      "Hydrus Tri-Mode"),
+        ("hydrus tri mode",      "Hydrus Tri-Mode"),
+        ("hydrus trimode",       "Hydrus Tri-Mode"),
+        ("hydrus wireless",      "Hydrus Tri-Mode"),
+        ("hydrus",               "Hydrus Tri-Mode"),
         ("quantum",              "Quantum"),
         ("velox",                "Velox"),
         ("pandora",              "Pandora"),
