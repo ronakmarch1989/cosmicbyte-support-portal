@@ -33,6 +33,48 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.15.0 (2026-10-07) -- Claude
+  * Y-bump: IMMORTAL headset upgraded
+    to the THX Spatial Audio + model
+    (Bluetooth 6.0 with LE Audio,
+    JL7106, 800mAh / up to 50h at
+    60% vol, 2-3h charge, 10m range,
+    114dB, mic -38dB with RGB).
+    KNOWLEDGE_BASE["Immortal"]
+    rebuilt from the new manual:
+    two-generation guard (earlier
+    BT 5.3 / 1000mAh / 40h units do
+    NOT support THX; SAME UPC and
+    product page — generation tells:
+    THX branding, BT version /
+    battery on box, manual contents,
+    THX-app detection), full THX
+    software guide, THX = Windows
+    + USB dongle only (not BT / not
+    3.5mm / not consoles / not Mac),
+    NOT Orbit, resolved control map
+    (Power x2/x3 = next/prev track;
+    Mode x2 = dongle/BT pairing
+    switch, Mode x3 = Game/Music),
+    LED table, platform matrix,
+    troubleshooting Q&A, LEGACY
+    section keeping the earlier-
+    model specs + the earlier
+    manual's Mode-button ambiguity
+    note. Headset catalogue Immortal
+    line rewritten; THX NOTE now
+    covers all four THX headsets;
+    buying guide gains "wireless +
+    THX" line; "(CryoCore, Proteus
+    X, Olympus)" not-Orbit lists in
+    the three wired entries, the
+    Orbit entry and Rule 18 now
+    include Immortal; Olympus "best
+    of the three" scoped to the
+    wired line. PRODUCT_URLS /
+    PRODUCTS / matchers unchanged
+    (same product page, bare
+    "immortal" keyword).
 v1.14.0 (2026-10-02) -- Claude
   * Y-bump: Added the HYDRUS line —
     two models sharing ONE product
@@ -10007,7 +10049,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.14.0"
+__version__ = "1.15.0"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -14905,7 +14947,7 @@ WHAT THX SPATIAL AUDIO+ IS AND WHY IT MATTERS (use this to explain the benefit t
 - DEVICE-SPECIFIC TUNING: THX measures each headset's acoustic performance and designs custom filters/EQ so BOTH stereo and spatial playback are accurate for THAT exact headset. This is why the Cosmic Byte THX headsets have speakers tuned specifically for THX — the processing is matched to the hardware rather than generic.
 - PERSONAL AUDIO PROFILES: content modes (Game / Music / Movie presets) plus the Standard and Parametric EQ let the customer tailor the sound to what they are doing.
 - HONEST LIMITS (do not over-promise): THX Spatial Audio+ works ONLY on WINDOWS, and ONLY over the USB input. It does NOT run on macOS, Linux, consoles or phones, and it does NOT process audio over a 3.5mm connection. (A USB-connected headset still works as a normal USB audio device on PS4/PS5 or a Mac — just without the THX app / surround processing.) The full height/positional effect is strongest with content that carries positional audio — most modern games and surround movie mixes do; plain stereo sources gain a wider soundstage but not true discrete height cues.
-- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
+- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus, Immortal) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
 
 THX SPATIAL AUDIO + SOFTWARE (WINDOWS-only desktop app — download it from www.thecosmicbyte.com; requires the headset connected by USB):
 - When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
@@ -15027,7 +15069,7 @@ WHAT THX SPATIAL AUDIO+ IS AND WHY IT MATTERS (use this to explain the benefit t
 - DEVICE-SPECIFIC TUNING: THX measures each headset's acoustic performance and designs custom filters/EQ so BOTH stereo and spatial playback are accurate for THAT exact headset. This is why the Cosmic Byte THX headsets have speakers tuned specifically for THX — the processing is matched to the hardware rather than generic.
 - PERSONAL AUDIO PROFILES: content modes (Game / Music / Movie presets) plus the Standard and Parametric EQ let the customer tailor the sound to what they are doing.
 - HONEST LIMITS (do not over-promise): THX Spatial Audio+ works ONLY on WINDOWS, and ONLY over the USB input. It does NOT run on macOS, Linux, consoles or phones, and it does NOT process audio over a 3.5mm connection. (A USB-connected headset still works as a normal USB audio device on PS4/PS5 or a Mac — just without the THX app / surround processing.) The full height/positional effect is strongest with content that carries positional audio — most modern games and surround movie mixes do; plain stereo sources gain a wider soundstage but not true discrete height cues.
-- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
+- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus, Immortal) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
 
 THX SPATIAL AUDIO + SOFTWARE (WINDOWS-only desktop app — download it from www.thecosmicbyte.com; requires the headset connected by USB):
 - When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
@@ -15056,11 +15098,11 @@ BUY: https://www.thecosmicbyte.com/product/cosmic-byte-proteus-x-7-1-4-surround-
     "Olympus": """
 PRODUCT: Cosmic Byte Olympus — 7.1.4 SURROUND WIRED HEADSET WITH THX SPATIAL AUDIO (USB)
 
-KEY FEATURES: NEW flagship of the wired THX line — best-tuned speakers and best sound experience of the three THX headsets. 7.1.4 surround (THX Spatial Audio), 53mm NEODYMIUM drivers (the largest driver in the wired THX line-up), USB input, detachable ENC microphone, auto-adjustable headband, protein-leather ear cushions, braided cable, THX branding on the headband, carrying pouch included.
+KEY FEATURES: NEW flagship of the wired THX line — best-tuned speakers and best sound experience of the three WIRED THX headsets (the Immortal is the separate WIRELESS THX headset). 7.1.4 surround (THX Spatial Audio), 53mm NEODYMIUM drivers (the largest driver in the wired THX line-up), USB input, detachable ENC microphone, auto-adjustable headband, protein-leather ear cushions, braided cable, THX branding on the headband, carrying pouch included.
 
 SPECS:
 - Driver: 53mm neodymium | Sensitivity: 110 ±3dB | Impedance: 32Ω ±15% | Freq: 20Hz–20,000Hz
-- FLAGSHIP / BEST SOUND IN THE LINE: the Olympus is the NEW top model of the wired THX line and has the BEST-TUNED speakers and the best overall sound experience of the three (CryoCore < Proteus X < Olympus). Its 53mm neodymium drivers are acoustically tuned for THX Spatial Audio. If a customer asks which THX headset sounds best or wants the premium option, recommend the Olympus.
+- FLAGSHIP / BEST SOUND IN THE LINE: the Olympus is the NEW top model of the wired THX line and has the BEST-TUNED speakers and the best overall sound experience of the three wired models (CryoCore < Proteus X < Olympus); the Immortal is the wireless THX option and sits outside this wired tiering. Its 53mm neodymium drivers are acoustically tuned for THX Spatial Audio. If a customer asks which THX headset sounds best or wants the premium option, recommend the Olympus.
 - Power: 20mW rated | 30mW input
 - Headset jack: USB. Cable 2.1m ±10%.
 - Mic: ø6.0×2.7mm ENC, sensitivity -40 ±3dB, omnidirectional, detachable
@@ -15083,7 +15125,7 @@ WHAT THX SPATIAL AUDIO+ IS AND WHY IT MATTERS (use this to explain the benefit t
 - DEVICE-SPECIFIC TUNING: THX measures each headset's acoustic performance and designs custom filters/EQ so BOTH stereo and spatial playback are accurate for THAT exact headset. This is why the Cosmic Byte THX headsets have speakers tuned specifically for THX — the processing is matched to the hardware rather than generic.
 - PERSONAL AUDIO PROFILES: content modes (Game / Music / Movie presets) plus the Standard and Parametric EQ let the customer tailor the sound to what they are doing.
 - HONEST LIMITS (do not over-promise): THX Spatial Audio+ works ONLY on WINDOWS, and ONLY over the USB input. It does NOT run on macOS, Linux, consoles or phones, and it does NOT process audio over a 3.5mm connection. (A USB-connected headset still works as a normal USB audio device on PS4/PS5 or a Mac — just without the THX app / surround processing.) The full height/positional effect is strongest with content that carries positional audio — most modern games and surround movie mixes do; plain stereo sources gain a wider soundstage but not true discrete height cues.
-- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
+- NOT ORBIT: the THX headsets (CryoCore, Proteus X, Olympus, Immortal) are NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com). Orbit is for keyboards/mice/controllers. For these headsets the software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send a THX-headset customer to Orbit.
 
 THX SPATIAL AUDIO + SOFTWARE (WINDOWS-only desktop app — download it from www.thecosmicbyte.com; requires the headset connected by USB):
 - When the headset is plugged in and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB connection and wait for the app to finish loading.
@@ -15110,190 +15152,183 @@ PRICING: do NOT quote a price for this headset. For the current price and any of
 BUY: https://www.thecosmicbyte.com/product/cosmic-byte-olympus-7-1-4-surround-wired-headset-with-thx-spatial-audio/ — use coupon code ONLINEPAY for 10% off on online payments.
 """,
     "Immortal": """
-PRODUCT: Cosmic Byte Immortal — Tri-Mode (Wi-Fi 2.4GHz / Bluetooth 5.3 / Wired) Wireless Gaming Headset
+PRODUCT: Cosmic Byte Immortal — 7.1.4 SURROUND TRI-MODE WIRELESS GAMING HEADSET (UPGRADED THX SPATIAL AUDIO + VERSION, Bluetooth 6.0 with LE Audio)
 
-CONNECTION MODES (3 modes, one device):
-- 2.4GHz Wi-Fi USB dongle (low-latency wireless)
-- Bluetooth 5.3 (wireless)
-- Wired 3.5mm via included USB-C-to-3.5mm aux cable
+⚠️ TWO IMMORTAL GENERATIONS EXIST — READ THIS FIRST:
+- CURRENT / UPGRADED Immortal (shipping now) = THX Spatial Audio + support (7.1.4 virtual surround via the THX desktop software), Bluetooth 6.0 with LE Audio (JL7106 chipset), 800mAh battery, up to 50 hours play time. THIS entry's main specs describe this model.
+- EARLIER / PRE-THX Immortal (previous production) = Bluetooth 5.3, 1000mAh battery, 40 hours, NO THX support. Same product name, SAME UPC and SAME product page/links — the upgrade did NOT change the listing, so the listing alone does not tell you which unit a customer has.
+- CRITICAL: THX Spatial Audio + does NOT work on the EARLIER Immortal hardware. Only the upgraded hardware supports THX. If a customer with an earlier unit asks how to get THX / Spatial Audio / 7.1.4, tell them plainly it is not supported on their hardware — do not send them to install the THX app and do not troubleshoot "THX not detecting my headset" on an older unit as if it were a defect. Their headset still works exactly as before (2.4GHz / Bluetooth / wired, Game & Music EQ modes).
+- HOW TO TELL WHICH ONE THE CUSTOMER HAS (ask them to check):
+  (a) THX branding — the upgraded headset and its box/manual carry THX branding and the words "THX Spatial Audio +". The earlier unit has no THX branding anywhere.
+  (b) Bluetooth version / battery on the box or manual — upgraded = "Bluetooth 6.0" / "800mAh" / "50 hours"; earlier = "Bluetooth 5.3" / "1000mAh" / "40 hours".
+  (c) Manual — the upgraded unit's manual contains a "THX Spatial Audio Software Guide" section; the earlier manual does not.
+  (d) Practical check on a Windows PC — the THX Spatial Audio + app lists the headset at the bottom-left (with a "Headphones" label) only when supported hardware is connected over USB. If the app never shows the headset despite a good USB-dongle connection and the app having finished loading, the unit is most likely the earlier hardware.
+  If still unsure, ask when and where it was bought and whether the box mentions THX; do not guess. For a definitive answer the customer can email the serial number/back-label photo to cc@thecosmicbyte.com.
 
-KEY FEATURES:
-- 40 hours battery life on a single charge (1000mAh battery)
-- ENC (Environmental Noise Cancellation) microphone, detachable
-- 50mm high-fidelity driver
-- RGB LED on the earcups (toggleable)
-- Ultra low latency 20ms (in 2.4GHz mode)
-- 2 EQ modes: Game / Music (toggleable on the headset)
+CONNECTION MODES (3 modes, one device — both generations):
+- 2.4GHz wireless via the included USB dongle (the manual labels this mode "Wi-Fi" — it is a 2.4GHz USB dongle link, NOT a Wi-Fi-network connection; low-latency, best for gaming)
+- Bluetooth (upgraded model: Bluetooth 6.0 with LE Audio; earlier model: Bluetooth 5.3)
+- Wired 3.5mm via the included aux cable (USB-C on the headset end → 3.5mm plug on the device end)
+
+KEY HIGHLIGHTS (upgraded model):
+- Tri-mode: Bluetooth + 2.4GHz dongle ("Wi-Fi") + wired
+- 50mm drivers, 7.1.4 surround via THX Spatial Audio + (Windows software)
+- Bluetooth 6.0 with LE Audio
+- 800mAh battery, up to 50 hours play time (at 60% volume), 2–3 hour charge
+- Detachable ENC (Environmental Noise Cancellation) microphone with RGB LED light on the mic
+- Mic ON/OFF switch, Power button, Mode button, volume control wheel, RGB LED on the earcups (toggleable), USB-C port
+- 2 on-headset modes: Game & Music
 - Breathable headband cushion + breathable ear cushions
-- USB-C charging port
-- Wireless range: up to 20m without obstacles
-- Compatible with PC, Mac, Mobile, PS4, PS5, Xbox One/S/X, Nintendo Switch (with caveats below)
+- THX Spatial Audio + software: download from www.thecosmicbyte.com (Windows only — see THX section)
 
-WHAT'S IN THE BOX:
-1. Headset
-2. Detachable ENC microphone
-3. USB dongle (the spec page and unboxing photo show a USB-A dongle; one connection
-   diagram on the manual labels it "USB-C Dongle" — this is a manual labelling
-   inconsistency. Customers should treat it as USB-A based on the actual product.
-   If a customer reports their dongle is USB-C, ask them to share a photo and
-   escalate to support.)
-4. Aux cable (USB-C on the headset end → 3.5mm TRRS on the device end)
-5. Charging cable (0.5m, USB-A to USB-C)
-6. User Manual
+WHAT'S IN THE BOX (upgraded model):
+1. Cosmic Byte Immortal headset
+2. Detachable microphone
+3. USB dongle (the unboxing photo shows a USB-A dongle; one connection diagram in the manual labels it "USB C Dongle" — a manual labelling inconsistency. Treat it as USB-A based on the actual product; if a customer reports a USB-C dongle, ask for a photo and escalate to support.)
+4. Charging cable (USB-A to USB-C)
+5. AUX cable (USB-C on the headset end → 3.5mm on the device end)
+6. User manual
 
-SPEAKER SPECIFICATIONS:
-- Driver Unit: Ø50mm
-- Impedance: 16±15% Ω
-- Sensitivity: 112±3 dB at 1KHz
-- Frequency Response: 20Hz – 20KHz
-- Rated Power: 20mW
-- Plug Type: USB Dongle / Bluetooth 5.3
+SPECIFICATIONS — UPGRADED THX MODEL (from the manual; do not quote earlier-model figures for this unit):
+Speaker:
+- Chipset: JL7106 (supports LE Audio)
+- Battery capacity: 800mAh
+- Charging time: 2–3 hours
+- Wireless connection distance: 10m
+- Play time: up to 50 hours at 60% volume
+- Speaker impedance: 16Ω
+- Bluetooth version: 6.0 with LE
+- Sensitivity: 114±3dB
+- Frequency: 20Hz–20KHz
+- Speaker diameter: Φ50mm
+Detachable mic:
+- Directivity: omni-directional
+- Output impedance: max 2.2KΩ
+- Sensitivity: -38±3dB
+- Frequency: 20–20KHz
+- RGB LED light on the mic
+Not stated in the manual for the upgraded model: rated power, weight, exact latency figure, cable lengths. Do NOT invent them and do NOT copy the earlier model's "20ms" / "20m range" / "1000mAh" / "40 hours" / "3 hours charge" figures onto the upgraded unit — those belong to the EARLIER hardware (see LEGACY section).
 
-DETACHABLE MIC SPECIFICATIONS:
-- Mic Unit: Ø6mm
-- Directivity: Omni-directional
-- Impedance: ≤2.2KΩ
-- Sensitivity: -42±3 dB at 1KHz
-- Frequency Response: 100Hz – 10KHz
-
-BATTERY & CHARGING:
-- Battery capacity: 1000mAh
-- Battery life: up to 40 hours
-- Charging time: 3 hours (full charge)
-- Charging port: USB-C (on the headset)
-- Charging cable: 0.5m USB-A to USB-C (included)
-
-PLATFORM COMPATIBILITY:
-
+PLATFORM COMPATIBILITY (per the manual's connection diagram — both generations):
 PC / Mac / Laptop:
-- USB dongle: plug dongle into USB-A port; headset auto-pairs in Wi-Fi mode.
-- Bluetooth: switch the headset to Bluetooth pairing mode (Mode button x2 short-press toggles between Wi-Fi and Bluetooth pairing — see Mode button notes), then pair from your OS.
-- Wired: use the USB-C-to-3.5mm aux cable into the 3.5mm headphone jack.
-
-Mobile (Android / iPhone):
+- USB dongle: plug the dongle into a USB-A port; the headset pairs to it in 2.4GHz ("Wi-Fi") mode. White LED solid = connected.
+- Bluetooth: switch the headset to Bluetooth pairing mode (Mode button ×2), then pair from the OS Bluetooth settings.
+- Wired: aux cable (USB-C end into the headset, 3.5mm end into the headphone jack).
+- THX Spatial Audio + (7.1.4) works on WINDOWS only, with the headset connected over USB (the USB dongle). See THX section.
+Mobile (Android / iPhone / tablets):
 - Bluetooth (RECOMMENDED): pair as a normal Bluetooth headset.
-- USB dongle: technically possible with a USB-A-to-USB-C/Lightning adapter, but the manual explicitly does NOT recommend it on mobile — can cause low volume and unstable connection on some phones. Use Bluetooth instead.
-- 3.5mm wired: works on any phone with a 3.5mm jack (or via the phone's 3.5mm adapter).
-
+- USB dongle: the manual explicitly does NOT recommend the dongle for mobiles — it can cause low volume and connection issues on some devices. Use Bluetooth instead.
+- 3.5mm wired: use the USB-C-to-3.5mm aux cable with the phone's 3.5mm port (or the phone's own 3.5mm adapter).
 PlayStation 4 / PlayStation 5:
-- USB dongle (RECOMMENDED): plug into USB-A port on the console.
-- 3.5mm wired: plug the aux cable into the controller's 3.5mm jack.
-- IMPORTANT: in PS4/PS5 audio settings, set "Output to Headphones" → "All Audio" (or the console-equivalent setting "All audio to Headset or controller"). Volume is controlled from the PlayStation audio settings, NOT the headset's volume roller, when using the dongle.
-
+- USB dongle, or the 3.5mm aux cable into the PS4/PS5 controller.
+- IMPORTANT: in the PS4/PS5 audio settings select "All audio to Headset or controller". Volume can be controlled from the PlayStation Audio Settings.
+- No THX software on consoles — on PS4/PS5 the headset is plain stereo (the console's own 3D audio features are the console's, not THX).
 Xbox One / Series S / Series X:
-- 3.5mm wired ONLY (via controller's 3.5mm jack).
-- USB dongle does NOT work on Xbox. This is a Microsoft-side restriction (Xbox does not support generic 2.4GHz USB audio dongles); not a defect with the headset.
-
+- 3.5mm aux cable into the Xbox controller ONLY. The headset will NOT work using the USB dongle on Xbox (Xbox does not support generic 2.4GHz USB audio dongles — a platform restriction, not a headset defect).
 Nintendo Switch:
-- Bluetooth: works on Switch OLED and Switch with current firmware (Bluetooth audio added in firmware 13.0.0).
-- 3.5mm wired: works in handheld and docked-with-controller modes via the 3.5mm jack.
-- USB dongle: not officially supported by Switch; manual diagram shows Bluetooth/wired only for Switch.
+- Bluetooth or the 3.5mm aux cable (the manual's diagram shows Switch under Bluetooth / 3.5mm). The USB dongle is not shown as a Switch option — do not promise dongle support on Switch.
 
-LED INDICATION (on the right earcup, beside the mode area):
-- USB Dongle Disconnected = White LED flashing
-- USB Dongle Connected     = White LED solid
-- Bluetooth Disconnected   = Blue LED flashing
-- Bluetooth Connected      = Blue LED solid
-- Charging                 = Red LED solid
-- Fully Charged            = LED off
+LED INDICATION:
+- USB dongle disconnected = White LED flashes
+- USB dongle connected   = White LED on (solid)
+- Bluetooth mode disconnected = Blue LED flashes
+- Bluetooth connected    = Blue LED on (solid)
+- Charging = Red LED on
+- Charged  = LED off
 
-CONTROLS (button reference):
-
+CONTROLS — UPGRADED MODEL (per the new manual; this manual RESOLVES the double/triple-press ambiguity of the earlier manual — next/previous track are on the POWER button, mode switching is on the MODE button):
+Mic ON/OFF switch:
+- Press ×1 = microphone on/off
 Power button:
-- 1× short press = toggle the RGB LED on/off
-- Long press 3 seconds = power the headset on/off
-
-Mic button:
-- 1× short press = toggle microphone mute on/off
-
-Mode button (this button has multiple functions — note ambiguity below):
-- 1× short press = play/pause music; or answer/hang up an incoming call
-- 2× short press = next song; the manual ALSO lists this gesture as "switch between Wi-Fi and Bluetooth pairing mode"
-- 3× short press = previous song; the manual ALSO lists this gesture as "switch between Game and Music EQ mode"
-- Long press 2 seconds = reject incoming call
-
-KNOWN AMBIGUITY ON THE MODE BUTTON: the manual shows two different functions for the
-double-press and triple-press gestures. The most likely interpretation is that the
-gesture's effect depends on context (whether music is playing, whether a call is
-incoming, etc.), but the manual does NOT make this explicit. If a customer is
-confused or reports unexpected behaviour from the Mode button, acknowledge that the
-documentation is ambiguous on this point and forward the question to support
-(cc@thecosmicbyte.com / +91 7351615161) — do NOT invent rules that aren't in the manual.
-
-Volume control wheel (volume roller on the right earcup):
-- Scroll upward = volume up
-- Scroll downward = volume down
-- Note: when connected to PS4/PS5 via dongle, the console controls master volume — the roller may not behave as expected in that mode.
+- Long press 3 seconds = turn the headset on/off
+- Press ×1 = turn the RGB LED on/off
+- Press ×2 = next song
+- Press ×3 = previous song
+Mode button:
+- Press ×1 = play/pause music; answer/hang up a call
+- Press ×2 = switch between Wi-Fi (2.4GHz dongle) and Bluetooth pairing mode
+- Long press 2 seconds = reject call
+- Press ×3 = switch between Game and Music mode
+Volume control wheel:
+- Scroll upward = volume +
+- Scroll downward = volume −
+- Note: with the dongle on PS4/PS5 the console's audio settings control master volume — the wheel may not behave as expected in that mode.
+USB-C port: Type-C CHARGING port (used with the charging cable). The manual documents it as the charging port and as the headset-side connector for the 3.5mm aux cable; it is NOT documented as a USB-audio connection to a PC — do not tell customers to run THX or USB audio over the USB-C cable; the PC USB connection is the dongle.
 
 PAIRING WORKFLOWS:
-
-Wi-Fi (USB Dongle) pairing:
-1. Power on the headset (long-press Power for 3 seconds).
-2. Plug the included USB dongle into a USB-A port on the device.
-3. The dongle auto-pairs with the headset; white LED on the headset goes solid when connected.
-4. If it doesn't auto-pair: switch the headset to Wi-Fi mode using the Mode button (2× press, see ambiguity note above), and re-plug the dongle.
-
-Bluetooth pairing:
+2.4GHz (USB dongle):
+1. Power on the headset (long-press Power 3 seconds).
+2. Plug the USB dongle into a USB-A port on the PC/PS4/PS5.
+3. The headset connects to the dongle; the white LED goes solid.
+4. If it does not connect: press Mode ×2 to switch the headset to Wi-Fi (dongle) mode (the LED switches from blue to white), re-plug the dongle, keep the headset within 1m while it connects.
+Bluetooth:
 1. Power on the headset.
-2. Switch the headset to Bluetooth mode using the Mode button (2× press toggles between Wi-Fi and Bluetooth pairing mode).
-3. The blue LED will flash, indicating the headset is discoverable.
-4. On your device: open Bluetooth settings, search for new devices, and select "Cosmic Byte Immortal".
-5. Once paired, the blue LED will go solid.
+2. Press Mode ×2 to switch to Bluetooth pairing mode — the blue LED flashes (discoverable).
+3. On the device, open Bluetooth settings → scan → select the Cosmic Byte Immortal.
+4. Blue LED solid = paired/connected.
+Wired (3.5mm):
+1. Plug the USB-C end of the aux cable into the headset's USB-C port.
+2. Plug the 3.5mm end into the device/controller jack. No pairing needed.
 
-Wired (3.5mm) connection:
-1. Plug the USB-C end of the included aux cable into the headset's USB-C port.
-2. Plug the 3.5mm end into the device's 3.5mm jack (or into a controller's jack for PS4/PS5/Xbox).
-3. No pairing needed — works immediately. Battery is not required for wired audio (the headset gets passive audio through the cable), but the mic and RGB LED need the headset to be powered on.
+GAME / MUSIC MODES (on-headset, works in every connection mode, no software needed):
+- Press Mode ×3 to switch between Game mode and Music mode. These are the headset's built-in sound modes; they are separate from the THX app's EQ presets (the app's Game/Music/Movie presets apply only when using THX on Windows).
 
-GAME / MUSIC EQ MODES:
-The headset has two EQ presets:
-- Game Mode — emphasises footsteps, gunshots, directional cues; flatter response in the bass.
-- Music Mode — boosted bass and treble for music listening.
-Switch between them using the Mode button (3× press, per manual — same gesture also listed as "Previous Song", see ambiguity note).
+WHAT THX SPATIAL AUDIO+ IS AND WHY IT MATTERS (use this to explain the benefit to customers):
+- THX Spatial Audio+ is the immersive-audio platform from THX Ltd. (the company behind THX certification). It turns a stereo headset into a full 360° virtual surround experience using a physics-based room simulation, placing sounds around you — front, sides, behind AND above — with no physical speaker setup.
+- WHAT "7.1.4" MEANS: the ".4" is FOUR HEIGHT channels. Ordinary 7.1 only places sound on a flat horizontal plane; 7.1.4 adds sounds coming from above, which completes the 360° soundscape.
+- THE GAMING EDGE: enhanced positional accuracy — pinpoint where footsteps, gunfire, reloads and other cues come from, including above/below. THX's engine is built to make the most of positional sound cues in games.
+- MOVIES & MUSIC: THX Spatial Audio mode gives a wider, more cinematic soundstage for films; THX Stereo mode gives clean, natural 2-channel playback that is ideal for music.
+- AI / CAMERA HEAD TRACKING: uses a webcam to follow your head so the virtual sound field stays anchored to the world when you turn. Requires THX Spatial Audio mode and a connected webcam.
+- DEVICE-SPECIFIC TUNING: THX designs custom filters/EQ for each supported headset so stereo and spatial playback are accurate for THAT exact hardware — this is why THX only runs on the upgraded Immortal hardware and not on the earlier units.
+- HONEST LIMITS (do not over-promise): THX Spatial Audio+ works ONLY on WINDOWS, and ONLY while the headset is connected over USB (on the Immortal that means the 2.4GHz USB dongle). It does NOT run on macOS, Linux, consoles or phones, and it does NOT process audio over Bluetooth or over the 3.5mm aux cable — in those modes the Immortal is a normal stereo headset (still with its on-headset Game/Music modes). The full height/positional effect is strongest with content that carries positional audio; plain stereo sources gain a wider soundstage but not true discrete height cues.
+- NOT ORBIT: the Immortal is NOT configured through Cosmic Byte Orbit (orbit.thecosmicbyte.com) — Orbit is for keyboards/mice/controllers. The Immortal's software is the THX Spatial Audio+ Windows app, downloaded from www.thecosmicbyte.com. Do NOT send an Immortal customer to Orbit.
+
+THX SPATIAL AUDIO + SOFTWARE (WINDOWS-only desktop app — download from www.thecosmicbyte.com; upgraded hardware only; headset connected via the USB dongle):
+- When the headset is connected and detected, its name appears at the BOTTOM-LEFT of the app with a "Headphones" label. If it's not there: check the USB (dongle) connection, make sure the headset is powered on and in dongle mode (white LED solid), and wait for the app to finish loading.
+- AUDIO MODE SWITCH (top-right of every screen) — the single most important control: "THX Stereo" = traditional 2-channel L/R (cleanest for music/general listening). "THX Spatial Audio" = virtual 360° surround field (hear direction of footsteps/gunfire in games; wider soundstage for movies). Some features (Camera Head Tracking) only work while THX Spatial Audio is on — the app reminds you on-screen.
+- STANDARD SETTINGS (everyday controls): 10-band Equalizer (32 Hz to 16 kHz), each band adjustable +12 dB to -12 dB, toggle on/off; presets Default (flat) / Music (lifted bass + upper treble) / Game (in-game detail + positional cues) / Movie (dialogue + cinematic) / Custom (moving any slider auto-switches to Custom so changes are not lost); Reset returns to flat. Sound Normalization (evens out quiet vs loud; slider sets strength — good for late-night listening). Bass Boost (one-tap extra low end). Voice Clarity (one-tap vocal-range emphasis for chat/streams/quiet dialogue).
+- EXPERT > PARAMETRIC EQ: finer control than the Standard EQ. Same 5 presets + Reset. Response graph 20 Hz–20 kHz, +12/-12 dB, 10 draggable points (one per band). Per-band controls: Frequency (centre point), Gain (boost/cut in dB), Q (width — lower Q = broad, higher Q = narrow/surgical), Filter (Peak is the standard choice). Each band has a Band 1–10 checkbox to switch it off WITHOUT erasing its settings (for A/B comparison).
+- EXPERT > CAMERA HEAD TRACKING: uses a webcam to keep virtual sound sources anchored to the world when you turn your head. REQUIRES THX Spatial Audio mode — in THX Stereo mode the app shows "Head tracking effects can only be heard when THX Spatial Audio mode is enabled"; flip the top-right mode toggle first. Controls: Device (choose your webcam/USB video device), Camera Mode (Auto recommended), Enable toggle (top-right). A preview shows your tracked head position relative to the virtual speakers.
+- USER SETTINGS: language + app information.
+- SOFTWARE TROUBLESHOOTING: headset not shown in the app → check the dongle is plugged in, headset on and in dongle mode (white LED solid), let the app finish loading; if it never appears, confirm the unit is the upgraded THX hardware (see generation check above). Head-tracking notice → switch the mode toggle to THX Spatial Audio. No surround effect → mode switch must be on THX Spatial Audio, not THX Stereo, and the Immortal must be the default Windows output device.
+
+SETUP — WINDOWS PC WITH THX (upgraded model): power on the headset → plug the USB dongle into the Windows PC (white LED solid) → download and install THX Spatial Audio + from www.thecosmicbyte.com (Windows only) → open the app and confirm the headset appears bottom-left → set the mode switch to THX Spatial Audio for 7.1.4 surround → in Windows Sound Settings select the Immortal/dongle device as both output AND input.
+SETUP — MAC / BLUETOOTH / 3.5MM: no software; the headset works as a normal stereo headset with its on-headset Game/Music modes. THX processing is not available in these modes.
+SETUP — PS4/PS5: dongle into the console USB port (or aux cable into the controller) → Audio settings → "All audio to Headset or controller" → set volume from the PlayStation audio settings. No THX app on console.
+SETUP — XBOX: aux cable into the controller's 3.5mm jack only.
 
 TROUBLESHOOTING:
+Q: No sound? A: Headset powered on (long-press Power 3 s; RGB lights up) → connection mode matches the device (white LED solid for dongle, blue solid for Bluetooth — press Mode ×2 to switch) → on PC set the Immortal/dongle as the default output → PS4/PS5: "All audio to Headset or controller" → wired: aux cable fully seated at both ends → phone with the dongle: switch to Bluetooth (dongle not recommended on mobiles).
+Q: Low volume or dropouts on a phone with the dongle? A: Expected — the manual does not recommend the dongle for mobiles. Use Bluetooth (or the 3.5mm aux cable).
+Q: Mic not working? A: Mic fully inserted into the earcup port → mic ON/OFF switch pressed to ON → on PC select the Immortal/dongle as the recording/input device → on PS4/PS5 check the input device in audio settings → over Bluetooth, make sure the device is using the headset for calls/voice as well as media.
+Q: Won't pair over Bluetooth? A: Forget any old "Cosmic Byte Immortal" entry on the device → power-cycle the headset → press Mode ×2 until the BLUE LED flashes → stay within 1 m → pair again.
+Q: Dongle shows white LED flashing (not connecting)? A: Headset must be in dongle mode (Mode ×2 switches between Bluetooth and dongle; white = dongle) → re-plug the dongle, try another USB-A port (avoid hubs) → keep the dongle away from USB 3.0 ports/devices and Wi-Fi routers (2.4GHz interference) → keep within 10 m line-of-sight.
+Q: Disconnects randomly? A: Dongle: line-of-sight, away from USB 3.0 / routers, within 10 m. Bluetooth: within ~10 m, walls cut range. Check battery (charge if the headset is low).
+Q: THX app does not detect the headset? A: Dongle plugged into the Windows PC, headset on and in dongle mode (white solid), app finished loading, Windows only. If the unit is the earlier (non-THX) Immortal, THX is not supported on that hardware — explain this plainly rather than troubleshooting further.
+Q: No surround / sounds flat in THX? A: Top-right mode switch must be THX Spatial Audio (not THX Stereo); Immortal set as default output; use content with positional audio.
+Q: Head tracking does nothing? A: Needs THX Spatial Audio mode + a webcam selected under Device + the Enable toggle on.
+Q: Next/previous track not working? A: On the upgraded model it is the POWER button: ×2 = next, ×3 = previous (not the Mode button). Media keys work over Bluetooth/dongle, not over the 3.5mm cable.
+Q: RGB LED won't turn off? A: Press Power ×1 (short press) to toggle the RGB LED on/off. (Hold = power off.)
+Q: Game/Music mode not switching? A: Press Mode ×3 (three quick presses). Mode ×2 is pairing-mode switch, Mode ×1 is play/pause.
+Q: Charging? A: Use the included USB-A-to-USB-C cable on a 5V USB port/charger; red LED on = charging, LED off = charged; full charge takes 2–3 hours. Avoid high-wattage fast chargers.
+Q: Works on Xbox with the dongle? A: No — Xbox is 3.5mm aux via the controller only.
+Q: Which is better for gaming — dongle or Bluetooth? A: The 2.4GHz dongle (lower latency, and it is the only mode that supports THX on Windows). Bluetooth is for phones/tablets/Switch and general listening.
+Q: Does it work on Mac? A: Yes as a normal headset (dongle, Bluetooth or 3.5mm) — but the THX Spatial Audio + app is Windows only.
 
-No sound from the headset:
-- Verify the headset is powered on (long-press Power 3 seconds, RGB should light up).
-- Check the connection mode matches what the device is using (Wi-Fi LED white solid for dongle / Blue solid for Bluetooth).
-- For PS4/PS5 dongle: verify "All Audio to Headset" is set in console audio settings.
-- For mobile dongle: the manual recommends Bluetooth instead — try Bluetooth.
-- For wired: check the aux cable is fully seated at both ends.
+LEGACY — EARLIER / PRE-THX IMMORTAL (Bluetooth 5.3, 1000mAh) — ONLY for customers who own an earlier unit:
+- Specs as documented in the earlier manual: Bluetooth 5.3; 1000mAh battery; up to 40 hours; 3-hour charge; up to 20 m range; ~20 ms low latency in 2.4GHz mode; 50mm driver, 16±15% Ω, 112±3 dB, 20Hz–20KHz, 20mW rated; mic Ø6mm omni, ≤2.2KΩ, -42±3 dB, 100Hz–10KHz. Charging cable 0.5 m USB-A to USB-C.
+- Same three connection modes, same platform behaviour, same LED indications, same Game/Music modes, same volume wheel, same warranty.
+- Earlier-manual control notes: Power ×1 = RGB on/off, long-press 3 s = power. Mic ×1 = mute toggle. Mode ×1 = play/pause / answer/hang up; the earlier manual listed Mode ×2 BOTH as "next song" AND "switch Wi-Fi/Bluetooth pairing", and Mode ×3 BOTH as "previous song" AND "switch Game/Music" (long-press 2 s = reject call). That earlier documentation is ambiguous — if an earlier-unit customer reports unexpected Mode-button behaviour, acknowledge the ambiguity and forward to support (cc@thecosmicbyte.com / +91 7351615161) rather than inventing rules.
+- THX Spatial Audio + is NOT supported on this hardware. Do not install it for the earlier model; do not treat "THX app can't see my headset" as a fault on this unit.
+- Upgrade path: the current THX Immortal (same product page).
 
-Mic not working:
-- Ensure the detachable mic is fully plugged into the boom port on the left earcup.
-- Check the mic mute button on the headset (1× press toggles).
-- On PC: check the OS recording device is set to "Cosmic Byte Immortal" (or the dongle's name).
-- On PS4/PS5: check audio settings → Input device → headset / controller chat audio routing.
+CARE: keep away from moisture; store cool and dry; do not disassemble; use the included cable for charging.
 
-Headset won't pair via Bluetooth:
-- Forget any previous "Cosmic Byte Immortal" entry on the device's Bluetooth list.
-- Power-cycle the headset.
-- Switch to Bluetooth mode using the Mode button (see ambiguity note).
-- Stay within 1m of the device during initial pairing.
+WARRANTY: 1 year against manufacturing defects only. Physical damage, water damage and tampered products are NOT covered. Gradual battery capacity reduction from normal use (wear and tear) is NOT covered.
+SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm | AI support: ai.thecosmicbyte.com
 
-Headset disconnects randomly:
-- 2.4GHz dongle: keep the dongle within line-of-sight of the headset; avoid placing it near USB 3.0 devices or Wi-Fi routers (USB 3.0 emits 2.4GHz interference).
-- Bluetooth: stay within ~10m; thick walls cut range significantly.
-
-Charging issues:
-- Use the included 0.5m USB-A-to-USB-C cable; connect to a 5V USB port (PC USB / 5V/1A wall charger). Avoid fast chargers above 10W — overdriving the input can shorten battery lifespan.
-- Red LED solid = charging. LED off after Red = fully charged.
-
-LED won't turn off:
-- 1× short press of the Power button toggles the RGB LED on/off independently of the headset's power state.
-
-WARRANTY:
-- 1 year warranty against manufacturing defects only.
-- Physical damage NOT covered.
-- Water damage NOT covered.
-- Tampered products NOT covered.
-- Regular wear and tear from battery usage (gradual capacity reduction over time) is NOT covered under warranty.
-
-SUPPORT:
-- Phone: +91 7351615161 (Mon–Sat, 10:00 AM to 6:00 PM)
-- Email: cc@thecosmicbyte.com
-- FAQ portal: support.thecosmicbyte.com
+PRICING: do NOT quote a price. For the current price and offers, direct the customer to the product page (BUY link below).
+BUY: https://www.thecosmicbyte.com/product/cosmic-byte-immortal-2-4ghz-wireless-bluetooth-wired-headphone-black/ — the SAME product page / UPC covers the upgraded THX model (new stock ships the upgraded THX hardware). Use coupon code ONLINEPAY for 10% off on online payments.
 """,
 
     "CosmoBuds X220": """
@@ -15522,7 +15557,7 @@ TROUBLESHOOTING:
 ANTI-FABRICATION GUARDS:
 ✗ Do NOT tell a customer Orbit works on Firefox, Safari, iPhone, iPad, or Android — it does NOT. Orbit needs Chrome / Edge / Brave / Opera on a desktop computer.
 ✗ Do NOT tell a customer to download desktop software for Orbit — Orbit is browser-based. The only download in scope is the "Cosmic Byte Connect" helper, and ONLY for the specific devices that need it (currently the wired Velox).
-✗ HEADSETS ARE NOT ORBIT DEVICES: the THX headsets (CryoCore, Proteus X, Olympus) use the separate THX Spatial Audio+ Windows app, NOT Orbit. Do not send headset customers here.
+✗ HEADSETS ARE NOT ORBIT DEVICES: the THX headsets (CryoCore, Proteus X, Olympus, Immortal) use the separate THX Spatial Audio+ Windows app, NOT Orbit. Do not send headset customers here.
 ✗ Do NOT confirm or deny that a SPECIFIC product is supported in Orbit unless it is on the snapshot list above. The supported set expands regularly — direct customers to https://orbit.thecosmicbyte.com for the authoritative current list.
 ✗ Do NOT say Bluetooth devices can be configured in Orbit — they cannot. The customer must switch to USB or the 2.4 GHz dongle.
 ✗ Do NOT invent per-device features. Features (DPI, RGB, macros, etc.) vary per device — only confirm what each device's own configurator actually exposes.
@@ -16957,7 +16992,7 @@ Which option appeals to you? Happy to walk through the setup of whichever you pi
 
   WHEN TO PROMOTE IT: For any device on the Orbit supported list (see the "Cosmic Byte Orbit" KB entry — snapshot includes Helios, Lumora, Ares Pro, Drakon, Blitz, Stellaris, Phantom TKL, Velox, Ignis, Arcturus 65, Arcturus 75, Arcturus 98, Hydrus Wired, Hydrus Tri-Mode; the list grows over time), lead the configuration answer with Orbit. Example framing: "You can set that up in Cosmic Byte Orbit, our free browser-based configurator at https://orbit.thecosmicbyte.com — open it in Chrome / Edge / Brave / Opera on a desktop computer, connect your device by USB cable or its 2.4 GHz dongle (Bluetooth won't work for configuration), click Detect device, and approve the browser prompt. No download needed for most devices."
 
-  RESPECT THE ORBIT GUARDS (do NOT contradict the "Cosmic Byte Orbit" entry): (a) Do NOT claim a SPECIFIC product is supported in Orbit unless it is on the snapshot list — if the customer's device isn't confirmed on the list, still point them to the live device grid at https://orbit.thecosmicbyte.com as the authoritative current line-up ("the supported list grows regularly — check the live grid to see if your device is there yet"). (b) Orbit is DESKTOP Chromium-only (Chrome / Edge / Brave / Opera on Windows / macOS / Linux / ChromeOS) — never tell a customer it works on Firefox, Safari, or any phone/tablet. (c) Orbit needs USB or 2.4 GHz — Bluetooth-connected devices must switch to USB or the 2.4 GHz dongle to configure. (d) Orbit is browser-based with no download for most devices; the only exception is the wired Velox, which needs the "Cosmic Byte Connect" helper. (e) Do NOT invent per-device features — features vary per device; only confirm what that device's own configurator exposes. (f) Orbit is for keyboards, mice and controllers ONLY. The THX headsets (CryoCore, Proteus X, Olympus) are NOT Orbit devices — their software is the THX Spatial Audio+ WINDOWS app from www.thecosmicbyte.com. Never promote Orbit for a headset.
+  RESPECT THE ORBIT GUARDS (do NOT contradict the "Cosmic Byte Orbit" entry): (a) Do NOT claim a SPECIFIC product is supported in Orbit unless it is on the snapshot list — if the customer's device isn't confirmed on the list, still point them to the live device grid at https://orbit.thecosmicbyte.com as the authoritative current line-up ("the supported list grows regularly — check the live grid to see if your device is there yet"). (b) Orbit is DESKTOP Chromium-only (Chrome / Edge / Brave / Opera on Windows / macOS / Linux / ChromeOS) — never tell a customer it works on Firefox, Safari, or any phone/tablet. (c) Orbit needs USB or 2.4 GHz — Bluetooth-connected devices must switch to USB or the 2.4 GHz dongle to configure. (d) Orbit is browser-based with no download for most devices; the only exception is the wired Velox, which needs the "Cosmic Byte Connect" helper. (e) Do NOT invent per-device features — features vary per device; only confirm what that device's own configurator exposes. (f) Orbit is for keyboards, mice and controllers ONLY. The THX headsets (CryoCore, Proteus X, Olympus, Immortal) are NOT Orbit devices — their software is the THX Spatial Audio+ WINDOWS app from www.thecosmicbyte.com. Never promote Orbit for a headset.
 """
 
 
@@ -17597,20 +17632,21 @@ CATALOGUE_HEADSETS = """
 COSMIC BYTE HEADSETS & EARBUDS — Quick Comparison Guide
 
 WIRELESS HEADSETS:
-- Immortal: Tri-mode (2.4GHz Wi-Fi USB dongle / Bluetooth 5.3 / Wired 3.5mm), 50mm driver, ENC detachable mic, 40hr battery, RGB LED, 20m range, 20ms low-latency. Game/Music modes. PC, mobile (Bluetooth recommended), PS4/PS5 (dongle or 3.5mm), Switch (Bluetooth or 3.5mm), Xbox (3.5mm only). USB-A dongle.
+- Immortal (UPGRADED THX model, current): the WIRELESS THX headset. Tri-mode (2.4GHz USB dongle / Bluetooth 6.0 with LE Audio / Wired 3.5mm aux), 50mm driver, 7.1.4 surround via THX Spatial Audio + (Windows, over the USB dongle only), ENC detachable mic with RGB, 800mAh / up to 50hr, 2-3hr charge, 10m range, RGB LED, on-headset Game/Music modes. PC, mobile (Bluetooth recommended), PS4/PS5 (dongle or 3.5mm), Switch (Bluetooth or 3.5mm), Xbox (3.5mm only). USB-A dongle. NOTE: EARLIER Immortal units (Bluetooth 5.3, 1000mAh, 40hr) do NOT support THX — same UPC/product page, so check the generation (THX branding / BT version on the box) before promising THX.
 
 WIRED HEADSETS:
 - CryoCore (UPGRADED THX model, current): USB only, 7.1.4 surround via THX Spatial Audio software, 50mm driver (tuned + updated for THX), 20Ω, ENC detachable mic, PS4/PS5 compatible. Entry point to the THX line. NOTE: the OLD CryoCore (7.1, 32Ω, setup.exe driver) is DISCONTINUED and does NOT support THX — only the upgraded hardware does.
 - Proteus (OLD MODEL — DISCONTINUED, no THX): Dual input (USB + 3.5mm), 7.1 via USB, ENC mic, RGB, on-cable controller. No longer sold — recommend the Proteus X instead; keep only for existing owners.
 - Proteus X (THX model): Dual input (USB + 3.5mm), 7.1.4 surround via THX Spatial Audio (USB), 50mm (tuned for THX), ENC detachable mic, RGB LED, on-cable controller, black/white. Xbox = 3.5mm only. Mid pick; the one to choose for multi-platform 3.5mm use.
 - Olympus (THX model): NEW FLAGSHIP — best-tuned speakers and best sound of the THX line. USB only, 7.1.4 via THX Spatial Audio, 53mm NEODYMIUM drivers (largest in the line), ENC detachable mic, protein-leather cushions, carrying pouch, on-headset EQ (long-press mic button: Music/Game/Movie). Premium pick.
-- THX NOTE (all three): THX Spatial Audio+ software is WINDOWS-only and works over USB only; download from www.thecosmicbyte.com. It is NOT Orbit — do not send headset customers to Orbit.
+- THX NOTE (all four THX headsets — CryoCore, Proteus X, Olympus, Immortal): THX Spatial Audio+ software is WINDOWS-only and works over USB only (for the Immortal: the USB dongle; not Bluetooth, not 3.5mm); download from www.thecosmicbyte.com. It is NOT Orbit — do not send headset customers to Orbit. Earlier/pre-THX hardware (old CryoCore, old Proteus, earlier Immortal) cannot run THX.
 
 EARBUDS:
 - CosmoBuds X220: True wireless TWS, Bluetooth 5.3, 40ms GOD Mode gaming latency, 40hr total battery, IPX5 waterproof, ENC mic, fast charge.
 
 BUYING GUIDE:
-- Wireless multi-platform gaming → Immortal (only tri-mode headset; works wired/dongle/Bluetooth, Xbox via 3.5mm)
+- Wireless multi-platform gaming → Immortal (only tri-mode headset; works wired/dongle/Bluetooth, Xbox via 3.5mm; upgraded model adds THX Spatial Audio 7.1.4 on Windows via the dongle)
+- Wireless + THX Spatial Audio → Immortal (the only wireless THX headset; THX runs on Windows over the USB dongle). Wired THX → Olympus / Proteus X / CryoCore.
 - PC gaming headset with THX Spatial Audio (7.1.4, wired) → Olympus (flagship, best sound, USB) / Proteus X (mid tier, USB + 3.5mm flexibility, RGB) / CryoCore upgraded (entry tier, USB, value)
 - THX line tiering: CryoCore = entry, Proteus X = mid, Olympus = flagship/premium. Do NOT quote prices — send customers to the product page for current pricing.
 - Best sound / premium THX → Olympus. Budget THX → CryoCore. Need 3.5mm for console/mobile too → Proteus X.
