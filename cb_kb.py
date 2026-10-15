@@ -33,6 +33,16 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.15.1 (2026-10-15) -- Claude
+  * Z-bump: Sensa battery corrected
+    1000mAh -> 1600mAh (operator-
+    confirmed 2026-10-15) in the
+    Sensa entry battery line, spec
+    summary and anti-fabrication
+    guard; guard now explicitly
+    forbids "1000mAh" for the Sensa.
+    Runtime / charge-time figures
+    remain undocumented.
 v1.15.0 (2026-10-07) -- Claude
   * Y-bump: IMMORTAL headset upgraded
     to the THX Spatial Audio + model
@@ -10049,7 +10059,7 @@ v1.0.0 (2026-05-08) -- Claude
   * No semantic changes — pure code move + import rewiring.
 """
 
-__version__ = "1.15.0"
+__version__ = "1.15.1"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -12854,7 +12864,7 @@ SPECS (per manual):
 - Polling rate: the manual spec table prints "500Hz/250Hz (wired and wireless)" — i.e. 500Hz wired / 250Hz wireless per the printed order. Do NOT claim 1000Hz for the Sensa in any mode. If a customer needs a guaranteed per-mode figure beyond what the manual prints, route to cc@thecosmicbyte.com.
 - Sensors: 6-axis motion sensor. Analog sticks: Hall-Effect magnetic. Triggers: Adaptive force feedback (L2/R2).
 - Vibration: dual voice-coil motors. Audio: built-in speaker + microphone; 3.5mm TRRS headset port. Lighting: RGB multi-colour. Charging: USB Type-C.
-- ✓ BATTERY: 1000mAh rechargeable lithium-ion — CONFIRMED by Cosmic Byte (2026-10-01). State it when asked. (An earlier version of this entry said the capacity was unspecified; that is superseded.) Runtime hours and charge time are still NOT documented — do NOT invent them; route to support if a customer needs those figures. Other confirmed battery facts: low-battery warning below 3.65V; charging LED breathes orange while powered off, turns off when full.
+- ✓ BATTERY: 1600mAh rechargeable lithium-ion — CONFIRMED by Cosmic Byte (2026-10-15). State it when asked. (Earlier versions of this entry said "unspecified" and then "1000mAh"; both are superseded — the correct figure is 1600mAh. Do NOT say 1000mAh.) Runtime hours and charge time are still NOT documented — do NOT invent them; route to support if a customer needs those figures. Other confirmed battery facts: low-battery warning below 3.65V; charging LED breathes orange while powered off, turns off when full.
 
 WHAT'S IN THE BOX: Sensa gamepad, USB Type-C charging cable, user manual, warranty card. (No dongle — none is needed.)
 
@@ -12911,7 +12921,7 @@ SLEEP, WAKE & POWER:
 - Manual power off: hold the PS button for 5 seconds. Auto power off: if reconnection fails within 15 seconds.
 
 CHARGING & BATTERY:
-- Battery: 1000mAh rechargeable (confirmed by Cosmic Byte). Charge via USB Type-C.
+- Battery: 1600mAh rechargeable (confirmed by Cosmic Byte). Charge via USB Type-C.
 - While charging powered-off, the LED breathes ORANGE; when charging completes, the LED turns OFF.
 - Low battery: below 3.65V the console displays a low-battery warning.
 - (Runtime hours and charge time are not documented — do not invent them.)
@@ -12937,7 +12947,7 @@ Q: Where is the 2.4GHz dongle? A: There is none — the Sensa is Bluetooth 6.0 +
 SOFTWARE / ORBIT: the only companion software documented for the Sensa is the Cosmic Byte Firmware Update Tool (Windows). The Sensa is NOT on the Orbit confirmed-support snapshot — do not claim Orbit support; the live device grid at https://orbit.thecosmicbyte.com is the authoritative list if a customer wants to check.
 
 ANTI-FABRICATION GUARDS (Sensa):
-✗ Do NOT claim Xbox or Nintendo Switch support. ✗ Do NOT call it Sony-licensed/official. ✓ Battery capacity is 1000mAh (confirmed). ✗ Do NOT invent runtime hours or charge time — not documented. ✗ Do NOT claim 1000Hz polling. ✗ Do NOT claim Hall Effect TRIGGERS — the sticks are Hall-Effect magnetic; the triggers are adaptive force-feedback. ✗ Do NOT mention a 2.4GHz dongle — there is none. ✗ Do NOT quote a 1-year warranty — the Sensa is 2 years.
+✗ Do NOT claim Xbox or Nintendo Switch support. ✗ Do NOT call it Sony-licensed/official. ✓ Battery capacity is 1600mAh (confirmed — NOT 1000mAh). ✗ Do NOT invent runtime hours or charge time — not documented. ✗ Do NOT claim 1000Hz polling. ✗ Do NOT claim Hall Effect TRIGGERS — the sticks are Hall-Effect magnetic; the triggers are adaptive force-feedback. ✗ Do NOT mention a 2.4GHz dongle — there is none. ✗ Do NOT quote a 1-year warranty — the Sensa is 2 years.
 
 SUPPORT: cc@thecosmicbyte.com | +91 7351615161 (WhatsApp same) | Mon–Sat 10am–6pm
 
