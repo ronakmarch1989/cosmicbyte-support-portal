@@ -33,6 +33,35 @@ DEPLOYMENT sections at the top of the importing files.
 
 CHANGELOG
 ---------
+v1.17.2 (2026-10-29) -- Claude
+  * Z-bump: old dual-mode Blitz was
+    being routed to the Blitz
+    Tri-Mode entry (which tells
+    customers to use the software).
+    match_product_from_title() and
+    detect_products_from_message():
+    added ("blitz dual", "Blitz
+    Wireless") and ("blitz 2.4",
+    "Blitz Wireless") BEFORE the
+    plain "blitz" fallback, plus a
+    non-adjacent guard — "blitz" +
+    "dual mode"/"dual-mode"/
+    "dualmode" anywhere in the text
+    -> Blitz Wireless (message
+    matcher consumes "blitz" so the
+    Tri-Mode fallback cannot also
+    fire). PRODUCT_SKUS["Blitz
+    Wireless"] now lists the A-suffix
+    SKUs TCBP03484A (Black),
+    TCBP03486A (Grey), TCBP03487A
+    (White) — the A-suffix rule is
+    documented on both Blitz SKU
+    CODES lines (Tri-Mode line warns
+    that an A-suffix SKU is the old
+    model). No TCBP03558A (Retro)
+    added — not in the SKU export;
+    add if a dual-mode Retro existed.
+    Dock SKUs stay Tri-Mode only.
 v1.17.1 (2026-10-24) -- Claude
   * Z-bump: operator-confirmed SKU
     notes. TCBP03486A = the
@@ -10209,7 +10238,7 @@ v1.0.0 (2026-05-08) -- Claude
 import re
 
 
-__version__ = "1.17.1"
+__version__ = "1.17.2"
 
 # =============================================================================
 # Sections below this point are populated by a controlled extraction from
@@ -12684,7 +12713,7 @@ COMMON FAILURE MODES TO AVOID (BLITZ TRI-MODE AI-FACING NOTES)
   but do NOT volunteer purchase prompts on every related question. The
   customer is asking for information, not to be sold to.
 
-SKU CODES (thecosmicbyte.com invoice / order SKU — use to identify the exact variant the customer bought): TCBP03484 (Black, Tri-Mode); TCBP03486 (Grey, Tri-Mode); TCBP03487 (White, Tri-Mode); TCBP03558 (Retro, Tri-Mode); TCBP03572 (Blitz Tri-Mode charging dock — Black (controller not included)); TCBP03573 (Blitz Tri-Mode charging dock — White (controller not included)). If a customer quotes a SKU that is not listed here, it is a different product or variant — do not assume it is this one.
+SKU CODES (thecosmicbyte.com invoice / order SKU — use to identify the exact variant the customer bought): TCBP03484 (Black, Tri-Mode); TCBP03486 (Grey, Tri-Mode); TCBP03487 (White, Tri-Mode); TCBP03558 (Retro, Tri-Mode); TCBP03572 (Blitz Tri-Mode charging dock — Black (controller not included)); TCBP03573 (Blitz Tri-Mode charging dock — White (controller not included)). NOTE: a Blitz controller SKU with an A at the end (e.g. TCBP03484A) is the old Blitz Wireless dual-mode model, NOT this one — it has no Bluetooth and no software/Orbit support; use the Blitz Wireless entry. If a customer quotes a SKU that is not listed here, it is a different product or variant — do not assume it is this one.
 """,
 
     "Blitz Wireless": """
@@ -12718,7 +12747,7 @@ KEY DIFFERENCES vs BLITZ TRI-MODE: 2.4GHz + wired ONLY (no Bluetooth), no gyro, 
 
 WARRANTY: 1 year manufacturing defects only. Physical, water damage NOT covered. Fast charger damage NOT covered.
 
-SKU CODES (thecosmicbyte.com invoice / order SKU — use to identify the exact variant the customer bought): TCBP03486A (Grey, Dual Mode (2.4GHz + wired, no Bluetooth) — DISCONTINUED; the internal SKU is the Tri-Mode code with an A suffix). If a customer quotes a SKU that is not listed here, it is a different product or variant — do not assume it is this one.
+SKU CODES (thecosmicbyte.com invoice / order SKU — use to identify the exact variant the customer bought): TCBP03484A (Black, Dual Mode); TCBP03486A (Grey, Dual Mode); TCBP03487A (White, Dual Mode) — all 2.4GHz + wired, NO Bluetooth, DISCONTINUED. RULE: the old dual-mode Blitz uses the SAME SKU as the Blitz Tri-Mode with an "A" at the end (TCBP03484 = Tri-Mode Black, TCBP03484A = Dual Mode Black, and so on) — any Blitz SKU ending in A is THIS model, not the Tri-Mode. If a customer quotes a SKU that is not listed here, it is a different product or variant — do not assume it is this one.
 """,
 
     "Eclipse": """
@@ -15884,7 +15913,9 @@ PRODUCT_SKUS = {
         ('TCBP03573', 'Blitz Tri-Mode charging dock — White (controller not included)'),
     ],
     'Blitz Wireless': [
-        ('TCBP03486A', 'Grey, Dual Mode (2.4GHz + wired, no Bluetooth) — DISCONTINUED; the internal SKU is the Tri-Mode code with an A suffix'),
+        ('TCBP03484A', 'Black, Dual Mode (2.4GHz + wired, no Bluetooth) — DISCONTINUED; internal SKU = Tri-Mode code + A suffix'),
+        ('TCBP03486A', 'Grey, Dual Mode (2.4GHz + wired, no Bluetooth) — DISCONTINUED; internal SKU = Tri-Mode code + A suffix'),
+        ('TCBP03487A', 'White, Dual Mode (2.4GHz + wired, no Bluetooth) — DISCONTINUED; internal SKU = Tri-Mode code + A suffix'),
     ],
     'Eclipse': [
         ('TCBP03542', 'Eclipse Tri-Mode'),
@@ -17591,6 +17622,9 @@ def match_product_from_title(title: str) -> str:
     for _m in re.findall(r"tcbp\d{5}a?", t):
         if _m in SKU_TO_PRODUCT:
             return SKU_TO_PRODUCT[_m]
+    # v1.17.2: "Blitz" anywhere + "dual mode"/"dual-mode" anywhere = the old dual-mode Blitz Wireless
+    if "blitz" in t and ("dual mode" in t or "dual-mode" in t or "dualmode" in t):
+        return "Blitz Wireless"
     # Order matters — longer/more specific keywords must come first
     checks = [
         ("phantom tkl wireless",  "Phantom TKL"),
@@ -17609,6 +17643,8 @@ def match_product_from_title(title: str) -> str:
         ("ares",                  "Ares Tri-Mode"),
         ("blitz tri",             "Blitz Tri-Mode"),
         ("blitz wireless",        "Blitz Wireless"),
+        ("blitz dual",            "Blitz Wireless"),   # v1.17.2: old dual-mode model (no BT, no software)
+        ("blitz 2.4",             "Blitz Wireless"),
         ("blitz",                 "Blitz Tri-Mode"),
         ("stratos xenon",         "Stratos Xenon"),
         ("stratos",               "Stratos Xenon"),
@@ -18309,6 +18345,8 @@ def detect_products_from_message(messages: list) -> tuple:
         ("ares",                 "Ares Tri-Mode"),
         ("blitz tri",            "Blitz Tri-Mode"),
         ("blitz wireless",       "Blitz Wireless"),
+        ("blitz dual",           "Blitz Wireless"),   # v1.17.2: old dual-mode model (no BT, no software)
+        ("blitz 2.4",            "Blitz Wireless"),
         ("blitz",                "Blitz Tri-Mode"),
         ("stratos xenon",        "Stratos Xenon"),
         ("stratos",              "Stratos Xenon"),
@@ -18400,6 +18438,12 @@ def detect_products_from_message(messages: list) -> tuple:
         if _p and _p not in seen and _p in PRODUCTS:
             found.append(_p); seen.add(_p)
             working = working.replace(_m, " ")
+    # v1.17.2: "blitz" + "dual mode" anywhere in the message = old dual-mode Blitz Wireless; consume "blitz"
+    # so the plain ("blitz", "Blitz Tri-Mode") fallback cannot also fire.
+    if "blitz" in working and ("dual mode" in working or "dual-mode" in working or "dualmode" in working):
+        if "Blitz Wireless" not in seen and "Blitz Wireless" in PRODUCTS:
+            found.append("Blitz Wireless"); seen.add("Blitz Wireless")
+        working = working.replace("blitz", " ")
     for keyword, product in checks:
         if keyword in working and product not in seen and product in PRODUCTS:
             found.append(product)
